@@ -38,7 +38,8 @@ pub fn run() {
       stop_script,
       get_server_info,
       open_url,
-      set_discord_rpc
+      download_json,
+      set_discord_rpc,
     ])
     .run(tauri::generate_context!())
     .expect("Не удалось запустить клиент");

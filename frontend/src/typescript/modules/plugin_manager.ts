@@ -1,18 +1,18 @@
-import { logger } from '../utils/logger';
-import { download } from '../utils/downloader';
-import { plugins } from '../common/structs';
-import { process } from '../main';
+import { logger } from "../utils/logger";
+import { plugins } from "../common/structs";
+import { process } from "../main";
+import { invoke } from "@tauri-apps/api/core";
 
 class PluginManager {
   /** Метод инициализации функций, связанных с плагинами. */
   public async init(): Promise<void> {
     this.createCards();
-    for (const name in plugins) this.updatePluginState(name, localStorage.getItem(`plugin-state:${name}`) === 'true');
+    for (const name in plugins) this.updatePluginState(name, localStorage.getItem(`plugin-state:${name}`) === "true");
   }
 
   /** Метод обновления и сохранения состояния плагина (включен / выключен). */
   private updatePluginState(name: string, state: boolean): void {
-    if (process === 'sleep') {
+    if (process === "sleep") {
       plugins[name].enable = state;
   
       localStorage.setItem(`plugin-state:${name}`, String(state));
@@ -21,20 +21,20 @@ class PluginManager {
       const toggler = document.getElementById(`${name}-toggler`) as HTMLButtonElement;
   
       if (state) {
-        status.innerText = 'Включен';
+        status.innerText = "Включен";
   
-        toggler.setAttribute('state', 'false');
-        toggler.style.color = '#4ed618';
-        toggler.innerText = 'Включен';
+        toggler.setAttribute("state", "false");
+        toggler.style.color = "#4ed618";
+        toggler.innerText = "Включен";
       } else {
-        status.innerText = 'Выключен';
+        status.innerText = "Выключен";
   
-        toggler.setAttribute('state', 'true');
-        toggler.style.color = '#e61919';
-        toggler.innerText = 'Выключен';
+        toggler.setAttribute("state", "true");
+        toggler.style.color = "#e61919";
+        toggler.innerText = "Выключен";
       }
     } else {
-      logger.log(`Не удалось изменить состояние плагина ${name}: Plugin states can only be changed before startup`, 'warning');
+      logger.log(`Не удалось изменить состояние плагина ${name}: Plugin states can only be changed before startup`, "warning");
     }
   }
 
@@ -44,8 +44,8 @@ class PluginManager {
       for (const name in plugins) {
         const plugin = plugins[name];
   
-        const pluginCard = document.createElement('div');
-        pluginCard.className = 'plugin-card';
+        const pluginCard = document.createElement("div");
+        pluginCard.className = "plugin-card";
         pluginCard.id = `${name}-plugin`;
   
         pluginCard.innerHTML = `
@@ -68,11 +68,11 @@ class PluginManager {
           </div>
         `;
   
-        document.getElementById('plugin-list')?.appendChild(pluginCard);
+        document.getElementById("plugin-list")?.appendChild(pluginCard);
         
-        const element = document.createElement('div');
+        const element = document.createElement("div");
   
-        element.className = 'cover';
+        element.className = "cover";
         element.id = `${name}-plugin-description`;
   
         element.innerHTML = `
@@ -92,50 +92,52 @@ class PluginManager {
           <p class="plugin-latest-update">Последнее обновление плагина: <span id="${name}-latest-update">?</span></p>
         `;
   
-        document.getElementById('plugins-container')?.appendChild(element);
+        document.getElementById("plugins-container")?.appendChild(element);
       }
   
-      document.querySelectorAll('[plugin-toggler="true"]').forEach(t => t.addEventListener('click', () => {
-        const name = t.getAttribute('plugin-name') || '';
-        const state = t.getAttribute('state') === 'true';
+      document.querySelectorAll('[plugin-toggler="true"]').forEach(t => t.addEventListener("click", () => {
+        const name = t.getAttribute("plugin-name") || "";
+        const state = t.getAttribute("state") === "true";
         this.updatePluginState(name, state);
       }));  
   
-      document.querySelectorAll('[plugin-open-description="true"]').forEach(e => e.addEventListener('click', () => {
-        const path = e.getAttribute('path');
+      document.querySelectorAll('[plugin-open-description="true"]').forEach(e => e.addEventListener("click", () => {
+        const path = e.getAttribute("path");
         if (!path) return;
-        (document.getElementById(path) as HTMLElement).style.display = 'flex';
+        (document.getElementById(path) as HTMLElement).style.display = "flex";
       })); 
   
-      document.querySelectorAll('[plugin-close-description="true"]').forEach(e => e.addEventListener('click', () => {
-        const path = e.getAttribute('path');
+      document.querySelectorAll('[plugin-close-description="true"]').forEach(e => e.addEventListener("click", () => {
+        const path = e.getAttribute("path");
         if (!path) return;
-        (document.getElementById(path) as HTMLElement).style.display = 'none';
+        (document.getElementById(path) as HTMLElement).style.display = "none";
       })); 
     } catch (error) {
-      logger.log(`Ошибка инициализации плагинов: ${error}`, 'error');
+      logger.log(`Ошибка инициализации плагинов: ${error}`, "error");
     }
   }
 
   /** Метод загрузки описаний плагинов. */
   public async loadDescriptions(): Promise<void> {
     try {
-      const content = await download('https://codeberg.org/nullclyze/salarixi/raw/branch/main/salarixi.plugins.json');
+      const content = await invoke("download_json", {
+        url: "https://codeberg.org/nullclyze/salarixi/raw/branch/main/salarixi.plugins.json"
+      }) as any;
       
       if (!content) return;
 
-      for (const plugin of content['list']) {
-        const name = plugin['name'];
-        const description = plugin['description'];
-        const latestUpdate = plugin['latest-update'];
+      for (const plugin of content["list"]) {
+        const name = plugin["name"];
+        const description = plugin["description"];
+        const latestUpdate = plugin["latest-update"];
 
         if (plugins[name]?.date) {
           if (latestUpdate != plugins[name].date) {
-            document.getElementById(`${name}-plugin`)?.classList.add('deprecated');
+            document.getElementById(`${name}-plugin`)?.classList.add("deprecated");
             
-            const tag = document.createElement('span');
-            tag.className = 'tag';
-            tag.innerText = 'Устарел';
+            const tag = document.createElement("span");
+            tag.className = "tag";
+            tag.innerText = "Устарел";
 
             document.getElementById(`${name}-header`)?.appendChild(tag);
           }
@@ -144,7 +146,7 @@ class PluginManager {
           const pluginLatestUpdateContainer = document.getElementById(`${name}-latest-update`) as HTMLElement;
 
           for (const p of description) {
-            const el = document.createElement('p');
+            const el = document.createElement("p");
             el.innerText = p;
 
             pluginDescriptionContainer.appendChild(el);
@@ -152,9 +154,9 @@ class PluginManager {
 
           pluginLatestUpdateContainer.innerText = latestUpdate;
         } else {
-          const pluginCard = document.createElement('div');
-          pluginCard.className = 'plugin-card';
-          pluginCard.classList.add('unavailable');
+          const pluginCard = document.createElement("div");
+          pluginCard.className = "plugin-card";
+          pluginCard.classList.add("unavailable");
 
           pluginCard.innerHTML = `
             <div class="head">
@@ -163,17 +165,17 @@ class PluginManager {
               </svg>
 
               <div class="text">
-                <div class="header">${plugin['header']} <span class="tag">Недоступен</span></div>
+                <div class="header">${plugin["header"]} <span class="tag">Недоступен</span></div>
                 <div class="meta">Статус: <span class="status">Недоступен</span></div>
               </div>
             </div>
           `;
 
-          document.getElementById('plugin-list')?.appendChild(pluginCard);
+          document.getElementById("plugin-list")?.appendChild(pluginCard);
         }
       }
     } catch (error) {
-      logger.log(`Ошибка загрузки информации о плагинах: ${error}`, 'error');
+      logger.log(`Ошибка загрузки информации о плагинах: ${error}`, "error");
     }
   }
 }

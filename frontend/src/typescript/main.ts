@@ -16,7 +16,6 @@ import { radar } from "./modules/radar";
 import { pinger } from "./modules/pinger";
 import { translator } from "./modules/translator";
 import { messages } from "./utils/message";
-import { download } from "./utils/downloader";
 import { disableParticles, enableParticles } from "./particles";
 import { switchControlWrapper, switchGlobalWrapper } from "./utils/switchers";
 import { triggerRegistry } from "./modules/trigger_registry";
@@ -66,7 +65,9 @@ export function setQuickTasksAllowed(value: boolean): void {
 /** Функция инициализации руководства по использованию */
 async function initUserGuide(): Promise<void> {
   try {
-    const content = await download("https://codeberg.org/nullclyze/salarixi/raw/branch/main/salarixi.guide.json");
+    const content = await invoke("download_json", {
+      url: "https://codeberg.org/nullclyze/salarixi/raw/branch/main/salarixi.guide.json"
+    }) as any;
 
     if (!content) return;
 
@@ -134,7 +135,10 @@ async function initUserGuide(): Promise<void> {
 /** Функция получения количества скачиваний программы */
 async function initDownloadCount(): Promise<void> {
   try {
-    const content = await download("https://api.github.com/repos/nullclyze/salarixi/releases");
+    const content = await invoke("download_json", {
+      url: "https://codeberg.org/api/v1/repos/nullclyze/salarixi/releases"
+    }) as any;
+
     if (!content) return;
 
     let globalDownloadCount = 0;
@@ -1068,7 +1072,9 @@ async function loadSocialLinks(): Promise<void> {
   // если он будет перенесён - загрузить актуальную ссылку не получится
   addOpeningUrlTo("codeberg", "click", "https://codeberg.org/nullclyze/salarixi");
 
-  let content = await download("https://codeberg.org/nullclyze/salarixi/raw/branch/main/salarixi.social.json");
+  let content = await invoke("download_json", {
+    url: "https://codeberg.org/nullclyze/salarixi/raw/branch/main/salarixi.social.json"
+  }) as any;
   
   if (!content) {
     [

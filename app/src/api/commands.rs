@@ -176,6 +176,24 @@ pub async fn open_url(url: String) {
   let _ = open::that(url);
 }
 
+/// Функция скачивания JSON-контента
+#[tauri::command]
+pub async fn download_json(url: String) -> Option<serde_json::Value> {
+  let client = reqwest::Client::new();
+
+  let resp = client
+    .get(url)
+    .send()
+    .await
+    .ok()?;
+
+  if resp.status() != reqwest::StatusCode::OK {
+    return None;
+  }
+
+  resp.json().await.ok()
+}
+
 /// Функция остановки главного процесса
 #[tauri::command]
 pub fn exit() {
