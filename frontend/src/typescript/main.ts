@@ -66,7 +66,7 @@ export function setQuickTasksAllowed(value: boolean): void {
 /** Функция инициализации руководства по использованию */
 async function initUserGuide(): Promise<void> {
   try {
-    const content = await download("https://raw.githubusercontent.com/nullclyze/salarixi/refs/heads/main/salarixi.guide.json");
+    const content = await download("https://codeberg.org/nullclyze/salarixi/raw/branch/main/salarixi.guide.json");
 
     if (!content) return;
 
@@ -1012,7 +1012,7 @@ async function checkUpdate(ignore?: boolean): Promise<void> {
 
     document.getElementById("close-notice-btn")?.addEventListener("click", () => notice.style.display = "none");
 
-    const response = await fetch("https://raw.githubusercontent.com/nullclyze/salarixi/refs/heads/main/salarixi.version.json", { method: "GET" });
+    const response = await fetch("https://codeberg.org/nullclyze/salarixi/raw/branch/main/salarixi.version.json", { method: "GET" });
 
     if (!response.ok) return;
 
@@ -1025,7 +1025,7 @@ async function checkUpdate(ignore?: boolean): Promise<void> {
       newTag.innerText = tag;
       newReleaseDate.innerText = data.releaseDate;
       
-      addOpeningUrlTo("open-client-release", "click", `https://github.com/nullclyze/salarixi/releases/tag/${tag}`); 
+      addOpeningUrlTo("open-client-release", "click", `https://codeberg.org/nullclyze/salarixi/releases/tag/${tag}`); 
       
       setTimeout(() => notice.style.display = "flex", 4000);
     }
@@ -1066,9 +1066,9 @@ async function listenEvents(): Promise<void> {
 async function loadSocialLinks(): Promise<void> {
   // Думаю нету смысла хранить актуальную ссылку на репозиторий, так как 
   // если он будет перенесён - загрузить актуальную ссылку не получится
-  addOpeningUrlTo("github", "click", "https://github.com/nullclyze/salarixi");
+  addOpeningUrlTo("codeberg", "click", "https://codeberg.org/nullclyze/salarixi");
 
-  let content = await download("https://raw.githubusercontent.com/nullclyze/salarixi/refs/heads/main/salarixi.social.json");
+  let content = await download("https://codeberg.org/nullclyze/salarixi/raw/branch/main/salarixi.social.json");
   
   if (!content) {
     [
