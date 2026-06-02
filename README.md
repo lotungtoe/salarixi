@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="/app/icons/icon.png" width="200px;">
+  <img src="./app/icons/icon.png" width="200px;">
 
   <b></b>
   
