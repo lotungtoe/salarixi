@@ -1,17 +1,17 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css?family=Verdana');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css?family=Verdana");
 
 :root {
   /* ---------- Основные статичные значения ---------- */
-  --d-font-family: 'Inter', sans-serif;
-  --h-font-family: 'Segoe UI', sans-serif;
-  --s-font-family: 'JetBrains Mono', 'Fira Code', monospace;
-  --o-font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  --d-font-family: "Inter", sans-serif;
+  --h-font-family: "Segoe UI", sans-serif;
+  --s-font-family: "JetBrains Mono", "Fira Code", monospace;
+  --o-font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   
   --global-bg: rgb(12, 12, 12);
   --global-border: rgb(56, 56, 56);
-  --global-font-family: 'Inter', sans-serif;
+  --global-font-family: "Inter", sans-serif;
   /* ------------------------------------------------- */
 
   /* ---------- Динамичные значения ---------- */
@@ -22,7 +22,7 @@
   --chbx-dull-spec-color: #5426be;
   --selected-color: #7946f018;
 
-  --panel-font-family: 'Inter', sans-serif;
+  --panel-font-family: "Inter", sans-serif;
   --panel-text-margin-top: 1px;
   --panel-font-size: 15px;
   --panel-btn-gap: 6px;
@@ -39,7 +39,7 @@
   --secondary-bg: rgb(14, 14, 14);
   --secondary-border: rgb(37, 37, 37);
 
-  --input-bg: rgb(14, 14, 14);
+  --input-bg: rgb(17, 17, 17);
   --input-border: rgb(37, 37, 37);
   --text-secondary: rgb(160, 160, 160);
   /* ----------------------------------------------------------------- */
@@ -88,7 +88,7 @@ body {
   text-align: center;
   font-size: 16px;
   font-weight: 600;
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   background: linear-gradient(to right, rgb(185, 184, 184) 7%, var(--title-color), var(--spec-color), var(--title-color));
   -webkit-text-fill-color: transparent;
   -webkit-background-clip: text;
@@ -248,7 +248,7 @@ body {
 }
 
 .dashboard .pretty-btn::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 3px;
   bottom: 3px;
@@ -909,7 +909,7 @@ p {
 }
 
 .control-btn::before {
-  content: '';
+  content: "";
   position: absolute;
   left: 0;
   top: 3px;
@@ -1179,7 +1179,7 @@ p {
 }
 
 .editor-title::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 3px;
   bottom: 3px;
@@ -1481,7 +1481,7 @@ p {
 }
 
 .about-panel .download-count::before {
-  content: '•';
+  content: "•";
   margin-right: 10px;
   color: var(--spec-color);
 }
@@ -1549,6 +1549,7 @@ p {
 .feature-card svg {
   width: 60px;
   height: 60px;
+  transition: color 0.2s ease;
 }
 
 .feature-card .text {
@@ -1579,7 +1580,7 @@ p {
   transition: color 0.15s ease;
 }
 
-.checkbox-container input[type='checkbox'] {
+.checkbox-container input[type="checkbox"] {
   position: absolute;
   opacity: 0;
   cursor: pointer;
@@ -1600,12 +1601,13 @@ p {
 }
 
 .checkbox-container:hover .checkmark {
-  background-color: rgb(29, 29, 29);
+  background-color: rgb(32, 32, 32);
+  border-color: rgb(54, 54, 54);
 }
 
-.checkbox-container input[type='checkbox']:checked ~ .checkmark:after {
+.checkbox-container input[type="checkbox"]:checked ~ .checkmark:after {
   display: flex;
-  content: '';
+  content: "";
   width: 4px;
   height: 8px;
   border: 1px solid rgb(141, 141, 141);
@@ -1614,14 +1616,14 @@ p {
   margin-top: -4px;
 }
 
-.checkbox-container input[type='checkbox']:disabled ~ .checkmark {
+.checkbox-container input[type="checkbox"]:disabled ~ .checkmark {
   background-color: #222;
   border-color: #3d3d3d;
   cursor: default;
   opacity: 0.5;
 }
 
-.checkbox-container input[type='checkbox']:disabled ~ span {
+.checkbox-container input[type="checkbox"]:disabled ~ span {
   opacity: 0.5;
   cursor: default;
   text-decoration: line-through;
@@ -1673,6 +1675,10 @@ p {
 	outline: none;
 }
 
+.custom-select select:hover {
+  border-color: #353536;
+}
+
 .custom-select select:disabled {
   opacity: 1;
 	color: var(--text-secondary);
@@ -1687,7 +1693,7 @@ p {
 }
 
 .custom-select::after {
-	content: '';
+	content: "";
 	position: absolute;
 	pointer-events: none;
 	top: 50%;
@@ -1807,7 +1813,7 @@ p {
 }
 
 .monitoring-wrapper .bot-card .head .top .text .status::before {
-  content: '•';
+  content: "•";
   margin-right: 4px;
 }
 
@@ -2850,7 +2856,7 @@ p {
 }
 
 .guide-wrapper .section .header::before {
-  content: '#';
+  content: "#";
   margin-right: 6px;
 }
 
@@ -2897,7 +2903,7 @@ p {
 }
 
 .guide-wrapper .section .subsection p .code {
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
   font-size: 14px;
   background-color: #1a1a1f;
   border-radius: 4px;
