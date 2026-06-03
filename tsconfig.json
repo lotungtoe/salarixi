@@ -17,5 +17,5 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["frontend"]
+  "include": ["src/typescript"],
 }

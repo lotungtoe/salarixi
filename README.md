@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="./app/icons/icon.png" width="200px;">
+  <img src="./src-tauri/icons/icon.png" width="200px;">
 
   <b></b>
   
@@ -163,7 +163,7 @@ In the root directory of the project, write in the terminal (installing NodeJS m
 npm i
 ```
 
-Then create binary files (will create files along the path `./app/target/release/bundle`):
+Then create binary files (will create files along the path `./src-tauri/target/release/bundle`):
 
 ```bash
 npm run tauri build
