@@ -1,10 +1,11 @@
-import { invoke } from '@tauri-apps/api/core';
-import { Chart } from 'chart.js';
+import { invoke } from "@tauri-apps/api/core";
+import { Chart } from "chart.js";
 
-import { logger } from '../utils/logger';
-import { date } from '../utils/date';
+import { logger } from "../utils/logger";
+import { date } from "../utils/date";
 
-class Graphic {
+/** Модуль управления графиком */
+class GraphicModule {
   private active: boolean = false;
 
   private statusText: HTMLElement | null = null;
@@ -14,14 +15,14 @@ class Graphic {
   private graphicActiveBots: HTMLElement | null = null;
   private graphicMemoryUsage: HTMLElement | null = null;
 
-  /** Метод ининициализации функций, связанных с графиком. */
+  /** Метод ининициализации функций, связанных с графиком */
   public init(): void {
     try {
-      this.graphicActiveBots = document.getElementById('graphic-active-bots-container');
-      this.graphicMemoryUsage = document.getElementById('graphic-memory-usage-container');
-      this.statusText = document.getElementById('graphic-status-text');
+      this.graphicActiveBots = document.getElementById("graphic-active-bots-container");
+      this.graphicMemoryUsage = document.getElementById("graphic-memory-usage-container");
+      this.statusText = document.getElementById("graphic-status-text");
     } catch (error) {
-      logger.log(`Ошибка инициализации графиков: ${error}`, 'error');
+      logger.log(`Ошибка инициализации графиков: ${error}`, "error");
     }
   }
 
@@ -30,14 +31,14 @@ class Graphic {
     try {
       this.active = true;
 
-      this.statusText!.style.display = 'none';
+      this.statusText!.style.display = "none";
       
       this.createChartActiveBots();
       this.createChartMemoryUsage();
       
-      this.setDisplay('flex');
+      this.setDisplay("flex");
     } catch (error) {
-      logger.log(`Ошибка графика: ${error}`, 'error');
+      logger.log(`Ошибка графика: ${error}`, "error");
     }
   }
 
@@ -45,13 +46,13 @@ class Graphic {
   public disable(): void {
     this.active = false;
 
-    this.destroyChart('active-bots');
-    this.destroyChart('memory-usage');
+    this.destroyChart("active-bots");
+    this.destroyChart("memory-usage");
 
-    this.setDisplay('none');
+    this.setDisplay("none");
 
-    this.statusText!.innerText = 'Данные отсутствуют';
-    this.statusText!.style.display = 'flex';
+    this.statusText!.innerText = "Данные отсутствуют";
+    this.statusText!.style.display = "flex";
   }
 
   /** Метод установки отображения графиков. */
@@ -84,7 +85,7 @@ class Graphic {
     }
 
     const chart = new Chart(context, {
-      type: 'line',
+      type: "line",
       data: {
         labels: initialLabels,
         datasets: [
@@ -93,12 +94,12 @@ class Graphic {
             data: initialData,
             fill: true,
             borderWidth: 1,
-            borderColor: 'rgb(65, 226, 25)',
-            backgroundColor: 'rgba(131, 255, 59, 0.05)',
+            borderColor: "rgb(65, 226, 25)",
+            backgroundColor: "rgba(131, 255, 59, 0.05)",
             tension: 0,
-            pointStyle: 'circle',
+            pointStyle: "circle",
             pointRadius: 2,
-            pointBackgroundColor: 'rgb(65, 226, 25)'
+            pointBackgroundColor: "rgb(65, 226, 25)"
           }
         ]
       },
@@ -107,36 +108,36 @@ class Graphic {
         animation: { duration: 400 },
         scales: {
           x: {
-            ticks: { color: '#858585ff' },
-            border: { color: '#383838ab' },
-            grid: { color: '#383838ab' }
+            ticks: { color: "#858585ff" },
+            border: { color: "#383838ab" },
+            grid: { color: "#383838ab" }
           },
           y: {
             min: 0,
             max: maxY, 
             ticks: { 
               callback: (value) => value + ` ${ps}`,
-              color: '#a3a3a3ff' 
+              color: "#a3a3a3ff" 
             },
-            border: { color: '#383838ab' },
-            grid: { color: '#383838ab' }
+            border: { color: "#383838ab" },
+            grid: { color: "#383838ab" }
           }
         },
         plugins: {
           title: {
             text: title,
             display: true,
-            color: '#a2a2a2ff'
+            color: "#a2a2a2ff"
           },
           legend: {
             display: false,
           },
           tooltip: {
-            mode: 'index',
+            mode: "index",
             intersect: false,
-            backgroundColor: 'rgba(10, 10, 10, 0.8)',
-            titleColor: '#ffffff',
-            bodyColor: '#ffffff'
+            backgroundColor: "rgba(10, 10, 10, 0.8)",
+            titleColor: "#ffffff",
+            bodyColor: "#ffffff"
           }
         }
       }
@@ -147,8 +148,8 @@ class Graphic {
   
   /** Метод создания графика активных ботов. */
   private createChartActiveBots(): void {
-    const name = 'active-bots';
-    const context = (document.getElementById('graphic-active-bots') as HTMLCanvasElement).getContext('2d');
+    const name = "active-bots";
+    const context = (document.getElementById("graphic-active-bots") as HTMLCanvasElement).getContext("2d");
 
     if (!context) return;
 
@@ -159,23 +160,23 @@ class Graphic {
       }
 
       try {
-        const data = await invoke('get_active_bots_count') as number;
+        const data = await invoke("get_active_bots_count") as number;
         this.updateChart(name, data || 0);
       } catch (error) {
-        logger.log(`Ошибка графика (${name}-graphic): ${error}`, 'error');
+        logger.log(`Ошибка графика (${name}-graphic): ${error}`, "error");
       }
     }, 2000);
 
     this.objects[name] = {
-      chart: this.createChart(context, 'Активные боты', 'График активных ботов', 500, 'шт'),
+      chart: this.createChart(context, "Активные боты", "График активных ботов", 500, "шт"),
       interval: interval
     };
   }
 
   /** Метод создания графика используемой памяти. */
   private createChartMemoryUsage(): void {
-    const name = 'memory-usage';
-    const context = (document.getElementById('graphic-memory-usage') as HTMLCanvasElement).getContext('2d');
+    const name = "memory-usage";
+    const context = (document.getElementById("graphic-memory-usage") as HTMLCanvasElement).getContext("2d");
 
     if (!context) return;
 
@@ -186,15 +187,15 @@ class Graphic {
       }
 
       try {
-        const data = await invoke('get_memory_usage') as number;
+        const data = await invoke("get_memory_usage") as number;
         this.updateChart(name, parseFloat(data.toFixed(3)) || 0);
       } catch (error) {
-        logger.log(`Ошибка графика (${name}-graphic): ${error}`, 'error');
+        logger.log(`Ошибка графика (${name}-graphic): ${error}`, "error");
       }
     }, 2000);
 
     this.objects[name] = {
-      chart: this.createChart(context, 'Используется', 'График используемой памяти', 1024, 'MB'),
+      chart: this.createChart(context, "Используется", "График используемой памяти", 1024, "MB"),
       interval: interval
     };
   }
@@ -217,6 +218,6 @@ class Graphic {
   }
 }
 
-const graphic = new Graphic();
+const graphicModule = new GraphicModule();
 
-export { graphic }
+export { graphicModule }

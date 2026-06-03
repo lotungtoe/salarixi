@@ -1,10 +1,11 @@
-import { invoke } from '@tauri-apps/api/core';
-import { isAbsolute } from '@tauri-apps/api/path';
-import { Chart } from 'chart.js';
+import { invoke } from "@tauri-apps/api/core";
+import { isAbsolute } from "@tauri-apps/api/path";
+import { Chart } from "chart.js";
 
-import { logger } from '../utils/logger';
-import { messages } from '../utils/message';
+import { logger } from "../utils/logger";
+import { messages } from "../utils/message";
 
+/** Структура информации о цели радара */
 interface RadarInfo {
   status: string;
   uuid: string;
@@ -17,7 +18,8 @@ interface RadarInfo {
   };
 }
 
-class Radar {
+/** Менеджер обнаружения игроков */
+class RadarManager {
   private active: boolean = false;
 
   private targetCardsContainer: HTMLElement | null = null;
@@ -26,31 +28,31 @@ class Radar {
   private updateFrequency: number = 1500;
   private targets: Map<string, { data: any, interval: any, chart: any }> = new Map();
 
-  /** Метод инициализации функций, связанных с радаром. */
+  /** Метод инициализации функций, связанных с радаром */
   public init(): void {
-    this.targetCardsContainer = document.getElementById('radar-target-cards-container') as HTMLElement;
-    this.targetWrappersContainer = document.getElementById('radar-target-wrappers-container') as HTMLElement;
+    this.targetCardsContainer = document.getElementById("radar-target-cards-container") as HTMLElement;
+    this.targetWrappersContainer = document.getElementById("radar-target-wrappers-container") as HTMLElement;
 
-    const addTargetBtn = document.getElementById('radar-add-target') as HTMLButtonElement;
-    const openSettingsBtn = document.getElementById('radar-open-settings') as HTMLButtonElement;
-    const closeSettingsBtn = document.getElementById('radar-close-settings') as HTMLButtonElement;
-    const removeAllTargetsBtn = document.getElementById('radar-remove-all-targets') as HTMLElement;
-    const updateFrequency = document.getElementById('radar_select_update-frequency') as HTMLSelectElement;
+    const addTargetBtn = document.getElementById("radar-add-target") as HTMLButtonElement;
+    const openSettingsBtn = document.getElementById("radar-open-settings") as HTMLButtonElement;
+    const closeSettingsBtn = document.getElementById("radar-close-settings") as HTMLButtonElement;
+    const removeAllTargetsBtn = document.getElementById("radar-remove-all-targets") as HTMLElement;
+    const updateFrequency = document.getElementById("radar_select_update-frequency") as HTMLSelectElement;
 
-    addTargetBtn.addEventListener('click', () => {
+    addTargetBtn.addEventListener("click", () => {
       if (!this.active) return;
 
-      const usernameInput = document.getElementById('radar-target-username') as HTMLInputElement;
+      const usernameInput = document.getElementById("radar-target-username") as HTMLInputElement;
       const username = usernameInput.value;
 
       if (this.targets.has(username)) return;
 
-      usernameInput.value = '';
+      usernameInput.value = "";
 
       this.targets.set(username, { data: null, interval: null, chart: null });
 
-      const card = document.createElement('div');
-      card.className = 'radar-target';
+      const card = document.createElement("div");
+      card.className = "radar-target";
       card.id = `radar-target-${username}`;
 
       card.innerHTML = `
@@ -61,7 +63,7 @@ class Radar {
         <div class="sep"></div>
 
         <div class="info" style="min-width: 220px; max-width: 220px;">
-          <p>Никнейм: <span>${username.length <= 16 ? username : username.substring(0, 16) + '...'}</span></p>
+          <p>Никнейм: <span>${username.length <= 16 ? username : username.substring(0, 16) + "..."}</span></p>
           <p>Статус: <span id="radar-target-status-${username}">Не найден</span></p>
           <p>UUID: <span id="radar-target-uuid-${username}">?</span></p>
         </div>
@@ -107,8 +109,8 @@ class Radar {
         </div>
       `;
 
-      const routeWrapper = document.createElement('div');
-      routeWrapper.className = 'cover';
+      const routeWrapper = document.createElement("div");
+      routeWrapper.className = "cover";
       routeWrapper.id = `radar-route-${username}`;
 
       routeWrapper.innerHTML = `
@@ -133,10 +135,10 @@ class Radar {
       this.initializeTargetCard(username);
     });
 
-    openSettingsBtn.addEventListener('click', () => (document.getElementById('radar-settings') as HTMLElement).style.display = 'flex'); 
-    closeSettingsBtn.addEventListener('click', () => (document.getElementById('radar-settings') as HTMLElement).style.display = 'none'); 
+    openSettingsBtn.addEventListener("click", () => (document.getElementById("radar-settings") as HTMLElement).style.display = "flex"); 
+    closeSettingsBtn.addEventListener("click", () => (document.getElementById("radar-settings") as HTMLElement).style.display = "none"); 
 
-    removeAllTargetsBtn.addEventListener('click', () => {
+    removeAllTargetsBtn.addEventListener("click", () => {
       this.targets.forEach((v, n) => {
         const card = document.getElementById(`radar-target-${n}`) as HTMLElement;
         v.chart.destroy();
@@ -147,7 +149,7 @@ class Radar {
       this.targets.clear();
     });
 
-    updateFrequency.addEventListener('change', () => {
+    updateFrequency.addEventListener("change", () => {
       this.updateFrequency = updateFrequency.value ? parseInt(updateFrequency.value) : 1500;
 
       this.targets.forEach((i, n) => {
@@ -157,17 +159,17 @@ class Radar {
     });
   }
 
-  /** Метод активации радара. */
+  /** Метод активации радара */
   public enable(): void {
     this.active = true;
   }
 
-  /** Метод выключения радара. */
+  /** Метод выключения радара */
   public disable(): void {
     this.active = false;
   }
 
-  /** Метод инициализации карточки цели. */
+  /** Метод инициализации карточки цели */
   private initializeTargetCard(username: string): void {
     try {
       const openRouteBtn = document.getElementById(`radar-open-route-${username}`) as HTMLButtonElement;
@@ -176,10 +178,10 @@ class Radar {
       const copyTargetInfoBtn = document.getElementById(`radar-copy-target-info-${username}`) as HTMLButtonElement;
       const followTargetBtn = document.getElementById(`radar-follow-target-${username}`) as HTMLButtonElement;
 
-      openRouteBtn.addEventListener('click', () => (document.getElementById(`radar-route-${username}`) as HTMLElement).style.display = 'flex');
-      closeRouteBtn.addEventListener('click', () => (document.getElementById(`radar-route-${username}`) as HTMLElement).style.display = 'none');
+      openRouteBtn.addEventListener("click", () => (document.getElementById(`radar-route-${username}`) as HTMLElement).style.display = "flex");
+      closeRouteBtn.addEventListener("click", () => (document.getElementById(`radar-route-${username}`) as HTMLElement).style.display = "none");
 
-      removeTargetBtn.addEventListener('click', () => {
+      removeTargetBtn.addEventListener("click", () => {
         const card = document.getElementById(`radar-target-${username}`) as HTMLElement;
         this.targets.get(username)?.chart.destroy();
         card.remove();
@@ -187,10 +189,10 @@ class Radar {
         this.targets.delete(username);
       });
 
-      copyTargetInfoBtn.addEventListener('click', async () => {
+      copyTargetInfoBtn.addEventListener("click", async () => {
         try {
           const status = (document.getElementById(`radar-target-status-${username}`) as HTMLElement).textContent;
-          const uuid = this.targets.get(username)?.data?.fullUUID ? this.targets.get(username)?.data.fullUUID : '?';
+          const uuid = this.targets.get(username)?.data?.fullUUID ? this.targets.get(username)?.data.fullUUID : "?";
           const x = (document.getElementById(`radar-target-x-${username}`) as HTMLElement).textContent;
           const y = (document.getElementById(`radar-target-y-${username}`) as HTMLElement).textContent;
           const z = (document.getElementById(`radar-target-z-${username}`) as HTMLElement).textContent;
@@ -206,13 +208,13 @@ UUID: ${uuid}
 
           await navigator.clipboard.writeText(text);
 
-          messages.message('Радар', `Данные игрока ${username} успешно скопированы в буфер обмена`);
+          messages.message("Радар", `Данные игрока ${username} успешно скопированы в буфер обмена`);
         } catch (error) {
-          logger.log(`Ошибка копирования данных радара: ${error}`, 'error');
+          logger.log(`Ошибка копирования данных радара: ${error}`, "error");
         }
       });
 
-      followTargetBtn.addEventListener('click', async () => {
+      followTargetBtn.addEventListener("click", async () => {
         try {
           const xText = document.getElementById(`radar-target-x-${username}`)?.textContent;
           const zText = document.getElementById(`radar-target-z-${username}`)?.textContent;
@@ -222,14 +224,14 @@ UUID: ${uuid}
           const x = parseInt(xText);
           const z = parseInt(zText);
 
-          await invoke('follow_radar_target', {
+          await invoke("follow_radar_target", {
             x: x,
             z: z
           });
 
-          messages.message('Радар', `Боты начали преследовать игрока ${username} (X: ${x}, Z: ${z})`);
+          messages.message("Радар", `Боты начали преследовать игрока ${username} (X: ${x}, Z: ${z})`);
         } catch (error) {
-          logger.log(`Ошибка преследования цели радара: ${error}`, 'error');
+          logger.log(`Ошибка преследования цели радара: ${error}`, "error");
         }
       });
 
@@ -238,15 +240,15 @@ UUID: ${uuid}
       this.createTargetChart(username);
       this.setTargetUpdateInterval(username, this.updateFrequency);
     } catch (error) {
-      logger.log(`Ошибка инициализации цели радара: ${error}`, 'error');
+      logger.log(`Ошибка инициализации цели радара: ${error}`, "error");
     }
   }
 
-  /** Метод установки частоты обновления. */
+  /** Метод установки частоты обновления */
   private setTargetUpdateInterval(username: string, frequency: number) {
-    let lx = '';
-    let ly = '';
-    let lz = '';
+    let lx = "";
+    let ly = "";
+    let lz = "";
 
     const target = this.targets.get(username);
 
@@ -258,7 +260,7 @@ UUID: ${uuid}
         }
 
         try {
-          const data = await invoke('get_radar_data', { target: username }) as RadarInfo;
+          const data = await invoke("get_radar_data", { target: username }) as RadarInfo;
 
           if (!data) return;
 
@@ -267,7 +269,7 @@ UUID: ${uuid}
           const z = data.z.toFixed(3);
 
           (document.getElementById(`radar-target-status-${username}`) as HTMLElement).innerText = data.status;
-          (document.getElementById(`radar-target-uuid-${username}`) as HTMLElement).innerText = data.uuid.substring(0, 12) + '...';
+          (document.getElementById(`radar-target-uuid-${username}`) as HTMLElement).innerText = data.uuid.substring(0, 12) + "...";
           (document.getElementById(`radar-target-x-${username}`) as HTMLElement).innerText = x;
           (document.getElementById(`radar-target-y-${username}`) as HTMLElement).innerText = y;
           (document.getElementById(`radar-target-z-${username}`) as HTMLElement).innerText = z;
@@ -280,8 +282,8 @@ UUID: ${uuid}
 
           if (lx !== x || ly !== y || lz !== z) {
             const card = document.getElementById(`radar-target-${username}`) as HTMLElement;
-            card.classList.add('glow');
-            setTimeout(() => card.classList.remove('glow'), 300);
+            card.classList.add("glow");
+            setTimeout(() => card.classList.remove("glow"), 300);
           }
 
           lx = data.x.toFixed(3);
@@ -290,15 +292,15 @@ UUID: ${uuid}
 
           this.addRoutePointToChart(username, parseFloat(x), parseFloat(z), data.observer);
 
-          if ((document.getElementById('radar_chbx_auto-save') as HTMLInputElement).checked) {
-            const path = (document.getElementById('radar_option_path') as HTMLInputElement).value;
-            const filename = (document.getElementById('radar_option_filename') as HTMLInputElement).value;
+          if ((document.getElementById("radar_chbx_auto-save") as HTMLInputElement).checked) {
+            const path = (document.getElementById("radar_option_path") as HTMLInputElement).value;
+            const filename = (document.getElementById("radar_option_filename") as HTMLInputElement).value;
 
             if (await isAbsolute(path)) {
-              await invoke('save_radar_data', {
+              await invoke("save_radar_data", {
                 target: username,
                 path: path,
-                filename: filename || 'radar_#t',
+                filename: filename || "radar_#t",
                 x: parseFloat(x),
                 y: parseFloat(y),
                 z: parseFloat(z)
@@ -306,25 +308,25 @@ UUID: ${uuid}
             }
           }
         } catch (error) {
-          logger.log(`Ошибка обновления цели радара ${username}: ${error}`, 'error');
+          logger.log(`Ошибка обновления цели радара ${username}: ${error}`, "error");
         }
       }, frequency);
     }
   }
 
-  /** Метод создания обёртки маршрута цели. */
+  /** Метод создания обёртки маршрута цели */
   private createTargetChart(username: string) {
     const ctx = document.getElementById(`radar-chart-${username}`) as HTMLCanvasElement;
 
     const chart = new Chart(ctx, {
-      type: 'scatter', 
+      type: "scatter", 
       data: {
         datasets: [
           {
             label: ` Маршрут ${username}`,
             data: [], 
-            backgroundColor: '#39a10fff',
-            borderColor: '#0f8f0bff', 
+            backgroundColor: "#39a10fff",
+            borderColor: "#0f8f0bff", 
             showLine: true, 
             fill: false,
             pointRadius: 2,
@@ -334,8 +336,8 @@ UUID: ${uuid}
           {
             label: ` Метка наблюдателя`,
             data: [], 
-            backgroundColor: '#d31212ff',
-            borderColor: '#800c0cff', 
+            backgroundColor: "#d31212ff",
+            borderColor: "#800c0cff", 
             showLine: false, 
             fill: false,
             pointRadius: 3,
@@ -351,32 +353,32 @@ UUID: ${uuid}
         },
         scales: {
           x: {
-            type: 'linear',
-            position: 'bottom',
+            type: "linear",
+            position: "bottom",
             title: {
               display: true,
-              text: 'X'
+              text: "X"
             },
             min: -200,
             max: 200, 
             grid: { 
-              color: '#30303086'
+              color: "#30303086"
             },
             ticks: {
               stepSize: 50
             }
           },
           y: {
-            type: 'linear',
-            position: 'left',
+            type: "linear",
+            position: "left",
             title: {
               display: true,
-              text: 'Z'
+              text: "Z"
             },
             min: -200,
             max: 200, 
             grid: { 
-              color: '#30303086' 
+              color: "#30303086" 
             },
             ticks: {
               stepSize: 50
@@ -402,7 +404,7 @@ UUID: ${uuid}
     if (target) target.chart = chart;
   }
 
-  /** Метод добавления поинта цели (её текущей позиции) на чарт маршрута. */
+  /** Метод добавления поинта цели (её текущей позиции) на чарт маршрута */
   private addRoutePointToChart(username: string, x: number, z: number, observer: { x: number, z: number }) {
     const target = this.targets.get(username);
 
@@ -428,6 +430,6 @@ UUID: ${uuid}
   }
 }
 
-const radar = new Radar();
+const radarManager = new RadarManager();
 
-export { radar }
+export { radarManager }

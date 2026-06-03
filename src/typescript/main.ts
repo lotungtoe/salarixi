@@ -5,22 +5,22 @@ import { Chart, registerables } from "chart.js";
 
 import { plugins } from "./common/structs";
 import { logger } from "./utils/logger";
-import { configurator } from "./modules/configurator";
-import { accountManager } from "./modules/account_manager";
-import { proxyCollector } from "./modules/proxy_collector";
-import { graphic } from "./modules/graphic";
-import { scriptExecutor } from "./modules/script_executor";
-import { monitoring } from "./modules/monitoring";
-import { captchaBypass } from "./modules/captcha_bypass";
-import { radar } from "./modules/radar";
-import { pinger } from "./modules/pinger";
-import { translator } from "./modules/translator";
+import { triggerRegistry } from "./trigger/registry";
 import { messages } from "./utils/message";
 import { disableParticles, enableParticles } from "./effects/particles";
 import { switchControlWrapper, switchGlobalWrapper } from "./utils/switchers";
-import { triggerRegistry } from "./modules/trigger_registry";
-import { pluginManager } from "./modules/plugin_manager";
 
+import { configModule } from "./modules/config";
+import { accountModule } from "./modules/account";
+import { proxyModule } from "./modules/proxy";
+import { graphicModule } from "./modules/graphic";
+import { scriptModule } from "./modules/script";
+import { monitoringModule } from "./modules/monitoring";
+import { captchaManager } from "./modules/captcha";
+import { radarManager } from "./modules/radar";
+import { pingModule } from "./modules/ping";
+import { translatorModule } from "./modules/translator";
+import { pluginManager } from "./modules/plugin";
 
 Chart.register(...registerables);
 
@@ -160,7 +160,7 @@ async function initDownloadCount(): Promise<void> {
   }
 }
 
-/** Функция запуска ботов (передача информации в поток Rust) */
+/** Функция запуска ботов */
 async function startBots(): Promise<void> {
   try {
     const options: {
@@ -208,7 +208,7 @@ async function startBots(): Promise<void> {
 
     options.basic["script"] = options.basic.use_auto_script ? (document.getElementById("user-script") as HTMLTextAreaElement).value : null;
 
-    options.accounts = accountManager.getAccounts();
+    options.accounts = accountModule.getAccounts();
 
     for (const name in plugins) options.plugins[name.replaceAll("-", "_")] = plugins[name].enable;
 
@@ -223,22 +223,22 @@ async function startBots(): Promise<void> {
 
     process = "active";
 
-    graphic.enable();
+    graphicModule.enable();
 
-    monitoring.maxChatHistoryLength = parseInt((document.getElementById("monitoring_option_chat-history-length") as HTMLInputElement).value || "50");
+    monitoringModule.maxChatHistoryLength = parseInt((document.getElementById("monitoring_option_chat-history-length") as HTMLInputElement).value || "50");
 
-    monitoring.enable(parseInt((document.getElementById("monitoring_option_update-frequency") as HTMLInputElement).value || "1800"));
-    monitoring.wait();
+    monitoringModule.enable(parseInt((document.getElementById("monitoring_option_update-frequency") as HTMLInputElement).value || "1800"));
+    monitoringModule.wait();
 
-    if (options.basic.use_anti_captcha) captchaBypass.enable(options.captcha_bypass.solve_mode);
+    if (options.basic.use_anti_captcha) captchaManager.enable(options.captcha_bypass.solve_mode);
 
-    radar.enable();
+    radarManager.enable();
   } catch (error) {
     logger.log(`Ошибка (start-bots-process): ${error}`, "error");
   }
 }
 
-/** Функция остановки ботов (передача информации в поток Rust) */
+/** Функция остановки ботов */
 async function stopBots(): Promise<void> {
   logger.log("Остановка ботов...", "info");
 
@@ -251,10 +251,10 @@ async function stopBots(): Promise<void> {
 
     logger.log("Выключение мониторинга...", "system");
 
-    graphic.disable();
-    monitoring.disable();
-    captchaBypass.disable();
-    radar.disable();
+    graphicModule.disable();
+    monitoringModule.disable();
+    captchaManager.disable();
+    radarManager.disable();
 
     logger.log("Мониторинг выключен", "system");
   } catch (error) {
@@ -1091,9 +1091,9 @@ async function loadSocialLinks(): Promise<void> {
   }
 }
 
-// Слушатель события DOMContent у document (#1, синхронный).
+// Слушатель события DOMContent у document (#1, синхронный)
 document.addEventListener("DOMContentLoaded", () => {
-  // Инициализируем логгер и сообщения.
+  // Инициализируем логгер и сообщения
   logger.init();
   messages.init();
 
@@ -1102,7 +1102,7 @@ document.addEventListener("DOMContentLoaded", () => {
   try {
     logger.log("Инициализация, пожайлуста, подождите...", "extended");
 
-    // Изначально инициализируем глобальные элементы, пополняем реестр триггер-функций.
+    // Изначально инициализируем глобальные элементы, пополняем реестр триггер-функций
     initTitleBar();
     initGlobalElements();
     replenishTriggerRegistry();
@@ -1110,19 +1110,19 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll('[global="true"]').forEach(c => globalWrappers.push({ id: c.id, el: c as HTMLDivElement }));
     document.querySelectorAll('[sector="true"]').forEach(c => controlWrappers.push({ id: c.id, el: c as HTMLDivElement }));
 
-    // Перед инициализацией конфигуратора включаем фоновые партиклы, чтобы он мог применить к ним состояние (включены / выключены).
+    // Перед инициализацией конфигуратора включаем фоновые партиклы, чтобы он мог применить к ним состояние (включены / выключены)
     enableParticles();
 
-    // Инициализируем конфигуратор.
-    configurator.init();
+    // Инициализация конфигуратора
+    configModule.init();
 
-    // Инициализируем различные менеджеры.
-    accountManager.init();
-    proxyCollector.init();
-    graphic.init();
-    radar.init();
-    scriptExecutor.init();
-    pinger.init();
+    // Инициализация модулей
+    accountModule.init();
+    proxyModule.init();
+    graphicModule.init();
+    radarManager.init();
+    scriptModule.init();
+    pingModule.init();
 
     logger.log("Инициализация прошла успешно", "extended");
   } catch (error) {
@@ -1130,32 +1130,32 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-// Слушатель события DOMContent у document (#2, асинхронный).
+// Слушатель события DOMContent у document (#2, асинхронный)
 document.addEventListener("DOMContentLoaded", async () => {
   try {
-    // Изначально инициализируем основные части.
+    // Изначально инициализируем основные части
     await listenEvents();
 
     await pluginManager.init(); 
-    await monitoring.init();
-    await captchaBypass.init();
+    await monitoringModule.init();
+    await captchaManager.init();
 
-    // Инициализируем Discord RPC.
+    // Инициализируем Discord RPC
     const selectDiscordRpcMode = document.getElementById("interface_select_discord-rpc") as HTMLSelectElement;
 
     selectDiscordRpcMode.addEventListener("change", async () => await invoke("set_discord_rpc", { version: client.version, state: selectDiscordRpcMode.value === "enable" }));
     await invoke("set_discord_rpc", { version: client.version, state: selectDiscordRpcMode.value === "enable" });
 
-    // Контент с web-ресурсов загружаем после основной инициализации, чтобы в случае долгой загрузки не блокировать важные функции.
+    // Контент с web-ресурсов загружаем после основной инициализации, чтобы в случае долгой загрузки не блокировать важные функции
     await initUserGuide();
     await initDownloadCount();
     
-    await translator.init();
+    await translatorModule.init();
     await pluginManager.loadDescriptions();
 
     await loadSocialLinks();
 
-    // Проверка обновлений в последнюю очередь.
+    // Проверка обновлений в последнюю очередь
     await checkUpdate(true); // true - игнорирование проверки обновлений
   } catch (error) {
     logger.log(`Ошибка инициализации (async): ${error}`, "error");

@@ -1,4 +1,4 @@
-import { date } from './date';
+import { date } from "./date";
 
 interface LoggerStatistics {
   index: number;
@@ -23,10 +23,10 @@ class Logger {
     };
   }
 
-  /** Метод инициализации логгера и связанных с ним функций. */
+  /** Метод инициализации логгера и связанных с ним функций */
   public init(): void {
-    this.journal = document.getElementById('log-content') as HTMLDivElement;
-    document.getElementById('clear-journal')?.addEventListener('click', () => this.clear());
+    this.journal = document.getElementById("log-content") as HTMLDivElement;
+    document.getElementById("clear-journal")?.addEventListener("click", () => this.clear());
   }
 
   /** 
@@ -49,36 +49,36 @@ class Logger {
 
     this.statistics.index++;
 
-    const line = document.createElement('div');
-    line.className = 'log-line';
-    if (type === 'system' || type === 'extended') line.setAttribute('log-type', type);
+    const line = document.createElement("div");
+    line.className = "log-line";
+    if (type === "system" || type === "extended") line.setAttribute("log-type", type);
 
     line.innerHTML = `
       <div class="log-line-date">${date()}</div>
     `;
 
-    const content = document.createElement('div');
+    const content = document.createElement("div");
     content.className = `log-line-content ${type}`;
     content.innerText = text;
     
-    if (type === 'extended') content.style.fontStyle = 'italic';
-    if ((line.getAttribute('log-type') === 'system' && !this.statistics.visible.system) || (line.getAttribute('log-type') === 'extended' && !this.statistics.visible.extended)) line.style.display = 'none';
+    if (type === "extended") content.style.fontStyle = "italic";
+    if ((line.getAttribute("log-type") === "system" && !this.statistics.visible.system) || (line.getAttribute("log-type") === "extended" && !this.statistics.visible.extended)) line.style.display = "none";
 
     line.appendChild(content);
     this.journal.appendChild(line);
 
-    if ((document.getElementById('journal_chbx_auto-scroll') as HTMLInputElement).checked) this.journal.scrollTo({ top: this.journal.scrollHeight, behavior: 'smooth' });
+    if ((document.getElementById("journal_chbx_auto-scroll") as HTMLInputElement).checked) this.journal.scrollTo({ top: this.journal.scrollHeight, behavior: "smooth" });
   }
 
-  /** Метод смены видимости определённых типов сообщений в журнале. */
-  public setVisibility(type: 'system' | 'extended', state: boolean): void {
+  /** Метод смены видимости определённых типов сообщений в журнале */
+  public setVisibility(type: "system" | "extended", state: boolean): void {
     this.statistics.visible[type] = state;
-    document.querySelectorAll<HTMLElement>(`[log-type="${type}"]`).forEach(e => e.style.display = state ? 'flex' : 'none');
+    document.querySelectorAll<HTMLElement>(`[log-type="${type}"]`).forEach(e => e.style.display = state ? "flex" : "none");
   }
 
-  /** Метод полной очистки журнала. */
+  /** Метод полной очистки журнала */
   private clear(): void {
-    document.querySelectorAll('.log-line').forEach(e => e.remove());
+    document.querySelectorAll(".log-line").forEach(e => e.remove());
     this.statistics.index = 0;
   }
 }

@@ -1,10 +1,11 @@
-import { invoke } from '@tauri-apps/api/core';
-import { listen } from '@tauri-apps/api/event';
+import { invoke } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
 
-import { logger } from '../utils/logger';
-import { date } from '../utils/date';
-import { process } from '../main';
+import { logger } from "../utils/logger";
+import { date } from "../utils/date";
+import { process } from "../main";
 
+/** Структура информации о боте */
 interface BotProfile {
   status: any;
   username: string;
@@ -23,7 +24,8 @@ interface BotProfile {
   group: string;
 }
 
-class Monitoring {
+/** Модуль управления мониторингом */
+class MonitoringModule {
   private usernameList: string[] = [];
 
   private statusText: HTMLElement | null = null;
@@ -37,31 +39,31 @@ class Monitoring {
 
   public maxChatHistoryLength: number = 0;
 
-  /** Метод инициализации функций, связанных с мониторингом. */
+  /** Метод инициализации функций, связанных с мониторингом */
   public async init(): Promise<void> {
-    this.statusText = document.getElementById('monitoring-status-text');
-    this.cards = document.getElementById('bot-cards-container');
-    this.wrappers = document.getElementById('bot-wrappers-container');
+    this.statusText = document.getElementById("monitoring-status-text");
+    this.cards = document.getElementById("bot-cards-container");
+    this.wrappers = document.getElementById("bot-wrappers-container");
 
-    this.statusText!.innerText = 'Объекты ботов отсутствуют';
-    this.statusText!.style.color = '#646464f7';
-    this.statusText!.style.display = 'flex';
+    this.statusText!.innerText = "Объекты ботов отсутствуют";
+    this.statusText!.style.color = "#646464f7";
+    this.statusText!.style.display = "flex";
 
-    await listen('chat-message', (event) => {
+    await listen("chat-message", (event) => {
       try {
         const payload = event.payload as { receiver: string; message: string; };
         const receiver = payload.receiver;
         const message = payload.message;
 
-        if (!this.chatHistoryFilters[receiver]) this.chatHistoryFilters[receiver] = 'all';
+        if (!this.chatHistoryFilters[receiver]) this.chatHistoryFilters[receiver] = "all";
         if (!this.filterMessage(this.chatHistoryFilters[receiver], message)) return;
 
         const chat = document.getElementById(`monitoring-chat-content-${receiver}`);
         if (!chat) return;
 
-        const line = document.createElement('div');
-        line.className = 'line';
-        line.setAttribute('monitoring-message', receiver);
+        const line = document.createElement("div");
+        line.className = "line";
+        line.setAttribute("monitoring-message", receiver);
 
         line.innerHTML = `
           <div class="time">${date()}</div>
@@ -72,7 +74,7 @@ class Monitoring {
 
         chat.scrollTo({
           top: chat.scrollHeight,
-          behavior: 'smooth'
+          behavior: "smooth"
         });
 
         if (!this.chatMessageCounter[receiver]) {
@@ -85,36 +87,36 @@ class Monitoring {
           }
         }
       } catch (error) {
-        logger.log(`Ошибка мониторинга (receive-payload): ${error}`, 'error');
+        logger.log(`Ошибка мониторинга (receive-payload): ${error}`, "error");
       }
     });
   }
 
-  /** Метод переключения состояния мониторинга на ожидание. */
+  /** Метод переключения состояния мониторинга на ожидание */
   public wait(): void {
-    this.statusText!.innerText = 'Ожидание активных ботов...';
-    this.statusText!.style.color = '#646464f7';
-    this.cards!.innerHTML = '';
-    this.cards!.style.display = 'flex';
+    this.statusText!.innerText = "Ожидание активных ботов...";
+    this.statusText!.style.color = "#646464f7";
+    this.cards!.innerHTML = "";
+    this.cards!.style.display = "flex";
   }
 
-  /** Метод активации мониторинга. */
+  /** Метод активации мониторинга */
   public enable(delay: number): void {
     try {
       let isFirst = true;
 
       const interval = setInterval(async () => {
-        if (process === 'sleep') {
+        if (process === "sleep") {
           clearInterval(interval);
           return;
         }
 
         try {
-          const profiles = await invoke('get_bot_profiles') as Record<string, BotProfile>;
+          const profiles = await invoke("get_bot_profiles") as Record<string, BotProfile>;
 
           for (const username in profiles) {
             if (isFirst) {
-              this.statusText!.style.display = 'none';
+              this.statusText!.style.display = "none";
               isFirst = false;
             }
 
@@ -123,15 +125,15 @@ class Monitoring {
             this.usernameList.includes(username) ? this.updateBotCard(username, profile) : this.createBotCard(username, profile);
           }
         } catch (error) {
-          logger.log(`Ошибка мониторинга профилей: ${error}`, 'error');
+          logger.log(`Ошибка мониторинга профилей: ${error}`, "error");
         }
       }, delay);
     } catch (error) {
-      logger.log(`Ошибка инициализации мониторинга: ${error}`, 'error');
+      logger.log(`Ошибка инициализации мониторинга: ${error}`, "error");
     }
   }
 
-  /** Метод очистки и выключения мониторинга. */
+  /** Метод очистки и выключения мониторинга */
   public disable(): void {
     for (const [id, data] of this.listeners) document.getElementById(id)?.removeEventListener(data.event, data.listener);
 
@@ -140,45 +142,45 @@ class Monitoring {
     document.querySelectorAll('[wrapper="bot-chat"]').forEach(w => w.remove());
     document.querySelectorAll('[wrapper="bot-card"]').forEach(w => w.remove());
 
-    this.cards!.innerHTML = '';
-    this.wrappers!.innerHTML = '';
+    this.cards!.innerHTML = "";
+    this.wrappers!.innerHTML = "";
 
     this.chatMessageCounter = {};
     this.chatHistoryFilters = {};
     this.usernameList = [];
 
-    this.statusText!.innerText = 'Объекты ботов отсутствуют';
-    this.statusText!.style.color = '#646464f7';
-    this.statusText!.style.display = 'flex';
+    this.statusText!.innerText = "Объекты ботов отсутствуют";
+    this.statusText!.style.color = "#646464f7";
+    this.statusText!.style.display = "flex";
 
-    this.cards!.style.display = 'none';
+    this.cards!.style.display = "none";
   }
 
-  /** Метод добавления временного слушателя событий. */
+  /** Метод добавления временного слушателя событий */
   private addTempListener(id: string, event: string, listener: EventListener): void {
     document.getElementById(id)?.addEventListener(event, listener);
     this.listeners.set(id, { event: event, listener: listener });
   }
 
-  /** Метод создания карточки бота. */
+  /** Метод создания карточки бота */
   private createBotCard(username: string, profile: BotProfile): void {
-    const steveIconPath = document.getElementById('steve-img') as HTMLImageElement;
+    const steveIconPath = document.getElementById("steve-img") as HTMLImageElement;
 
     const groupNameExamples = [
-      'killaura', 'bow_aim', 'AutoFarm', 
-      'AFK', 'Travelers', 'miner', 
-      'Stealer', 'Farmer', 'Spamming', 
-      'PvE', 'PvP', 'afk_group',
-      'MyGroup', 'Group', 'group1',
-      'GroupOne', 'Stalkers', 'my_group'
+      "killaura", "bow_aim", "AutoFarm", 
+      "AFK", "Travelers", "miner", 
+      "Stealer", "Farmer", "Spamming", 
+      "PvE", "PvP", "afk_group",
+      "MyGroup", "Group", "group1",
+      "GroupOne", "Stalkers", "my_group"
     ];
     
     const groupNameExample = groupNameExamples[Math.floor(Math.random() * groupNameExamples.length)];
 
-    const card = document.createElement('div');
-    card.className = 'bot-card';
+    const card = document.createElement("div");
+    card.className = "bot-card";
     card.id = `bot-card-${username}`;
-    card.setAttribute('wrapper', 'bot-card');
+    card.setAttribute("wrapper", "bot-card");
     
     card.innerHTML = `
       <div class="head">
@@ -199,7 +201,7 @@ class Monitoring {
         <p class="line">Пинг: <span id="monitoring-ping-${username}">${profile.ping}</span>ms</p>
         <p class="line">Здоровье: <span id="monitoring-health-${username}">${profile.health}</span> / 20</p>
         <p class="line">Прокси: <span id="monitoring-proxy-${username}">${profile.proxy.ip_address}</span></p>
-        <p class="line">Пароль: <span>${profile.password ?? 'No password'}</span></p>
+        <p class="line">Пароль: <span>${profile.password ?? "No password"}</span></p>
       </div>
 
       <div class="buttons">
@@ -213,12 +215,12 @@ class Monitoring {
     this.initializeBotCard(username);
   }
 
-  /** Метод создания обёркти чата у бота. */
+  /** Метод создания обёркти чата у бота */
   private createChatWrapper(username: string): HTMLDivElement {
-    const wrapper = document.createElement('div');
-    wrapper.className = 'cover';
+    const wrapper = document.createElement("div");
+    wrapper.className = "cover";
     wrapper.id = `chat-${username}`;
-    wrapper.setAttribute('wrapper', 'bot-chat');
+    wrapper.setAttribute("wrapper", "bot-chat");
 
     wrapper.innerHTML = `
       <div class="panel">
@@ -266,135 +268,135 @@ class Monitoring {
     return wrapper;
   }
 
-  /** Метод обновления карточки бота. */
+  /** Метод обновления карточки бота */
   private updateBotCard(username: string, profile: BotProfile): void {
     const status = document.getElementById(`monitoring-status-${username}`) as HTMLElement;
     const proxy = document.getElementById(`monitoring-proxy-${username}`) as HTMLElement;
     const ping = document.getElementById(`monitoring-ping-${username}`) as HTMLElement;
     const health = document.getElementById(`monitoring-health-${username}`) as HTMLElement;
 
-    if (health.innerText.split('/')[0].replace(' ', '') != profile.health.toString()) {
+    if (health.innerText.split("/")[0].replace(" ", "") != profile.health.toString()) {
       const card = document.getElementById(`bot-card-${username}`);
-      card?.classList.add('glow');
-      setTimeout(() => card?.classList.remove('glow'), 300);
+      card?.classList.add("glow");
+      setTimeout(() => card?.classList.remove("glow"), 300);
     }
 
-    let statusColor = '';
+    let statusColor = "";
 
     switch (profile.status) {
-      case 'Online':
-        statusColor = 'rgb(34, 237, 23)';
+      case "Online":
+        statusColor = "rgb(34, 237, 23)";
         break;
-      case 'Offline':
-        statusColor = 'rgb(237, 23, 23)'; 
+      case "Offline":
+        statusColor = "rgb(237, 23, 23)"; 
         break;
       default:
-        statusColor = 'rgb(143, 143, 143)'; 
+        statusColor = "rgb(143, 143, 143)"; 
         break;
     }
 
     status.innerText = profile.status;
     status.style.color = statusColor;
-    proxy.innerText = profile.proxy.ip_address ? profile.proxy.ip_address : 'No proxy';
+    proxy.innerText = profile.proxy.ip_address ? profile.proxy.ip_address : "No proxy";
     ping.innerText = profile.ping.toString();
     health.innerText = profile.health.toString();
   }
 
-  /** Метод инициализации карточки бота. */
+  /** Метод инициализации карточки бота */
   private initializeBotCard(username: string): void {
-    this.chatHistoryFilters[username] = 'all';
+    this.chatHistoryFilters[username] = "all";
     this.usernameList.push(username);
 
     const chatWrapper = this.createChatWrapper(username);
 
-    this.addTempListener(`bot-group-${username}`, 'input', async () => {
+    this.addTempListener(`bot-group-${username}`, "input", async () => {
       try {
-        const group = (document.getElementById(`bot-group-${username}`) as HTMLInputElement).value.replace(' ', '');
+        const group = (document.getElementById(`bot-group-${username}`) as HTMLInputElement).value.replace(" ", "");
 
-        await invoke('set_group', {
+        await invoke("set_group", {
           nickname: username,
-          group: group !== '' ? group : 'global'
+          group: group !== "" ? group : "global"
         });
       } catch (error) {
-        logger.log(`Ошибка изменения группы ${username}: ${error}`, 'error');
+        logger.log(`Ошибка изменения группы ${username}: ${error}`, "error");
       }
     });
 
-    this.addTempListener(`open-chat-${username}`, 'click', () => chatWrapper.style.display = 'flex');
-    this.addTempListener(`close-chat-${username}`, 'click', () => chatWrapper.style.display = 'none');
+    this.addTempListener(`open-chat-${username}`, "click", () => chatWrapper.style.display = "flex");
+    this.addTempListener(`close-chat-${username}`, "click", () => chatWrapper.style.display = "none");
 
-    this.addTempListener(`disconnect-${username}`, 'click', async () => {
+    this.addTempListener(`disconnect-${username}`, "click", async () => {
       try {
-        await invoke('send_command', {
-          command: 'disconnect_bot',
+        await invoke("send_command", {
+          command: "disconnect_bot",
           options: {
             username: username
           }
         });
       } catch (error) {
-        logger.log(`Ошибка отключения бота ${username}: ${error}`, 'error');
+        logger.log(`Ошибка отключения бота ${username}: ${error}`, "error");
       }
     });
 
-    this.addTempListener(`reset-${username}`, 'click', async () => {
+    this.addTempListener(`reset-${username}`, "click", async () => {
       try {
-        await invoke('send_command', {
-          command: 'reset_bot',
+        await invoke("send_command", {
+          command: "reset_bot",
           options: {
             username: username
           }
         });
       } catch (error) {
-        logger.log(`Ошибка сбрасывания задач и состояний бота ${username}: ${error}`, 'error');
+        logger.log(`Ошибка сбрасывания задач и состояний бота ${username}: ${error}`, "error");
       }
     });
 
-    this.addTempListener(`filter-chat-${username}`, 'click', () => {
+    this.addTempListener(`filter-chat-${username}`, "click", () => {
       try {
         const content = document.getElementById(`monitoring-chat-content-${username}`);
         const type = document.getElementById(`select-chat-filter-${username}`) as HTMLSelectElement;
         const history = [...document.querySelectorAll(`[monitoring-message="${username}"]`).values()];
         
-        content!.innerHTML = '';
+        content!.innerHTML = "";
         this.chatHistoryFilters[username] = type.value;
 
-        history.forEach(m => this.filterMessage(type.value, m.textContent || '') ? content?.appendChild(m) : null);
+        history.forEach(m => this.filterMessage(type.value, m.textContent || "") ? content?.appendChild(m) : null);
       } catch (error) {
-        logger.log(`Ошибка фильтровки чата: ${error}`, 'error');
+        logger.log(`Ошибка фильтровки чата: ${error}`, "error");
       }
     });
 
-    this.addTempListener(`clear-chat-${username}`, 'click', () => {
+    this.addTempListener(`clear-chat-${username}`, "click", () => {
       const messages = document.querySelectorAll(`[monitoring-message="${username}"]`);
       messages.forEach(msg => msg.remove());
       this.chatMessageCounter[username] = 0;
     });
 
-    this.addTempListener(`chat-${username}`, 'keydown', async (e) => {
-      if ((e as KeyboardEvent).key === 'Enter') {
+    this.addTempListener(`chat-${username}`, "keydown", async (e) => {
+      if ((e as KeyboardEvent).key === "Enter") {
         const input = document.getElementById(`chat-message-${username}`) as HTMLInputElement;
 
-        await invoke('send_command', { 
-          command: 'send_message',
+        await invoke("send_command", { 
+          command: "send_message",
           options: {
             username: username,
             message: input.value
           }
         });
 
-        input.value = '';
+        input.value = "";
       }
     });
   }
 
-  /** Метод создания триграмм из слова. */
+  /** Метод создания триграмм из слова */
   private createTrigrams(word: string): string[] {
     const trigrams = [];
     for (let i = 0; i <= word.length - 3; i++) trigrams.push(word.substring(i, 3));
     return trigrams;
   }
 
-  /** Метод проверки слова на наличие определённых паттернов. */
+  /** Метод проверки слова на наличие определённых паттернов */
   private checkPatterns(word: string, patterns: string[]): boolean {
     if (word.length < 3) return false;
 
@@ -411,17 +413,17 @@ class Monitoring {
     return false;
   }
 
-  /** Метод фильтровки сообщения. */
+  /** Метод фильтровки сообщения */
   private filterMessage(type: string, message: string): boolean {
-    if (type === 'all') {
+    if (type === "all") {
       return true;
-    } else if (type === 'links') {
+    } else if (type === "links") {
       const patterns = [
-        'http://', 'https://', 'socks5://', 'socks4://', 
-        '.dev', '.com', '.org', '.io', '.ai', '.net',
-        '.pro', '.gov', '.lv', '.ru', '.onion', '.ie',
-        '.co', '.fun', '.gg', '.xyz', '.club', '.eu',
-        '.me', '.us', '.online', '.br', '.cc', '.no'
+        "http://", "https://", "socks5://", "socks4://", 
+        ".dev", ".com", ".org", ".io", ".ai", ".net",
+        ".pro", ".gov", ".lv", ".ru", ".onion", ".ie",
+        ".co", ".fun", ".gg", ".xyz", ".club", ".eu",
+        ".me", ".us", ".online", ".br", ".cc", ".no"
       ];
 
       let result = false;
@@ -430,26 +432,26 @@ class Monitoring {
     } else {
       const patterns: Record<string, string[]> = {
         bans: [
-          'banned', 'ban', 'kicked',
-          'kick', 'кикнут', 'заблокированный',
-          'заблокирован', 'блокировка',
-          'заблокировали', 'забанен', 
-          'забанили', 'бан', 'blocked'
+          "banned", "ban", "kicked",
+          "kick", "кикнут", "заблокированный",
+          "заблокирован", "блокировка",
+          "заблокировали", "забанен", 
+          "забанили", "бан", "blocked"
         ],
         warnings: [
-          'предупреждение', 'warn', 'warning', 
-          'важно', 'important', 'предупреждает', 
-          'важная', 'уведомление', 'осведомление',
-          'notice', 'уведомлять', 'замечание'
+          "предупреждение", "warn", "warning", 
+          "важно", "important", "предупреждает", 
+          "важная", "уведомление", "осведомление",
+          "notice", "уведомлять", "замечание"
         ],
         mentions: [
-          'упомянут', 'mention', 'reference', 
-          'упоминает', 'упоминание', 'ссылаться'
+          "упомянут", "mention", "reference", 
+          "упоминает", "упоминание", "ссылаться"
         ]
       };
 
       let results: boolean[] = [];
-      for (const word of message.split(' ')) results.push(this.checkPatterns(word, patterns[type]));
+      for (const word of message.split(" ")) results.push(this.checkPatterns(word, patterns[type]));
       if (results.includes(true)) return true;
     }
       
@@ -457,6 +459,6 @@ class Monitoring {
   }
 }   
 
-const monitoring = new Monitoring();
+const monitoringModule = new MonitoringModule();
 
-export { monitoring }
+export { monitoringModule }

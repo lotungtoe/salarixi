@@ -1,28 +1,30 @@
 import { invoke } from "@tauri-apps/api/core";
 import { logger } from "../utils/logger";
 
+/** Код языка */
 export type Language = "ru" | "en" | "tr";
 
-class Translator {
+/** Модуль переподчика */
+class TranslatorModule {
   private cache: any;
 
   constructor() {
     this.cache = null;
   }
 
-  /** Метод инициализации функций, связанных с переводчиком. */
+  /** Метод инициализации функций, связанных с переводчиком */
   public async init(): Promise<void> {
     let langSelect = document.getElementById("interface_select_client-language") as HTMLSelectElement;
     langSelect.addEventListener("change", async () => await this.translate(langSelect.value as Language));
     if (langSelect.value !== "ru") await this.translate(langSelect.value as Language);
   }
 
-  /** Метод получения кэша. */
+  /** Метод получения кэша */
   public getCache(): any {
     return this.cache;
   }
 
-  /** Метод получения и установки актуального перевода. */
+  /** Метод получения и установки актуального перевода */
   private async translate(lang: Language): Promise<void> {
     try {
       if (!this.cache) {
@@ -49,6 +51,6 @@ class Translator {
   }
 }
 
-const translator = new Translator();
+const translatorModule = new TranslatorModule();
 
-export { translator }
+export { translatorModule }

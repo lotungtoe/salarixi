@@ -1,77 +1,79 @@
-import { invoke } from '@tauri-apps/api/core';
-import { listen } from '@tauri-apps/api/event';
+import { invoke } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
 
-import { logger } from '../utils/logger';
+import { logger } from "../utils/logger";
 
+/** Структура данных капчи */
 interface Captcha {
-  type: 'web' | 'map';
+  type: "web" | "map";
   data: {
     url: string | null;
     base64: string | null;
   }
 }
 
-class CaptchaBypass {
+/** Менеджер обхода капч */
+class CaptchaManager {
   private settings: HTMLElement | null = null;
   private cards: HTMLElement | null = null;
   private wrappers: HTMLElement | null = null;
 
   private listeners: Map<string, any> = new Map();
 
-  /** Метод инициализации функций, связанных с обходом капчи. */
+  /** Метод инициализации функций, связанных с обходом капчи */
   public async init(): Promise<void> {
-    this.settings = document.getElementById('anti-captcha-settings');
-    this.cards = document.getElementById('anti-captcha-cards');
-    this.wrappers = document.getElementById('anti-captcha-wrappers');
+    this.settings = document.getElementById("anti-captcha-settings");
+    this.cards = document.getElementById("anti-captcha-cards");
+    this.wrappers = document.getElementById("anti-captcha-wrappers");
 
-    await listen('anti-web-captcha', (event) => {
+    await listen("anti-web-captcha", (event) => {
       try {
         const payload = event.payload as { captcha_url: string; username: string; };
         const captcha_url = payload.captcha_url;
         const username = payload.username;
 
         this.createCaptchaCard(username, {
-          type: 'web',
+          type: "web",
           data: {
             url: captcha_url,
             base64: null
           }
         });
       } catch (error) {
-        logger.log(`Ошибка обработки события (anti-web-captcha): ${error}`, 'error');
+        logger.log(`Ошибка обработки события (anti-web-captcha): ${error}`, "error");
       }
     });
 
-    await listen('anti-map-captcha', (event) => {
+    await listen("anti-map-captcha", (event) => {
       try {
         const payload = event.payload as { base64_code: string; username: string; };
         const base64 = payload.base64_code;
         const username = payload.username;
 
         this.createCaptchaCard(username, {
-          type: 'map',
+          type: "map",
           data: {
             url: null,
             base64: base64
           }
         });
       } catch (error) {
-        logger.log(`Ошибка обработки события (anti-map-captcha): ${error}`, 'error');
+        logger.log(`Ошибка обработки события (anti-map-captcha): ${error}`, "error");
       }
     });
   }
 
-  /** Метод активации обхода капчи. */
+  /** Метод активации обхода капчи */
   public enable(mode: string): void {
-    if (mode === 'manual') {
-      this.settings!.style.display = 'none';
+    if (mode === "manual") {
+      this.settings!.style.display = "none";
 
-      this.cards!.innerHTML = '';
-      this.cards!.style.display = 'flex';
+      this.cards!.innerHTML = "";
+      this.cards!.style.display = "flex";
     }
   }
 
-  /** Метод очистки и выключения обхода капчи. */
+  /** Метод очистки и выключения обхода капчи */
   public disable(): void {
     for (const [id, data] of this.listeners) document.getElementById(id)?.removeEventListener(data.event, data.listener);
 
@@ -80,21 +82,21 @@ class CaptchaBypass {
     document.querySelectorAll('[wrapper="captcha-card"]').forEach(w => w.remove());
     document.querySelectorAll('[wrapper="captcha-img"]').forEach(w => w.remove());
 
-    this.cards!.innerHTML = '';
-    this.cards!.style.display = 'none';
+    this.cards!.innerHTML = "";
+    this.cards!.style.display = "none";
 
-    this.wrappers!.innerHTML = '';
+    this.wrappers!.innerHTML = "";
 
-    this.settings!.style.display = 'flex';
+    this.settings!.style.display = "flex";
   }
 
-  /** Метод добавления временного слушателя событий. */
+  /** Метод добавления временного слушателя событий */
   private addTempListener(id: string, event: string, listener: EventListener): void {
     document.getElementById(id)?.addEventListener(event, listener);
     this.listeners.set(id, { event: event, listener: listener });
   }
 
-  /** Метод создания карточки капчи. */
+  /** Метод создания карточки капчи */
   private createCaptchaCard(username: string, captcha: Captcha): void {
     const oldCard = document.getElementById(`bot-captcha-${username}`);
 
@@ -103,10 +105,10 @@ class CaptchaBypass {
       document.getElementById(`captcha-wrapper-${username}`)?.remove();
     }
 
-    const card = document.createElement('div');
-    card.className = 'bot-captcha';
+    const card = document.createElement("div");
+    card.className = "bot-captcha";
     card.id = `bot-captcha-${username}`;
-    card.setAttribute('wrapper', 'captcha-card');
+    card.setAttribute("wrapper", "captcha-card");
     
     card.innerHTML = `
       <div class="head">
@@ -124,18 +126,18 @@ class CaptchaBypass {
     this.initializeCaptchaCard(username, captcha);
   }
 
-  /** Метод инициализации карточки капчи. */
+  /** Метод инициализации карточки капчи */
   private initializeCaptchaCard(username: string, captcha: Captcha): void {
-    if (captcha.type === 'web') {
-      this.addTempListener(`solve-captcha-${username}`, 'click', async () => {
+    if (captcha.type === "web") {
+      this.addTempListener(`solve-captcha-${username}`, "click", async () => {
         const url = captcha.data.url;
-        if (url && url !== '') await invoke('open_url', { url: url });
+        if (url && url !== "") await invoke("open_url", { url: url });
       });
     } else {
-      const wrapper = document.createElement('div');
-      wrapper.className = 'cover';
+      const wrapper = document.createElement("div");
+      wrapper.className = "cover";
       wrapper.id = `captcha-wrapper-${username}`;
-      wrapper.setAttribute('wrapper', 'captcha-img');
+      wrapper.setAttribute("wrapper", "captcha-img");
       
       wrapper.innerHTML = `
         <div class="panel with-header" style="margin-bottom: 20px;">
@@ -165,37 +167,37 @@ class CaptchaBypass {
       const img = document.getElementById(`captcha-img-${username}`) as HTMLImageElement;
       img.onload = () => {
         const scale = Math.min(2, 800 / img.naturalWidth);
-        img.style.width = (img.naturalWidth * scale) + 'px';
-        img.style.height = (img.naturalHeight * scale) + 'px';
+        img.style.width = (img.naturalWidth * scale) + "px";
+        img.style.height = (img.naturalHeight * scale) + "px";
       };
 
-      this.addTempListener(`solve-captcha-${username}`, 'click', () => wrapper.style.display = 'flex');
-      this.addTempListener(`close-captcha-wrapper-${username}`, 'click', () => wrapper.style.display = 'none');
+      this.addTempListener(`solve-captcha-${username}`, "click", () => wrapper.style.display = "flex");
+      this.addTempListener(`close-captcha-wrapper-${username}`, "click", () => wrapper.style.display = "none");
 
-      this.addTempListener(`captcha-wrapper-${username}`, 'keydown', async (e: Event) => {
-        if ((e as KeyboardEvent).key === 'Enter') {
+      this.addTempListener(`captcha-wrapper-${username}`, "keydown", async (e: Event) => {
+        if ((e as KeyboardEvent).key === "Enter") {
           const input = document.getElementById(`captcha-code-${username}`) as HTMLInputElement;
 
-          await invoke('send_command', { 
-            command: 'send_message',
+          await invoke("send_command", { 
+            command: "send_message",
             options: {
               username: username,
               message: input.value
             }
           });
 
-          input.value = '';
+          input.value = "";
         }
       });
     }
 
-    this.addTempListener(`remove-captcha-${username}`, 'click', async () => {
+    this.addTempListener(`remove-captcha-${username}`, "click", async () => {
       document.getElementById(`bot-captcha-${username}`)?.remove();
       document.getElementById(`captcha-wrapper-${username}`)?.remove();
     });
   }
 }   
 
-const captchaBypass = new CaptchaBypass();
+const captchaManager = new CaptchaManager();
 
-export { captchaBypass }
+export { captchaManager }

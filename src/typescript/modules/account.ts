@@ -1,12 +1,13 @@
-import { open } from '@tauri-apps/plugin-dialog';
+import { open } from "@tauri-apps/plugin-dialog";
 
-import { date } from '../utils/date';
-import { logger } from '../utils/logger';
-import { readFile, writeFile } from '@tauri-apps/plugin-fs';
-import { join } from '@tauri-apps/api/path';
-import { messages } from '../utils/message';
+import { date } from "../utils/date";
+import { logger } from "../utils/logger";
+import { readFile, writeFile } from "@tauri-apps/plugin-fs";
+import { join } from "@tauri-apps/api/path";
+import { messages } from "../utils/message";
 
-type AccountFields = {
+/** Структура данных аккаунта */
+interface AccountFields {
   creation_date: string;
   password: string | null;
   email: string | null;
@@ -15,36 +16,37 @@ type AccountFields = {
   proxy_password: string | null;
 }
 
-class AccountManager {
+/** Модуль управления аккаунтами */
+class AccountModule {
   private accountList: HTMLDivElement | null = null;
   private accountCounter: HTMLSpanElement | null = null;
   private wrappers: HTMLDivElement | null = null;
 
   private accounts: Record<string, AccountFields | null> = {};
 
-  /** Метод инициализации функций, связанных с аккаунтами. */
+  /** Метод инициализации функций, связанных с аккаунтами */
   public init(): void {
-    this.accountList = document.getElementById('account-list') as HTMLDivElement;
-    this.accountCounter = document.getElementById('account-counter') as HTMLSpanElement;
-    this.wrappers = document.getElementById('account-wrappers') as HTMLDivElement;
+    this.accountList = document.getElementById("account-list") as HTMLDivElement;
+    this.accountCounter = document.getElementById("account-counter") as HTMLSpanElement;
+    this.wrappers = document.getElementById("account-wrappers") as HTMLDivElement;
 
     this.loadSavedAccounts();
 
-    const addAccountBtn = document.getElementById('add-account') as HTMLButtonElement;
-    const removeAllAccountsBtn = document.getElementById('remove-all-accounts') as HTMLButtonElement;
-    const importAccounts = document.getElementById('import-accounts') as HTMLButtonElement;
-    const exportAccounts = document.getElementById('export-accounts') as HTMLButtonElement;
+    const addAccountBtn = document.getElementById("add-account") as HTMLButtonElement;
+    const removeAllAccountsBtn = document.getElementById("remove-all-accounts") as HTMLButtonElement;
+    const importAccounts = document.getElementById("import-accounts") as HTMLButtonElement;
+    const exportAccounts = document.getElementById("export-accounts") as HTMLButtonElement;
 
-    addAccountBtn.addEventListener('click', () => {
-      const usernameInput = document.getElementById('account-username') as HTMLInputElement;
+    addAccountBtn.addEventListener("click", () => {
+      const usernameInput = document.getElementById("account-username") as HTMLInputElement;
       const username = usernameInput.value;
 
-      if (this.accounts[username] || username === '') return;
+      if (this.accounts[username] || username === "") return;
 
-      usernameInput.value = '';
+      usernameInput.value = "";
 
       this.createAccountCard(username, {
-        creation_date: date('exact'),
+        creation_date: date("exact"),
         password: null,
         email: null,
         proxy: null,
@@ -55,16 +57,16 @@ class AccountManager {
       this.updateAccountCounter();
     });
 
-    removeAllAccountsBtn.addEventListener('click', () => this.clearAccounts());
+    removeAllAccountsBtn.addEventListener("click", () => this.clearAccounts());
 
-    importAccounts.addEventListener('click', async () => {
+    importAccounts.addEventListener("click", async () => {
       try {
         const path = await open({
           directory: false,
           multiple: false,
           filters: [{
-            name: 'Accounts',
-            extensions: ['json']
+            name: "Accounts",
+            extensions: ["json"]
           }]
         });
 
@@ -81,7 +83,7 @@ class AccountManager {
           const data = accounts[username];
           if (!data) continue;
           this.createAccountCard(username, {
-            creation_date: date('exact'),
+            creation_date: date("exact"),
             password: data.password,
             email: data.email,
             proxy: data.proxy,
@@ -92,13 +94,13 @@ class AccountManager {
         
         this.updateAccountCounter();
 
-        messages.message('Импорт аккаунтов', `Аккаунты успешно импортированы`);
+        messages.message("Импорт аккаунтов", `Аккаунты успешно импортированы`);
       } catch (error) {
-        logger.log(`Ошибка импорта аккаунтов: ${error}`, 'error');
+        logger.log(`Ошибка импорта аккаунтов: ${error}`, "error");
       }
     });
 
-    exportAccounts.addEventListener('click', async () => {
+    exportAccounts.addEventListener("click", async () => {
       try {
         const directory = await open({
           directory: true,
@@ -120,52 +122,52 @@ class AccountManager {
           };
         }
 
-        const path = await join(directory, 'salarixi.accounts.json');
+        const path = await join(directory, "salarixi.accounts.json");
         let encoder = new TextEncoder();
         let buffer = encoder.encode(JSON.stringify(accounts, null, 2));
 
         await writeFile(path, buffer);
 
-        messages.message('Экспорт аккаунтов', `Аккаунты успешно экспортированы`);
+        messages.message("Экспорт аккаунтов", `Аккаунты успешно экспортированы`);
       } catch (error) {
-        logger.log(`Ошибка экспорта аккаунтов: ${error}`, 'error');
+        logger.log(`Ошибка экспорта аккаунтов: ${error}`, "error");
       }
     });
 
-    setInterval(() => localStorage.setItem('salarixi:storage:accounts', JSON.stringify(this.accounts)), 1000);
+    setInterval(() => localStorage.setItem("salarixi:storage:accounts", JSON.stringify(this.accounts)), 1000);
   }
 
-  /** Метод получения всех существующих аккаунтов и их опций. */
+  /** Метод получения всех существующих аккаунтов и их опций */
   public getAccounts(): Record<string, AccountFields | null> {
     return this.accounts;
   }
 
-  /** Метод обновления счётчика аккаунтов. */
+  /** Метод обновления счётчика аккаунтов */
   private updateAccountCounter(): void {
     let count = 0;
     for (const _ in this.accounts) count++;
     if (this.accountCounter) this.accountCounter.innerText = count.toString();
   }
 
-  /** Метод полной очистки всех аккаунтов. */
+  /** Метод полной очистки всех аккаунтов */
   private clearAccounts(): void {
     document.querySelectorAll('[wrapper="account-editor"]').forEach(w => w.remove());
     document.querySelectorAll('[wrapper="account-card"]').forEach(w => w.remove());
     for (const username in this.accounts) document.getElementById(`account-${username}`)?.remove();
     this.accounts = {};
-    localStorage.removeItem('salarixi:storage:accounts');
+    localStorage.removeItem("salarixi:storage:accounts");
     this.updateAccountCounter();
   }
 
-  /** Метод загрузки сохранённых аккаунтов из локального хранилища. */
+  /** Метод загрузки сохранённых аккаунтов из локального хранилища */
   private loadSavedAccounts(): void {
-    const accounts = localStorage.getItem('salarixi:storage:accounts');
+    const accounts = localStorage.getItem("salarixi:storage:accounts");
     if (!accounts) return;
     for (const [username, fields] of Object.entries<AccountFields | null>(JSON.parse(accounts))) fields ? this.createAccountCard(username, fields) : null;
     this.updateAccountCounter();
   }
 
-  /** Метод создания карточки аккаунта. */
+  /** Метод создания карточки аккаунта */
   private createAccountCard(username: string, fields: AccountFields): void {
     this.accounts[username] = {
       creation_date: fields.creation_date,
@@ -176,10 +178,10 @@ class AccountManager {
       proxy_password: fields.proxy_password
     };
 
-    const row = document.createElement('div');
-    row.className = 'account-row';
+    const row = document.createElement("div");
+    row.className = "account-row";
     row.id = `account-${username}`;
-    row.setAttribute('wrapper', 'account-card');
+    row.setAttribute("wrapper", "account-card");
 
     row.innerHTML = `
       <div class="account-cell username-cell">${username.substring(0, 16)}</div>
@@ -206,12 +208,12 @@ class AccountManager {
     this.initializeAccountCard(row, username, fields);
   }
 
-  /** Метод создания обёркти редактора настроек аккаунта. */
+  /** Метод создания обёркти редактора настроек аккаунта */
   private createEditWrapper(username: string): HTMLDivElement {
-    const wrapper = document.createElement('div');
-    wrapper.className = 'cover';
+    const wrapper = document.createElement("div");
+    wrapper.className = "cover";
     wrapper.id = `account-editor-${username}`;
-    wrapper.setAttribute('wrapper', 'account-editor');
+    wrapper.setAttribute("wrapper", "account-editor");
 
     wrapper.innerHTML = `
       <div class="panel with-header" style="margin-bottom: 20px;">
@@ -259,15 +261,15 @@ class AccountManager {
     return wrapper;
   }
 
-  /** Метод инициализации карточки аккаунта. */
+  /** Метод инициализации карточки аккаунта */
   private initializeAccountCard(row: HTMLDivElement, username: string, fields: AccountFields): void {
     try {
       const editorWrapper = this.createEditWrapper(username);
 
-      document.getElementById(`edit-account-${username}`)?.addEventListener('click', () => editorWrapper.style.display = 'flex');
-      document.getElementById(`close-account-editor-${username}`)?.addEventListener('click', () => editorWrapper.style.display = 'none');
+      document.getElementById(`edit-account-${username}`)?.addEventListener("click", () => editorWrapper.style.display = "flex");
+      document.getElementById(`close-account-editor-${username}`)?.addEventListener("click", () => editorWrapper.style.display = "none");
 
-      document.getElementById(`remove-account-${username}`)?.addEventListener('click', () => {
+      document.getElementById(`remove-account-${username}`)?.addEventListener("click", () => {
         row.remove();
         editorWrapper.remove();
         delete this.accounts[username];
@@ -291,17 +293,17 @@ class AccountManager {
       fields.proxy_username ? proxyUsernameInput.value = fields.proxy_username : null;
       fields.proxy_password ? proxyPasswordInput.value = fields.proxy_password : null;
 
-      passwordInput.addEventListener('input', () => account.password = passwordInput.value);
-      emailInput.addEventListener('input', () => account.email = emailInput.value);
-      proxyInput.addEventListener('input', () => account.proxy = proxyInput.value);
-      proxyUsernameInput.addEventListener('input', () => account.proxy_username = proxyUsernameInput.value);
-      proxyPasswordInput.addEventListener('input', () => account.proxy_password = proxyPasswordInput.value);
+      passwordInput.addEventListener("input", () => account.password = passwordInput.value);
+      emailInput.addEventListener("input", () => account.email = emailInput.value);
+      proxyInput.addEventListener("input", () => account.proxy = proxyInput.value);
+      proxyUsernameInput.addEventListener("input", () => account.proxy_username = proxyUsernameInput.value);
+      proxyPasswordInput.addEventListener("input", () => account.proxy_password = proxyPasswordInput.value);
     } catch (error) {
-      logger.log(`Ошибка инициализации аккаунта ${username}: ${error}`, 'error');
+      logger.log(`Ошибка инициализации аккаунта ${username}: ${error}`, "error");
     }
   }
 }
 
-const accountManager = new AccountManager();
+const accountModule = new AccountModule();
 
-export { accountManager }
+export { accountModule }

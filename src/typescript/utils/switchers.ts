@@ -12,7 +12,7 @@ const switchGlobalWrapper = (id: string): void => {
   id === "control-container" ? latestControlWrapper ? latestControlWrapper.style.display = "flex" : (document.getElementById("control-chat-container") as HTMLElement).style.display = "flex" : null;
 }
 
-/** Функция переключения видимости обёрток управления. */
+/** Функция переключения видимости обёрток управления */
 const switchControlWrapper = (id: string): void => controlWrappers.forEach(c => c && c.id === id ? c.el.style.display = "flex" : c.el.style.display = "none");
 
 export {

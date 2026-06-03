@@ -1,8 +1,9 @@
-import { invoke } from '@tauri-apps/api/core';
+import { invoke } from "@tauri-apps/api/core";
 
-import { logger } from '../utils/logger';
-import { generateId } from '../utils/generator';
+import { logger } from "../utils/logger";
+import { generateId } from "../utils/generator";
 
+/** Структура информации сервера */
 interface ServerInformation {
   ip_address: string;
   server_icon: string | null;
@@ -14,30 +15,31 @@ interface ServerInformation {
   list_of_players: Array<{ username: string; uuid: string; }>;
 }
 
-class Pinger {
-  /** Метод инициализации функций, связанных с пингованием. */
+/** Модуль управления пинговкой серверов */
+class PingModule {
+  /** Метод инициализации функций, связанных с пингованием */
   public init(): void {
-    document.getElementById('ping-server')?.addEventListener('click', async () => await this.ping_server());
+    document.getElementById("ping-server")?.addEventListener("click", async () => await this.ping_server());
   }
 
-  /** Метод пингования сервера. */
+  /** Метод пингования сервера */
 	private async ping_server(): Promise<void> {
 		try {
-			const address = (document.getElementById('ping-server-address') as HTMLInputElement).value;
+			const address = (document.getElementById("ping-server-address") as HTMLInputElement).value;
 
-			if (address === '') return;
+			if (address === "") return;
 
-			const result = await invoke('get_server_info', {
+			const result = await invoke("get_server_info", {
 				address: address
 			}) as ServerInformation;
 
-      const pingInfo = document.getElementById('ping-info') as HTMLElement;
+      const pingInfo = document.getElementById("ping-info") as HTMLElement;
       
-      pingInfo.innerHTML = '';
-      pingInfo.style.display = 'none';
+      pingInfo.innerHTML = "";
+      pingInfo.style.display = "none";
 
-      const card = document.createElement('div');
-      card.className = 'card';
+      const card = document.createElement("div");
+      card.className = "card";
 
       const removeBtnId = `remove-ping-card-${generateId()}`;
       
@@ -68,15 +70,15 @@ class Pinger {
         </div>
       `;
 
-      const listOfPlayers = document.createElement('div');
-      listOfPlayers.className = 'list';
-      listOfPlayers.style.display = 'none';
+      const listOfPlayers = document.createElement("div");
+      listOfPlayers.className = "list";
+      listOfPlayers.style.display = "none";
 
       if (result.list_of_players.length > 0) {
-        listOfPlayers.style.display = 'flex';
+        listOfPlayers.style.display = "flex";
 
-        const element = document.createElement('div');
-        element.className = 'element';
+        const element = document.createElement("div");
+        element.className = "element";
 
         element.innerHTML = `
           <p class="username">Никнейм</p>
@@ -87,8 +89,8 @@ class Pinger {
         listOfPlayers.appendChild(element);
 
         for (const player of result.list_of_players) {
-          const el = document.createElement('div');
-          el.className = 'element';
+          const el = document.createElement("div");
+          el.className = "element";
 
           el.innerHTML = `
             <p class="username">${player.username}</p>
@@ -101,26 +103,26 @@ class Pinger {
 
         card.appendChild(listOfPlayers);
       } else {
-        const header = document.createElement('div');
-        header.className = 'header';
-        header.innerText = 'Не удалось получить список игроков';
+        const header = document.createElement("div");
+        header.className = "header";
+        header.innerText = "Не удалось получить список игроков";
         card.appendChild(header);
       }
 
       pingInfo.appendChild(card);
 
-      document.getElementById(removeBtnId)?.addEventListener('click', () => {
-        pingInfo.innerHTML = '';
-        pingInfo.style.display = 'none';
+      document.getElementById(removeBtnId)?.addEventListener("click", () => {
+        pingInfo.innerHTML = "";
+        pingInfo.style.display = "none";
       });
 
-      pingInfo.style.display = 'flex';
+      pingInfo.style.display = "flex";
 		} catch (error) {
-			logger.log(`Ошибка пингования сервера: ${error}`, 'error');
+			logger.log(`Ошибка пингования сервера: ${error}`, "error");
 		}
 	}
 }
 
-const pinger = new Pinger();
+const pingModule = new PingModule();
 
-export { pinger };
+export { pingModule };
