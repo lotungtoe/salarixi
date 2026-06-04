@@ -868,60 +868,6 @@
     },
     {
       "tags": [
-        "checkbox:data-analysis"
-      ],
-      "lang": {
-        "ru": "Анализ данных",
-        "en": "Data Analysis"
-      }
-    },
-    {
-      "tags": [
-        "checkbox:error-corrector"
-      ],
-      "lang": {
-        "ru": "Корректор ошибок",
-        "en": "Error Corrector"
-      }
-    },
-    {
-      "tags": [
-        "checkbox:garbage-collector"
-      ],
-      "lang": {
-        "ru": "Сборщик мусора",
-        "en": "Garbage Collector"
-      }
-    },
-    {
-      "tags": [
-        "checkbox:extended-monitoring"
-      ],
-      "lang": {
-        "ru": "Расширенный мониторинг",
-        "en": "Extended Monitoring"
-      }
-    },
-    {
-      "tags": [
-        "checkbox:chat-monitoring"
-      ],
-      "lang": {
-        "ru": "Мониторинг чата",
-        "en": "Chat Monitoring"
-      }
-    },
-    {
-      "tags": [
-        "checkbox:map-monitoring"
-      ],
-      "lang": {
-        "ru": "Мониторинг карты",
-        "en": "Map Monitoring"
-      }
-    },
-    {
-      "tags": [
         "checkbox:use-accounts"
       ],
       "lang": {
@@ -1103,15 +1049,6 @@
     },
     {
       "tags": [
-        "label:webdriver-server-url"
-      ],
-      "lang": {
-        "ru": "Адрес сервера для WebDriver",
-        "en": "Server address for WebDriver"
-      }
-    },
-    {
-      "tags": [
         "label:number-of-columns"
       ],
       "lang": {
@@ -1276,26 +1213,6 @@
     },
     {
       "tags": [
-        "control:spoofing"
-      ],
-      "lang": {
-        "ru": "Спуфинг",
-        "en": "Spoofing",
-        "tr": "Spoofing"
-      }
-    },
-    {
-      "tags": [
-        "control:sprinter"
-      ],
-      "lang": {
-        "ru": "Спринтер",
-        "en": "Sprinter",
-        "tr": "Sprint"
-      }
-    },
-    {
-      "tags": [
         "control:anti-fall"
       ],
       "lang": {
@@ -1342,146 +1259,6 @@
         "ru": "Фермер",
         "en": "Farmer",
         "tr": "Farmer"
-      }
-    },
-    {
-      "tags": [
-        "header:control-chat"
-      ],
-      "lang": {
-        "ru": "Управление / Чат",
-        "en": "Control / Chat",
-        "tr": "Yönetim / Chat"
-      }
-    },
-    {
-      "tags": [
-        "header:control-action"
-      ],
-      "lang": {
-        "ru": "Управление / Действия",
-        "en": "Control / Actions",
-        "tr": "Yönetim / Eylemler"
-      }
-    },
-    {
-      "tags": [
-        "header:control-inventory"
-      ],
-      "lang": {
-        "ru": "Управление / Инвентарь",
-        "en": "Control / Inventory",
-        "tr": "Yönetim / Envanter"
-      }
-    },
-    {
-      "tags": [
-        "header:control-movement"
-      ],
-      "lang": {
-        "ru": "Управление / Движение",
-        "en": "Control / Movement",
-        "tr": "Yönetim / Hareket"
-      }
-    },
-    {
-      "tags": [
-        "header:control-anti-afk"
-      ],
-      "lang": {
-        "ru": "Управление / Анти-АФК",
-        "en": "Control / Anti-AFK",
-        "tr": "Yönetim / Anti-AFK"
-      }
-    },
-    {
-      "tags": [
-        "header:control-stalker"
-      ],
-      "lang": {
-        "ru": "Управление / Сталкер",
-        "en": "Control / Stalker",
-        "tr": "Yönetim / Takip"
-      }
-    },
-    {
-      "tags": [
-        "header:control-flight"
-      ],
-      "lang": {
-        "ru": "Управление / Полёт",
-        "en": "Control / Flight",
-        "tr": "Yönetim / Uçuş"
-      }
-    },
-    {
-      "tags": [
-        "header:control-killaura"
-      ],
-      "lang": {
-        "ru": "Управление / Киллаура",
-        "en": "Control / Killaura",
-        "tr": "Yönetim / Killaura"
-      }
-    },
-    {
-      "tags": [
-        "header:control-scaffold"
-      ],
-      "lang": {
-        "ru": "Управление / Скаффолд",
-        "en": "Control / Scaffold",
-        "tr": "Yönetim / Scaffold"
-      }
-    },
-    {
-      "tags": [
-        "header:control-anti-fall"
-      ],
-      "lang": {
-        "ru": "Управление / Анти-Падение",
-        "en": "Control / Anti-Fall",
-        "tr": "Yönetim / Anti-Fall"
-      }
-    },
-    {
-      "tags": [
-        "header:control-bow-aim"
-      ],
-      "lang": {
-        "ru": "Управление / Лук аим",
-        "en": "Control / Bow aim",
-        "tr": "Yönetim / Bow Aim"
-      }
-    },
-    {
-      "tags": [
-        "header:control-stealer"
-      ],
-      "lang": {
-        "ru": "Управление / Стиллер",
-        "en": "Control / Stealer",
-        "tr": "Yönetim / Stealer"
-      }
-    },
-    {
-      "tags": [
-        "header:control-miner"
-      ],
-      "lang": {
-        "ru": "Управление / Майнер",
-        "en": "Control / Miner",
-        "tr": "Yönetim / Miner"
-      }
-    },
-    {
-      "tags": [
-        "header:control-farmer"
-      ],
-      "lang": {
-        "ru": "Управление / Фермер",
-        "en": "Control / Farmer",
-        "tr": "Yönetim / Farmer"
       }
     },
     {
