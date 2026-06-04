@@ -18,7 +18,6 @@ use std::sync::RwLock;
 use std::thread;
 use std::time::Duration;
 use tokio::task::JoinHandle;
-use tokio::time::sleep;
 
 use crate::api::emit::*;
 use crate::service::core::bot::*;
@@ -29,9 +28,7 @@ use crate::service::core::plugins::*;
 use crate::service::core::registry::registry_event_loop;
 use crate::service::core::registry::BOT_REGISTRY;
 use crate::service::core::traits::SalarixiPlugin;
-use crate::service::core::utils::WebDriverEvent;
 use crate::service::core::utils::MAP_ACCUMULATOR;
-use crate::service::core::utils::WEB_CAPTCHA_BYPASS;
 use crate::service::generators::mutate_text;
 use crate::service::generators::randchance;
 use crate::service::generators::randelem;
@@ -214,7 +211,6 @@ pub struct BasicOptions {
   pub use_auto_register: bool,
   pub use_double_auth: bool,
   pub use_auto_login: bool,
-  pub use_chat_signing: bool,
   pub use_auto_respawn: bool,
   pub use_accept_rp: bool,
   pub use_pathfinder: bool,
@@ -255,10 +251,8 @@ pub struct CaptchaBypassOptions {
   pub captcha_type: String,
   pub captcha_subtype: String,
   pub solve_mode: String,
-  pub browser: String,
   pub regex: String,
   pub required_url_part: Option<String>,
-  pub webdriver_server_url: Option<String>,
   pub number_of_columns: u32,
   pub number_of_rows: u32,
   pub api_key: Option<String>,
@@ -465,22 +459,6 @@ pub fn launch_bots_on_server(options: LaunchOptions) -> bool {
 
   tokio::spawn(registry_event_loop());
 
-  if options.basic.use_anti_captcha
-    && options.captcha_bypass.captcha_type.as_str() == "web"
-    && options.captcha_bypass.solve_mode.as_str() == "auto"
-  {
-    tokio::spawn(WEB_CAPTCHA_BYPASS.webdriver_event_loop());
-
-    tokio::spawn(async {
-      sleep(Duration::from_millis(100)).await;
-      WEB_CAPTCHA_BYPASS.send_webdriver_event(WebDriverEvent::CreateWebDriver {
-        proxy: None,
-        username: None,
-        password: None,
-      });
-    });
-  }
-
   if options.basic.use_webhook {
     send_webhook(
       options.webhook.url.clone(),
@@ -504,10 +482,6 @@ pub fn launch_bots_on_server(options: LaunchOptions) -> bool {
         swarm_plugins = swarm_plugins.disable::<azalea::auto_reconnect::AutoReconnectPlugin>();
       } else {
         AutoReconnectDelay::new(Duration::from_millis(options.basic.rejoin_delay));
-      }
-
-      if !options.basic.use_chat_signing {
-        swarm_plugins = swarm_plugins.disable::<azalea::chat_signing::ChatSigningPlugin>();
       }
 
       let mut bot_plugins = azalea::bot::DefaultBotPlugins.build();
@@ -733,7 +707,6 @@ pub fn stop_bots_and_destroy_data() -> bool {
   STATES.clear();
   PROFILES.clear();
 
-  WEB_CAPTCHA_BYPASS.send_webdriver_event(WebDriverEvent::StopProcessing);
   MAP_ACCUMULATOR.clear_all();
 
   BOT_REGISTRY.clear();

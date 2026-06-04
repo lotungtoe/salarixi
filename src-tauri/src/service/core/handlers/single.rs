@@ -24,7 +24,6 @@ use crate::service::core::footing::current_options;
 use crate::service::core::footing::PLUGIN_MANAGER;
 use crate::service::core::registry::RegistryEvent;
 use crate::service::core::registry::BOT_REGISTRY;
-use crate::service::core::utils::WebDriverEvent;
 use crate::service::core::utils::MAP_ACCUMULATOR;
 use crate::service::core::utils::MAP_CAPTCHA_BYPASS;
 use crate::service::core::utils::WEB_CAPTCHA_BYPASS;
@@ -270,19 +269,10 @@ async fn process_chat_message(bot: Client, packet: ChatPacket) {
           "info",
         );
 
-        if options.captcha_bypass.solve_mode.as_str() == "auto" {
-          WEB_CAPTCHA_BYPASS.send_webdriver_event(WebDriverEvent::OpenUrl {
-            url: url.clone(),
-            proxy: profile.proxy.proxy,
-            username: profile.proxy.username,
-            password: profile.proxy.password,
-          });
-        } else {
-          send_optional_event(OptionalEmitEvent::AntiWebCaptcha(AntiWebCaptchaEventPayload {
-            captcha_url: url,
-            username: username,
-          }));
-        }
+        send_optional_event(OptionalEmitEvent::AntiWebCaptcha(AntiWebCaptchaEventPayload {
+          captcha_url: url,
+          username: username,
+        }));
       }
     }
   }

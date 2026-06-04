@@ -230,7 +230,7 @@ async function startBots(): Promise<void> {
     monitoringModule.enable(parseInt((document.getElementById("monitoring_option_update-frequency") as HTMLInputElement).value || "1800"));
     monitoringModule.wait();
 
-    if (options.basic.use_anti_captcha) captchaManager.enable(options.captcha_bypass.solve_mode);
+    if (options.basic.use_anti_captcha) captchaManager.enable(options.captcha_bypass.captcha_type, options.captcha_bypass.solve_mode);
 
     radarManager.enable();
   } catch (error) {
@@ -557,22 +557,15 @@ export function replenishTriggerRegistry(): void {
 
   const mf1 = (current: HTMLSelectElement) => {
     const antiCaptchaType = (document.getElementById("captcha-bypass_select_captcha-type") as HTMLSelectElement).value;
-    const antiWebCaptchaWebDriverServerUrlContainer = document.getElementById("anti-web-captcha-webdriver-server-url-container") as HTMLElement;
-    const antiWebCaptchaSelectBrowserContainer = document.getElementById("select-captcha-browser-container") as HTMLElement;
     const antiMapCaptchaApiInputContainer = document.getElementById("anti-map-captcha-api-key-container") as HTMLElement;
     const antiMapCaptchaApiServiceSelectContainer = document.getElementById("anti-map-captcha-select-api-service-container") as HTMLElement;
 
     if (current.value === "auto") {
-      if (antiCaptchaType === "web") {
-        antiWebCaptchaWebDriverServerUrlContainer.style.display = "flex";
-        antiWebCaptchaSelectBrowserContainer.style.display = "grid";
-      } else {
+      if (antiCaptchaType === "map") {
         antiMapCaptchaApiInputContainer.style.display = "flex";
         antiMapCaptchaApiServiceSelectContainer.style.display = "grid";
       }
     } else {
-      antiWebCaptchaWebDriverServerUrlContainer.style.display = "none";
-      antiWebCaptchaSelectBrowserContainer.style.display = "none";
       antiMapCaptchaApiInputContainer.style.display = "none";
       antiMapCaptchaApiServiceSelectContainer.style.display = "none";
     }
@@ -594,7 +587,6 @@ export function replenishTriggerRegistry(): void {
   triggerRegistry.register("captcha-bypass_select_captcha-type", "select", (current: HTMLSelectElement) => {
     const antiWebCaptchaOptionsContainer = document.getElementById("anti-web-captcha-options") as HTMLElement;
     const antiMapCaptchaOptionsContainer = document.getElementById("anti-map-captcha-options") as HTMLElement;
-    const antiWebCaptchaSelectsContainer = document.getElementById("anti-web-captha-selects-container") as HTMLElement;
     const antiMapCaptchaSelectsContainer = document.getElementById("anti-map-captha-selects-container") as HTMLElement;
     const antiMapCaptchaSelectSubtype = document.getElementById("captcha-bypass_select_captcha-subtype") as HTMLSelectElement;
     const antiMapCaptchaNumberOfColumnsInput = document.getElementById("anti-map-captcha-number-of-columns-container") as HTMLElement;
@@ -602,12 +594,10 @@ export function replenishTriggerRegistry(): void {
 
     if (current.value === "web") {
       antiWebCaptchaOptionsContainer.style.display = "flex";
-      antiWebCaptchaSelectsContainer.style.display = "flex";
       antiMapCaptchaOptionsContainer.style.display = "none";
       antiMapCaptchaSelectsContainer.style.display = "none";
     } else if (current.value === "map") {
       antiWebCaptchaOptionsContainer.style.display = "none";
-      antiWebCaptchaSelectsContainer.style.display = "none";
       antiMapCaptchaSelectsContainer.style.display = "flex";
       antiMapCaptchaOptionsContainer.style.display = "flex";
 

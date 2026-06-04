@@ -64,8 +64,8 @@ class CaptchaManager {
   }
 
   /** Метод активации обхода капчи */
-  public enable(mode: string): void {
-    if (mode === "manual") {
+  public enable(type: string, mode: string): void {
+    if (type === "map" && mode === "manual") {
       this.settings!.style.display = "none";
 
       this.cards!.innerHTML = "";

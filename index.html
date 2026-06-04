@@ -501,12 +501,6 @@
           </label>
 
           <label class="checkbox-container">
-            <input type="checkbox" id="settings_chbx_use-chat-signing" keep="true" key="use_chat_signing" launch-option>
-            <span class="checkmark"></span>
-            <span translator-tag="checkbox:chat-signing">Использовать Chat-Signing</span>
-          </label>
-
-          <label class="checkbox-container">
             <input type="checkbox" id="settings_chbx_use-accept-rp" keep="true" key="use_accept_rp" launch-option checked>
             <span class="checkmark"></span>
             <span translator-tag="checkbox:accept-rp">Использовать Accept-RP</span>
@@ -741,28 +735,15 @@
           </select>
         </div>
 
-        <div class="custom-select between">
-          <label translator-tag="label:captcha-solve-mode">Режим: </label>
-          <select id="captcha-bypass_select_solve-mode" section="captcha_bypass" key="solve_mode" keep="true" trigger launch-option>
-            <option value="manual">Ручной</option>
-            <option value="auto">Авто</option>
-          </select>
-        </div>
-
-        <div id="anti-web-captha-selects-container" style="display: flex; flex-direction: column; gap: 6px;">
-          <div class="custom-select between" id="select-captcha-browser-container">
-            <label translator-tag="label:anti-captcha-browser">Браузер: </label>
-            <select id="captcha-bypass_select_browser" section="captcha_bypass" key="browser" keep="true" launch-option>
-              <option value="firefox">FireFox</option>
-              <option value="edge">Edge</option>
-              <option value="chrome">Chrome</option>
-              <option value="opera">Opera</option>
-              <option value="chromium">Chromium</option>
+        <div id="anti-map-captha-selects-container" style="display: none; flex-direction: column; gap: 6px;">
+          <div class="custom-select between">
+            <label translator-tag="label:captcha-solve-mode">Режим: </label>
+            <select id="captcha-bypass_select_solve-mode" section="captcha_bypass" key="solve_mode" keep="true" trigger launch-option>
+              <option value="manual">Ручной</option>
+              <option value="auto">Авто</option>
             </select>
           </div>
-        </div>
-
-        <div id="anti-map-captha-selects-container" style="display: none; flex-direction: column; gap: 6px;">
+          
           <div class="custom-select between" id="anti-map-captcha-select-api-service-container">
             <label translator-tag="label:api-service">API сервис: </label>
             <select id="captcha-bypass_select_captcha-service" section="captcha_bypass" key="api_service" keep="true" launch-option>
@@ -789,11 +770,6 @@
         <div class="form-input">
           <label for="captcha-bypass_web_required-url-part" class="text" translator-tag="label:captcha-url-part">Обязательная часть ссылки</label>
           <input type="text" id="captcha-bypass_web_required-url-part" placeholder="anti-bot" keep="true" section="captcha_bypass" key="required_url_part" launch-option>
-        </div>
-
-        <div class="form-input" id="anti-web-captcha-webdriver-server-url-container">
-          <label for="captcha-bypass_web_webdriver-server-url" class="text" translator-tag="label:webdriver-server-url">Адрес сервера для WebDriver</label>
-          <input type="text" id="captcha-bypass_web_webdriver-server-url" placeholder="http://localhost:9515" value="http://localhost:9515" keep="true" section="captcha_bypass" key="webdriver_server_url" default="http://localhost:9515" launch-option>
         </div>
       </div>
 
