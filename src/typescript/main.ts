@@ -1083,7 +1083,9 @@ async function loadSocialLinks(): Promise<void> {
 
 // Слушатель события DOMContent у document (#1, синхронный)
 document.addEventListener("DOMContentLoaded", () => {
-  // Инициализируем логгер и сообщения
+  document.addEventListener("contextmenu", e => e.preventDefault());
+
+  // Инициализация логгера и сообщений
   logger.init();
   messages.init();
 
