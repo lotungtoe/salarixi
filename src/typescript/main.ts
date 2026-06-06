@@ -772,7 +772,7 @@ export function replenishTriggerRegistry(): void {
   triggerRegistry.register("proxy-finder_select_algorithm", "select", (current: HTMLSelectElement) => {
     const selectProxyFinderCountry = document.getElementById("proxy-finder_select_country") as HTMLSelectElement;
 
-    if (current.value === "apic") {
+    if (current.value === "trusted") {
       selectProxyFinderCountry.disabled = false;
     } else {
       selectProxyFinderCountry.disabled = true;
@@ -1083,7 +1083,7 @@ async function loadSocialLinks(): Promise<void> {
 
 // Слушатель события DOMContent у document (#1, синхронный)
 document.addEventListener("DOMContentLoaded", () => {
-  document.addEventListener("contextmenu", e => e.preventDefault());
+  // document.addEventListener("contextmenu", e => e.preventDefault());
 
   // Инициализация логгера и сообщений
   logger.init();
@@ -1110,7 +1110,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Инициализация модулей
     accountModule.init();
-    proxyModule.init();
     graphicModule.init();
     radarManager.init();
     scriptModule.init();
@@ -1131,6 +1130,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     await pluginManager.init(); 
     await monitoringModule.init();
     await captchaManager.init();
+    await proxyModule.init();
 
     // Инициализируем Discord RPC
     const selectDiscordRpcMode = document.getElementById("interface_select_discord-rpc") as HTMLSelectElement;
@@ -1138,7 +1138,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     selectDiscordRpcMode.addEventListener("change", async () => await invoke("set_discord_rpc", { version: client.version, state: selectDiscordRpcMode.value === "enable" }));
     await invoke("set_discord_rpc", { version: client.version, state: selectDiscordRpcMode.value === "enable" });
 
-    // Контент с web-ресурсов загружаем после основной инициализации, чтобы в случае долгой загрузки не блокировать важные функции
+    // Контент с web-ресурсов загружаем после основной инициализации, 
+    // чтобы в случае долгой загрузки не блокировать важные функции
     await initUserGuide();
     await initDownloadCount();
     

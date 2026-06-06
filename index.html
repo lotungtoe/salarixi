@@ -639,24 +639,16 @@
         <div class="proxy-finder">
           <div class="column-wrap" style="gap: 6px;">
             <div class="custom-select between">
-              <label translator-tag="label:proxy-finder-algorithm">Алгоритм: </label>
+              <label translator-tag="label:proxy-finder-algorithm">Алгоритм:</label>
               <select id="proxy-finder_select_algorithm" keep="true" trigger>
-                <option value="upc">UPc</option>
-                <option value="apic" selected>APIc</option>
+                <option value="trusted" selected>Trusted</option>
+                <option value="untrusted">Untrusted</option>
+                <option value="mixed">Mixed</option>
               </select>
             </div>
 
             <div class="custom-select between">
-              <label translator-tag="label:proxy-finder-protocol">Протокол: </label>
-              <select id="proxy-finder_select_protocol" keep="true">
-                <option value="socks5">SOCKS5</option>
-                <option value="socks4" disabled>SOCKS4</option>
-                <option value="http" disabled>HTTP</option>
-              </select>
-            </div>
-
-            <div class="custom-select between">
-              <label translator-tag="label:proxy-finder-country">Страна: </label>
+              <label translator-tag="label:proxy-finder-country">Страна:</label>
               <select id="proxy-finder_select_country" keep="true">
                 <option value="any" translator-tag="option:country-any">Любая</option>
                 <option value="ru">Россия</option>
@@ -675,7 +667,7 @@
             </div>
 
             <div class="custom-select between">
-              <label translator-tag="label:proxy-finder-port">Порт: </label>
+              <label translator-tag="label:proxy-finder-port">Порт:</label>
               <select id="proxy-finder_select_port" keep="true">
                 <option value="any" translator-tag="option:port-any">Любой</option>
                 <option value="4145">4145</option>
@@ -689,7 +681,7 @@
             </div>
 
             <div class="custom-select between">
-              <label translator-tag="label:proxy-finder-count">Кол-во: </label>
+              <label translator-tag="label:proxy-finder-count">Кол-во:</label>
               <select id="proxy-finder_select_count" keep="true">
                 <option value="20">20</option>
                 <option value="50">50</option>

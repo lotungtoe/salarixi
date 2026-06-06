@@ -1,8 +1,10 @@
 mod api;
+mod modules;
 mod service;
 
 use api::commands::*;
 use api::emit::emit_event_loop;
+use modules::proxy::collect_proxies;
 
 /// Запуск приложения
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -40,7 +42,8 @@ pub fn run() {
       open_url,
       download_json,
       set_discord_rpc,
+      collect_proxies,
     ])
     .run(tauri::generate_context!())
-    .expect("Не удалось запустить клиент");
+    .expect("error while running client");
 }
