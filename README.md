@@ -9,28 +9,28 @@
   </b>
 </div>
 
-## 🎯 About
-
-<div align="center">
-  <img src="./screenshots/main.avif">
-</div>
+## About
 
 **Salarixi** - A multifunctional, optimized, and simple tool for bottling in Minecraft. It has a lot of settings that can be quickly adjusted to your goals. This tool also offers a lot of features for managing bots, there are many separate management modules, scripting, and it is also unique for its optimized and fast monitoring capabilities (graphs, bot profiles, chats with bots), they allow you to filter data on the fly, manage specific bots.
 
+---
+
 Uses [azalea](https://github.com/azalea-rs/azalea) library as a base.
+
+---
 
 > [!WARNING]
 > This client does not promise stability and good support on all operating systems. If you encounter any problems, please report them to the [issues](https://codeberg.org/nullclyze/salarixi/issues).
 >
 > If the message concerns an error or bug, it should include the client version, operating system, a clear description of the problem, and screenshots (if possible).
 
-## 🔗 Social
+## Social
 
 - [Telegram](https://t.me/+sXNq1tAwOsFmMGMy) - Our official Telegram channel, where we publish client news and upcoming plans
 - [YouTube](https://www.youtube.com/@salarixi) - Our official YouTube channel, where we publish video reviews of the client
 - [Discord](https://discord.gg/ekcC8QX7bH) - Our official Discord server, where we communicate and share ideas
 
-## 💻 System Requirements
+## System Requirements
 
 - **Operating system:** Windows, Linux
 - **Free disk space:** 60 MB
@@ -38,13 +38,15 @@ Uses [azalea](https://github.com/azalea-rs/azalea) library as a base.
 - **Processor:** Average
 - **Dependencies:** None
 
-## 📖 Overview
+## Overview
 
 **Salarixi** is a massive Minecraft botting tool. It can be used for stress testing, surveillance, and automated farming. This tool is actively being developed, improved, and updated, constantly adding new amazing features, new schemes, new algorithms, and new capabilities.
 
+---
+
 This tool has several large sections, they will be presented below in the table.
 
-|       Name                  |                     Description                       |
+|            Name             |                     Description                       |
 |-----------------------------|-------------------------------------------------------|
 | Main / Главная              | Starting and stopping bots, basic settings            |
 | Settings / Настройки        | Various bot settings                                  |
@@ -67,31 +69,30 @@ This tool has several large sections, they will be presented below in the table.
 | Guide / Руководство         | Tool usage guide                                      |
 | About / О проекте           | Just a section about the project                      |
 
-## 💥 Features
+## Features
 
-- 🚀 **Easy to use:** Quick adaptation to the tool. Intuitive interface.
-- ⚡ **Fast and smart:** All transactions in the tool are fast. The tool contains several smart managers for any tasks.
-- 💎 **Absolutely free:** All functionality in the tool is free.
-- 💥 **Beautiful design:** The tool has a clear and beautiful dark design.
-- 💕 **Open source:** The tool is completely open source.
-- 🌀 **Great functionality:** The tool offers a lot of functionality that is very flexible in settings and well optimized.
-- 📊 **Data visualization:** For convenience, the tool visualizes the data in the form of graphs.
-- 🌐 **Real-time monitoring:** The tool has real-time bot monitoring. It is highly optimized and has customizations.
-- 📅 **Event logging:** The tool has a log in which any information is logged.
-- 🧨 **Cheat functions:** The tool contains unique functionality in the form of real cheats for bots.
-- 🌏 **Proxy support:** The tool supports SOCKS5 proxy.
+- **Easy to use:** Quick adaptation to the tool. Intuitive interface.
+- **Fast and smart:** All transactions in the tool are fast. The tool contains several smart managers for any tasks.
+- **Absolutely free:** All functionality in the tool is free.
+- **Beautiful design:** The tool has a clear and beautiful dark design.
+- **Open source:** The tool is completely open source.
+- **Great functionality:** The tool offers a lot of functionality that is very flexible in settings and well optimized.
+- **Data visualization:** For convenience, the tool visualizes the data in the form of graphs.
+- **Real-time monitoring:** The tool has real-time bot monitoring. It is highly optimized and has customizations.
+- **Event logging:** The tool has a log in which any information is logged.
+- **Cheat functions:** The tool contains unique functionality in the form of real cheats for bots.
+- **Proxy support:** The tool supports SOCKS5 proxy.
 
-## 📷 Gallery
+## Gallery
 
-<div align="center">
-  <img src="./screenshots/settings.avif">
-  <img src="./screenshots/accounts.avif">
-  <img src="./screenshots/plugins.avif">
-  <img src="./screenshots/anti_captcha.avif">
-  <img src="./screenshots/control.avif">
-</div>
+![](./screenshots/main.avif)
+![](./screenshots/settings.avif)
+![](./screenshots/accounts.avif)
+![](./screenshots/plugins.avif)
+![](./screenshots/anti_captcha.avif)
+![](./screenshots/control.avif)
 
-## 💾 Installation
+## Installation
 
 ### Windows (MSI)
 
@@ -127,7 +128,7 @@ This tool has several large sections, they will be presented below in the table.
 3. Write ```sudo dnf install FILENAME.rpm```
 4. Ready
 
-## 📦 Build
+## Build
 
 ### Clone repository
 
@@ -175,11 +176,11 @@ To run the application in dev mode:
 npm run tauri dev
 ```
 
-## 📜 Additional Information
+## Additional Information
 
 - **License:** [Apache-2.0 license](./LICENSE)
 - **Latest Release:** [Release](https://codeberg.org/nullclyze/salarixi/releases/tag/v1.0.9-release)
 
-## 💸 Donate
+## Donate
 
 Liked the project? Support us: 5599002129447795
