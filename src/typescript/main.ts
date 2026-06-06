@@ -16,11 +16,11 @@ import { proxyModule } from "./modules/proxy";
 import { graphicModule } from "./modules/graphic";
 import { scriptModule } from "./modules/script";
 import { monitoringModule } from "./modules/monitoring";
-import { captchaManager } from "./modules/captcha";
-import { radarManager } from "./modules/radar";
+import { captchaModule } from "./modules/captcha";
+import { radarModule } from "./modules/radar";
 import { pingModule } from "./modules/ping";
 import { translatorModule } from "./modules/translator";
-import { pluginManager } from "./modules/plugin";
+import { pluginModule } from "./modules/plugin";
 
 Chart.register(...registerables);
 
@@ -230,9 +230,9 @@ async function startBots(): Promise<void> {
     monitoringModule.enable(parseInt((document.getElementById("monitoring_option_update-frequency") as HTMLInputElement).value || "1800"));
     monitoringModule.wait();
 
-    if (options.basic.use_anti_captcha) captchaManager.enable(options.captcha_bypass.captcha_type, options.captcha_bypass.solve_mode);
+    if (options.basic.use_anti_captcha) captchaModule.enable(options.captcha_bypass.captcha_type, options.captcha_bypass.solve_mode);
 
-    radarManager.enable();
+    radarModule.enable();
   } catch (error) {
     logger.log(`Ошибка (start-bots-process): ${error}`, "error");
   }
@@ -253,8 +253,8 @@ async function stopBots(): Promise<void> {
 
     graphicModule.disable();
     monitoringModule.disable();
-    captchaManager.disable();
-    radarManager.disable();
+    captchaModule.disable();
+    radarModule.disable();
 
     logger.log("Мониторинг выключен", "system");
   } catch (error) {
@@ -1108,10 +1108,10 @@ document.addEventListener("DOMContentLoaded", () => {
     // Инициализация конфигуратора
     configModule.init();
 
-    // Инициализация модулей
+    // Инициализация модулей (синхронная)
     accountModule.init();
     graphicModule.init();
-    radarManager.init();
+    radarModule.init();
     scriptModule.init();
     pingModule.init();
 
@@ -1127,9 +1127,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Изначально инициализируем основные части
     await listenEvents();
 
-    await pluginManager.init(); 
+    // Инициализация модулей (асинхронная)
+    await pluginModule.init(); 
     await monitoringModule.init();
-    await captchaManager.init();
+    await captchaModule.init();
     await proxyModule.init();
 
     // Инициализируем Discord RPC
@@ -1144,7 +1145,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     await initDownloadCount();
     
     await translatorModule.init();
-    await pluginManager.loadDescriptions();
+    await pluginModule.loadDescriptions();
 
     await loadSocialLinks();
 

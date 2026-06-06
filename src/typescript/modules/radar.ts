@@ -18,8 +18,8 @@ interface RadarInfo {
   };
 }
 
-/** Менеджер обнаружения игроков */
-class RadarManager {
+/** Модуль обнаружения игроков */
+class RadarModule {
   private active: boolean = false;
 
   private targetCardsContainer: HTMLElement | null = null;
@@ -430,6 +430,6 @@ UUID: ${uuid}
   }
 }
 
-const radarManager = new RadarManager();
+const radarModule = new RadarModule();
 
-export { radarManager }
+export { radarModule }

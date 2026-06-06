@@ -12,8 +12,8 @@ interface Captcha {
   }
 }
 
-/** Менеджер обхода капч */
-class CaptchaManager {
+/** Модуль управления обходом капч */
+class CaptchaModule {
   private settings: HTMLElement | null = null;
   private cards: HTMLElement | null = null;
   private wrappers: HTMLElement | null = null;
@@ -198,6 +198,6 @@ class CaptchaManager {
   }
 }   
 
-const captchaManager = new CaptchaManager();
+const captchaModule = new CaptchaModule();
 
-export { captchaManager }
+export { captchaModule }

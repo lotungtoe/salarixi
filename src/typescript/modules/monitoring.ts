@@ -117,6 +117,7 @@ class MonitoringModule {
           for (const username in profiles) {
             if (isFirst) {
               this.statusText!.style.display = "none";
+              this.cards!.style.justifyContent = "start";
               isFirst = false;
             }
 
@@ -143,6 +144,7 @@ class MonitoringModule {
     document.querySelectorAll('[wrapper="bot-card"]').forEach(w => w.remove());
 
     this.cards!.innerHTML = "";
+    this.cards!.style.justifyContent = "center";
     this.wrappers!.innerHTML = "";
 
     this.chatMessageCounter = {};

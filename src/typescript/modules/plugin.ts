@@ -3,8 +3,8 @@ import { plugins } from "../common/structs";
 import { process } from "../main";
 import { invoke } from "@tauri-apps/api/core";
 
-/** Менеджер плагинов */
-class PluginManager {
+/** Модуль загрузки и управления плагинами */
+class PluginModule {
   /** Метод инициализации функций, связанных с плагинами */
   public async init(): Promise<void> {
     this.createCards();
@@ -180,6 +180,6 @@ class PluginManager {
   }
 }
 
-const pluginManager = new PluginManager();
+const pluginModule = new PluginModule();
 
-export { pluginManager }
+export { pluginModule }
