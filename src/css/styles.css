@@ -45,6 +45,10 @@
   /* ----------------------------------------------------------------- */
 }
 
+* {
+  box-sizing: border-box;
+}
+
 body {
   background-color: var(--global-bg);
   font-family: var(--global-font-family);
@@ -82,7 +86,6 @@ body {
   display: flex;
   min-width: 200px;
   height: 100%;
-  box-sizing: border-box;
   justify-content: center;
   align-items: center;
   text-align: center;
@@ -102,7 +105,6 @@ body {
   align-items: center; 
   width: 100%;
   height: 100%;
-  box-sizing: border-box;
 }
 
 .title-bar .right .controls {
@@ -147,8 +149,8 @@ body {
   position: fixed;
   top: 50px;
   left: 215px;
-  width: 730px;
-  height: 490px;
+  width: 770px;
+  height: 530px;
   font-family: var(--global-font-family);
   display: none; 
   border-radius: 12px;
@@ -214,9 +216,7 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: start;
-  box-sizing: border-box;
   z-index: 1;
-  gap: 1px;
   overflow-y: auto;
 }
 
@@ -304,7 +304,6 @@ body {
   flex-direction: column;
   justify-content: start;
   align-items: center;
-  box-sizing: border-box;
   padding: 20px;
   overflow-y: auto;
 }
@@ -326,7 +325,6 @@ body {
   flex-direction: column;
   justify-content: start;
   align-items: center;
-  box-sizing: border-box;
   padding-top: 20px;
   margin: 0;
 }
@@ -334,7 +332,7 @@ body {
 .settings-layout {
   display: flex;
   gap: 30px;
-  width: 92%;
+  width: 100%;
   justify-content: center;
   padding: 0 25px;
   background-color: transparent;
@@ -347,7 +345,6 @@ body {
   border-radius: 12px;
   max-height: 500px;
   overflow-y: auto;
-  box-sizing: border-box;
   scroll-behavior: smooth;
   background-color: var(--secondary-bg);
   border: 1px solid var(--secondary-border);
@@ -441,7 +438,6 @@ body {
   width: 100%;
   padding: 0 20px;
   margin-top: 10px;
-  box-sizing: border-box;
   justify-content: center;
   align-items: start;
 }
@@ -523,7 +519,6 @@ body {
 
 .accounts-top-panel {
   display: flex;
-  box-sizing: border-box;
   margin: 10px 0 10px 0;
   width: 720px;
   padding: 4px;
@@ -553,17 +548,15 @@ body {
   display: flex;
   width: 720px;
   height: 38px;
-  gap: 6px;
   border-top: 2px solid var(--secondary-border);
   justify-content: start;
   align-items: center;
-  padding-top: 10px;
+  padding-top: 20px;
   margin-top: 20px;
 }
 
 .account-table-wrapper {
   display: flex;
-  box-sizing: border-box;
   flex-direction: column;
   width: 720px;
   margin-top: 10px;
@@ -572,7 +565,6 @@ body {
 
 .account-table-header {
   display: grid;
-  box-sizing: border-box;
   grid-template-columns: 1fr auto 100px;
   width: 100%;
   padding: 12px 16px;
@@ -613,7 +605,6 @@ body {
   flex-direction: column;
   justify-content: start;
   align-items: center;
-  box-sizing: border-box;
   width: 100%;
   height: 100%;
   padding-bottom: 0;
@@ -627,7 +618,6 @@ body {
 .account-list .account-row {
   display: grid;
   grid-template-columns: 1fr auto 100px;
-  box-sizing: border-box;
   width: 100%;
   align-items: center;
   padding: 8px 16px;
@@ -686,7 +676,8 @@ body {
 }
 
 .action-btn:hover {
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: #ffffff0d;
+  border-color: #464343;
 }
 
 .action-btn svg {
@@ -826,7 +817,7 @@ p {
   left: 0;
   bottom: 10px;
   height: 30px;
-  width: 170px;
+  width: 190px;
   z-index: 1;
   background-color: transparent;
   border: none;
@@ -854,7 +845,7 @@ p {
   flex-direction: column;
   justify-content: start;
   align-items: center;
-  gap: 2px;
+  gap: 1px;
   width: 100%;
   margin-top: 12px;
 }
@@ -958,7 +949,6 @@ p {
 
 .form-input input {
   width: 100%;
-  box-sizing: border-box;
   position: relative;
   z-index: 0;
   line-height: 1;
@@ -1109,7 +1099,6 @@ p {
   outline: none;
   padding: 8px;
   padding-left: 16px;
-  box-sizing: border-box;
   -webkit-overflow-scrolling: none;
   scroll-behavior: smooth;
   resize: none; 
@@ -1193,8 +1182,7 @@ p {
 .line-counter {
   display: flex;
   flex-direction: column;
-  width: 35px;
-  min-width: 35px;
+  min-width: 60px;
   height: 100%;
   color: var(--text-secondary);
   font-family: var(--s-font-family);
@@ -1254,7 +1242,6 @@ p {
   display: flex;
   justify-content: center;
   align-items: center;
-  box-sizing: border-box;
   height: 80px;
   width: 680px;
   background-color: var(--common-bg);
@@ -1280,7 +1267,6 @@ p {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  box-sizing: border-box;
   align-items: center;
   border-left: 1px solid var(--common-border);
   padding: 0 6px;
@@ -1323,7 +1309,6 @@ p {
 .log-content {
   display: flex;
   flex-direction: column;
-  box-sizing: border-box;
   width: 720px;
   margin-top: 10px;
   max-height: 340px;
@@ -1346,7 +1331,6 @@ p {
 
 .log-line {
   display: flex;
-  box-sizing: border-box;
   animation: show-log-line 0.15s;
 }
 
@@ -1364,8 +1348,7 @@ p {
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 74px;
-  min-width: 74px;
+  min-width: 85px;
   padding: 4px;
   text-align: center;
   font-family: var(--s-font-family);
@@ -1403,7 +1386,6 @@ p {
 
 .log-options-wrap {
   display: flex;
-  box-sizing: border-box;
   margin-top: 15px; 
   width: 720px;
   background-color: var(--secondary-bg);
@@ -1428,7 +1410,6 @@ p {
 
 .about-wrapper .description {
   width: 700px;
-  box-sizing: border-box;
   font-family: var(--global-font-family);
   font-size: 15px;
   text-align: center;
@@ -1445,7 +1426,6 @@ p {
   bottom: 30px;
   display: flex;
   width: 740px;
-  box-sizing: border-box;
   padding: 12px;
   border-radius: 12px;
   background-color: var(--secondary-bg);
@@ -1571,8 +1551,8 @@ p {
 }
 
 .checkmark {
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
   background-color: rgb(24, 24, 24);
   border: 1px solid rgb(37, 37, 37);
   border-radius: 6px;
@@ -1705,10 +1685,11 @@ p {
   justify-content: start;
   align-items: center;
   overflow-y: auto;
-  width: 700px;
+  width: 740px;
   height: 100%;
   margin-top: 5px;
   gap: 10px;
+  padding-bottom: 20px;
 }
 
 .monitoring-wrapper::-webkit-scrollbar {
@@ -1721,7 +1702,6 @@ p {
   display: flex;
   justify-content: start;
   align-items: center;
-  box-sizing: border-box;
   width: 100%;
   min-height: 115px;
   background-color: var(--secondary-bg);
@@ -1755,8 +1735,8 @@ p {
 }
 
 .monitoring-wrapper .bot-card .head .top .image {
-  width: 50px;
-  height: 50px;
+  width: 60px;
+  height: 60px;
   border-radius: 8px;
   object-fit: cover; 
   display: flex;
@@ -1810,7 +1790,6 @@ p {
 .monitoring-wrapper .bot-card .head .bottom .bot-group {
   padding: 4px 0;
   width: 90%;
-  height: 100%;
   background-color: transparent;
   border: none;
   border-radius: 0;
@@ -1845,7 +1824,6 @@ p {
   align-items: center;
   border-left: 1px solid var(--secondary-border);
   padding: 0 6px;
-  width: max-content;
   height: 100%;
   gap: 6px;
 }
@@ -1859,14 +1837,6 @@ p {
 
 .monitoring-wrapper .bot-card .buttons .btn:hover {
   background-color: rgb(17, 17, 17);
-}
-
-.monitoring-wrapper .bot-card .group-input {
-  width: 215px;
-  height: 32px;
-  background: transparent;
-  border: none;
-  color: #fff;
 }
 
 .pretty-input-wrapper {
@@ -1937,8 +1907,7 @@ p {
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 68px;
-  min-width: 68px;
+  min-width: 75px;
   padding: 0 10px;
   text-align: center;
   font-family: var(--s-font-family);
@@ -2156,7 +2125,6 @@ p {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-sizing: border-box;
   padding: 8px;
   width: 100%;
   border-bottom: 1px solid var(--secondary-border);
@@ -2174,7 +2142,6 @@ p {
   display: flex;
   justify-content: start;
   align-items: center;
-  box-sizing: border-box;
   width: 100%;
   height: auto;
   border-bottom: 1px solid var(--secondary-border);
@@ -2281,7 +2248,6 @@ p {
   margin: 10px 0 20px 0;
   padding: 6px 6px;
   width: 720px;
-  box-sizing: border-box;
   gap: 6px;
   background-color: var(--secondary-bg);
   border-radius: 8px;
@@ -2425,6 +2391,7 @@ p {
   gap: 10px;
   width: 720px;
   margin-top: 10px;
+  padding-bottom: 20px;
   overflow-y: auto;
 }
 
@@ -2434,7 +2401,7 @@ p {
   align-items: center;
   height: auto;
   min-height: 90px;
-  width: 95%;
+  width: 100%;
   background-color: var(--secondary-bg);
   border: 1px solid var(--secondary-border);
   border-radius: 12px;
@@ -2543,7 +2510,6 @@ p {
 
 .plugin-description {
   display: flex;
-  box-sizing: border-box;
   align-items: center;
   justify-content: start;
   flex-direction: column;
@@ -2739,7 +2705,6 @@ p {
 .message .up-part {
   width: 100%;
   display: flex;
-  box-sizing: border-box;
   padding: 4px;
   justify-content: space-between;
   align-items: center;
@@ -2780,7 +2745,6 @@ p {
   padding: 10px;
   padding-bottom: 14px;
   display: flex;
-  box-sizing: border-box;
   justify-content: start;
   align-items: start;
   text-align: left;
@@ -2795,7 +2759,6 @@ p {
   flex-direction: column;
   justify-content: start;
   align-items: center;
-  box-sizing: border-box;
   width: 730px;
   max-height: 450px;
   height: 100%;
