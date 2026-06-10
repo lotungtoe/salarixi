@@ -1,11 +1,9 @@
-use azalea::entity::metadata::Health;
 use azalea::inventory::components::PotionContents;
 use azalea::inventory::ItemStack;
 use azalea::prelude::*;
 use azalea::protocol::packets::game::s_interact::InteractionHand;
 use azalea::registry::builtin::ItemKind;
 use azalea::registry::builtin::Potion as PotionKind;
-use std::io;
 use std::time::Duration;
 use tokio::time::sleep;
 
@@ -16,6 +14,7 @@ use crate::service::core::traits::SalarixiPlugin;
 use crate::service::core::{process_is_active, PLUGIN_MANAGER};
 use crate::service::generators::*;
 
+/// Структура информации и зелье
 #[derive(Clone)]
 struct Potion {
   kind: String,
@@ -26,6 +25,7 @@ struct Potion {
 pub struct AutoPotionPlugin;
 
 impl AutoPotionPlugin {
+  /// Метод применения зелья
   async fn drink(&self, bot: &Client) {
     let health = bot.get_health();
 
@@ -74,6 +74,7 @@ impl AutoPotionPlugin {
     }
   }
 
+  /// Метод отправки пакета об использовании зелья
   async fn use_potion(&self, bot: &Client, kind: String) {
     match kind.as_str() {
       "default" => {
@@ -100,12 +101,9 @@ impl AutoPotionPlugin {
     }
   }
 
+  /// Метод получения лучшего зелья из списка
   fn get_best_potion(&self, bot: &Client, potions: Vec<Potion>) -> Option<Potion> {
-    let health = if let Some(health) = bot.get_component::<Health>() {
-      health
-    } else {
-      return None;
-    };
+    let health = bot.get_health();
 
     if let Some(physics) = bot.get_physics() {
       let is_in_lava = physics.is_in_lava();
@@ -164,7 +162,7 @@ impl AutoPotionPlugin {
             }
           }
 
-          if best_potion.is_none() && health.0 <= 8.0 {
+          if best_potion.is_none() && health <= 8.0 {
             match p.name {
               PotionKind::TurtleMaster => {
                 best_potion = Some(p.clone());
@@ -179,7 +177,7 @@ impl AutoPotionPlugin {
             }
           }
 
-          if best_potion.is_none() && health.0 <= 15.0 {
+          if best_potion.is_none() && health <= 15.0 {
             match p.name {
               PotionKind::Regeneration => {
                 best_potion = Some(p);
@@ -217,20 +215,22 @@ impl AutoPotionPlugin {
     None
   }
 
+  /// Метод поиска зелья в инвентаре
   fn find_potion_in_inventory(&self, bot: &Client) -> Vec<Potion> {
     let mut potion_list = vec![];
 
     if let Some(menu) = bot.get_inventory_menu() {
-      for (slot, item) in menu.slots().iter().enumerate() {
+      menu.slots().iter().enumerate().for_each(|(slot, item)| {
         if let Some(potion) = self.is_potion(slot, item) {
           potion_list.push(potion);
         }
-      }
+      });
     }
 
     potion_list
   }
 
+  /// Метод проверки предмета, является ли тот зельем
   fn is_potion(&self, slot: usize, item: &ItemStack) -> Option<Potion> {
     match item.kind() {
       ItemKind::Potion => {
@@ -267,8 +267,8 @@ impl SalarixiPlugin for AutoPotionPlugin {
     Self
   }
 
-  fn activate(&'static self, username: String) -> io::Result<()> {
-    let nickname = username.clone();
+  fn activate(&'static self, username: String) -> std::io::Result<()> {
+    let username_clone = username.clone();
 
     let task = tokio::spawn(async move {
       loop {
@@ -277,7 +277,7 @@ impl SalarixiPlugin for AutoPotionPlugin {
         }
 
         let _ = BOT_REGISTRY
-          .async_get_bot(&nickname, async |bot| {
+          .async_get_bot(&username_clone, async |bot| {
             if !bot.workable() {
               return;
             }

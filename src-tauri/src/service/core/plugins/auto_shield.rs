@@ -2,7 +2,6 @@ use azalea::ecs::entity::Entity;
 use azalea::prelude::*;
 use azalea::protocol::packets::game::s_interact::InteractionHand;
 use azalea::registry::builtin::ItemKind;
-use std::io;
 use std::time::Duration;
 use tokio::time::sleep;
 
@@ -16,38 +15,46 @@ use crate::service::generators::*;
 pub struct AutoShieldPlugin;
 
 impl AutoShieldPlugin {
+  /// Метод обнаружения опасной сущности и защиты
   async fn defend(&self, bot: &Client) {
-    let nickname = bot.name();
+    let Some(entity) = self.get_nearest_dangerous_entity(bot) else {
+      return;
+    };
+
+    let username = bot.name();
 
     if let Some(menu) = bot.get_inventory_menu() {
       if let Some(item) = menu.slot(45) {
         if item.is_empty() || item.kind() == ItemKind::Shield {
-          if !get_state(&nickname, "is_eating") && !get_state(&nickname, "is_drinking") {
-            let mut shield_equipped = false;
+          if get_state(&username, "is_eating") || get_state(&username, "is_drinking") {
+            return;
+          }
 
-            if item.kind() != ItemKind::Shield {
-              for (slot, item) in menu.slots().iter().enumerate() {
-                if slot != 45 {
-                  if item.kind() == ItemKind::Shield {
-                    bot.inventory_move_item(ItemKind::Shield, slot, 45, true).await;
-                    shield_equipped = true;
-                    break;
-                  }
+          let mut shield_equipped = false;
+
+          if item.kind() != ItemKind::Shield {
+            for (slot, item) in menu.slots().iter().enumerate() {
+              if slot != 45 {
+                if item.kind() == ItemKind::Shield {
+                  bot.inventory_move_item(ItemKind::Shield, slot, 45, true).await;
+                  shield_equipped = true;
+                  break;
                 }
               }
-            } else {
-              shield_equipped = true;
             }
+          } else {
+            shield_equipped = true;
+          }
 
-            if shield_equipped {
-              self.start_defending(bot).await;
-            }
+          if shield_equipped {
+            self.start_defending(bot, entity).await;
           }
         }
       }
     }
   }
 
+  /// Метод получения ближайшей опасной сущности
   fn get_nearest_dangerous_entity(&self, bot: &Client) -> Option<Entity> {
     let mut nearest_entity = None;
 
@@ -62,35 +69,34 @@ impl AutoShieldPlugin {
     nearest_entity
   }
 
-  async fn start_defending(&self, bot: &Client) {
-    if let Some(entity) = self.get_nearest_dangerous_entity(bot) {
-      let nickname = bot.name();
+  /// Метод прикрытия щитом
+  async fn start_defending(&self, bot: &Client, entity: Entity) {
+    let username = bot.name();
 
-      if get_state(&nickname, "can_looking") && get_state(&nickname, "can_interacting") {
-        set_mutual_states(&nickname, "looking", true);
-        set_mutual_states(&nickname, "interacting", true);
+    if get_state(&username, "can_looking") && get_state(&username, "can_interacting") {
+      set_mutual_states(&username, "looking", true);
+      set_mutual_states(&username, "interacting", true);
 
-        bot.start_use_held_item(InteractionHand::OffHand);
+      bot.start_use_held_item(InteractionHand::OffHand);
 
-        sleep(Duration::from_millis(50)).await;
+      sleep(Duration::from_millis(50)).await;
 
-        bot.look_at(bot.get_entity_position(entity));
+      bot.look_at(bot.get_entity_position(entity));
 
-        sleep(Duration::from_millis(randuint(50, 100))).await;
+      sleep(Duration::from_millis(randuint(50, 100))).await;
 
-        for _ in 0..=randint(2, 4) {
-          if let Some(e) = self.get_nearest_dangerous_entity(bot) {
-            bot.look_at(bot.get_entity_position(e));
-          }
-
-          sleep(Duration::from_millis(randuint(50, 100))).await;
+      for _ in 0..=randint(2, 4) {
+        if let Some(e) = self.get_nearest_dangerous_entity(bot) {
+          bot.look_at(bot.get_entity_position(e));
         }
 
-        bot.release_use_held_item();
-
-        set_mutual_states(&nickname, "looking", false);
-        set_mutual_states(&nickname, "interacting", false);
+        sleep(Duration::from_millis(randuint(50, 100))).await;
       }
+
+      bot.release_use_held_item();
+
+      set_mutual_states(&username, "looking", false);
+      set_mutual_states(&username, "interacting", false);
     }
   }
 }
@@ -100,8 +106,8 @@ impl SalarixiPlugin for AutoShieldPlugin {
     Self
   }
 
-  fn activate(&'static self, username: String) -> io::Result<()> {
-    let nickname = username.clone();
+  fn activate(&'static self, username: String) -> std::io::Result<()> {
+    let username_clone = username.clone();
 
     let task = tokio::spawn(async move {
       loop {
@@ -110,7 +116,7 @@ impl SalarixiPlugin for AutoShieldPlugin {
         }
 
         let _ = BOT_REGISTRY
-          .async_get_bot(&nickname, async |bot| {
+          .async_get_bot(&username_clone, async |bot| {
             if !bot.workable() {
               return;
             }

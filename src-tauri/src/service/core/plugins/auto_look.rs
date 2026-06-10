@@ -1,5 +1,4 @@
 use azalea::prelude::*;
-use std::io;
 use std::time::Duration;
 use tokio::time::sleep;
 
@@ -13,6 +12,7 @@ use crate::service::generators::randuint;
 pub struct AutoLookPlugin;
 
 impl AutoLookPlugin {
+  /// Метод поворота головы на ближайшую сущность
   async fn look(&self, bot: &Client) {
     let username = bot.name();
 
@@ -30,8 +30,8 @@ impl SalarixiPlugin for AutoLookPlugin {
     Self
   }
 
-  fn activate(&'static self, username: String) -> io::Result<()> {
-    let nickname = username.clone();
+  fn activate(&'static self, username: String) -> std::io::Result<()> {
+    let username_clone = username.clone();
 
     let task = tokio::spawn(async move {
       loop {
@@ -40,7 +40,7 @@ impl SalarixiPlugin for AutoLookPlugin {
         }
 
         let _ = BOT_REGISTRY
-          .async_get_bot(&nickname, async |bot| {
+          .async_get_bot(&username_clone, async |bot| {
             if !bot.workable() {
               return;
             }

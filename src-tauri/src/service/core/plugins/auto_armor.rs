@@ -1,7 +1,6 @@
 use azalea::inventory::ItemStack;
 use azalea::prelude::*;
 use azalea::registry::builtin::ItemKind;
-use std::io;
 use std::time::Duration;
 use tokio::time::sleep;
 
@@ -10,14 +9,14 @@ use crate::service::core::registry::BOT_REGISTRY;
 use crate::service::core::traits::SalarixiPlugin;
 use crate::service::core::{process_is_active, PLUGIN_MANAGER};
 
-#[derive(Debug, Clone)]
+/// Структура информации об элементе брони
 struct Armor {
   part: String,
   slot: usize,
   priority: u8,
 }
 
-#[derive(Debug, Clone)]
+/// Структура полного набора брони
 struct ArmorSet {
   helmet: Option<Armor>,
   chestplate: Option<Armor>,
@@ -28,6 +27,7 @@ struct ArmorSet {
 pub struct AutoArmorPlugin;
 
 impl AutoArmorPlugin {
+  /// Метод экипировки брони
   async fn equip_armor(&self, bot: &Client) {
     let mut armors = vec![];
 
@@ -44,30 +44,31 @@ impl AutoArmorPlugin {
     let armor_set = self.get_best_armor(bot, armors);
 
     if let Some(helmet) = armor_set.helmet {
-      if self.is_this_armor_better(bot, &helmet) {
+      if self.is_armor_better(bot, &helmet) {
         self.equip(bot, helmet.slot, 5).await;
       }
     }
 
     if let Some(chestplate) = armor_set.chestplate {
-      if self.is_this_armor_better(bot, &chestplate) {
+      if self.is_armor_better(bot, &chestplate) {
         self.equip(bot, chestplate.slot, 6).await;
       }
     }
 
     if let Some(leggings) = armor_set.leggings {
-      if self.is_this_armor_better(&bot, &leggings) {
+      if self.is_armor_better(&bot, &leggings) {
         self.equip(bot, leggings.slot, 7).await;
       }
     }
 
     if let Some(boots) = armor_set.boots {
-      if self.is_this_armor_better(&bot, &boots) {
+      if self.is_armor_better(&bot, &boots) {
         self.equip(bot, boots.slot, 8).await;
       }
     }
   }
 
+  /// Метод экипировки определённого элемента брони
   async fn equip(&self, bot: &Client, armor_slot: usize, target_slot: usize) {
     if let Some(menu) = bot.get_inventory_menu() {
       if let Some(item) = menu.slot(target_slot) {
@@ -85,6 +86,7 @@ impl AutoArmorPlugin {
     bot.inventory_click(armor_slot, InvClick::from(2), true);
   }
 
+  /// Метод проверки предмета, является ли тот бронёй
   fn is_armor(&self, item: &ItemStack, slot: usize) -> Option<Armor> {
     let helmet = "helmet".to_string();
     let chestplate = "chestplate".to_string();
@@ -249,6 +251,7 @@ impl AutoArmorPlugin {
     });
   }
 
+  /// Метод получения лучшего элемента брони из списка
   fn get_best_armor(&self, bot: &Client, armors: Vec<Armor>) -> ArmorSet {
     let mut armor_set = ArmorSet {
       helmet: None,
@@ -266,7 +269,7 @@ impl AutoArmorPlugin {
             }
           }
 
-          if self.is_this_armor_better(bot, &armor) {
+          if self.is_armor_better(bot, &armor) {
             armor_set.helmet = Some(armor);
           }
         }
@@ -277,7 +280,7 @@ impl AutoArmorPlugin {
             }
           }
 
-          if self.is_this_armor_better(bot, &armor) {
+          if self.is_armor_better(bot, &armor) {
             armor_set.chestplate = Some(armor);
           }
         }
@@ -288,7 +291,7 @@ impl AutoArmorPlugin {
             }
           }
 
-          if self.is_this_armor_better(bot, &armor) {
+          if self.is_armor_better(bot, &armor) {
             armor_set.leggings = Some(armor);
           }
         }
@@ -299,7 +302,7 @@ impl AutoArmorPlugin {
             }
           }
 
-          if self.is_this_armor_better(bot, &armor) {
+          if self.is_armor_better(bot, &armor) {
             armor_set.boots = Some(armor);
           }
         }
@@ -310,8 +313,9 @@ impl AutoArmorPlugin {
     armor_set
   }
 
-  fn is_this_armor_better(&self, bot: &Client, armor: &Armor) -> bool {
-    let target_slot = match armor.part.as_str() {
+  /// Метод сравнения текущей брони с другой
+  fn is_armor_better(&self, bot: &Client, armor: &Armor) -> bool {
+    let current_armor_slot = match armor.part.as_str() {
       "helmet" => 5,
       "chestplate" => 6,
       "leggings" => 7,
@@ -320,8 +324,8 @@ impl AutoArmorPlugin {
     };
 
     if let Some(menu) = bot.get_inventory_menu() {
-      if let Some(item) = menu.slot(target_slot) {
-        if let Some(current_armor) = self.is_armor(item, target_slot) {
+      if let Some(item) = menu.slot(current_armor_slot) {
+        if let Some(current_armor) = self.is_armor(item, current_armor_slot) {
           if armor.part == current_armor.part {
             return armor.priority > current_armor.priority;
           }
@@ -340,8 +344,8 @@ impl SalarixiPlugin for AutoArmorPlugin {
     Self
   }
 
-  fn activate(&'static self, username: String) -> io::Result<()> {
-    let nickname = username.clone();
+  fn activate(&'static self, username: String) -> std::io::Result<()> {
+    let username_clone = username.clone();
 
     let task = tokio::spawn(async move {
       loop {
@@ -350,7 +354,7 @@ impl SalarixiPlugin for AutoArmorPlugin {
         }
 
         let _ = BOT_REGISTRY
-          .async_get_bot(&nickname, async |bot| {
+          .async_get_bot(&username_clone, async |bot| {
             if !bot.workable() {
               return;
             }

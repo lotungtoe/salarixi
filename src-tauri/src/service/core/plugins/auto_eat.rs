@@ -2,7 +2,6 @@ use azalea::inventory::ItemStack;
 use azalea::prelude::*;
 use azalea::protocol::packets::game::s_interact::InteractionHand;
 use azalea::registry::builtin::ItemKind;
-use std::io;
 use std::time::Duration;
 use tokio::time::sleep;
 
@@ -63,6 +62,7 @@ impl AutoEatPlugin {
     }
   }
 
+  /// Метод отправки пакета о кушание еды
   async fn start_eating(&self, bot: &Client) {
     bot.freeze_move();
     bot.start_use_held_item(InteractionHand::MainHand);
@@ -70,6 +70,7 @@ impl AutoEatPlugin {
     bot.unfreeze_move();
   }
 
+  /// Метод получения лучшей еды из списка
   fn get_best_food(&self, bot: &Client, food_list: &Vec<Food>) -> Option<Food> {
     let satiety = bot.get_satiety();
     let health = bot.get_health();
@@ -142,20 +143,22 @@ impl AutoEatPlugin {
     best_food
   }
 
+  /// Метод поиска еды в инвентаре
   fn find_food_in_inventory(&self, bot: &Client) -> Vec<Food> {
     let mut food_list = vec![];
 
     if let Some(menu) = bot.get_inventory_menu() {
-      for (slot, item) in menu.slots().iter().enumerate() {
+      menu.slots().iter().enumerate().for_each(|(slot, item)| {
         if let Some(food) = self.is_food(slot, item) {
           food_list.push(food);
         }
-      }
+      });
     }
 
     food_list
   }
 
+  /// Метод проверки предмета, является ли тот едой
   fn is_food(&self, slot: usize, item: &ItemStack) -> Option<Food> {
     return Some(match item.kind() {
       ItemKind::GoldenApple => Food {
@@ -308,8 +311,8 @@ impl SalarixiPlugin for AutoEatPlugin {
     Self
   }
 
-  fn activate(&'static self, username: String) -> io::Result<()> {
-    let nickname = username.clone();
+  fn activate(&'static self, username: String) -> std::io::Result<()> {
+    let username_clone = username.clone();
 
     let task = tokio::spawn(async move {
       loop {
@@ -318,7 +321,7 @@ impl SalarixiPlugin for AutoEatPlugin {
         }
 
         let _ = BOT_REGISTRY
-          .async_get_bot(&nickname, async |bot| {
+          .async_get_bot(&username_clone, async |bot| {
             if !bot.workable() {
               return;
             }
