@@ -11,8 +11,8 @@ use std::sync::{Arc, RwLock};
 use std::time::Instant;
 
 use crate::api::emit::send_log;
-use crate::service::core::footing::{current_options, CaptchaBypassOptions};
 use crate::service::core::registry::BOT_REGISTRY;
+use crate::service::core::{current_options, CaptchaBypassOptions};
 
 pub static WEB_CAPTCHA_BYPASS: Lazy<Arc<WebCaptchaBypass>> = Lazy::new(|| Arc::new(WebCaptchaBypass::new()));
 pub static MAP_CAPTCHA_BYPASS: Lazy<Arc<MapCaptchaBypass>> = Lazy::new(|| Arc::new(MapCaptchaBypass::new()));

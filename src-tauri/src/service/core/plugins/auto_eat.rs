@@ -8,9 +8,9 @@ use tokio::time::sleep;
 
 use crate::service::core::bot::{get_state, set_mutual_states, set_state};
 use crate::service::core::extensions::{BotDefaultExt, BotInteractExt, BotInventoryExt, BotMovementExt};
-use crate::service::core::footing::{process_is_active, PLUGIN_MANAGER};
 use crate::service::core::registry::BOT_REGISTRY;
 use crate::service::core::traits::SalarixiPlugin;
+use crate::service::core::{process_is_active, PLUGIN_MANAGER};
 use crate::service::generators::randchance;
 
 #[derive(Clone, Copy)]

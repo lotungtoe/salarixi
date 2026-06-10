@@ -6,7 +6,9 @@ use std::sync::Arc;
 use tokio::sync::{broadcast, RwLock};
 
 use crate::api::emit::send_log;
-use crate::service::core::footing::{current_options, MODULE_MANAGER, PLUGIN_MANAGER};
+use crate::service::core::launch::state::current_options;
+use crate::service::core::module_manager::MODULE_MANAGER;
+use crate::service::core::plugin_manager::PLUGIN_MANAGER;
 use crate::service::quick::QUICK_TASK_MANAGER;
 
 pub static BOT_REGISTRY: Lazy<Arc<BotRegistry>> = Lazy::new(|| Arc::new(BotRegistry::new()));

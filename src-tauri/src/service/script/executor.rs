@@ -1,28 +1,22 @@
-use azalea::{
-  bot::BotClientExt, prelude::PathfinderClientExt, protocol::packets::game::s_interact::InteractionHand, BlockPos,
-  SprintDirection, Vec3, WalkDirection,
-};
+use azalea::bot::BotClientExt;
+use azalea::prelude::PathfinderClientExt;
+use azalea::protocol::packets::game::s_interact::InteractionHand;
+use azalea::{BlockPos, SprintDirection, Vec3, WalkDirection};
 use once_cell::sync::Lazy;
 use rhai::{Dynamic, Engine, EvalAltResult, Map};
-use std::{
-  str::FromStr,
-  sync::{
-    atomic::{AtomicBool, Ordering},
-    Arc, RwLock,
-  },
-};
+use std::str::FromStr;
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::{Arc, RwLock};
 
 use crate::api::emit::{send_log, send_message};
+use crate::service::core::bot::{get_state, set_state, PROFILES};
 use crate::service::core::common::convert_hotbar_slot_to_inventory_slot;
 use crate::service::core::extensions::{
   entity_type_from, go_to, BotDefaultExt, BotInteractExt, BotInventoryExt, BotMovementExt, BotPhysicsExt,
   BotRotationExt, InvClick,
 };
-use crate::service::core::{
-  bot::{get_state, set_state, PROFILES},
-  footing::{active_bots_count, current_options},
-  registry::BOT_REGISTRY,
-};
+use crate::service::core::registry::BOT_REGISTRY;
+use crate::service::core::{active_bots_count, current_options};
 use crate::service::webhook::*;
 
 pub static SCRIPT_EXECUTOR: Lazy<ScriptExecutor> = Lazy::new(|| ScriptExecutor::new());

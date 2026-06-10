@@ -19,14 +19,14 @@ use crate::service::core::bot::ProfileStatus;
 use crate::service::core::bot::PROFILES;
 use crate::service::core::bot::STATES;
 use crate::service::core::bot::TASKS;
+use crate::service::core::current_options;
 use crate::service::core::extensions::BotDefaultExt;
-use crate::service::core::footing::current_options;
-use crate::service::core::footing::PLUGIN_MANAGER;
 use crate::service::core::registry::RegistryEvent;
 use crate::service::core::registry::BOT_REGISTRY;
 use crate::service::core::utils::MAP_ACCUMULATOR;
 use crate::service::core::utils::MAP_CAPTCHA_BYPASS;
 use crate::service::core::utils::WEB_CAPTCHA_BYPASS;
+use crate::service::core::PLUGIN_MANAGER;
 use crate::service::generators::*;
 use crate::service::webhook::*;
 

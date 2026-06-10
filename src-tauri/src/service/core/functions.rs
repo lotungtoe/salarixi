@@ -1,7 +1,7 @@
 use crate::api::emit::*;
 use crate::service::core::bot::*;
-use crate::service::core::footing::PLUGIN_MANAGER;
 use crate::service::core::registry::BOT_REGISTRY;
+use crate::service::core::PLUGIN_MANAGER;
 
 /// Вспомогательная функция отправки сообщения в чат от бота
 pub fn send_message_from_bot(username: String, message: String) {

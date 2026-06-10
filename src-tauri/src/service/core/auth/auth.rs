@@ -4,7 +4,7 @@ use tokio::time::sleep;
 
 use crate::api::emit::send_log;
 use crate::service::core::bot::PROFILES;
-use crate::service::core::footing::current_options;
+use crate::service::core::current_options;
 use crate::service::generators::*;
 
 const DEFAULT_AUTH_TEMPLATE: &str = "$cmd $pass";

@@ -3,12 +3,12 @@ use serde::{Deserialize, Serialize};
 
 use crate::api::emit::{send_log, send_message};
 use crate::service::core::bot::{Profile, PROFILES};
-use crate::service::core::footing::{
+use crate::service::core::functions::{disconnect_bot, reset_bot, send_message_from_bot};
+use crate::service::core::registry::{RegistryEvent, BOT_REGISTRY};
+use crate::service::core::{
   active_bots_count, current_options, launch_bots_on_server, process_is_active, stop_bots_and_destroy_data,
   LaunchOptions,
 };
-use crate::service::core::functions::{disconnect_bot, reset_bot, send_message_from_bot};
-use crate::service::core::registry::{RegistryEvent, BOT_REGISTRY};
 use crate::service::rpc::DISCORD_RPC_MANAGER;
 use crate::service::script::SCRIPT_EXECUTOR;
 use crate::service::tools::ping::{ping_server, ServerInformation};
