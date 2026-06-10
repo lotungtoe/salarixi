@@ -12,7 +12,7 @@ use azalea::registry::builtin::ItemKind;
 use std::time::Duration;
 use tokio::time::sleep;
 
-use crate::service::core::bot::{get_state, set_mutual_states, set_state};
+use crate::service::core::bot::{get_state, set_mutual_states, set_state, State};
 use crate::service::core::common::convert_inventory_slot_to_hotbar_slot;
 use crate::service::core::extensions::{BotDefaultExt, BotMovementExt};
 use crate::service::generators::randint;
@@ -105,9 +105,9 @@ impl BotInventoryExt for Client {
 
     self.freeze_move();
 
-    set_state(&username, "can_eating", false);
-    set_state(&username, "can_drinking", false);
-    set_state(&username, "can_attacking", false);
+    set_state(&username, State::CanEating, false);
+    set_state(&username, State::CanDrinking, false);
+    set_state(&username, State::CanAttacking, false);
 
     set_mutual_states(&username, "interacting", true);
   }
@@ -117,9 +117,9 @@ impl BotInventoryExt for Client {
 
     self.unfreeze_move();
 
-    set_state(&username, "can_eating", true);
-    set_state(&username, "can_drinking", true);
-    set_state(&username, "can_attacking", true);
+    set_state(&username, State::CanEating, true);
+    set_state(&username, State::CanDrinking, true);
+    set_state(&username, State::CanAttacking, true);
 
     set_mutual_states(&username, "interacting", false);
   }
@@ -179,7 +179,7 @@ impl BotInventoryExt for Client {
 
     if let Some(inventory) = self.get_current_inventory() {
       if lock {
-        if !get_state(&username, "can_interacting") {
+        if !get_state(&username, State::CanInteracting) {
           return;
         }
 
@@ -219,7 +219,7 @@ impl BotInventoryExt for Client {
 
     if let Some(inventory) = self.get_current_inventory() {
       if lock {
-        if !get_state(&username, "can_interacting") {
+        if !get_state(&username, State::CanInteracting) {
           return;
         }
 

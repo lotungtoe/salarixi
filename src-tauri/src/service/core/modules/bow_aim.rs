@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use std::time::Duration;
 use tokio::time::sleep;
 
-use crate::service::core::bot::{get_state, kill_task, set_mutual_states, TASKS};
+use crate::service::core::bot::{get_state, kill_task, set_mutual_states, State, TASKS};
 use crate::service::core::extensions::{entity_type_from, BotDefaultExt, BotInteractExt, BotInventoryExt};
 use crate::service::core::registry::BOT_REGISTRY;
 use crate::service::generators::*;
@@ -46,7 +46,7 @@ impl BowAimModule {
         .async_get_bot(&username, async |bot| {
           let nickname = bot.name();
 
-          if get_state(&nickname, "can_looking") {
+          if get_state(&nickname, State::CanLooking) {
             set_mutual_states(&nickname, "looking", true);
 
             loop {
@@ -75,10 +75,10 @@ impl BowAimModule {
   async fn shoot(&self, bot: &Client, target: String, distance: f64) {
     let nickname = bot.name();
 
-    if get_state(&nickname, "can_interacting")
-      && !get_state(&nickname, "is_eating")
-      && !get_state(&nickname, "is_drinking")
-      && !get_state(&nickname, "is_attacking")
+    if get_state(&nickname, State::CanInteracting)
+      && !get_state(&nickname, State::IsEating)
+      && !get_state(&nickname, State::IsDrinking)
+      && !get_state(&nickname, State::IsAttacking)
     {
       if let Some(slot) = self.find_bow_in_inventory(bot) {
         set_mutual_states(&nickname, "interacting", true);

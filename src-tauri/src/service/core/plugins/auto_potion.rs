@@ -7,6 +7,7 @@ use azalea::registry::builtin::Potion as PotionKind;
 use std::time::Duration;
 use tokio::time::sleep;
 
+use crate::service::core::bot::State;
 use crate::service::core::bot::{get_state, set_mutual_states, set_state};
 use crate::service::core::extensions::{BotDefaultExt, BotInteractExt, BotInventoryExt, BotMovementExt, BotPhysicsExt};
 use crate::service::core::registry::BOT_REGISTRY;
@@ -36,26 +37,26 @@ impl AutoPotionPlugin {
 
       if potions.len() > 0 {
         if let Some(potion) = self.get_best_potion(bot, potions) {
-          if health < 10.0 && !get_state(&nickname, "is_eating") {
-            set_state(&nickname, "can_eating", false);
+          if health < 10.0 && !get_state(&nickname, State::IsEating) {
+            set_state(&nickname, State::CanEating, false);
           } else {
-            set_state(&nickname, "can_eating", true);
+            set_state(&nickname, State::CanEating, true);
           }
 
-          if get_state(&nickname, "can_drinking")
-            && !get_state(&nickname, "is_eating")
-            && !get_state(&nickname, "is_interacting")
+          if get_state(&nickname, State::CanDrinking)
+            && !get_state(&nickname, State::IsEating)
+            && !get_state(&nickname, State::IsInteracting)
           {
             let mut should_drink = true;
 
-            if get_state(&nickname, "is_attacking") {
+            if get_state(&nickname, State::IsAttacking) {
               should_drink = !randchance(health as f64 / 20.0);
             }
 
             if should_drink {
-              set_state(&nickname, "can_eating", false);
-              set_state(&nickname, "can_attacking", false);
-              set_state(&nickname, "can_interacting", false);
+              set_state(&nickname, State::CanEating, false);
+              set_state(&nickname, State::CanAttacking, false);
+              set_state(&nickname, State::CanInteracting, false);
               set_mutual_states(&nickname, "drinking", true);
 
               bot.take_item(potion.slot, false).await;
@@ -63,9 +64,9 @@ impl AutoPotionPlugin {
               self.use_potion(bot, potion.kind).await;
               sleep(Duration::from_millis(50)).await;
 
-              set_state(&nickname, "can_eating", true);
-              set_state(&nickname, "can_interacting", true);
-              set_state(&nickname, "can_attacking", true);
+              set_state(&nickname, State::CanEating, true);
+              set_state(&nickname, State::CanInteracting, true);
+              set_state(&nickname, State::CanAttacking, true);
               set_mutual_states(&nickname, "drinking", false);
             }
           }

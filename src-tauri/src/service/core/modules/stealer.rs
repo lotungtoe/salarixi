@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 use std::time::Duration;
 use tokio::time::sleep;
 
+use crate::service::core::bot::State;
 use crate::service::core::bot::{get_state, kill_task, set_mutual_states, set_state};
 use crate::service::core::common::get_block_state;
 use crate::service::core::extensions::BotMovementExt;
@@ -79,10 +80,10 @@ impl StealerModule {
 
       let username = bot.username();
 
-      set_state(&username, "can_attacking", false);
-      set_state(&username, "can_interacting", false);
-      set_state(&username, "can_eating", false);
-      set_state(&username, "can_drinking", false);
+      set_state(&username, State::CanAttacking, false);
+      set_state(&username, State::CanInteracting, false);
+      set_state(&username, State::CanEating, false);
+      set_state(&username, State::CanDrinking, false);
 
       for slot in 0..=26 {
         if let Some(item) = menu.slot(slot) {
@@ -94,10 +95,10 @@ impl StealerModule {
 
       bot.unfreeze_move();
 
-      set_state(&username, "can_attacking", true);
-      set_state(&username, "can_interacting", true);
-      set_state(&username, "can_eating", true);
-      set_state(&username, "can_drinking", true);
+      set_state(&username, State::CanAttacking, true);
+      set_state(&username, State::CanInteracting, true);
+      set_state(&username, State::CanEating, true);
+      set_state(&username, State::CanDrinking, true);
     }
   }
 
@@ -111,7 +112,7 @@ impl StealerModule {
       let target_positions = self.find_nearest_targets(bot, position, &options.target, options.radius.unwrap_or(5));
 
       for pos in target_positions {
-        if get_state(&nickname, "can_looking") && get_state(&nickname, "can_interacting") {
+        if get_state(&nickname, State::CanLooking) && get_state(&nickname, State::CanInteracting) {
           set_mutual_states(&nickname, "looking", true);
           set_mutual_states(&nickname, "interacting", true);
 
@@ -130,7 +131,7 @@ impl StealerModule {
         }
       }
 
-      if get_state(&nickname, "can_looking") {
+      if get_state(&nickname, State::CanLooking) {
         bot.set_direction(
           direction.0 + randfloat(-2.5, 2.5) as f32,
           direction.1 + randfloat(-2.5, 2.5) as f32,

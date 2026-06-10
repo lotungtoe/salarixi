@@ -5,7 +5,7 @@ use azalea::registry::builtin::ItemKind;
 use std::time::Duration;
 use tokio::time::sleep;
 
-use crate::service::core::bot::{get_state, set_mutual_states};
+use crate::service::core::bot::{get_state, set_mutual_states, State};
 use crate::service::core::extensions::{BotDefaultExt, BotInteractExt, BotInventoryExt, EntityType};
 use crate::service::core::registry::BOT_REGISTRY;
 use crate::service::core::traits::SalarixiPlugin;
@@ -26,7 +26,7 @@ impl AutoShieldPlugin {
     if let Some(menu) = bot.get_inventory_menu() {
       if let Some(item) = menu.slot(45) {
         if item.is_empty() || item.kind() == ItemKind::Shield {
-          if get_state(&username, "is_eating") || get_state(&username, "is_drinking") {
+          if get_state(&username, State::IsEating) || get_state(&username, State::IsDrinking) {
             return;
           }
 
@@ -73,7 +73,7 @@ impl AutoShieldPlugin {
   async fn start_defending(&self, bot: &Client, entity: Entity) {
     let username = bot.name();
 
-    if get_state(&username, "can_looking") && get_state(&username, "can_interacting") {
+    if get_state(&username, State::CanLooking) && get_state(&username, State::CanInteracting) {
       set_mutual_states(&username, "looking", true);
       set_mutual_states(&username, "interacting", true);
 

@@ -9,7 +9,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, RwLock};
 
 use crate::api::emit::{send_log, send_message};
-use crate::service::core::bot::{get_state, set_state, PROFILES};
+use crate::service::core::bot::{get_state, set_state, State, PROFILES};
 use crate::service::core::common::convert_hotbar_slot_to_inventory_slot;
 use crate::service::core::extensions::{
   entity_type_from, go_to, BotDefaultExt, BotInteractExt, BotInventoryExt, BotMovementExt, BotPhysicsExt,
@@ -731,11 +731,19 @@ impl ScriptExecutor {
     engine
       .register_fn("set_state", {
         let su = su.clone();
-        move |mu: &str, field: &str, value: bool| set_state(&Self::parse_username(&su, mu), field, value)
+        move |mu: &str, state_str: &str, value: bool| {
+          if let Some(state) = State::from_str(state_str) {
+            set_state(&Self::parse_username(&su, mu), state, value);
+          }
+        }
       })
       .register_fn("get_state", {
         let su = su.clone();
-        move |mu: &str, field: &str| get_state(&Self::parse_username(&su, mu), field)
+        move |mu: &str, state_str: &str| {
+          if let Some(state) = State::from_str(state_str) {
+            get_state(&Self::parse_username(&su, mu), state);
+          }
+        }
       });
 
     match engine.eval::<()>(script.as_str()) {

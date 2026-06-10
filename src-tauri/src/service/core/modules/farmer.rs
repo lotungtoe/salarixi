@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use std::time::Duration;
 use tokio::time::sleep;
 
-use crate::service::core::bot::{get_state, kill_task, set_mutual_states};
+use crate::service::core::bot::{get_state, kill_task, set_mutual_states, State};
 use crate::service::core::common::get_block_state;
 use crate::service::core::extensions::{BotDefaultExt, BotInventoryExt, BotRotationExt};
 use crate::service::core::registry::BOT_REGISTRY;
@@ -225,9 +225,9 @@ impl FarmerModule {
   async fn interact_with_block(&self, bot: &Client, block_pos: BlockPos, options: &FarmerOptions) {
     let nickname = bot.username();
 
-    if !get_state(&nickname, "is_eating")
-      && !get_state(&nickname, "is_drinking")
-      && get_state(&nickname, "can_interacting")
+    if !get_state(&nickname, State::IsEating)
+      && !get_state(&nickname, State::IsDrinking)
+      && get_state(&nickname, State::CanInteracting)
     {
       if let Some(state) = get_block_state(bot, block_pos) {
         set_mutual_states(&nickname, "interacting", true);

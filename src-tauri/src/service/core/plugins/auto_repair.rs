@@ -6,7 +6,7 @@ use azalea::registry::builtin::ItemKind;
 use std::time::Duration;
 use tokio::time::sleep;
 
-use crate::service::core::bot::{get_state, set_mutual_states};
+use crate::service::core::bot::{get_state, set_mutual_states, State};
 use crate::service::core::extensions::{BotDefaultExt, BotInteractExt, BotInventoryExt};
 use crate::service::core::registry::BOT_REGISTRY;
 use crate::service::core::traits::SalarixiPlugin;
@@ -28,7 +28,7 @@ impl AutoRepairPlugin {
     let nickname = bot.name();
 
     for broken_item in broken_items {
-      if !get_state(&nickname, "is_eating") && !get_state(&nickname, "is_drinking") {
+      if !get_state(&nickname, State::IsEating) && !get_state(&nickname, State::IsDrinking) {
         self.repair_item(bot, broken_item).await;
       }
     }
@@ -54,7 +54,7 @@ impl AutoRepairPlugin {
       let nickname = bot.name();
 
       for _ in 0..=count {
-        if !get_state(&nickname, "can_interacting") || !get_state(&nickname, "can_looking") {
+        if !get_state(&nickname, State::CanInteracting) || !get_state(&nickname, State::CanLooking) {
           continue;
         }
 

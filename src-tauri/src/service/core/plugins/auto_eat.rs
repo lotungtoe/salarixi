@@ -5,7 +5,7 @@ use azalea::registry::builtin::ItemKind;
 use std::time::Duration;
 use tokio::time::sleep;
 
-use crate::service::core::bot::{get_state, set_mutual_states, set_state};
+use crate::service::core::bot::{get_state, set_mutual_states, set_state, State};
 use crate::service::core::extensions::{BotDefaultExt, BotInteractExt, BotInventoryExt, BotMovementExt};
 use crate::service::core::registry::BOT_REGISTRY;
 use crate::service::core::traits::SalarixiPlugin;
@@ -25,35 +25,35 @@ impl AutoEatPlugin {
     let satiety = bot.get_satiety();
     let health = bot.get_health();
 
-    let nickname = bot.name();
+    let username = bot.name();
 
     if satiety < 20 || health < 15.0 {
       let food_list = self.find_food_in_inventory(bot);
 
       if let Some(best_food) = self.get_best_food(bot, &food_list) {
-        if get_state(&nickname, "can_eating")
-          && !get_state(&nickname, "is_drinking")
-          && !get_state(&nickname, "is_interacting")
+        if get_state(&username, State::CanEating)
+          && !get_state(&username, State::IsDrinking)
+          && !get_state(&username, State::IsInteracting)
         {
           let mut should_eat = true;
 
-          if get_state(&nickname, "is_attacking") {
+          if get_state(&username, State::IsAttacking) {
             should_eat = !(randchance(satiety as f64 / 20.0) && randchance(health as f64 / 20.0));
           }
 
           if should_eat {
-            set_state(&nickname, "can_drinking", false);
-            set_state(&nickname, "can_interacting", false);
-            set_mutual_states(&nickname, "eating", true);
+            set_state(&username, State::CanDrinking, false);
+            set_state(&username, State::CanInteracting, false);
+            set_mutual_states(&username, "eating", true);
 
             bot.take_item(best_food.slot, false).await;
             sleep(Duration::from_millis(50)).await;
             self.start_eating(bot).await;
             sleep(Duration::from_millis(50)).await;
 
-            set_state(&nickname, "can_drinking", true);
-            set_state(&nickname, "can_interacting", true);
-            set_mutual_states(&nickname, "eating", false);
+            set_state(&username, State::CanDrinking, true);
+            set_state(&username, State::CanInteracting, true);
+            set_mutual_states(&username, "eating", false);
           } else {
             sleep(Duration::from_millis(1800)).await;
           }

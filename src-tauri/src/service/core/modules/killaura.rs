@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use std::time::Duration;
 use tokio::time::sleep;
 
-use crate::service::core::bot::{get_state, kill_task, set_mutual_states, TASKS};
+use crate::service::core::bot::{get_state, kill_task, set_mutual_states, State, TASKS};
 use crate::service::core::extensions::{
   entity_type_from, BotDefaultExt, BotInventoryExt, BotMovementExt, BotRotationExt,
 };
@@ -268,14 +268,14 @@ impl KillauraModule {
             } else {
               bot.stop_jumping();
 
-              if get_state(&username, "is_sprinting") {
+              if get_state(&username, State::IsSprinting) {
                 bot.stop_move();
               }
             }
           } else {
             bot.stop_jumping();
 
-            if get_state(&username, "is_sprinting") {
+            if get_state(&username, State::IsSprinting) {
               bot.stop_move();
             }
           }
@@ -343,10 +343,10 @@ impl KillauraModule {
     let nickname = bot.username();
 
     loop {
-      if get_state(&nickname, "can_attacking")
-        && !get_state(&nickname, "is_interacting")
-        && !get_state(&nickname, "is_eating")
-        && !get_state(&nickname, "is_drinking")
+      if get_state(&nickname, State::CanAttacking)
+        && !get_state(&nickname, State::IsInteracting)
+        && !get_state(&nickname, State::IsEating)
+        && !get_state(&nickname, State::IsDrinking)
       {
         if let Some(entity) = Self::find_nearest_entity(
           bot,
@@ -415,10 +415,10 @@ impl KillauraModule {
     let nickname = bot.username();
 
     loop {
-      if get_state(&nickname, "can_attacking")
-        && !get_state(&nickname, "is_interacting")
-        && !get_state(&nickname, "is_eating")
-        && !get_state(&nickname, "is_drinking")
+      if get_state(&nickname, State::CanAttacking)
+        && !get_state(&nickname, State::IsInteracting)
+        && !get_state(&nickname, State::IsEating)
+        && !get_state(&nickname, State::IsDrinking)
       {
         if let Some(entity) = Self::find_nearest_entity(
           bot,

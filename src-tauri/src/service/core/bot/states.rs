@@ -1,13 +1,52 @@
 use hashbrown::HashMap;
 use once_cell::sync::Lazy;
-use serde::{Deserialize, Serialize};
-use std::sync::{Arc, RwLock};
+use std::sync::Arc;
+use tokio::sync::RwLock;
 
 use crate::api::emit::send_log;
 
 pub static STATES: Lazy<Arc<StateManager>> = Lazy::new(|| Arc::new(StateManager::new()));
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+/// Состояние бота
+pub enum State {
+  CanWalking,
+  CanSprinting,
+  CanEating,
+  CanDrinking,
+  CanAttacking,
+  CanLooking,
+  CanInteracting,
+  IsWalking,
+  IsSprinting,
+  IsEating,
+  IsDrinking,
+  IsAttacking,
+  IsLooking,
+  IsInteracting,
+}
+
+impl State {
+  pub fn from_str<'a>(str: impl Into<&'a str>) -> Option<Self> {
+    match str.into() {
+      "can_walking" => Some(Self::CanWalking),
+      "can_sprinting" => Some(Self::CanSprinting),
+      "can_eating" => Some(Self::CanEating),
+      "can_drinking" => Some(Self::CanDrinking),
+      "can_attacking" => Some(Self::CanAttacking),
+      "can_looking" => Some(Self::CanLooking),
+      "can_interacting" => Some(Self::CanInteracting),
+      "is_walking" => Some(Self::IsWalking),
+      "is_sprinting" => Some(Self::IsSprinting),
+      "is_eating" => Some(Self::IsEating),
+      "is_drinking" => Some(Self::IsDrinking),
+      "is_attacking" => Some(Self::IsAttacking),
+      "is_looking" => Some(Self::IsLooking),
+      "is_interacting" => Some(Self::IsInteracting),
+      _ => None,
+    }
+  }
+}
+
 pub struct States {
   pub can_walking: bool,
   pub can_sprinting: bool,
@@ -45,101 +84,69 @@ impl States {
     }
   }
 
-  pub fn get(&self, field: &str) -> bool {
-    match field {
-      "can_walking" => {
-        return self.can_walking;
-      }
-      "can_sprinting" => {
-        return self.can_sprinting;
-      }
-      "can_eating" => {
-        return self.can_eating;
-      }
-      "can_drinking" => {
-        return self.can_drinking;
-      }
-      "can_attacking" => {
-        return self.can_attacking;
-      }
-      "can_looking" => {
-        return self.can_looking;
-      }
-      "can_interacting" => {
-        return self.can_interacting;
-      }
-      "is_walking" => {
-        return self.is_walking;
-      }
-      "is_sprinting" => {
-        return self.is_sprinting;
-      }
-      "is_eating" => {
-        return self.is_eating;
-      }
-      "is_drinking" => {
-        return self.is_drinking;
-      }
-      "is_attacking" => {
-        return self.is_attacking;
-      }
-      "is_looking" => {
-        return self.is_looking;
-      }
-      "is_interacting" => {
-        return self.is_interacting;
-      }
-      _ => {}
+  pub fn get(&self, state: State) -> bool {
+    match state {
+      State::CanWalking => self.can_walking,
+      State::CanSprinting => self.can_sprinting,
+      State::CanEating => self.can_eating,
+      State::CanDrinking => self.can_drinking,
+      State::CanAttacking => self.can_attacking,
+      State::CanLooking => self.can_looking,
+      State::CanInteracting => self.can_interacting,
+      State::IsWalking => self.is_walking,
+      State::IsSprinting => self.is_sprinting,
+      State::IsEating => self.is_eating,
+      State::IsDrinking => self.is_drinking,
+      State::IsAttacking => self.is_attacking,
+      State::IsLooking => self.is_looking,
+      State::IsInteracting => self.is_interacting,
     }
-
-    false
   }
 
-  pub fn set(&mut self, field: &str, value: bool) {
-    match field {
-      "can_walking" => {
+  pub fn set(&mut self, state: State, value: bool) {
+    match state {
+      State::CanWalking => {
         self.can_walking = value;
       }
-      "can_sprinting" => {
+      State::CanSprinting => {
         self.can_sprinting = value;
       }
-      "can_eating" => {
+      State::CanEating => {
         self.can_eating = value;
       }
-      "can_drinking" => {
+      State::CanDrinking => {
         self.can_drinking = value;
       }
-      "can_attacking" => {
+      State::CanAttacking => {
         self.can_attacking = value;
       }
-      "can_looking" => {
+      State::CanLooking => {
         self.can_looking = value;
       }
-      "can_interacting" => {
+      State::CanInteracting => {
         self.can_interacting = value;
       }
-      "is_walking" => {
+      State::IsWalking => {
         self.is_walking = value;
       }
-      "is_sprinting" => {
+      State::IsSprinting => {
         self.is_sprinting = value;
       }
-      "is_eating" => {
+      State::IsEating => {
         self.is_eating = value;
       }
-      "is_drinking" => {
+      State::IsDrinking => {
         self.is_drinking = value;
       }
-      "is_attacking" => {
+      State::IsAttacking => {
         self.is_attacking = value;
       }
-      "is_looking" => {
+      State::IsLooking => {
         self.is_looking = value;
       }
-      "is_interacting" => {
+      State::IsInteracting => {
         self.is_interacting = value;
       }
-      _ => {}
     }
   }
 }
@@ -156,61 +163,80 @@ impl StateManager {
   }
 
   pub fn push(&self, username: &str) {
-    let mut states = self.map.write().unwrap();
-    if !states.contains_key(username) {
-      states.insert(username.to_string(), States::new());
+    if let Ok(mut states) = self.map.try_write() {
+      if !states.contains_key(username) {
+        states.insert(username.to_string(), States::new());
+      }
     }
   }
 
   pub fn clear(&self) {
-    let mut states = self.map.write().unwrap();
-    states.clear();
+    if let Ok(mut states) = self.map.try_write() {
+      states.clear();
+    }
 
     send_log(format!("Состояния ботов очищены"), "extended");
   }
 
   pub fn reset(&self, username: &str) {
-    if let Some(states) = self.map.write().unwrap().get_mut(username) {
-      states.can_walking = true;
-      states.can_sprinting = true;
-      states.can_eating = true;
-      states.can_drinking = true;
-      states.can_attacking = true;
-      states.can_looking = true;
-      states.can_interacting = true;
-      states.is_walking = false;
-      states.is_sprinting = false;
-      states.is_eating = false;
-      states.is_drinking = false;
-      states.is_attacking = false;
-      states.is_looking = false;
-      states.is_interacting = false;
+    if let Ok(mut states) = self.map.try_write() {
+      if let Some(s) = states.get_mut(username) {
+        s.can_walking = true;
+        s.can_sprinting = true;
+        s.can_eating = true;
+        s.can_drinking = true;
+        s.can_attacking = true;
+        s.can_looking = true;
+        s.can_interacting = true;
+        s.is_walking = false;
+        s.is_sprinting = false;
+        s.is_eating = false;
+        s.is_drinking = false;
+        s.is_attacking = false;
+        s.is_looking = false;
+        s.is_interacting = false;
+      }
     }
   }
 }
 
 /// Вспомогательная функция получения состояния
-pub fn get_state(username: &str, field: &str) -> bool {
-  let map = STATES.map.read().unwrap();
-
-  if let Some(states) = map.get(username) {
-    return states.get(field);
+pub fn get_state(username: &str, state: State) -> bool {
+  if let Ok(states) = STATES.map.try_read() {
+    if let Some(s) = states.get(username) {
+      return s.get(state);
+    }
   }
 
   false
 }
 
 /// Вспомогательная функция установки значения для состояния
-pub fn set_state(username: &str, field: &str, value: bool) {
-  if let Some(states) = STATES.map.write().unwrap().get_mut(username) {
-    states.set(field, value);
+pub fn set_state(username: &str, state: State, value: bool) {
+  if let Ok(mut states) = STATES.map.try_write() {
+    if let Some(s) = states.get_mut(username) {
+      s.set(state, value);
+    }
   }
 }
 
 /// Вспомогательная функция взаимной установки значений для ```can``` и ```is``` состояний
 pub fn set_mutual_states(username: &str, name: &str, current_value: bool) {
-  if let Some(states) = STATES.map.write().unwrap().get_mut(username) {
-    states.set(format!("is_{}", name).as_str(), current_value);
-    states.set(format!("can_{}", name).as_str(), !current_value);
+  let (is_state, can_state) = match name {
+    "walking" => (State::IsWalking, State::CanWalking),
+    "sprinting" => (State::IsSprinting, State::CanSprinting),
+    "eating" => (State::IsEating, State::CanEating),
+    "drinking" => (State::IsDrinking, State::CanDrinking),
+    "attacking" => (State::IsAttacking, State::CanAttacking),
+    "looking" => (State::IsLooking, State::CanLooking),
+    "interacting" => (State::IsInteracting, State::CanInteracting),
+    _ => return,
+  };
+
+  if let Ok(mut states) = STATES.map.try_write() {
+    if let Some(s) = states.get_mut(username) {
+      s.set(is_state, current_value);
+      s.set(can_state, !current_value);
+    }
   }
 }

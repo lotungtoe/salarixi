@@ -5,7 +5,7 @@ use azalea::pathfinder::PathfinderOpts;
 use azalea::{prelude::*, SprintDirection, StartSprintEvent, StartWalkEvent, WalkDirection};
 use std::time::Duration;
 
-use crate::service::core::bot::{get_state, set_mutual_states, set_state};
+use crate::service::core::bot::{get_state, set_mutual_states, set_state, State};
 use crate::service::core::extensions::BotDefaultExt;
 use crate::service::core::registry::BOT_REGISTRY;
 
@@ -21,10 +21,10 @@ impl BotMovementExt for Client {
   fn start_walking(&self, direction: WalkDirection) {
     let username = self.name();
 
-    if get_state(&username, "can_walking")
-      && !get_state(&username, "is_eating")
-      && !get_state(&username, "is_drinking")
-      && !get_state(&username, "is_interacting")
+    if get_state(&username, State::CanWalking)
+      && !get_state(&username, State::IsEating)
+      && !get_state(&username, State::IsDrinking)
+      && !get_state(&username, State::IsInteracting)
     {
       self.ecs.lock().write_message(StartWalkEvent {
         entity: self.entity,
@@ -38,10 +38,10 @@ impl BotMovementExt for Client {
   fn start_sprinting(&self, direction: SprintDirection) {
     let username = self.name();
 
-    if get_state(&username, "can_sprinting")
-      && !get_state(&username, "is_eating")
-      && !get_state(&username, "is_drinking")
-      && !get_state(&username, "is_interacting")
+    if get_state(&username, State::CanSprinting)
+      && !get_state(&username, State::IsEating)
+      && !get_state(&username, State::IsDrinking)
+      && !get_state(&username, State::IsInteracting)
     {
       self.ecs.lock().write_message(StartSprintEvent {
         entity: self.entity,
@@ -72,23 +72,23 @@ impl BotMovementExt for Client {
 
     let username = self.name();
 
-    set_state(&username, "is_walking", false);
-    set_state(&username, "is_walking", false);
-    set_state(&username, "can_walking", false);
-    set_state(&username, "can_sprinting", false);
+    set_state(&username, State::IsWalking, false);
+    set_state(&username, State::IsSprinting, false);
+    set_state(&username, State::CanWalking, false);
+    set_state(&username, State::CanSprinting, false);
   }
 
   fn unfreeze_move(&self) {
     let username = self.name();
 
-    set_state(&username, "can_walking", true);
-    set_state(&username, "can_sprinting", true);
+    set_state(&username, State::CanWalking, true);
+    set_state(&username, State::CanSprinting, true);
   }
 }
 
 /// Функция безопасного задания координат по X и Z для бота
 pub fn go_to(username: String, x: i32, z: i32) {
-  if get_state(&username, "can_walking") && get_state(&username, "can_sprinting") {
+  if get_state(&username, State::CanWalking) && get_state(&username, State::CanSprinting) {
     tokio::spawn(async move {
       BOT_REGISTRY
         .async_get_bot(&username, async |bot| {
