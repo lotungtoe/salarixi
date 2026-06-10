@@ -1,7 +1,7 @@
 use once_cell::sync::Lazy;
 use std::sync::Arc;
 
-use crate::service::core::bot::run_task;
+use crate::service::core::bot::push_task;
 use crate::service::core::bot::PROFILES;
 use crate::service::core::modules::*;
 
@@ -77,7 +77,7 @@ impl ModuleManager {
             });
 
             if mode.as_str() == "spamming" {
-              run_task(&username, "spamming", task);
+              push_task(&username, "spamming", task);
             }
           } else if mode.as_str() == "spamming" {
             self.chat.stop(&username);
@@ -99,7 +99,7 @@ impl ModuleManager {
               self.action.enable(&nickname, &options).await;
             });
 
-            run_task(&username, action.as_str(), task);
+            push_task(&username, action.as_str(), task);
           } else {
             self.action.stop(&username, action.as_str()).await;
           }
@@ -125,7 +125,7 @@ impl ModuleManager {
               self.movement.enable(&nickname, &options).await;
             });
 
-            run_task(&username, "movement", task);
+            push_task(&username, "movement", task);
           } else {
             self.movement.stop(&username).await;
           }
@@ -144,7 +144,7 @@ impl ModuleManager {
               self.anti_afk.enable(&nickname, &options).await;
             });
 
-            run_task(&username, "anti-afk", task);
+            push_task(&username, "anti-afk", task);
           } else {
             self.anti_afk.stop(&username).await;
           }
@@ -163,7 +163,7 @@ impl ModuleManager {
               self.stalker.enable(&nickname, &options).await;
             });
 
-            run_task(&username, "stalker", task);
+            push_task(&username, "stalker", task);
           } else {
             self.stalker.stop(&username);
           }
@@ -182,7 +182,7 @@ impl ModuleManager {
               self.flight.enable(&nickname, &options).await;
             });
 
-            run_task(&username, "flight", task);
+            push_task(&username, "flight", task);
           } else {
             self.flight.stop(&username);
           }
@@ -201,7 +201,7 @@ impl ModuleManager {
               self.killaura.enable(&nickname, &options).await;
             });
 
-            run_task(&username, "killaura", task);
+            push_task(&username, "killaura", task);
           } else {
             self.killaura.stop(&username).await;
           }
@@ -220,7 +220,7 @@ impl ModuleManager {
               self.scaffold.enable(&nickname, &options).await;
             });
 
-            run_task(&username, "scaffold", task);
+            push_task(&username, "scaffold", task);
           } else {
             self.scaffold.stop(&username).await;
           }
@@ -239,7 +239,7 @@ impl ModuleManager {
               self.anti_fall.enable(&nickname, &options).await;
             });
 
-            run_task(&username, "anti-fall", task);
+            push_task(&username, "anti-fall", task);
           } else {
             self.anti_fall.stop(&username);
           }
@@ -258,7 +258,7 @@ impl ModuleManager {
               self.bow_aim.enable(&nickname, &options).await;
             });
 
-            run_task(&username, "bow-aim", task);
+            push_task(&username, "bow-aim", task);
           } else {
             self.bow_aim.stop(&username).await;
           }
@@ -277,7 +277,7 @@ impl ModuleManager {
               self.stealer.enable(&nickname, &options).await;
             });
 
-            run_task(&username, "stealer", task);
+            push_task(&username, "stealer", task);
           } else {
             self.stealer.stop(&username);
           }
@@ -296,7 +296,7 @@ impl ModuleManager {
               self.miner.enable(&nickname, &options).await;
             });
 
-            run_task(&username, "miner", task);
+            push_task(&username, "miner", task);
           } else {
             self.miner.stop(&username).await;
           }
@@ -315,7 +315,7 @@ impl ModuleManager {
               self.farmer.enable(&nickname, &options).await;
             });
 
-            run_task(&username, "farmer", task);
+            push_task(&username, "farmer", task);
           } else {
             self.farmer.stop(&username);
           }

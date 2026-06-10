@@ -1,15 +1,17 @@
 use hashbrown::HashMap;
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
-use std::sync::{Arc, RwLock};
+use std::sync::Arc;
+use tokio::sync::RwLock;
 
 use crate::api::emit::send_log;
 
 pub static PROFILES: Lazy<Arc<ProfileManager>> = Lazy::new(|| Arc::new(ProfileManager::new()));
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+/// Структура профиля бота
+#[derive(Clone, Serialize, Deserialize)]
 pub struct Profile {
-  pub status: ProfileStatus,
+  pub status: BotStatus,
   pub username: String,
   pub password: Option<String>,
   pub email: Option<String>,
@@ -23,15 +25,17 @@ pub struct Profile {
   pub group: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub enum ProfileStatus {
+/// Состояние бота
+#[derive(Clone, Serialize, Deserialize, PartialEq)]
+pub enum BotStatus {
   Preparation,
   Connecting,
   Online,
   Offline,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+/// Структура прокси бота
+#[derive(Clone, Serialize, Deserialize)]
 pub struct ProfileProxy {
   pub ip_address: Option<String>,
   pub proxy: Option<String>,
@@ -40,9 +44,10 @@ pub struct ProfileProxy {
 }
 
 impl Profile {
+  /// Метод создания нового профиля
   pub fn new(username: &str, password: Option<String>, email: Option<String>) -> Self {
     Self {
-      status: ProfileStatus::Preparation,
+      status: BotStatus::Preparation,
       username: username.to_string(),
       password: password,
       email: email,
@@ -62,7 +67,7 @@ impl Profile {
     }
   }
 
-  pub fn set_status(&mut self, status: ProfileStatus) {
+  pub fn set_status(&mut self, status: BotStatus) {
     self.status = status;
   }
 
@@ -107,95 +112,116 @@ impl Profile {
   }
 }
 
+/// Менеджер управления профилями
 pub struct ProfileManager {
   pub map: RwLock<HashMap<String, Profile>>,
 }
 
 impl ProfileManager {
+  /// Метод создания нового менеджера профилей
   pub fn new() -> Self {
     Self {
       map: RwLock::new(HashMap::new()),
     }
   }
 
-  pub fn push(&self, username: &str, password: Option<String>, email: Option<String>) {
-    let profile = Profile::new(username, password, email);
-    let mut profiles = self.map.write().unwrap();
-    profiles.insert(username.to_string(), profile);
+  /// Метод регистрации бота
+  pub fn register(&self, username: &str, password: Option<String>, email: Option<String>) {
+    if let Ok(mut profiles) = self.map.try_write() {
+      profiles.insert(username.to_string(), Profile::new(username, password, email));
+    }
   }
 
+  /// Метод очистки хранилища всех профилей
   pub fn clear(&self) {
-    let mut profiles = self.map.write().unwrap();
-    profiles.clear();
+    if let Ok(mut profiles) = self.map.try_write() {
+      profiles.clear();
+    }
 
     send_log(format!("Профили ботов очищены"), "extended");
   }
 
+  /// Метод получения количества профилей
   pub fn get_count(&self) -> usize {
-    self.map.read().unwrap().len()
+    if let Ok(profiles) = self.map.try_read() {
+      profiles.len()
+    } else {
+      0
+    }
   }
 
-  pub fn set_status(&self, username: &str, status: ProfileStatus) {
-    if let Some(profile) = self.map.write().unwrap().get_mut(username) {
-      profile.set_status(status);
+  pub fn set_status(&self, username: &str, status: BotStatus) {
+    if let Ok(mut profiles) = self.map.try_write() {
+      if let Some(p) = profiles.get_mut(username) {
+        p.set_status(status);
+      }
     }
   }
 
   pub fn set_str(&self, username: &str, field: &str, value: &str) {
-    if let Some(profile) = self.map.write().unwrap().get_mut(username) {
-      match field {
-        "password" => profile.set_password(value),
-        "email" => profile.set_email(value),
-        "group" => profile.set_group(value),
-        _ => {}
+    if let Ok(mut profiles) = self.map.try_write() {
+      if let Some(p) = profiles.get_mut(username) {
+        match field {
+          "password" => p.set_password(value),
+          "email" => p.set_email(value),
+          "group" => p.set_group(value),
+          _ => {}
+        }
       }
     }
   }
 
   pub fn set_num(&self, username: &str, field: &str, value: u32) {
-    if let Some(profile) = self.map.write().unwrap().get_mut(username) {
-      match field {
-        "ping" => profile.set_ping(value),
-        "health" => profile.set_health(value),
-        _ => {}
+    if let Ok(mut profiles) = self.map.try_write() {
+      if let Some(p) = profiles.get_mut(username) {
+        match field {
+          "ping" => p.set_ping(value),
+          "health" => p.set_health(value),
+          _ => {}
+        }
       }
     }
   }
 
   pub fn set_bool(&self, username: &str, field: &str, value: bool) {
-    if let Some(profile) = self.map.write().unwrap().get_mut(username) {
-      match field {
-        "registered" => profile.set_registered(value),
-        "logined" => profile.set_logined(value),
-        "skin_is_set" => profile.set_skin_is_set(value),
-        "captcha_caught" => profile.set_captcha_caught(value),
-        _ => {}
+    if let Ok(mut profiles) = self.map.try_write() {
+      if let Some(p) = profiles.get_mut(username) {
+        match field {
+          "registered" => p.set_registered(value),
+          "logined" => p.set_logined(value),
+          "skin_is_set" => p.set_skin_is_set(value),
+          "captcha_caught" => p.set_captcha_caught(value),
+          _ => {}
+        }
       }
     }
   }
 
   pub fn set_proxy(&self, username: &str, proxy: ProfileProxy) {
-    if let Some(profile) = self.map.write().unwrap().get_mut(username) {
-      profile.set_proxy(proxy);
+    if let Ok(mut profiles) = self.map.try_write() {
+      if let Some(p) = profiles.get_mut(username) {
+        p.set_proxy(proxy);
+      }
     }
   }
 
   pub fn get(&self, username: &str) -> Option<Profile> {
-    let map = self.map.read().unwrap();
-
-    if let Some(profile) = map.get(username) {
-      return Some(profile.clone());
+    if let Ok(profiles) = self.map.try_read() {
+      if let Some(p) = profiles.get(username) {
+        return Some(p.clone());
+      }
     }
 
     None
   }
 
   pub fn get_all(&self) -> HashMap<String, Profile> {
-    let profiles = self.map.read().unwrap();
     let mut result = HashMap::new();
 
-    for (username, profile) in profiles.iter() {
-      result.insert(username.to_string(), profile.clone());
+    if let Ok(profiles) = self.map.try_read() {
+      profiles.iter().for_each(|(username, p)| {
+        result.insert(username.to_string(), p.clone());
+      });
     }
 
     result

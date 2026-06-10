@@ -118,7 +118,7 @@ pub fn launch_bots_on_server(options: LaunchOptions) -> bool {
               options: Some(opts.clone()),
             });
 
-            PROFILES.push(username, opts.password.clone(), opts.email.clone());
+            PROFILES.register(username, opts.password.clone(), opts.email.clone());
           }
         } else {
           for _ in 0..options.basic.bots_count {
@@ -141,7 +141,7 @@ pub fn launch_bots_on_server(options: LaunchOptions) -> bool {
               options: None,
             });
 
-            PROFILES.push(&username, password, email);
+            PROFILES.register(&username, password, email);
           }
         }
 

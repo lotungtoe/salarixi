@@ -15,7 +15,7 @@ use tokio::time::sleep;
 use crate::api::emit::*;
 use crate::service::core::auth::default_authorize;
 use crate::service::core::auth::trigger_authorize;
-use crate::service::core::bot::ProfileStatus;
+use crate::service::core::bot::BotStatus;
 use crate::service::core::bot::PROFILES;
 use crate::service::core::bot::STATES;
 use crate::service::core::bot::TASKS;
@@ -92,7 +92,7 @@ fn process_init(bot: Client) {
 fn process_login(bot: Client) {
   let username = bot.name();
   send_log(format!("Бот {} подключается...", username), "system");
-  PROFILES.set_status(&username, ProfileStatus::Connecting);
+  PROFILES.set_status(&username, BotStatus::Connecting);
 }
 
 /// Функция обработки спавна
@@ -105,10 +105,10 @@ async fn process_spawn(bot: Client) {
     username: username.clone(),
   });
 
-  TASKS.push(&username);
-  STATES.push(&username);
+  TASKS.register(&username);
+  STATES.register(&username);
 
-  PROFILES.set_status(&username, ProfileStatus::Online);
+  PROFILES.set_status(&username, BotStatus::Online);
 
   let Some(bot) = BOT_REGISTRY.get_bot(&username) else {
     return;
@@ -214,7 +214,7 @@ async fn process_disconnect(bot: Client, text: Option<FormattedText>) {
   STATES.reset(&username);
   TASKS.remove(&username);
 
-  PROFILES.set_status(&username, ProfileStatus::Offline);
+  PROFILES.set_status(&username, BotStatus::Offline);
 
   if let Some(t) = text {
     if let Some(options) = current_options() {
@@ -288,7 +288,7 @@ fn process_tick(bot: Client) {
     return;
   };
 
-  if profile.status == ProfileStatus::Online {
+  if profile.status == BotStatus::Online {
     if !bot.workable() {
       return;
     }

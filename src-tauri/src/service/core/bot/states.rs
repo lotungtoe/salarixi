@@ -47,6 +47,7 @@ impl State {
   }
 }
 
+/// Структура состояний бота
 pub struct States {
   pub can_walking: bool,
   pub can_sprinting: bool,
@@ -65,6 +66,7 @@ pub struct States {
 }
 
 impl States {
+  /// Метод создания состояний по умолчанию
   pub fn new() -> Self {
     Self {
       can_walking: true,
@@ -84,6 +86,7 @@ impl States {
     }
   }
 
+  /// Метод получения значения указанного состояния
   pub fn get(&self, state: State) -> bool {
     match state {
       State::CanWalking => self.can_walking,
@@ -103,6 +106,7 @@ impl States {
     }
   }
 
+  /// Метод установки значения для указанного состояния
   pub fn set(&mut self, state: State, value: bool) {
     match state {
       State::CanWalking => {
@@ -151,18 +155,21 @@ impl States {
   }
 }
 
+/// Менеджер управления состояниями ботов
 pub struct StateManager {
   pub map: RwLock<HashMap<String, States>>,
 }
 
 impl StateManager {
+  /// Метод создания менеджера состояний
   pub fn new() -> Self {
     Self {
       map: RwLock::new(HashMap::new()),
     }
   }
 
-  pub fn push(&self, username: &str) {
+  /// Метод регистрации бота
+  pub fn register(&self, username: &str) {
     if let Ok(mut states) = self.map.try_write() {
       if !states.contains_key(username) {
         states.insert(username.to_string(), States::new());
@@ -170,6 +177,7 @@ impl StateManager {
     }
   }
 
+  /// Метод очистки хранилища состояний
   pub fn clear(&self) {
     if let Ok(mut states) = self.map.try_write() {
       states.clear();
@@ -178,6 +186,7 @@ impl StateManager {
     send_log(format!("Состояния ботов очищены"), "extended");
   }
 
+  /// Метод сброса состояний определённого бота
   pub fn reset(&self, username: &str) {
     if let Ok(mut states) = self.map.try_write() {
       if let Some(s) = states.get_mut(username) {
