@@ -10,6 +10,11 @@ edition = "2021"
 name = "salarixi_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
+[profile.release]
+opt-level = 3
+strip = true
+lto = "thin"
+
 [build-dependencies]
 tauri-build = { version = "2.5.6", features = [] }
 
