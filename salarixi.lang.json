@@ -2,8 +2,7 @@
   "map": [
     {
       "tags": [
-        "panel-btn:main",
-        "title:main"
+        "panel-btn:main"
       ],
       "lang": {
         "ru": "Главная",
@@ -13,8 +12,7 @@
     },
     {
       "tags": [
-        "panel-btn:settings",
-        "title:settings"
+        "panel-btn:settings"
       ],
       "lang": {
         "ru": "Настройки",
@@ -24,8 +22,7 @@
     },
     {
       "tags": [
-        "panel-btn:accounts",
-        "title:accounts"
+        "panel-btn:accounts"
       ],
       "lang": {
         "ru": "Аккаунты",
@@ -35,8 +32,7 @@
     },
     {
       "tags": [
-        "panel-btn:plugins",
-        "title:plugins"
+        "panel-btn:plugins"
       ],
       "lang": {
         "ru": "Плагины",
@@ -46,8 +42,7 @@
     },
     {
       "tags": [
-        "panel-btn:proxy",
-        "title:proxy"
+        "panel-btn:proxy"
       ],
       "lang": {
         "ru": "Прокси",
@@ -57,8 +52,7 @@
     },
     {
       "tags": [
-        "panel-btn:anti-captcha",
-        "title:anti-captcha"
+        "panel-btn:anti-captcha"
       ],
       "lang": {
         "ru": "Анти-Капча",
@@ -68,8 +62,7 @@
     },
     {
       "tags": [
-        "panel-btn:webhook",
-        "title:webhook"
+        "panel-btn:webhook"
       ],
       "lang": {
         "ru": "Вебхук",
@@ -79,8 +72,7 @@
     },
     {
       "tags": [
-        "panel-btn:control",
-        "title:control"
+        "panel-btn:control"
       ],
       "lang": {
         "ru": "Управление",
@@ -90,8 +82,7 @@
     },
     {
       "tags": [
-        "panel-btn:scripting",
-        "title:scripting"
+        "panel-btn:scripting"
       ],
       "lang": {
         "ru": "Скриптинг",
@@ -101,8 +92,7 @@
     },
     {
       "tags": [
-        "panel-btn:graphic",
-        "title:graphic"
+        "panel-btn:graphic"
       ],
       "lang": {
         "ru": "График",
@@ -112,8 +102,7 @@
     },
     {
       "tags": [
-        "panel-btn:monitoring",
-        "title:monitoring"
+        "panel-btn:monitoring"
       ],
       "lang": {
         "ru": "Мониторинг",
@@ -123,8 +112,7 @@
     },
     {
       "tags": [
-        "panel-btn:analysis",
-        "title:analysis"
+        "panel-btn:analysis"
       ],
       "lang": {
         "ru": "Анализ",
@@ -134,8 +122,7 @@
     },
     {
       "tags": [
-        "panel-btn:radar",
-        "title:radar"
+        "panel-btn:radar"
       ],
       "lang": {
         "ru": "Радар",
@@ -145,8 +132,7 @@
     },
     {
       "tags": [
-        "panel-btn:ping",
-        "title:ping"
+        "panel-btn:ping"
       ],
       "lang": {
         "ru": "Пинг",
@@ -156,8 +142,7 @@
     },
     {
       "tags": [
-        "panel-btn:spy",
-        "title:spy"
+        "panel-btn:spy"
       ],
       "lang": {
         "ru": "Шпион",
@@ -178,8 +163,7 @@
     },
     {
       "tags": [
-        "panel-btn:interface",
-        "title:interface"
+        "panel-btn:interface"
       ],
       "lang": {
         "ru": "Интерфейс",
@@ -189,8 +173,7 @@
     },
     {
       "tags": [
-        "panel-btn:config",
-        "title:config"
+        "panel-btn:config"
       ],
       "lang": {
         "ru": "Конфиг",
@@ -200,8 +183,7 @@
     },
     {
       "tags": [
-        "panel-btn:about",
-        "title:about"
+        "panel-btn:about"
       ],
       "lang": {
         "ru": "О проекте",
@@ -211,8 +193,7 @@
     },
     {
       "tags": [
-        "panel-btn:documentation",
-        "title:documentation"
+        "panel-btn:documentation"
       ],
       "lang": {
         "ru": "Документация",
