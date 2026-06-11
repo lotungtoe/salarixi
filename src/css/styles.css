@@ -2761,7 +2761,7 @@ p {
   overflow-y: auto;
   padding: 0 30px;
   font-family: var(--global-font-family);
-  font-size: 18px;
+  font-size: 16px;
   color: #c4c4c4;
   -webkit-user-select: text; 
   -moz-user-select: text;
@@ -2774,7 +2774,7 @@ p {
   width: 100%;
   font-size: 26px;
   border-bottom: 1px solid #444444;
-  padding-bottom: 4px;
+  padding-bottom: 6px;
 }
 
 .documentation-wrapper h2 {
@@ -2788,6 +2788,7 @@ p {
 .documentation-wrapper p {
   font-size: 16px;
   padding: 0;
+  line-height: 1.4;
 }
 
 .documentation-wrapper ul {
@@ -2805,6 +2806,7 @@ p {
   border: 1px solid #3a3939c2;
   border-radius: 4px;
   margin: 0;
+  line-height: 1.8;
 }
 
 .documentation-wrapper pre {
