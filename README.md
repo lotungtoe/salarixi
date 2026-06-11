@@ -76,12 +76,12 @@ This tool has several large sections, they will be presented below in the table.
 
 ## Gallery
 
-![](./screenshots/main.avif)
-![](./screenshots/settings.avif)
-![](./screenshots/accounts.avif)
-![](./screenshots/plugins.avif)
-![](./screenshots/anti_captcha.avif)
-![](./screenshots/control.avif)
+![](./assets/main.avif)
+![](./assets/settings.avif)
+![](./assets/accounts.avif)
+![](./assets/plugins.avif)
+![](./assets/anti_captcha.avif)
+![](./assets/control.avif)
 
 ## Installation
 
