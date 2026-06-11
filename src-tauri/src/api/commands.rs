@@ -203,7 +203,12 @@ pub async fn open_url(url: String) {
 pub async fn download_json(url: String) -> Option<serde_json::Value> {
   let client = reqwest::Client::new();
 
-  let resp = client.get(url).send().await.ok()?;
+  let resp = client
+    .get(url)
+    .header("Content-Type", "application/json")
+    .send()
+    .await
+    .ok()?;
 
   if resp.status() != reqwest::StatusCode::OK {
     return None;
