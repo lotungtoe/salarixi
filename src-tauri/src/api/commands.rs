@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use hashbrown::HashMap;
 use serde::{Deserialize, Serialize};
 
@@ -205,6 +207,7 @@ pub async fn download_json(url: String) -> Option<serde_json::Value> {
 
   let resp = client
     .get(url)
+    .timeout(Duration::from_secs(10))
     .header("Content-Type", "application/json")
     .send()
     .await
@@ -215,6 +218,20 @@ pub async fn download_json(url: String) -> Option<serde_json::Value> {
   }
 
   resp.json().await.ok()
+}
+
+/// Функция скачивания TEXT-контента
+#[tauri::command]
+pub async fn download_text(url: String) -> Option<String> {
+  let client = reqwest::Client::new();
+
+  let resp = client.get(url).timeout(Duration::from_secs(10)).send().await.ok()?;
+
+  if resp.status() != reqwest::StatusCode::OK {
+    return None;
+  }
+
+  resp.text().await.ok()
 }
 
 /// Функция остановки главного процесса

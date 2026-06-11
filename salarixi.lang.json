@@ -211,13 +211,13 @@
     },
     {
       "tags": [
-        "panel-btn:guide",
-        "title:guide"
+        "panel-btn:documentation",
+        "title:documentation"
       ],
       "lang": {
-        "ru": "Руководство",
-        "en": "Guide",
-        "tr": "Rehber"
+        "ru": "Документация",
+        "en": "Documentation",
+        "tr": "Dokümantasyon"
       }
     },
     {

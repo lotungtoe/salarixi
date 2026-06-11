@@ -2,6 +2,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { Chart, registerables } from "chart.js";
+import { marked } from "marked";
 
 import { plugins } from "./common/structs";
 import { logger } from "./utils/logger";
@@ -62,73 +63,21 @@ export function setQuickTasksAllowed(value: boolean): void {
   quickTasksAllowed = value;
 }
 
-/** Функция инициализации руководства по использованию */
-async function initUserGuide(): Promise<void> {
+/** Функция инициализации пользовательской документации */
+async function initUserDocs(): Promise<void> {
+  let content = await invoke("download_text", {
+    url: "https://codeberg.org/nullclyze/salarixi/raw/branch/main/docs/user.md"
+  }) as string | null;
+
+  if (!content) {
+    logger.log("Ошибка загрузки документации: Resource moved or is unavailable", "error");
+    return;
+  }
+
   try {
-    const content = await invoke("download_json", {
-      url: "https://codeberg.org/nullclyze/salarixi/raw/branch/main/salarixi.guide.json"
-    }) as any;
-
-    if (!content) return;
-
-    (document.getElementById("guide-latest-update") as HTMLElement).innerText = content["latest-update"];
-
-    const guide = document.getElementById("guide-wrapper") as HTMLElement; 
-
-    const sections = content["sections"];
-
-    for (const section of sections) {
-      const sectionElement = document.createElement("div");
-      sectionElement.className = "section";
-
-      const header = section["header"];
-      const subsections = section["subsections"];
-
-      if (header) {
-        const el = document.createElement("div");
-        el.className = "header";
-        el.innerText = header;
-
-        sectionElement.appendChild(el);
-      }
-
-      for (const subsection of subsections) {
-        const subsectionElement = document.createElement("div");
-        subsectionElement.className = "subsection";
-
-        const subheader = subsection["subheader"];
-        const paragraphs = subsection["paragraphs"];
-
-        if (subheader) {
-          const el = document.createElement("div");
-          el.className = "subheader";
-          el.innerText = subheader;
-
-          subsectionElement.appendChild(el);
-        }
-
-        for (const paragraph of paragraphs) {
-          const el = document.createElement("p");
-
-          const html = String(paragraph)
-            .replaceAll("/*", '<span class="bold">')
-            .replaceAll("/!", '<span class="highlight">')
-            .replaceAll("/#", '<span class="link">')
-            .replaceAll("/:", '<span class="code">')
-            .replaceAll("/&", "</span>");
-
-          el.innerHTML = html;
-
-          subsectionElement.appendChild(el);
-        }
-
-        sectionElement.appendChild(subsectionElement);
-      }
-
-      guide.appendChild(sectionElement);
-    }
+    (document.querySelector(".documentation-wrapper") as HTMLDivElement).innerHTML = await marked.parse(content); 
   } catch (error) {
-    logger.log(`Ошибка загрузки руководства: ${error}`, "error");
+    logger.log(`Ошибка загрузки документации: ${error}`, "error");
   }
 }
 
@@ -1124,7 +1073,7 @@ document.addEventListener("DOMContentLoaded", () => {
 // Слушатель события DOMContent у document (#2, асинхронный)
 document.addEventListener("DOMContentLoaded", async () => {
   try {
-    // Изначально инициализируем основные части
+    // Инициализация слушателей событий
     await listenEvents();
 
     // Инициализация модулей (асинхронная)
@@ -1133,15 +1082,15 @@ document.addEventListener("DOMContentLoaded", async () => {
     await captchaModule.init();
     await proxyModule.init();
 
-    // Инициализируем Discord RPC
+    // Инициализация Discord RPC
     const selectDiscordRpcMode = document.getElementById("interface_select_discord-rpc") as HTMLSelectElement;
 
     selectDiscordRpcMode.addEventListener("change", async () => await invoke("set_discord_rpc", { version: client.version, state: selectDiscordRpcMode.value === "enable" }));
     await invoke("set_discord_rpc", { version: client.version, state: selectDiscordRpcMode.value === "enable" });
 
-    // Контент с web-ресурсов загружаем после основной инициализации, 
+    // Контент с web-ресурсов должен загружаться после основной инициализации, 
     // чтобы в случае долгой загрузки не блокировать важные функции
-    await initUserGuide();
+    await initUserDocs();
     await initDownloadCount();
     
     await translatorModule.init();

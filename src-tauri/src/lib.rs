@@ -42,6 +42,7 @@ pub fn run() {
       get_server_info,
       open_url,
       download_json,
+      download_text,
       set_discord_rpc,
       collect_proxies,
     ])
