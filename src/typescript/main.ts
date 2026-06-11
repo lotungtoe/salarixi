@@ -3,6 +3,7 @@ import { listen } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { Chart, registerables } from "chart.js";
 import { marked } from "marked";
+import DOMPurify from "dompurify";
 
 import { plugins } from "./common/structs";
 import { logger } from "./utils/logger";
@@ -75,7 +76,21 @@ async function initUserDocs(): Promise<void> {
   }
 
   try {
-    (document.querySelector(".documentation-wrapper") as HTMLDivElement).innerHTML = await marked.parse(content); 
+    let rawHtml = await marked.parse(content);
+    let safeHtml = DOMPurify.sanitize(rawHtml, {
+      ALLOWED_TAGS: [
+        "b", "i", "em", "strong", "small", "mark", "del", "ins", "s", "sub", "sup",
+        "u", "span", "abbr", "cite", "dfn", "kbd", "samp", "var", "h1", "h2", "p",
+        "h3", "h4", "h5", "h6", "ul", "ol", "li", "dl", "dt", "dd", "table", "thead",
+        "tbody", "tfoot", "tr", "th", "td", "caption", "col", "colgroup", "a", "img",
+        "pre", "code", "section", "article", "header", "footer", "main", "aside", "nav", 
+        "figure", "figcaption", "details", "summary", "fieldset", "legend", "label"
+      ],
+      ALLOWED_ATTR: [],
+      ALLOW_DATA_ATTR: false,
+    });
+
+    (document.querySelector(".documentation-wrapper") as HTMLDivElement).innerHTML = safeHtml; 
   } catch (error) {
     logger.log(`Ошибка загрузки документации: ${error}`, "error");
   }
