@@ -29,36 +29,9 @@ Uses [azalea](https://github.com/azalea-rs/azalea) library as a base.
 - **Processor:** Average
 - **Dependencies:** None
 
-## Overview
+## Documentation
 
-**Salarixi** is a massive Minecraft botting tool. It can be used for stress testing, surveillance, and automated farming. This tool is actively being developed, improved, and updated, constantly adding new amazing features, new schemes, new algorithms, and new capabilities.
-
----
-
-This tool has several large sections, they will be presented below in the table.
-
-|            Name             |                     Description                       |
-|-----------------------------|-------------------------------------------------------|
-| Main / Главная              | Starting and stopping bots, basic settings            |
-| Settings / Настройки        | Various bot settings                                  |
-| Accounts / Аккаунты         | Set up accounts for bots                              |
-| Plugins / Плагины           | Plugins for bots                                      |
-| Proxy / Прокси              | Setting up a proxy for bots                           |
-| Anti-Captcha / Анти-Капча   | Anti-Captcha settings                                 |
-| Webhook / Вебхук            | Webhook settings                                      |
-| Proxy / Прокси              | Setting up a proxy for bots                           |
-| Control / Управление        | Real-time bot management                              |
-| Scripting / Скриптинг       | Writing scripts for bots                              |
-| Monitoring / Мониторинг     | Real-time bot monitoring                              |
-| Graphic / График            | Data in the form of graphs                            |
-| Analysis / Анализ           | In development...                                     |
-| Radar / Радар               | Detection of players and their positions              |
-| Ping / Пинг                 | Pinging servers                                       |
-| Journal / Журнал            | Event logging                                         |
-| Interface / Интерфейс       | Interface settings                                    |
-| Config / Конфиг             | Tool configuration                                    |
-| Guide / Руководство         | Tool usage guide                                      |
-| About / О проекте           | Just a section about the project                      |
+[**Русская документация**](https://codeberg.org/nullclyze/salarixi/src/branch/main/docs/user.md)
 
 ## Features
 
