@@ -714,22 +714,6 @@ export function replenishTriggerRegistry(): void {
     }
   });
 
-  triggerRegistry.register("settings_select_skin-type", "select", (current: HTMLSelectElement) => {
-    const setSkinCommandContainer = document.getElementById("set-skin-command-container") as HTMLElement;
-    const customSkinContainer = document.getElementById("custom-skin-container") as HTMLElement;
-
-    if (current.value === "default") {
-      setSkinCommandContainer.style.display = "none";
-      customSkinContainer.style.display = "none";
-    } else if (current.value === "random") {
-      setSkinCommandContainer.style.display = "flex";
-      customSkinContainer.style.display = "none";
-    } else if (current.value === "custom") {
-      setSkinCommandContainer.style.display = "flex";
-      customSkinContainer.style.display = "flex";
-    }
-  });
-
   triggerRegistry.register("journal_chbx_show-system-logs", "checkbox", (current: HTMLInputElement) => logger.setVisibility("system", current.checked));
   triggerRegistry.register("journal_chbx_show-extended-logs", "checkbox", (current: HTMLInputElement) => logger.setVisibility("extended", current.checked));
 

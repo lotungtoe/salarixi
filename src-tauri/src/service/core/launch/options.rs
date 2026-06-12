@@ -50,9 +50,6 @@ pub struct BasicOptions {
   pub use_anti_captcha: bool,
   pub use_webhook: bool,
   pub use_accounts: bool,
-  pub skin_type: String,
-  pub set_skin_command: Option<String>,
-  pub custom_skin_by_nickname: Option<String>,
   pub proxy_list: Option<String>,
   pub script: Option<String>,
 }

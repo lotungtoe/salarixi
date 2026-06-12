@@ -9,8 +9,6 @@ use azalea::FormattedText;
 use azalea::{ClientInformation, NoState};
 use std::io;
 use std::sync::Arc;
-use std::time::Duration;
-use tokio::time::sleep;
 
 use crate::api::emit::*;
 use crate::service::core::auth::default_authorize;
@@ -31,23 +29,7 @@ use crate::service::generators::*;
 use crate::service::script::SCRIPT_EXECUTOR;
 use crate::service::webhook::*;
 
-const ACCOUNTS_WITH_SKINS: &[&str] = &[
-  "ordunury",
-  "tqyd",
-  "rittes",
-  "Kalmdel",
-  "rlyy",
-  "tusxi",
-  "hrfi",
-  "seree",
-  "NewGuyCri",
-  "UnityForsaken",
-  "B0RAA",
-  "cigarist",
-  "fumbled",
-  "_Malrand_",
-];
-
+/// Обработчик для одного бота
 pub async fn single_handler(bot: Client, event: Event, _state: NoState) -> io::Result<()> {
   match event {
     Event::Init => process_init(bot),
@@ -160,56 +142,6 @@ async fn process_spawn(bot: Client) {
     if let Some(script) = opts.basic.script {
       // Здесь нужно указывать юзернейм бота, чтобы исполнитель работал только с ним
       SCRIPT_EXECUTOR.execute(bot.username(), script);
-    }
-  }
-
-  let Some(profile) = PROFILES.get(&username) else {
-    return;
-  };
-
-  if !profile.skin_is_set {
-    match opts.basic.skin_type.as_str() {
-      "random" => {
-        let command = format!(
-          "{} {}",
-          opts.basic.set_skin_command.unwrap_or("/skin".to_string()),
-          randelem(ACCOUNTS_WITH_SKINS).unwrap()
-        );
-
-        bot.chat(&command);
-
-        sleep(Duration::from_millis(3000)).await;
-
-        emit_log(
-          format!("Бот {} успешно установил скин: {}", username, command),
-          "system",
-        );
-
-        bot.disconnect();
-
-        BOT_REGISTRY.remove_bot(&username);
-        PROFILES.set_bool(&username, "skin_is_set", true);
-      }
-      "custom" => {
-        if let Some(n) = opts.basic.custom_skin_by_nickname {
-          let command = format!("{} {}", opts.basic.set_skin_command.unwrap_or("/skin".to_string()), n);
-
-          bot.chat(&command);
-
-          sleep(Duration::from_millis(3000)).await;
-
-          emit_log(
-            format!("Бот {} успешно установил скин: {}", username, command),
-            "system",
-          );
-
-          bot.disconnect();
-
-          BOT_REGISTRY.remove_bot(&username);
-          PROFILES.set_bool(&username, "skin_is_set", true);
-        }
-      }
-      _ => {}
     }
   }
 }
