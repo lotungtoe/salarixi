@@ -3,7 +3,7 @@ use azalea::core::position::BlockPos;
 use azalea::prelude::*;
 use azalea::Vec3;
 use azalea::WalkDirection;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use std::time::Duration;
 use tokio::time::sleep;
 
@@ -14,10 +14,9 @@ use crate::service::core::extensions::{BotDefaultExt, BotInventoryExt, BotMoveme
 use crate::service::core::registry::BOT_REGISTRY;
 use crate::service::generators::*;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MinerModule;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Deserialize)]
 pub struct MinerOptions {
   pub mode: String,
   pub tunnel: String,

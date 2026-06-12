@@ -1,7 +1,8 @@
+use azalea::prelude::*;
+use azalea::Vec3;
 use azalea::core::position::BlockPos;
 use azalea::registry::builtin::{BlockKind, ItemKind};
-use azalea::{prelude::*, Vec3};
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use std::time::Duration;
 use tokio::time::sleep;
 
@@ -11,16 +12,15 @@ use crate::service::core::extensions::{BotDefaultExt, BotInventoryExt, BotRotati
 use crate::service::core::registry::BOT_REGISTRY;
 use crate::service::generators::*;
 
-#[derive(Debug)]
 struct Tool {
   slot: Option<usize>,
   priority: u8,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Clone, Deserialize)]
 pub struct FarmerModule;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Clone, Deserialize)]
 pub struct FarmerOptions {
   pub mode: String,
   pub delay: Option<u64>,

@@ -1,5 +1,6 @@
-use azalea::{prelude::*, SprintDirection};
-use serde::{Deserialize, Serialize};
+use azalea::prelude::*;
+use azalea::SprintDirection;
+use serde::Deserialize;
 use std::time::Duration;
 use tokio::time::sleep;
 
@@ -7,10 +8,9 @@ use crate::service::core::bot::{get_state, kill_task, set_mutual_states, State, 
 use crate::service::core::extensions::{go_to, BotDefaultExt, BotMovementExt, EntityType};
 use crate::service::core::registry::BOT_REGISTRY;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct StalkerModule;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Deserialize)]
 pub struct StalkerOptions {
   pub mode: String,
   pub target_nickname: Option<String>,

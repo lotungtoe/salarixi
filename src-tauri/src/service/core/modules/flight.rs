@@ -3,7 +3,7 @@ use azalea::prelude::*;
 use azalea::protocol::common::movements::MoveFlags;
 use azalea::protocol::packets::game::ServerboundMovePlayerPos;
 use azalea::Vec3;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use std::time::{Duration, Instant};
 use tokio::time::sleep;
 
@@ -12,10 +12,9 @@ use crate::service::core::extensions::{BotDefaultExt, BotPhysicsExt};
 use crate::service::core::registry::BOT_REGISTRY;
 use crate::service::generators::*;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FlightModule;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Deserialize)]
 pub struct FlightOptions {
   pub mode: String,
   pub settings: String,
@@ -28,7 +27,6 @@ pub struct FlightOptions {
   pub state: bool,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
 struct FlightConfig {
   min_delay: u64,
   max_delay: u64,

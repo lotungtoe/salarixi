@@ -1,13 +1,12 @@
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
 use crate::api::emit::*;
 use crate::service::core::extensions::{BotInventoryExt, InvClick};
 use crate::service::core::registry::BOT_REGISTRY;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct InventoryModule;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Deserialize)]
 pub struct InventoryOptions {
   pub slot: Option<usize>,
   pub target_slot: Option<usize>,

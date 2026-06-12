@@ -1,6 +1,6 @@
 use azalea::prelude::*;
 use azalea::WalkDirection;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use std::time::Duration;
 use tokio::time::sleep;
 
@@ -12,10 +12,9 @@ use crate::service::core::extensions::{BotDefaultExt, BotMovementExt};
 use crate::service::core::registry::BOT_REGISTRY;
 use crate::service::generators::*;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AntiAfkModule;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Deserialize)]
 pub struct AntiAfkOptions {
   pub mode: String,
   pub min_delay: Option<u64>,

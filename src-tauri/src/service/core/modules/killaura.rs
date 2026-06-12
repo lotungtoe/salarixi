@@ -1,7 +1,7 @@
 use azalea::ecs::entity::Entity;
 use azalea::registry::builtin::ItemKind;
 use azalea::{prelude::*, SprintDirection};
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use std::time::Duration;
 use tokio::time::sleep;
 
@@ -12,16 +12,14 @@ use crate::service::core::extensions::{
 use crate::service::core::registry::BOT_REGISTRY;
 use crate::service::generators::*;
 
-#[derive(Debug)]
 struct Weapon {
   slot: Option<usize>,
   priority: u8,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
 pub struct KillauraModule;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Deserialize)]
 pub struct KillauraOptions {
   pub behavior: String,
   pub settings: String,

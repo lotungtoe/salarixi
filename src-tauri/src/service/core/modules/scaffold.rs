@@ -1,6 +1,7 @@
+use azalea::prelude::*;
 use azalea::core::position::BlockPos;
-use azalea::{prelude::*, Vec3, WalkDirection};
-use serde::{Deserialize, Serialize};
+use azalea::{Vec3, WalkDirection};
+use serde::Deserialize;
 use std::time::Duration;
 use tokio::time::sleep;
 
@@ -12,10 +13,9 @@ use crate::service::core::extensions::{BotDefaultExt, BotInventoryExt, BotMoveme
 use crate::service::core::registry::BOT_REGISTRY;
 use crate::service::generators::*;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ScaffoldModule;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Deserialize)]
 pub struct ScaffoldOptions {
   pub mode: String,
   pub delay: Option<u64>,

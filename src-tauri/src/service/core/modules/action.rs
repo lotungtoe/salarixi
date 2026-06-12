@@ -1,5 +1,5 @@
 use azalea::prelude::*;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use std::time::Duration;
 use tokio::time::sleep;
 
@@ -8,10 +8,9 @@ use crate::service::core::extensions::BotDefaultExt;
 use crate::service::core::registry::BOT_REGISTRY;
 use crate::service::generators::*;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ActionModule;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Deserialize)]
 pub struct ActionOptions {
   pub action: String,
   pub use_sync: bool,

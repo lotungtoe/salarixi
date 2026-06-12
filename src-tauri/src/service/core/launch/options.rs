@@ -1,8 +1,8 @@
 use hashbrown::HashMap;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
 /// Структура опций запуска
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct LaunchOptions {
   pub basic: BasicOptions,
   pub accounts: HashMap<String, AccountOptions>,
@@ -11,7 +11,7 @@ pub struct LaunchOptions {
   pub webhook: WebhookOptions,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct BasicOptions {
   pub address: String,
   pub version: String,
@@ -57,7 +57,7 @@ pub struct BasicOptions {
   pub script: Option<String>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct AccountOptions {
   pub password: Option<String>,
   pub email: Option<String>,
@@ -66,7 +66,7 @@ pub struct AccountOptions {
   pub proxy_password: Option<String>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct PluginOptions {
   pub auto_armor: bool,
   pub auto_totem: bool,
@@ -77,7 +77,7 @@ pub struct PluginOptions {
   pub auto_repair: bool,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct CaptchaBypassOptions {
   pub captcha_type: String,
   pub captcha_subtype: String,
@@ -90,7 +90,7 @@ pub struct CaptchaBypassOptions {
   pub api_service: String,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct WebhookOptions {
   pub url: Option<String>,
   pub send_information: bool,

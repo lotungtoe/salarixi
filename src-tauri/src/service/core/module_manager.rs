@@ -64,9 +64,10 @@ impl ModuleManager {
             .map_err(|e| format!("Ошибка парсинга опций: {}", e))
             .unwrap();
 
-          let mode = options.clone().mode;
+          let mode_clone = options.mode.clone();
+          let mode = mode_clone.as_str();
 
-          if mode.as_str() == "spamming" {
+          if mode == "spamming" {
             self.chat.stop(&username);
           }
 
@@ -77,10 +78,10 @@ impl ModuleManager {
               self.chat.enable(&nickname, &options).await;
             });
 
-            if mode.as_str() == "spamming" {
+            if mode == "spamming" {
               push_task(&username, TaskName::Spamming, task);
             }
-          } else if mode.as_str() == "spamming" {
+          } else if mode == "spamming" {
             self.chat.stop(&username);
           }
         }

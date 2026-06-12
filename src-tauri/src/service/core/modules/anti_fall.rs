@@ -6,7 +6,7 @@ use azalea::protocol::packets::game::ServerboundMovePlayerPos;
 use azalea::protocol::packets::game::ServerboundUseItem;
 use azalea::registry::builtin::ItemKind;
 use azalea::Vec3;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use std::time::{Duration, Instant};
 use tokio::time::sleep;
 
@@ -17,10 +17,9 @@ use crate::service::core::extensions::{BotInventoryExt, BotPhysicsExt};
 use crate::service::core::registry::BOT_REGISTRY;
 use crate::service::generators::*;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AntiFallModule;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Deserialize)]
 pub struct AntiFallOptions {
   pub mode: String,
   pub distance_to_ground: Option<i32>,

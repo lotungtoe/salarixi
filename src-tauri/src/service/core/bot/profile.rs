@@ -1,6 +1,6 @@
 use hashbrown::HashMap;
 use once_cell::sync::Lazy;
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 
@@ -9,7 +9,7 @@ use crate::api::emit::send_log;
 pub static PROFILES: Lazy<Arc<ProfileManager>> = Lazy::new(|| Arc::new(ProfileManager::new()));
 
 /// Структура профиля бота
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize)]
 pub struct Profile {
   pub status: BotStatus,
   pub username: String,
@@ -26,7 +26,7 @@ pub struct Profile {
 }
 
 /// Состояние бота
-#[derive(Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Clone, Serialize, PartialEq)]
 pub enum BotStatus {
   Preparation,
   Connecting,
@@ -35,7 +35,7 @@ pub enum BotStatus {
 }
 
 /// Структура прокси бота
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Serialize)]
 pub struct ProfileProxy {
   pub ip_address: Option<String>,
   pub proxy: Option<String>,

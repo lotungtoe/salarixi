@@ -2,7 +2,7 @@ use azalea::container::ContainerHandle;
 use azalea::core::position::BlockPos;
 use azalea::prelude::*;
 use azalea::Vec3;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use std::time::Duration;
 use tokio::time::sleep;
 
@@ -14,10 +14,9 @@ use crate::service::core::extensions::BotMovementExt;
 use crate::service::core::registry::BOT_REGISTRY;
 use crate::service::generators::*;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct StealerModule;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Deserialize)]
 pub struct StealerOptions {
   pub target: String,
   pub radius: Option<i32>,
