@@ -3,7 +3,7 @@ use std::time::Duration;
 use hashbrown::HashMap;
 use serde::{Deserialize, Serialize};
 
-use crate::api::emit::{send_log, send_message};
+use crate::api::emit::{emit_log, emit_msg};
 use crate::service::core::bot::{Profile, PROFILES};
 use crate::service::core::functions::{disconnect_bot, reset_bot, send_message_from_bot};
 use crate::service::core::registry::{RegistryEvent, BOT_REGISTRY};
@@ -136,7 +136,7 @@ pub async fn control_bots(name: String, options: serde_json::Value, group: Strin
       }
     }
 
-    send_log(
+    emit_log(
       format!(
         "Группа ботов с названием '{}' приняла команду '{}'. Полученные опции: {}",
         group, name, options
@@ -144,7 +144,7 @@ pub async fn control_bots(name: String, options: serde_json::Value, group: Strin
       "extended",
     );
 
-    send_message(
+    emit_msg(
       "Управление",
       format!("Группа ботов с названием '{}' приняла команду '{}'", group, name),
     );
@@ -162,9 +162,9 @@ pub async fn quick_task(name: String) {
     }
   }
 
-  send_log(format!("Быстрая задача '{}'", name), "extended");
+  emit_log(format!("Быстрая задача '{}'", name), "extended");
 
-  send_message(
+  emit_msg(
     "Быстрая задача",
     format!(
       "{} ботов получили быструю задачу '{}'",

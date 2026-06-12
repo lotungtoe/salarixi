@@ -2,7 +2,7 @@ use azalea::prelude::*;
 use std::time::Duration;
 use tokio::time::sleep;
 
-use crate::api::emit::send_log;
+use crate::api::emit::emit_log;
 use crate::service::core::bot::PROFILES;
 use crate::service::core::current_options;
 use crate::service::generators::*;
@@ -61,7 +61,7 @@ pub async fn default_authorize(bot: &Client) {
 
         bot.chat(&cmd);
 
-        send_log(format!("Бот {} {}: {}", &username, action, &cmd), "info");
+        emit_log(format!("Бот {} {}: {}", &username, action, &cmd), "info");
       }
     }
   }
@@ -124,7 +124,7 @@ pub async fn trigger_authorize(bot: &Client, message: String) {
 
         bot.chat(&cmd);
 
-        send_log(format!("Бот {} {}: {}", &username, action, &cmd), "info");
+        emit_log(format!("Бот {} {}: {}", &username, action, &cmd), "info");
       }
     }
   }

@@ -24,9 +24,9 @@ pub fn reset_bot(username: String) {
   bot.set_crouching(false);
   bot.set_jumping(false);
 
-  send_log(format!("Все задачи и состояния бота {} сброшены", username), "info");
+  emit_log(format!("Все задачи и состояния бота {} сброшены", username), "info");
 
-  send_message("Система", format!("Все задачи и состояния бота {} сброшены", username));
+  emit_msg("Система", format!("Все задачи и состояния бота {} сброшены", username));
 }
 
 /// Вспомогательная функция отключения бота
@@ -44,7 +44,7 @@ pub fn disconnect_bot(username: String) {
     TASKS.remove(&username);
     PROFILES.set_str(&username, "status", "Оффлайн");
 
-    send_log(format!("Бот {} отключился", username), "info");
-    send_message("Система", format!("Бот {} отключился", username));
+    emit_log(format!("Бот {} отключился", username), "info");
+    emit_msg("Система", format!("Бот {} отключился", username));
   });
 }

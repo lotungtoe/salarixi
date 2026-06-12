@@ -7,7 +7,7 @@ use rhai::{Dynamic, Engine, EvalAltResult, Map};
 use std::str::FromStr;
 use std::sync::atomic::{AtomicBool, Ordering};
 
-use crate::api::emit::{send_log, send_message};
+use crate::api::emit::{emit_log, emit_msg};
 use crate::service::core::bot::{get_state, set_state, State, PROFILES};
 use crate::service::core::common::convert_hotbar_slot_to_inventory_slot;
 use crate::service::core::extensions::{
@@ -512,10 +512,10 @@ impl ScriptExecutor {
         println!("[ salarixi / script ]: {}", str);
       })
       .register_fn("log", |text: &str, class: &str| {
-        send_log(text.to_string(), class);
+        emit_log(text.to_string(), class);
       })
       .register_fn("message", |name: &str, content: &str| {
-        send_message(name, content.to_string());
+        emit_msg(name, content.to_string());
       })
       .register_fn("webhook", |content: &str| {
         if let Some(opts) = current_options() {
@@ -742,26 +742,26 @@ impl ScriptExecutor {
         }
       });
 
-    match engine.eval::<()>(script.as_str()) {
+    match engine.eval::<()>(&script) {
       Ok(_) => {
         if !su.is_empty() {
-          send_log(format!("Скрипт автоматически выполнен для {}", su), "info");
+          emit_log(format!("Скрипт автоматически выполнен для {}", su), "info");
         } else {
-          send_log("Скрипт выполнен".to_string(), "info");
-          send_message("Скриптинг", "Скрипт выполнен".to_string());
+          emit_log("Скрипт выполнен", "info");
+          emit_msg("Скриптинг", "Скрипт выполнен");
         }
       }
       Err(err) => match err.as_ref() {
         &EvalAltResult::ErrorTerminated(_, _) => {
-          send_log("Скрипт принудительно остановлен".to_string(), "info");
-          send_message("Скриптинг", "Скрипт принудительно остановлен".to_string());
+          emit_log("Скрипт принудительно остановлен", "info");
+          emit_msg("Скриптинг", "Скрипт принудительно остановлен");
         }
         _ => {
           if !su.is_empty() {
-            send_log(format!("Ошибка выполнения скрипта для {}: {}", su, err), "info");
+            emit_log(format!("Ошибка выполнения скрипта для {}: {}", su, err), "info");
           } else {
-            send_log(format!("Ошибка выполнения скрипта: {}", err), "error");
-            send_message("Скриптинг", "Не удалось выполнить скрипт".to_string());
+            emit_log(format!("Ошибка выполнения скрипта: {}", err), "error");
+            emit_msg("Скриптинг", "Не удалось выполнить скрипт");
           }
         }
       },

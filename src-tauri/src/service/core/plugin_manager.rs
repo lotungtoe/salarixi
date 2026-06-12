@@ -4,7 +4,7 @@ use std::sync::Arc;
 use tokio::sync::RwLock;
 use tokio::task::JoinHandle;
 
-use crate::api::emit::send_log;
+use crate::api::emit::emit_log;
 use crate::error;
 use crate::service::core::bot::PROFILES;
 use crate::service::core::launch::options::PluginOptions;
@@ -119,6 +119,6 @@ impl PluginManager {
       self.destroy_all_tasks(&username);
     }
 
-    send_log(format!("Активные задачи плагинов остановлены"), "extended");
+    emit_log("Активные задачи плагинов остановлены", "extended");
   }
 }

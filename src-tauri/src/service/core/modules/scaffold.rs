@@ -1,5 +1,5 @@
-use azalea::prelude::*;
 use azalea::core::position::BlockPos;
+use azalea::prelude::*;
 use azalea::{Vec3, WalkDirection};
 use serde::Deserialize;
 use std::time::Duration;

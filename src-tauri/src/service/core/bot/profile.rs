@@ -4,7 +4,7 @@ use serde::Serialize;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 
-use crate::api::emit::send_log;
+use crate::api::emit::emit_log;
 
 pub static PROFILES: Lazy<Arc<ProfileManager>> = Lazy::new(|| Arc::new(ProfileManager::new()));
 
@@ -138,7 +138,7 @@ impl ProfileManager {
       profiles.clear();
     }
 
-    send_log(format!("Профили ботов очищены"), "extended");
+    emit_log("Профили ботов очищены", "extended");
   }
 
   /// Метод получения количества профилей

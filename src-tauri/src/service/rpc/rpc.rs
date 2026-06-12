@@ -1,14 +1,13 @@
-use discord_presence::Client;
 use once_cell::sync::Lazy;
 use std::sync::{Arc, RwLock};
 
-use crate::api::emit::send_log;
+use crate::api::emit::emit_log;
 
 pub static DISCORD_RPC_MANAGER: Lazy<Arc<RwLock<DiscordRpcManager>>> =
   Lazy::new(|| Arc::new(RwLock::new(DiscordRpcManager::new())));
 
 pub struct DiscordRpcManager {
-  client: Option<Client>,
+  client: Option<discord_presence::Client>,
 }
 
 impl DiscordRpcManager {
@@ -17,7 +16,7 @@ impl DiscordRpcManager {
   }
 
   pub fn enable(&mut self, version: String) {
-    self.client = Some(Client::new(1477312950271213729));
+    self.client = Some(discord_presence::Client::new(1477312950271213729));
 
     if let Some(client) = self.client.as_mut() {
       client.start();
@@ -30,7 +29,7 @@ impl DiscordRpcManager {
       }) {
         Ok(_) => {}
         Err(err) => {
-          send_log(format!("Ошибка включения Discord RPC: {}", err), "error");
+          emit_log(format!("Ошибка включения Discord RPC: {}", err), "error");
         }
       }
     }
@@ -41,7 +40,7 @@ impl DiscordRpcManager {
       match client.shutdown() {
         Ok(_) => {}
         Err(err) => {
-          send_log(format!("Ошибка выключения Discord RPC: {}", err), "error");
+          emit_log(format!("Ошибка выключения Discord RPC: {}", err), "error");
         }
       }
     }

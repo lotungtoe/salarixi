@@ -11,7 +11,7 @@ use std::sync::atomic::Ordering;
 use std::thread;
 use std::time::Duration;
 
-use crate::api::emit::{send_log, send_message};
+use crate::api::emit::{emit_log, emit_msg};
 use crate::service::core::bot::{ProfileProxy, PROFILES, STATES, TASKS};
 use crate::service::core::handlers::single::single_handler;
 use crate::service::core::handlers::swarm::swarm_handler;
@@ -42,14 +42,14 @@ fn clear_proxy(proxy: &str) -> String {
 /// Функция запуска ботов на сервер
 pub fn launch_bots_on_server(options: LaunchOptions) -> bool {
   if process_is_active() {
-    send_log(
+    emit_log(
       format!("Запуск ботов невозможен: The process is already active"),
       "warning",
     );
     return false;
   }
 
-  send_log("Подготовка...".to_string(), "extended");
+  emit_log("Подготовка...".to_string(), "extended");
 
   set_options(options.clone());
 
@@ -274,7 +274,7 @@ pub fn launch_bots_on_server(options: LaunchOptions) -> bool {
           }
         }
 
-        send_log("Подготовка окончена".to_string(), "extended");
+        emit_log("Подготовка окончена".to_string(), "extended");
 
         let _ = flow.start(options.basic.address).await;
       });
@@ -290,10 +290,10 @@ pub fn launch_bots_on_server(options: LaunchOptions) -> bool {
 pub fn stop_bots_and_destroy_data() -> bool {
   let active_bots = active_bots_count();
 
-  send_message("Система", "Остановка ботов...".to_string());
+  emit_msg("Система", "Остановка ботов...".to_string());
 
   if !process_is_active() {
-    send_log(
+    emit_log(
       format!("Остановка ботов невозможна: The process is not active now"),
       "warning",
     );
@@ -320,7 +320,7 @@ pub fn stop_bots_and_destroy_data() -> bool {
     }
   }
 
-  send_log(format!("Остановка ботов завершена"), "info");
+  emit_log(format!("Остановка ботов завершена"), "info");
 
   true
 }

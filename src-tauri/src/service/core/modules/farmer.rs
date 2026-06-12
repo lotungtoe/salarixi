@@ -1,7 +1,7 @@
-use azalea::prelude::*;
-use azalea::Vec3;
 use azalea::core::position::BlockPos;
+use azalea::prelude::*;
 use azalea::registry::builtin::{BlockKind, ItemKind};
+use azalea::Vec3;
 use serde::Deserialize;
 use std::time::Duration;
 use tokio::time::sleep;

@@ -26,7 +26,7 @@ impl InventoryModule {
             if s <= 8 {
               bot.set_selected_hotbar_slot(s as u8);
             } else {
-              send_log(
+              emit_log(
                 format!("Бот {} не смог взять слот {} (неверный индекс слота)", username, s),
                 "error",
               );

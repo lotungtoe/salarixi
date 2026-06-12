@@ -5,7 +5,7 @@ use once_cell::sync::Lazy;
 use std::sync::Arc;
 use tokio::sync::{broadcast, RwLock};
 
-use crate::api::emit::send_log;
+use crate::api::emit::emit_log;
 use crate::service::core::launch::state::current_options;
 use crate::service::core::module_manager::MODULE_MANAGER;
 use crate::service::core::plugin_manager::PLUGIN_MANAGER;
@@ -98,7 +98,7 @@ impl BotRegistry {
     self.send_event(RegistryEvent::DestroySwarm);
     self.send_event(RegistryEvent::StopProcessing);
 
-    send_log(format!("Реестр ботов очищен"), "extended");
+    emit_log("Реестр ботов очищен", "extended");
   }
 }
 

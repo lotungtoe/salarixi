@@ -3,7 +3,7 @@ use once_cell::sync::Lazy;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 
-use crate::api::emit::send_log;
+use crate::api::emit::emit_log;
 
 pub static STATES: Lazy<Arc<StateManager>> = Lazy::new(|| Arc::new(StateManager::new()));
 
@@ -183,7 +183,7 @@ impl StateManager {
       states.clear();
     }
 
-    send_log(format!("Состояния ботов очищены"), "extended");
+    emit_log("Состояния ботов очищены", "extended");
   }
 
   /// Метод сброса состояний определённого бота

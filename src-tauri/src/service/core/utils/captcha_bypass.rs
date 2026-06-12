@@ -10,7 +10,7 @@ use std::f64::consts::PI;
 use std::sync::{Arc, RwLock};
 use std::time::Instant;
 
-use crate::api::emit::send_log;
+use crate::api::emit::emit_log;
 use crate::service::core::registry::BOT_REGISTRY;
 use crate::service::core::{current_options, CaptchaBypassOptions};
 
@@ -400,7 +400,7 @@ impl MapCaptchaBypass {
           })
           .await;
       } else if let Ok(bad_resp) = serde_json::from_slice::<Service2CaptchaBadResponse>(&body) {
-        send_log(
+        emit_log(
           format!(
             "Бот {} не смог решить капчу с помощью {}: {}",
             username, options.api_service, bad_resp.error_description
@@ -408,7 +408,7 @@ impl MapCaptchaBypass {
           "error",
         );
       } else {
-        send_log(
+        emit_log(
           format!(
             "Бот {} получил неизвестный формат ответа от {}: {}",
             username, options.api_service, body_str

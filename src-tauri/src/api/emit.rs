@@ -1,36 +1,36 @@
 use once_cell::sync::Lazy;
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use std::sync::Arc;
 use tauri::{AppHandle, Emitter};
 use tokio::sync::broadcast;
 
 pub static EMIT_MANAGER: Lazy<Arc<EmitManager>> = Lazy::new(|| Arc::new(EmitManager::new()));
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Serialize, Clone)]
 pub struct LogPayload {
   pub text: String,
   pub class: String,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Serialize, Clone)]
 pub struct MessagePayload {
   pub name: String,
   pub content: String,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Serialize, Clone)]
 pub struct ChatEventPayload {
   pub receiver: String,
   pub message: String,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Serialize, Clone)]
 pub struct AntiWebCaptchaEventPayload {
   pub captcha_url: String,
   pub username: String,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Serialize, Clone)]
 pub struct AntiMapCaptchaEventPayload {
   pub base64_code: String,
   pub username: String,
@@ -67,18 +67,18 @@ impl EmitManager {
 }
 
 /// Вспомогательная функция отправки лога
-pub fn send_log(text: String, class: &str) {
+pub fn emit_log(text: impl Into<String>, class: &str) {
   EMIT_MANAGER.send_event(EmitEvent::Log {
-    text,
+    text: text.into(),
     class: class.to_string(),
   });
 }
 
 /// Вспомогательная функция отправки сообщения
-pub fn send_message(name: &str, content: String) {
+pub fn emit_msg(name: &str, content: impl Into<String>) {
   EMIT_MANAGER.send_event(EmitEvent::Message {
     name: name.to_string(),
-    content,
+    content: content.into(),
   });
 }
 

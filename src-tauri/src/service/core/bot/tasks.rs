@@ -3,7 +3,7 @@ use once_cell::sync::Lazy;
 use std::sync::Arc;
 use tokio::{sync::RwLock, task::JoinHandle};
 
-use crate::api::emit::send_log;
+use crate::api::emit::emit_log;
 
 pub static TASKS: Lazy<Arc<TaskManager>> = Lazy::new(|| Arc::new(TaskManager::new()));
 
@@ -139,7 +139,7 @@ impl TaskManager {
       tasks.clear();
     }
 
-    send_log(format!("Активные задачи ботов остановлены"), "extended");
+    emit_log("Активные задачи ботов остановлены", "extended");
   }
 
   /// Метод получения активности определённой задачи указанного бота

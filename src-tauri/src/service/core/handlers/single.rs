@@ -92,7 +92,7 @@ fn process_init(bot: Client) {
 /// Функция обработки спавна
 fn process_login(bot: Client) {
   let username = bot.name();
-  send_log(format!("Бот {} подключается...", username), "system");
+  emit_log(format!("Бот {} подключается...", username), "system");
   PROFILES.set_status(&username, BotStatus::Connecting);
 }
 
@@ -132,12 +132,12 @@ async fn process_spawn(bot: Client) {
     );
   }
 
-  send_log(
+  emit_log(
     format!("Бот {} заспавнился, координаты (XYZ): {}", &username, str_pos),
     "info",
   );
 
-  send_message(
+  emit_msg(
     "Система",
     format!(
       "Бот {} заспавнился<br><br>Координаты (XYZ): {}<br>Здоровье: {} / 20",
@@ -180,7 +180,7 @@ async fn process_spawn(bot: Client) {
 
         sleep(Duration::from_millis(3000)).await;
 
-        send_log(
+        emit_log(
           format!("Бот {} успешно установил скин: {}", username, command),
           "system",
         );
@@ -198,7 +198,7 @@ async fn process_spawn(bot: Client) {
 
           sleep(Duration::from_millis(3000)).await;
 
-          send_log(
+          emit_log(
             format!("Бот {} успешно установил скин: {}", username, command),
             "system",
           );
@@ -240,8 +240,8 @@ async fn process_disconnect(bot: Client, text: Option<FormattedText>) {
       }
     }
 
-    send_log(format!("Бот {} отключился: {}", &username, t.to_string()), "info");
-    send_message("Система", format!("Бот {} отключился: {}", &username, t.to_string()));
+    emit_log(format!("Бот {} отключился: {}", &username, t.to_string()), "info");
+    emit_msg("Система", format!("Бот {} отключился: {}", &username, t.to_string()));
   }
 }
 
@@ -278,7 +278,7 @@ async fn process_chat_message(bot: Client, packet: ChatPacket) {
           );
         }
 
-        send_log(
+        emit_log(
           format!("[ Анти-Капча ]: Бот {} получил ссылку на капчу", username),
           "info",
         );
@@ -378,7 +378,7 @@ fn process_packet(bot: Client, packet: Arc<ClientboundGamePacket>) {
                   send_webhook(options.webhook.url, format!("Бот {} получил капчу с карты", username));
                 }
 
-                send_log(
+                emit_log(
                   format!("[ Анти-Капча ]: Бот {} получил капчу с карты", username),
                   "info",
                 );
@@ -410,7 +410,7 @@ fn process_packet(bot: Client, packet: Arc<ClientboundGamePacket>) {
                 send_webhook(options.webhook.url, format!("Бот {} получил капчу с карты", username));
               }
 
-              send_log(
+              emit_log(
                 format!("[ Анти-Капча ]: Бот {} получил капчу с карты", username),
                 "info",
               );
