@@ -179,7 +179,9 @@ pub async fn quick_task(name: String) {
 /// Функция выполнения пользовательского скрипта
 #[tauri::command]
 pub async fn execute_script(script: String) {
-  SCRIPT_EXECUTOR.execute("#".to_string(), script);
+  // Здесь не нужен определённый юзернейм бота, ибо
+  // пользователь сам в своём сценарии их указывает в функциях
+  SCRIPT_EXECUTOR.execute(String::new(), script);
 }
 
 /// Функция остановки пользовательского скрипта

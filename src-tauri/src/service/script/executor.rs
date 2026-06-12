@@ -6,7 +6,6 @@ use once_cell::sync::Lazy;
 use rhai::{Dynamic, Engine, EvalAltResult, Map};
 use std::str::FromStr;
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::{Arc, RwLock};
 
 use crate::api::emit::{send_log, send_message};
 use crate::service::core::bot::{get_state, set_state, State, PROFILES};
@@ -21,7 +20,50 @@ use crate::service::webhook::*;
 
 pub static SCRIPT_EXECUTOR: Lazy<ScriptExecutor> = Lazy::new(|| ScriptExecutor::new());
 
-static EXECUTOR_STATE: Lazy<Arc<RwLock<AtomicBool>>> = Lazy::new(|| Arc::new(RwLock::new(AtomicBool::new(false))));
+static EXECUTOR_STATE: Lazy<AtomicBool> = Lazy::new(|| AtomicBool::new(false));
+
+/// Функция парсинга юзернейма
+fn parse_username<'a>(su: &'a str, mu: &'a str) -> &'a str {
+  if su.is_empty() {
+    mu
+  } else {
+    su
+  }
+}
+
+/// Функция создания динамичного вектора координат
+fn create_dynamic_vec(x: f64, y: f64, z: f64) -> Dynamic {
+  let mut map = Map::new();
+  map.insert("x".into(), Dynamic::from_float(x));
+  map.insert("y".into(), Dynamic::from_float(y));
+  map.insert("z".into(), Dynamic::from_float(z));
+  Dynamic::from_map(map)
+}
+
+/// Функция создания динамичного профиля
+fn create_dynamic_profile(username: &str) -> Dynamic {
+  let mut map = Map::new();
+
+  if let Some(profile) = PROFILES.get(username) {
+    map.insert("ping".into(), Dynamic::from_int(profile.ping as i64));
+    map.insert("captcha_caught".into(), Dynamic::from_bool(profile.captcha_caught));
+    map.insert("registered".into(), Dynamic::from_bool(profile.registered));
+    map.insert("logined".into(), Dynamic::from_bool(profile.logined));
+    map.insert("skin_is_set".into(), Dynamic::from_bool(profile.skin_is_set));
+    map.insert("group".into(), Dynamic::from_str(profile.group.as_str()).unwrap());
+    map.insert("health".into(), Dynamic::from_int(profile.health as i64));
+
+    if let Some(password) = profile.password {
+      map.insert("password".into(), Dynamic::from_str(password.as_str()).unwrap());
+    }
+
+    if let Some(email) = profile.email {
+      map.insert("email".into(), Dynamic::from_str(email.as_str()).unwrap());
+    }
+  }
+
+  Dynamic::from_map(map)
+}
 
 pub struct ScriptExecutor;
 
@@ -451,53 +493,14 @@ impl ScriptExecutor {
     }
   }
 
-  fn parse_username(su: &str, mu: &str) -> String {
-    if su == "#" {
-      mu.to_string()
-    } else {
-      su.to_string()
-    }
-  }
-
-  fn create_dynamic_vec(x: f64, y: f64, z: f64) -> Dynamic {
-    let mut map = Map::new();
-    map.insert("x".into(), Dynamic::from_float(x));
-    map.insert("y".into(), Dynamic::from_float(y));
-    map.insert("z".into(), Dynamic::from_float(z));
-    Dynamic::from_map(map)
-  }
-
-  fn create_dynamic_profile(username: &str) -> Dynamic {
-    let mut map = Map::new();
-
-    if let Some(profile) = PROFILES.get(username) {
-      map.insert("ping".into(), Dynamic::from_int(profile.ping as i64));
-      map.insert("captcha_caught".into(), Dynamic::from_bool(profile.captcha_caught));
-      map.insert("registered".into(), Dynamic::from_bool(profile.registered));
-      map.insert("logined".into(), Dynamic::from_bool(profile.logined));
-      map.insert("skin_is_set".into(), Dynamic::from_bool(profile.skin_is_set));
-      map.insert("group".into(), Dynamic::from_str(profile.group.as_str()).unwrap());
-      map.insert("health".into(), Dynamic::from_int(profile.health as i64));
-
-      if let Some(password) = profile.password {
-        map.insert("password".into(), Dynamic::from_str(password.as_str()).unwrap());
-      }
-
-      if let Some(email) = profile.email {
-        map.insert("email".into(), Dynamic::from_str(email.as_str()).unwrap());
-      }
-    }
-
-    Dynamic::from_map(map)
-  }
-
+  /// Метод исполнения пользовательского сценария
   pub fn execute(&self, su: String, script: String) {
-    EXECUTOR_STATE.read().unwrap().store(true, Ordering::Relaxed);
+    EXECUTOR_STATE.store(true, Ordering::Relaxed);
 
     let mut engine = Engine::new();
 
     engine.on_progress(move |_| {
-      if !EXECUTOR_STATE.read().unwrap().load(Ordering::Relaxed) {
+      if !EXECUTOR_STATE.load(Ordering::Relaxed) {
         Some(Dynamic::UNIT)
       } else {
         None
@@ -506,7 +509,7 @@ impl ScriptExecutor {
 
     engine
       .register_fn("println", |str: &str| {
-        println!("[ salarixi onion / script ]: {}", str);
+        println!("[ salarixi / script ]: {}", str);
       })
       .register_fn("log", |text: &str, class: &str| {
         send_log(text.to_string(), class);
@@ -527,7 +530,7 @@ impl ScriptExecutor {
         let su = su.clone();
         move |mu: &str| {
           BOT_REGISTRY
-            .get_bot(&Self::parse_username(&su, mu))
+            .get_bot(parse_username(&su, mu))
             .map(|b| b.id().0 as i64)
             .unwrap_or(0)
         }
@@ -536,7 +539,7 @@ impl ScriptExecutor {
         let su = su.clone();
         move |mu: &str| {
           BOT_REGISTRY
-            .get_bot(&Self::parse_username(&su, mu))
+            .get_bot(parse_username(&su, mu))
             .map(|b| b.ping() as i64)
             .unwrap_or(0)
         }
@@ -545,31 +548,31 @@ impl ScriptExecutor {
         let su = su.clone();
         move |mu: &str| {
           BOT_REGISTRY
-            .get_bot(&Self::parse_username(&su, mu))
+            .get_bot(parse_username(&su, mu))
             .map(|b| {
               let pos = b.feet_pos();
-              Self::create_dynamic_vec(pos.x, pos.y, pos.z)
+              create_dynamic_vec(pos.x, pos.y, pos.z)
             })
-            .unwrap_or(Self::create_dynamic_vec(0.0, 0.0, 0.0))
+            .unwrap_or(create_dynamic_vec(0.0, 0.0, 0.0))
         }
       })
       .register_fn("get_bot_eye_pos", {
         let su = su.clone();
         move |mu: &str| {
           BOT_REGISTRY
-            .get_bot(&Self::parse_username(&su, mu))
+            .get_bot(parse_username(&su, mu))
             .map(|b| {
               let pos = b.eye_pos();
-              Self::create_dynamic_vec(pos.x, pos.y, pos.z)
+              create_dynamic_vec(pos.x, pos.y, pos.z)
             })
-            .unwrap_or(Self::create_dynamic_vec(0.0, 0.0, 0.0))
+            .unwrap_or(create_dynamic_vec(0.0, 0.0, 0.0))
         }
       })
       .register_fn("get_bot_health", {
         let su = su.clone();
         move |mu: &str| {
           BOT_REGISTRY
-            .get_bot(&Self::parse_username(&su, mu))
+            .get_bot(parse_username(&su, mu))
             .map(|b| b.get_health() as f64)
             .unwrap_or(0.0)
         }
@@ -578,7 +581,7 @@ impl ScriptExecutor {
         let su = su.clone();
         move |mu: &str| {
           BOT_REGISTRY
-            .get_bot(&Self::parse_username(&su, mu))
+            .get_bot(parse_username(&su, mu))
             .map(|b| b.get_satiety() as i64)
             .unwrap_or(0)
         }
@@ -587,145 +590,138 @@ impl ScriptExecutor {
         let su = su.clone();
         move |mu: &str| {
           BOT_REGISTRY
-            .get_bot(&Self::parse_username(&su, mu))
+            .get_bot(parse_username(&su, mu))
             .map(|b| b.workable())
             .unwrap_or(false)
         }
       })
       .register_fn("get_bot_profile", {
         let su = su.clone();
-        move |mu: &str| Self::create_dynamic_profile(&Self::parse_username(&su, mu))
+        move |mu: &str| create_dynamic_profile(parse_username(&su, mu))
       });
 
     engine
       .register_fn("chat", {
         let su = su.clone();
-        move |mu: &str, message: &str| Self::chat(&Self::parse_username(&su, mu), message.to_string())
+        move |mu: &str, message: &str| Self::chat(parse_username(&su, mu), message.to_string())
       })
       .register_fn("jump", {
         let su = su.clone();
-        move |mu: &str| Self::jump(&Self::parse_username(&su, mu))
+        move |mu: &str| Self::jump(parse_username(&su, mu))
       })
       .register_fn("swing_arm", {
         let su = su.clone();
-        move |mu: &str| Self::swing_arm(&Self::parse_username(&su, mu))
+        move |mu: &str| Self::swing_arm(parse_username(&su, mu))
       })
       .register_fn("set_jumping", {
         let su = su.clone();
-        move |mu: &str, state: bool| Self::set_jumping(&Self::parse_username(&su, mu), state)
+        move |mu: &str, state: bool| Self::set_jumping(parse_username(&su, mu), state)
       })
       .register_fn("set_crouching", {
         let su = su.clone();
-        move |mu: &str, state: bool| Self::set_crouching(&Self::parse_username(&su, mu), state)
+        move |mu: &str, state: bool| Self::set_crouching(parse_username(&su, mu), state)
       })
       .register_fn("set_velocity", {
         let su = su.clone();
-        move |mu: &str, axis: &str, velocity: f64| Self::set_velocity(&Self::parse_username(&su, mu), axis, velocity)
+        move |mu: &str, axis: &str, velocity: f64| Self::set_velocity(parse_username(&su, mu), axis, velocity)
       })
       .register_fn("set_on_ground", {
         let su = su.clone();
-        move |mu: &str, on_ground: bool| Self::set_on_ground(&Self::parse_username(&su, mu), on_ground)
+        move |mu: &str, on_ground: bool| Self::set_on_ground(parse_username(&su, mu), on_ground)
       })
       .register_fn("set_old_position", {
         let su = su.clone();
-        move |mu: &str, x: f64, y: f64, z: f64| Self::set_old_position(&Self::parse_username(&su, mu), x, y, z)
+        move |mu: &str, x: f64, y: f64, z: f64| Self::set_old_position(parse_username(&su, mu), x, y, z)
       })
       .register_fn("set_no_jump_delay", {
         let su = su.clone();
-        move |mu: &str, delay: i64| Self::set_no_jump_delay(&Self::parse_username(&su, mu), delay as u32)
+        move |mu: &str, delay: i64| Self::set_no_jump_delay(parse_username(&su, mu), delay as u32)
       })
       .register_fn("set_was_touching_water", {
         let su = su.clone();
-        move |mu: &str, state: bool| Self::set_was_touching_water(&Self::parse_username(&su, mu), state)
+        move |mu: &str, state: bool| Self::set_was_touching_water(parse_username(&su, mu), state)
       })
       .register_fn("set_has_impulse", {
         let su = su.clone();
-        move |mu: &str, state: bool| Self::set_has_impulse(&Self::parse_username(&su, mu), state)
+        move |mu: &str, state: bool| Self::set_has_impulse(parse_username(&su, mu), state)
       })
       .register_fn("start_walking", {
         let su = su.clone();
-        move |mu: &str, direction: &str| Self::start_walking(&Self::parse_username(&su, mu), direction.to_string())
+        move |mu: &str, direction: &str| Self::start_walking(parse_username(&su, mu), direction.to_string())
       })
       .register_fn("start_sprinting", {
         let su = su.clone();
-        move |mu: &str, direction: &str| Self::start_sprinting(&Self::parse_username(&su, mu), direction)
+        move |mu: &str, direction: &str| Self::start_sprinting(parse_username(&su, mu), direction)
       })
       .register_fn("start_pathfinder", {
         let su = su.clone();
-        move |mu: &str, x: i64, z: i64| Self::start_pathfinder(&Self::parse_username(&su, mu), x as i32, z as i32)
+        move |mu: &str, x: i64, z: i64| Self::start_pathfinder(parse_username(&su, mu), x as i32, z as i32)
       })
       .register_fn("stop_move", {
         let su = su.clone();
-        move |mu: &str| Self::stop_move(&Self::parse_username(&su, mu))
+        move |mu: &str| Self::stop_move(parse_username(&su, mu))
       })
       .register_fn("stop_pathfinder", {
         let su = su.clone();
-        move |mu: &str| Self::stop_pathfinder(&Self::parse_username(&su, mu))
+        move |mu: &str| Self::stop_pathfinder(parse_username(&su, mu))
       });
 
     engine
       .register_fn("place_block", {
         let su = su.clone();
-        move |mu: &str, x: i64, y: i64, z: i64| {
-          Self::place_block(&Self::parse_username(&su, mu), x as i32, y as i32, z as i32)
-        }
+        move |mu: &str, x: i64, y: i64, z: i64| Self::place_block(parse_username(&su, mu), x as i32, y as i32, z as i32)
       })
       .register_fn("look_at", {
         let su = su.clone();
-        move |mu: &str, x: f64, y: f64, z: f64| Self::look_at(&Self::parse_username(&su, mu), x, y, z)
+        move |mu: &str, x: f64, y: f64, z: f64| Self::look_at(parse_username(&su, mu), x, y, z)
       })
       .register_fn("look_at_block", {
         let su = su.clone();
         move |mu: &str, x: i64, y: i64, z: i64| {
-          Self::look_at_block(&Self::parse_username(&su, mu), x as i32, y as i32, z as i32)
+          Self::look_at_block(parse_username(&su, mu), x as i32, y as i32, z as i32)
         }
       });
 
     engine
       .register_fn("drop_selected_item", {
         let su = su.clone();
-        move |mu: &str, lock: bool| Self::drop_selected_item(&Self::parse_username(&su, mu), lock)
+        move |mu: &str, lock: bool| Self::drop_selected_item(parse_username(&su, mu), lock)
       })
       .register_fn("drop_all_items", {
         let su = su.clone();
-        move |mu: &str, lock: bool| Self::drop_all_items(&Self::parse_username(&su, mu), lock)
+        move |mu: &str, lock: bool| Self::drop_all_items(parse_username(&su, mu), lock)
       })
       .register_fn("inv_click", {
         let su = su.clone();
         move |mu: &str, slot: i64, mode: i64, lock: bool| {
-          Self::inv_click(&Self::parse_username(&su, mu), slot as usize, mode as u8, lock)
+          Self::inv_click(parse_username(&su, mu), slot as usize, mode as u8, lock)
         }
       })
       .register_fn("inv_click_on", {
         let su = su.clone();
         move |mu: &str, name: &str, mode: i64, lock: bool| {
-          Self::inv_click_on(&Self::parse_username(&su, mu), name, mode as u8, lock)
+          Self::inv_click_on(parse_username(&su, mu), name, mode as u8, lock)
         }
       })
       .register_fn("set_selected_slot", {
         let su = su.clone();
-        move |mu: &str, slot: i64| Self::set_selected_slot(&Self::parse_username(&su, mu), slot as u8)
+        move |mu: &str, slot: i64| Self::set_selected_slot(parse_username(&su, mu), slot as u8)
       });
 
     engine
       .register_fn("attack", {
         let su = su.clone();
         move |mu: &str, target: &str, distance: f64, look_at_target: bool| {
-          Self::attack(
-            &Self::parse_username(&su, mu),
-            target.to_string(),
-            distance,
-            look_at_target,
-          );
+          Self::attack(parse_username(&su, mu), target.to_string(), distance, look_at_target);
         }
       })
       .register_fn("start_use_item", {
         let su = su.clone();
-        move |mu: &str, hand: &str| Self::start_use_item(&Self::parse_username(&su, mu), hand)
+        move |mu: &str, hand: &str| Self::start_use_item(parse_username(&su, mu), hand)
       })
       .register_fn("release_use_item", {
         let su = su.clone();
-        move |mu: &str| Self::release_use_item(&Self::parse_username(&su, mu))
+        move |mu: &str| Self::release_use_item(parse_username(&su, mu))
       });
 
     engine
@@ -733,7 +729,7 @@ impl ScriptExecutor {
         let su = su.clone();
         move |mu: &str, state_str: &str, value: bool| {
           if let Some(state) = State::from_str(state_str) {
-            set_state(&Self::parse_username(&su, mu), state, value);
+            set_state(parse_username(&su, mu), state, value);
           }
         }
       })
@@ -741,15 +737,19 @@ impl ScriptExecutor {
         let su = su.clone();
         move |mu: &str, state_str: &str| {
           if let Some(state) = State::from_str(state_str) {
-            get_state(&Self::parse_username(&su, mu), state);
+            get_state(parse_username(&su, mu), state);
           }
         }
       });
 
     match engine.eval::<()>(script.as_str()) {
       Ok(_) => {
-        send_log("Скрипт выполнен".to_string(), "info");
-        send_message("Скриптинг", "Скрипт выполнен".to_string());
+        if !su.is_empty() {
+          send_log(format!("Скрипт автоматически выполнен для {}", su), "info");
+        } else {
+          send_log("Скрипт выполнен".to_string(), "info");
+          send_message("Скриптинг", "Скрипт выполнен".to_string());
+        }
       }
       Err(err) => match err.as_ref() {
         &EvalAltResult::ErrorTerminated(_, _) => {
@@ -757,18 +757,23 @@ impl ScriptExecutor {
           send_message("Скриптинг", "Скрипт принудительно остановлен".to_string());
         }
         _ => {
-          send_log(format!("Ошибка выполнения скрипта: {}", err), "error");
-          send_message("Скриптинг", "Не удалось выполнить скрипт".to_string());
+          if !su.is_empty() {
+            send_log(format!("Ошибка выполнения скрипта для {}: {}", su, err), "info");
+          } else {
+            send_log(format!("Ошибка выполнения скрипта: {}", err), "error");
+            send_message("Скриптинг", "Не удалось выполнить скрипт".to_string());
+          }
         }
       },
     }
 
-    EXECUTOR_STATE.read().unwrap().store(false, Ordering::Relaxed);
+    EXECUTOR_STATE.store(false, Ordering::Relaxed);
   }
 
+  /// Метод остановки процесса исполнения пользовательского сценария
   pub fn stop(&self) {
-    if EXECUTOR_STATE.read().unwrap().load(Ordering::Relaxed) {
-      EXECUTOR_STATE.read().unwrap().store(false, Ordering::Relaxed);
+    if EXECUTOR_STATE.load(Ordering::Relaxed) {
+      EXECUTOR_STATE.store(false, Ordering::Relaxed);
     }
   }
 }
