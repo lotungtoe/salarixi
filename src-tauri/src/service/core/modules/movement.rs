@@ -5,6 +5,7 @@ use std::time::Duration;
 use tokio::time::sleep;
 
 use crate::service::core::bot::kill_task;
+use crate::service::core::bot::TaskName;
 use crate::service::core::extensions::{go_to, BotMovementExt};
 use crate::service::core::registry::BOT_REGISTRY;
 use crate::service::generators::*;
@@ -105,7 +106,7 @@ impl MovementModule {
   }
 
   pub async fn stop(&self, username: &str) {
-    kill_task(username, "movement");
+    kill_task(username, TaskName::Movement);
 
     if let Some(bot) = BOT_REGISTRY.get_bot(username) {
       bot.stop_pathfinding();

@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use std::time::Duration;
 use tokio::time::sleep;
 
-use crate::service::core::bot::{get_state, kill_task, set_mutual_states, State, TASKS};
+use crate::service::core::bot::{get_state, kill_task, set_mutual_states, State, TaskName, TASKS};
 use crate::service::core::extensions::{entity_type_from, BotDefaultExt, BotInteractExt, BotInventoryExt};
 use crate::service::core::registry::BOT_REGISTRY;
 use crate::service::generators::*;
@@ -50,7 +50,7 @@ impl BowAimModule {
             set_mutual_states(&nickname, "looking", true);
 
             loop {
-              if !TASKS.get_task_activity(&nickname, "bow-aim") {
+              if !TASKS.get_task_activity(&nickname, TaskName::BowAim) {
                 break;
               }
 
@@ -150,7 +150,7 @@ impl BowAimModule {
   }
 
   pub async fn stop(&self, username: &str) {
-    kill_task(username, "bow-aim");
+    kill_task(username, TaskName::BowAim);
 
     if let Some(bot) = BOT_REGISTRY.get_bot(username) {
       bot.release_use_held_item();

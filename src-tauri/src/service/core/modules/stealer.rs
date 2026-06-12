@@ -7,6 +7,7 @@ use std::time::Duration;
 use tokio::time::sleep;
 
 use crate::service::core::bot::State;
+use crate::service::core::bot::TaskName;
 use crate::service::core::bot::{get_state, kill_task, set_mutual_states, set_state};
 use crate::service::core::common::get_block_state;
 use crate::service::core::extensions::BotMovementExt;
@@ -151,6 +152,6 @@ impl StealerModule {
   }
 
   pub fn stop(&self, username: &str) {
-    kill_task(username, "stealer");
+    kill_task(username, TaskName::Stealer);
   }
 }

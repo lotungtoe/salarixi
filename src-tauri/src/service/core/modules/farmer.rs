@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use std::time::Duration;
 use tokio::time::sleep;
 
-use crate::service::core::bot::{get_state, kill_task, set_mutual_states, State};
+use crate::service::core::bot::{get_state, kill_task, set_mutual_states, State, TaskName};
 use crate::service::core::common::get_block_state;
 use crate::service::core::extensions::{BotDefaultExt, BotInventoryExt, BotRotationExt};
 use crate::service::core::registry::BOT_REGISTRY;
@@ -331,7 +331,7 @@ impl FarmerModule {
   }
 
   pub fn stop(&self, username: &str) {
-    kill_task(username, "farmer");
+    kill_task(username, TaskName::Farmer);
 
     set_mutual_states(username, "looking", false);
     set_mutual_states(username, "interacting", false);

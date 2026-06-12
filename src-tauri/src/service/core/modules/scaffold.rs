@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use std::time::Duration;
 use tokio::time::sleep;
 
-use crate::service::core::bot::{kill_task, set_mutual_states, TASKS};
+use crate::service::core::bot::{kill_task, set_mutual_states, TaskName, TASKS};
 use crate::service::core::common::{
   convert_hotbar_slot_to_inventory_slot, convert_inventory_slot_to_hotbar_slot, get_block_state, this_is_solid_block,
 };
@@ -94,7 +94,7 @@ impl ScaffoldModule {
   fn go_back(&self, username: String) {
     tokio::spawn(async move {
       loop {
-        if !TASKS.get_task_activity(&username, "scaffold") {
+        if !TASKS.get_task_activity(&username, TaskName::Scaffold) {
           break;
         }
 
@@ -283,7 +283,7 @@ impl ScaffoldModule {
   }
 
   pub async fn stop(&self, username: &str) {
-    kill_task(username, "scaffold");
+    kill_task(username, TaskName::Scaffold);
 
     if let Some(bot) = BOT_REGISTRY.get_bot(username) {
       bot.set_crouching(false);

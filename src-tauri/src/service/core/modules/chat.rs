@@ -5,6 +5,7 @@ use std::time::Duration;
 use tokio::time::sleep;
 
 use crate::service::core::bot::kill_task;
+use crate::service::core::bot::TaskName;
 use crate::service::core::bot::PROFILES;
 use crate::service::core::common::get_player_uuid;
 use crate::service::core::extensions::BotDefaultExt;
@@ -299,6 +300,6 @@ impl ChatModule {
   }
 
   pub fn stop(&self, username: &str) {
-    kill_task(username, "spamming");
+    kill_task(username, TaskName::Spamming);
   }
 }

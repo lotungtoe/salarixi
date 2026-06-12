@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use std::time::Duration;
 use tokio::time::sleep;
 
-use crate::service::core::bot::{get_state, kill_task, set_mutual_states, State, TASKS};
+use crate::service::core::bot::{get_state, kill_task, set_mutual_states, State, TaskName, TASKS};
 use crate::service::core::extensions::{
   entity_type_from, BotDefaultExt, BotInventoryExt, BotMovementExt, BotRotationExt,
 };
@@ -220,7 +220,7 @@ impl KillauraModule {
       loop {
         let bot_available = BOT_REGISTRY
           .async_get_bot(&username, async |bot| {
-            if !TASKS.get_task_activity(&username, "killaura") {
+            if !TASKS.get_task_activity(&username, TaskName::Killaura) {
               bot.stop_crouching();
               return;
             }
@@ -232,7 +232,7 @@ impl KillauraModule {
           .await
           .is_some();
 
-        if !bot_available || !TASKS.get_task_activity(&username, "killaura") {
+        if !bot_available || !TASKS.get_task_activity(&username, TaskName::Killaura) {
           break;
         }
 
@@ -252,7 +252,7 @@ impl KillauraModule {
     tokio::spawn(async move {
       loop {
         if let Some(bot) = BOT_REGISTRY.get_bot(&username) {
-          if !TASKS.get_task_activity(&username, "killaura") {
+          if !TASKS.get_task_activity(&username, TaskName::Killaura) {
             bot.stop_move();
             return;
           }
@@ -281,7 +281,7 @@ impl KillauraModule {
           }
         }
 
-        if !TASKS.get_task_activity(&username, "killaura") {
+        if !TASKS.get_task_activity(&username, TaskName::Killaura) {
           break;
         }
 
@@ -296,7 +296,7 @@ impl KillauraModule {
 
       loop {
         if let Some(bot) = BOT_REGISTRY.get_bot(&username) {
-          if !TASKS.get_task_activity(&username, "killaura") {
+          if !TASKS.get_task_activity(&username, TaskName::Killaura) {
             set_mutual_states(&username, "looking", false);
             return;
           }
@@ -306,7 +306,7 @@ impl KillauraModule {
           }
         }
 
-        if !TASKS.get_task_activity(&username, "killaura") {
+        if !TASKS.get_task_activity(&username, TaskName::Killaura) {
           set_mutual_states(&username, "looking", false);
           break;
         }
@@ -481,7 +481,7 @@ impl KillauraModule {
   }
 
   pub async fn stop(&self, username: &str) {
-    kill_task(username, "killaura");
+    kill_task(username, TaskName::Killaura);
 
     if let Some(bot) = BOT_REGISTRY.get_bot(username) {
       bot.stop_move();

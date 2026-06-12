@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use std::time::Duration;
 use tokio::time::sleep;
 
-use crate::service::core::bot::kill_task;
+use crate::service::core::bot::{kill_task, TaskName};
 use crate::service::core::extensions::BotDefaultExt;
 use crate::service::core::registry::BOT_REGISTRY;
 use crate::service::generators::*;
@@ -107,7 +107,14 @@ impl ActionModule {
   }
 
   pub async fn stop(&self, username: &str, action: &str) {
-    kill_task(username, action);
+    let task_name = match action {
+      "jumping" => TaskName::Jumping,
+      "shifting" => TaskName::Shifting,
+      "waving" => TaskName::Waving,
+      _ => return,
+    };
+
+    kill_task(username, task_name);
 
     if let Some(bot) = BOT_REGISTRY.get_bot(username) {
       match action {

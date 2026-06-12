@@ -6,6 +6,7 @@ use tokio::time::sleep;
 
 use crate::service::core::bot::kill_task;
 use crate::service::core::bot::set_mutual_states;
+use crate::service::core::bot::TaskName;
 use crate::service::core::bot::TASKS;
 use crate::service::core::extensions::{BotDefaultExt, BotMovementExt};
 use crate::service::core::registry::BOT_REGISTRY;
@@ -106,7 +107,7 @@ impl AntiAfkModule {
           );
         }
 
-        if !TASKS.get_task_activity(&username, "anti-afk") {
+        if !TASKS.get_task_activity(&username, TaskName::AntiAfk) {
           set_mutual_states(&username, "looking", false);
           break;
         }
@@ -132,7 +133,7 @@ impl AntiAfkModule {
         bot.jump();
       }
 
-      if !TASKS.get_task_activity(&bot.username(), "anti-afk") {
+      if !TASKS.get_task_activity(&bot.username(), TaskName::AntiAfk) {
         bot.stop_move();
         break;
       }
@@ -161,7 +162,7 @@ impl AntiAfkModule {
   }
 
   pub async fn stop(&self, username: &str) {
-    kill_task(username, "anti-afk");
+    kill_task(username, TaskName::AntiAfk);
 
     if let Some(bot) = BOT_REGISTRY.get_bot(username) {
       bot.stop_move();

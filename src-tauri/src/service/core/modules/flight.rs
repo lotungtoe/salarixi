@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 use std::time::{Duration, Instant};
 use tokio::time::sleep;
 
-use crate::service::core::bot::kill_task;
+use crate::service::core::bot::{kill_task, TaskName};
 use crate::service::core::extensions::{BotDefaultExt, BotPhysicsExt};
 use crate::service::core::registry::BOT_REGISTRY;
 use crate::service::generators::*;
@@ -370,6 +370,6 @@ impl FlightModule {
   }
 
   pub fn stop(&self, username: &str) {
-    kill_task(username, "flight");
+    kill_task(username, TaskName::Flight);
   }
 }

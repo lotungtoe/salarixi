@@ -7,6 +7,7 @@ use serde::{Deserialize, Serialize};
 use std::time::Duration;
 use tokio::time::sleep;
 
+use crate::service::core::bot::TaskName;
 use crate::service::core::bot::{kill_task, set_mutual_states};
 use crate::service::core::common::get_block_state;
 use crate::service::core::extensions::{BotDefaultExt, BotInventoryExt, BotMovementExt};
@@ -287,7 +288,7 @@ impl MinerModule {
   }
 
   pub async fn stop(&self, username: &str) {
-    kill_task(username, "miner");
+    kill_task(username, TaskName::Miner);
 
     if let Some(bot) = BOT_REGISTRY.get_bot(username) {
       bot.left_click_mine(false);

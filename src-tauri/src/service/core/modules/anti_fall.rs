@@ -11,6 +11,7 @@ use std::time::{Duration, Instant};
 use tokio::time::sleep;
 
 use crate::service::core::bot::kill_task;
+use crate::service::core::bot::TaskName;
 use crate::service::core::common::get_block_state;
 use crate::service::core::extensions::{BotInventoryExt, BotPhysicsExt};
 use crate::service::core::registry::BOT_REGISTRY;
@@ -206,6 +207,6 @@ impl AntiFallModule {
   }
 
   pub fn stop(&self, username: &str) {
-    kill_task(username, "anti-fall");
+    kill_task(username, TaskName::AntiFall);
   }
 }
