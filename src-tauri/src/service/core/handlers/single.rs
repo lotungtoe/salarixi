@@ -28,6 +28,7 @@ use crate::service::core::utils::MAP_CAPTCHA_BYPASS;
 use crate::service::core::utils::WEB_CAPTCHA_BYPASS;
 use crate::service::core::PLUGIN_MANAGER;
 use crate::service::generators::*;
+use crate::service::script::SCRIPT_EXECUTOR;
 use crate::service::webhook::*;
 
 const ACCOUNTS_WITH_SKINS: &[&str] = &[
@@ -100,13 +101,12 @@ async fn process_spawn(bot: Client) {
   let username = bot.name();
 
   BOT_REGISTRY.register_bot(&username, bot);
+  TASKS.register(&username);
+  STATES.register(&username);
 
   BOT_REGISTRY.send_event(RegistryEvent::LoadPlugins {
     username: username.clone(),
   });
-
-  TASKS.register(&username);
-  STATES.register(&username);
 
   PROFILES.set_status(&username, BotStatus::Online);
 
@@ -114,42 +114,56 @@ async fn process_spawn(bot: Client) {
     return;
   };
 
-  if let Some(options) = current_options() {
-    let pos = bot.feet_pos();
-    let health = bot.get_health();
-    let str_pos = format!("{}, {}, {}", pos.x as i32, pos.y as i32, pos.z as i32);
-
-    if options.basic.use_webhook {
-      send_webhook(
-        options.webhook.url,
-        format!(
-          "Бот {} заспавнился | Координаты (XYZ): {} | Здоровье: {} / 20",
-          &username, str_pos, health
-        ),
-      );
-    }
-
-    send_log(
-      format!("Бот {} заспавнился, координаты (XYZ): {}", &username, str_pos),
-      "info",
-    );
-
-    send_message(
-      "Система",
-      format!(
-        "Бот {} заспавнился<br><br>Координаты (XYZ): {}<br>Здоровье: {} / 20",
-        &username, str_pos, health
-      ),
-    );
-
-    default_authorize(&bot).await;
-  }
-
-  let Some(profile) = PROFILES.get(&username) else {
+  let Some(opts) = current_options() else {
     return;
   };
 
-  let Some(opts) = current_options() else {
+  let pos = bot.feet_pos();
+  let health = bot.get_health();
+  let str_pos = format!("{}, {}, {}", pos.x as i32, pos.y as i32, pos.z as i32);
+
+  if opts.basic.use_webhook {
+    send_webhook(
+      opts.webhook.url,
+      format!(
+        "Бот {} заспавнился | Координаты (XYZ): {} | Здоровье: {} / 20",
+        &username, str_pos, health
+      ),
+    );
+  }
+
+  send_log(
+    format!("Бот {} заспавнился, координаты (XYZ): {}", &username, str_pos),
+    "info",
+  );
+
+  send_message(
+    "Система",
+    format!(
+      "Бот {} заспавнился<br><br>Координаты (XYZ): {}<br>Здоровье: {} / 20",
+      &username, str_pos, health
+    ),
+  );
+
+  // Я без понятия что ставить в приоретет - сценарий пользователя или авторизацию.
+  // Если я оберну авторизацию и сценарий в отдельные асинхронные задачи, то в таком
+  // случае может возникнуть конфликт между ними. Наверное логичнее будет поставить
+  // в приоретет авторизацию, ведь часто пользователь может использовать авто-скрипт
+  // с включенной авторизацией, и если сценарий пользователя не будет выполнять процесс
+  // авторизации и при этом на сервере она явно стоит - бот просто будет ожидать
+  // некоторое время в лобби и его кикнет. Кароче, легче вперёд поставить авторизацию,
+  // так как в большинстве случаев выполнения сценария предпологается после авторизации,
+  // если что это всегда можно сделать иначе - просто отключить опции рода авто-регистр.
+  default_authorize(&bot).await;
+
+  if opts.basic.use_auto_script {
+    if let Some(script) = opts.basic.script {
+      // Здесь нужно указывать юзернейм бота, чтобы исполнитель работал только с ним
+      SCRIPT_EXECUTOR.execute(bot.username(), script);
+    }
+  }
+
+  let Some(profile) = PROFILES.get(&username) else {
     return;
   };
 
