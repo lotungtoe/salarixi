@@ -7,9 +7,10 @@ use serde::Deserialize;
 use std::time::{Duration, Instant};
 use tokio::time::sleep;
 
-use crate::service::core::bot::{kill_task, TaskName};
+use crate::service::core::bot::{kill_task, push_task, TaskName, TASKS};
 use crate::service::core::extensions::{BotDefaultExt, BotPhysicsExt};
 use crate::service::core::registry::BOT_REGISTRY;
+use crate::service::core::traits::SalarixiModule;
 use crate::service::generators::*;
 
 pub struct FlightModule;
@@ -41,7 +42,7 @@ impl FlightModule {
     Self
   }
 
-  fn create_adaptive_config(&self, anti_cheat: &str) -> FlightConfig {
+  fn create_adaptive_config(anti_cheat: &str) -> FlightConfig {
     let config;
 
     match anti_cheat {
@@ -90,7 +91,7 @@ impl FlightModule {
     config
   }
 
-  async fn hover(&self, bot: &Client, time: Instant) {
+  async fn hover(bot: &Client, time: Instant) {
     loop {
       if Instant::now() >= time {
         break;
@@ -102,9 +103,9 @@ impl FlightModule {
     }
   }
 
-  pub async fn vanilla_flight(&self, bot: &Client, options: &FlightOptions) {
+  pub async fn vanilla_flight(bot: &Client, options: &FlightOptions) {
     let config = if options.settings.as_str() == "adaptive" {
-      self.create_adaptive_config(options.anti_cheat.as_str())
+      Self::create_adaptive_config(options.anti_cheat.as_str())
     } else {
       FlightConfig {
         min_delay: options.min_delay.unwrap_or(200),
@@ -142,9 +143,7 @@ impl FlightModule {
 
       sleep(Duration::from_millis(randuint(config.min_delay, config.max_delay))).await;
 
-      self
-        .hover(bot, Instant::now() + Duration::from_millis(randuint(100, 150)))
-        .await;
+      Self::hover(bot, Instant::now() + Duration::from_millis(randuint(100, 150))).await;
 
       if config.use_ground_spoof {
         bot.set_on_ground(false);
@@ -152,9 +151,9 @@ impl FlightModule {
     }
   }
 
-  pub async fn jump_flight(&self, bot: &Client, options: &FlightOptions) {
+  pub async fn jump_flight(bot: &Client, options: &FlightOptions) {
     let config = if options.settings.as_str() == "adaptive" {
-      self.create_adaptive_config(options.anti_cheat.as_str())
+      Self::create_adaptive_config(options.anti_cheat.as_str())
     } else {
       FlightConfig {
         min_delay: options.min_delay.unwrap_or(200),
@@ -212,9 +211,7 @@ impl FlightModule {
 
         sleep(Duration::from_millis(randuint(config.min_delay, config.max_delay))).await;
 
-        self
-          .hover(bot, Instant::now() + Duration::from_millis(randuint(100, 150)))
-          .await;
+        Self::hover(bot, Instant::now() + Duration::from_millis(randuint(100, 150))).await;
 
         if config.use_ground_spoof {
           bot.set_on_ground(false);
@@ -223,9 +220,9 @@ impl FlightModule {
     }
   }
 
-  pub async fn teleport_flight(&self, bot: &Client, options: &FlightOptions) {
+  pub async fn teleport_flight(bot: &Client, options: &FlightOptions) {
     let config = if options.settings.as_str() == "adaptive" {
-      self.create_adaptive_config(options.anti_cheat.as_str())
+      Self::create_adaptive_config(options.anti_cheat.as_str())
     } else {
       FlightConfig {
         min_delay: options.min_delay.unwrap_or(150),
@@ -274,9 +271,7 @@ impl FlightModule {
 
         sleep(Duration::from_millis(randuint(config.min_delay, config.max_delay))).await;
 
-        self
-          .hover(bot, Instant::now() + Duration::from_millis(randuint(100, 150)))
-          .await;
+        Self::hover(bot, Instant::now() + Duration::from_millis(randuint(100, 150))).await;
 
         if config.use_ground_spoof {
           bot.set_on_ground(false);
@@ -285,9 +280,9 @@ impl FlightModule {
     }
   }
 
-  pub async fn bug_flight(&self, bot: &Client, options: &FlightOptions) {
+  pub async fn bug_flight(bot: &Client, options: &FlightOptions) {
     let config = if options.settings.as_str() == "adaptive" {
-      self.create_adaptive_config(options.anti_cheat.as_str())
+      Self::create_adaptive_config(options.anti_cheat.as_str())
     } else {
       FlightConfig {
         min_delay: options.min_delay.unwrap_or(200),
@@ -337,9 +332,7 @@ impl FlightModule {
 
       sleep(Duration::from_millis(randuint(config.min_delay, config.max_delay))).await;
 
-      self
-        .hover(bot, Instant::now() + Duration::from_millis(randuint(600, 800)))
-        .await;
+      Self::hover(bot, Instant::now() + Duration::from_millis(randuint(600, 800))).await;
 
       if config.use_ground_spoof {
         bot.set_on_ground(false);
@@ -347,27 +340,38 @@ impl FlightModule {
     }
   }
 
-  pub async fn enable(&self, username: &str, options: &FlightOptions) {
-    BOT_REGISTRY
-      .async_get_bot(username, async |bot| match options.mode.as_str() {
-        "vanilla" => {
-          self.vanilla_flight(bot, options).await;
-        }
-        "jump-fly" => {
-          self.jump_flight(bot, options).await;
-        }
-        "teleport-fly" => {
-          self.teleport_flight(bot, options).await;
-        }
-        "bug-fly" => {
-          self.bug_flight(bot, options).await;
-        }
-        _ => {}
-      })
-      .await;
+  async fn start(bot: &Client, options: &FlightOptions) {
+    match options.mode.as_str() {
+      "vanilla" => Self::vanilla_flight(bot, options).await,
+      "jump-fly" => Self::jump_flight(bot, options).await,
+      "teleport-fly" => Self::teleport_flight(bot, options).await,
+      "bug-fly" => Self::bug_flight(bot, options).await,
+      _ => {}
+    }
+  }
+}
+
+impl SalarixiModule<FlightOptions> for FlightModule {
+  fn new() -> Self {
+    Self
   }
 
-  pub fn stop(&self, username: &str) {
-    kill_task(username, TaskName::Flight);
+  fn switch(&self, username: String, options: FlightOptions) -> bool {
+    if options.state && !TASKS.get_task_activity(&username, TaskName::Flight) {
+      let username_clone = username.clone();
+      let task_handle = tokio::spawn(async move {
+        BOT_REGISTRY
+          .async_get_bot(&username_clone, async |bot| Self::start(bot, &options).await)
+          .await;
+      });
+
+      push_task(&username, TaskName::Flight, task_handle);
+    } else if !options.state && TASKS.get_task_activity(&username, TaskName::Flight) {
+      kill_task(&username, TaskName::Flight);
+    } else {
+      return false;
+    }
+
+    true
   }
 }

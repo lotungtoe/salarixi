@@ -3,9 +3,10 @@ use serde::Deserialize;
 use std::time::Duration;
 use tokio::time::sleep;
 
-use crate::service::core::bot::{kill_task, TaskName};
+use crate::service::core::bot::{kill_task, push_task, TaskName, TASKS};
 use crate::service::core::extensions::BotDefaultExt;
 use crate::service::core::registry::BOT_REGISTRY;
+use crate::service::core::traits::SalarixiModule;
 use crate::service::generators::*;
 
 pub struct ActionModule;
@@ -19,11 +20,7 @@ pub struct ActionOptions {
 }
 
 impl ActionModule {
-  pub fn new() -> Self {
-    Self
-  }
-
-  async fn jumping(&self, bot: &Client, options: &ActionOptions) {
+  async fn jumping(bot: &Client, options: &ActionOptions) {
     if options.use_impulsiveness {
       loop {
         if options.use_sync {
@@ -43,7 +40,7 @@ impl ActionModule {
     }
   }
 
-  async fn shifting(&self, bot: &Client, options: &ActionOptions) {
+  async fn shifting(bot: &Client, options: &ActionOptions) {
     if options.use_impulsiveness {
       loop {
         if options.use_sync {
@@ -65,7 +62,7 @@ impl ActionModule {
     }
   }
 
-  async fn waving(&self, bot: &Client, options: &ActionOptions) {
+  async fn waving(bot: &Client, options: &ActionOptions) {
     if options.use_impulsiveness {
       loop {
         if options.use_sync {
@@ -88,43 +85,52 @@ impl ActionModule {
     }
   }
 
-  pub async fn enable(&self, username: &str, options: &ActionOptions) {
-    BOT_REGISTRY
-      .async_get_bot(username, async |bot| match options.action.as_str() {
-        "jumping" => {
-          self.jumping(bot, &options).await;
-        }
-        "shifting" => {
-          self.shifting(bot, &options).await;
-        }
-        "waving" => {
-          self.waving(bot, &options).await;
-        }
-        _ => {}
-      })
-      .await;
+  async fn start(bot: &Client, options: &ActionOptions) {
+    match options.action.as_str() {
+      "jumping" => Self::jumping(bot, options).await,
+      "shifting" => Self::shifting(bot, options).await,
+      "waving" => Self::waving(bot, options).await,
+      _ => {}
+    }
+  }
+}
+
+impl SalarixiModule<ActionOptions> for ActionModule {
+  fn new() -> Self {
+    Self
   }
 
-  pub async fn stop(&self, username: &str, action: &str) {
-    let task_name = match action {
+  fn switch(&self, username: String, options: ActionOptions) -> bool {
+    let task_name = match options.action.as_str() {
       "jumping" => TaskName::Jumping,
       "shifting" => TaskName::Shifting,
       "waving" => TaskName::Waving,
-      _ => return,
+      _ => return false,
     };
 
-    kill_task(username, task_name);
+    if options.state && !TASKS.get_task_activity(&username, task_name.clone()) {
+      let username_clone = username.clone();
+      let task_handle = tokio::spawn(async move {
+        BOT_REGISTRY
+          .async_get_bot(&username_clone, async |bot| Self::start(bot, &options).await)
+          .await;
+      });
 
-    if let Some(bot) = BOT_REGISTRY.get_bot(username) {
-      match action {
-        "jumping" => {
-          bot.set_jumping(false);
+      push_task(&username, task_name, task_handle);
+    } else if !options.state && TASKS.get_task_activity(&username, task_name.clone()) {
+      kill_task(&username, task_name);
+
+      if let Some(bot) = BOT_REGISTRY.get_bot(&username) {
+        match options.action.as_str() {
+          "jumping" => bot.set_jumping(false),
+          "shifting" => bot.set_crouching(false),
+          _ => {}
         }
-        "shifting" => {
-          bot.set_crouching(false);
-        }
-        _ => {}
       }
+    } else {
+      return false;
     }
+
+    true
   }
 }

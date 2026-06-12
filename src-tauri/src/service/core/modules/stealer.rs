@@ -6,12 +6,15 @@ use serde::Deserialize;
 use std::time::Duration;
 use tokio::time::sleep;
 
+use crate::service::core::bot::push_task;
 use crate::service::core::bot::State;
 use crate::service::core::bot::TaskName;
+use crate::service::core::bot::TASKS;
 use crate::service::core::bot::{get_state, kill_task, set_mutual_states, set_state};
 use crate::service::core::common::get_block_state;
 use crate::service::core::extensions::BotMovementExt;
 use crate::service::core::registry::BOT_REGISTRY;
+use crate::service::core::traits::SalarixiModule;
 use crate::service::generators::*;
 
 pub struct StealerModule;
@@ -29,7 +32,7 @@ impl StealerModule {
     Self
   }
 
-  fn check_block_id(&self, block_id: u16, target: &String) -> bool {
+  fn check_block_id(block_id: u16, target: &String) -> bool {
     match target.as_str() {
       "chest" => {
         return vec![3793, 3787, 3805, 3799].contains(&block_id);
@@ -50,7 +53,7 @@ impl StealerModule {
     false
   }
 
-  fn find_nearest_targets(&self, bot: &Client, center: Vec3, target: &String, radius: i32) -> Vec<azalea::BlockPos> {
+  fn find_nearest_targets(bot: &Client, center: Vec3, target: &String, radius: i32) -> Vec<azalea::BlockPos> {
     let mut positions = Vec::new();
 
     for x in -radius..=radius {
@@ -63,7 +66,7 @@ impl StealerModule {
           );
 
           if let Some(state) = get_block_state(bot, block_pos) {
-            if self.check_block_id(state.id(), target) {
+            if Self::check_block_id(state.id(), target) {
               positions.push(block_pos);
             }
           }
@@ -74,7 +77,7 @@ impl StealerModule {
     positions
   }
 
-  async fn extract_all_items(&self, bot: &Client, container: &ContainerHandle) {
+  async fn extract_all_items(bot: &Client, container: &ContainerHandle) {
     if let Some(menu) = container.menu() {
       bot.freeze_move();
 
@@ -102,14 +105,14 @@ impl StealerModule {
     }
   }
 
-  async fn stealing(&self, bot: &Client, options: &StealerOptions) {
+  async fn start(bot: &Client, options: &StealerOptions) {
     let nickname = bot.username();
 
     loop {
       let position = bot.position();
       let direction = bot.direction();
 
-      let target_positions = self.find_nearest_targets(bot, position, &options.target, options.radius.unwrap_or(5));
+      let target_positions = Self::find_nearest_targets(bot, position, &options.target, options.radius.unwrap_or(5));
 
       for pos in target_positions {
         if get_state(&nickname, State::CanLooking) && get_state(&nickname, State::CanInteracting) {
@@ -121,7 +124,7 @@ impl StealerModule {
           sleep(Duration::from_millis(randuint(50, 100))).await;
 
           if let Some(container) = bot.open_container_at(pos).await {
-            self.extract_all_items(bot, &container).await;
+            Self::extract_all_items(bot, &container).await;
             container.close();
             sleep(Duration::from_millis(randuint(200, 350))).await;
           }
@@ -141,16 +144,29 @@ impl StealerModule {
       sleep(Duration::from_millis(options.delay.unwrap_or(1000))).await;
     }
   }
+}
 
-  pub async fn enable(&self, username: &str, options: &StealerOptions) {
-    BOT_REGISTRY
-      .async_get_bot(username, async |bot| {
-        self.stealing(bot, options).await;
-      })
-      .await;
+impl SalarixiModule<StealerOptions> for StealerModule {
+  fn new() -> Self {
+    Self
   }
 
-  pub fn stop(&self, username: &str) {
-    kill_task(username, TaskName::Stealer);
+  fn switch(&self, username: String, options: StealerOptions) -> bool {
+    if options.state && !TASKS.get_task_activity(&username, TaskName::Stealer) {
+      let username_clone = username.clone();
+      let task_handle = tokio::spawn(async move {
+        BOT_REGISTRY
+          .async_get_bot(&username_clone, async |bot| Self::start(bot, &options).await)
+          .await;
+      });
+
+      push_task(&username, TaskName::Stealer, task_handle);
+    } else if !options.state && TASKS.get_task_activity(&username, TaskName::Stealer) {
+      kill_task(&username, TaskName::Stealer);
+    } else {
+      return false;
+    }
+
+    true
   }
 }

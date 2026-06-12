@@ -6,9 +6,10 @@ use serde::Deserialize;
 use std::time::Duration;
 use tokio::time::sleep;
 
-use crate::service::core::bot::{get_state, kill_task, set_mutual_states, State, TaskName, TASKS};
+use crate::service::core::bot::{get_state, kill_task, push_task, set_mutual_states, State, TaskName, TASKS};
 use crate::service::core::extensions::{entity_type_from, BotDefaultExt, BotInteractExt, BotInventoryExt};
 use crate::service::core::registry::BOT_REGISTRY;
+use crate::service::core::traits::SalarixiModule;
 use crate::service::generators::*;
 
 pub struct BowAimModule;
@@ -27,7 +28,7 @@ impl BowAimModule {
     Self
   }
 
-  fn find_bow_in_inventory(&self, bot: &Client) -> Option<usize> {
+  fn find_bow_in_inventory(bot: &Client) -> Option<usize> {
     if let Some(menu) = bot.get_inventory_menu() {
       for (slot, item) in menu.slots().iter().enumerate() {
         if item.kind() == ItemKind::Bow {
@@ -39,7 +40,7 @@ impl BowAimModule {
     None
   }
 
-  fn aiming(&self, username: String, target: String, distance: f64) {
+  fn aiming(username: String, target: String, distance: f64) {
     tokio::spawn(async move {
       BOT_REGISTRY
         .async_get_bot(&username, async |bot| {
@@ -71,7 +72,7 @@ impl BowAimModule {
     });
   }
 
-  async fn shoot(&self, bot: &Client, target: String, distance: f64) {
+  async fn shoot(bot: &Client, target: String, distance: f64) {
     let nickname = bot.name();
 
     if get_state(&nickname, State::CanInteracting)
@@ -79,7 +80,7 @@ impl BowAimModule {
       && !get_state(&nickname, State::IsDrinking)
       && !get_state(&nickname, State::IsAttacking)
     {
-      if let Some(slot) = self.find_bow_in_inventory(bot) {
+      if let Some(slot) = Self::find_bow_in_inventory(bot) {
         set_mutual_states(&nickname, "interacting", true);
 
         bot.take_item(slot, true).await;
@@ -119,7 +120,7 @@ impl BowAimModule {
     }
   }
 
-  async fn shooting(&self, bot: &Client, options: &BowAimOptions) {
+  async fn start(bot: &Client, options: &BowAimOptions) {
     let target = if options.target.as_str() == "custom" {
       options.target_nickname.clone()
     } else {
@@ -130,32 +131,43 @@ impl BowAimModule {
       return;
     };
 
-    self.aiming(bot.name(), target.clone(), options.max_distance.unwrap_or(70.0));
+    Self::aiming(bot.name(), target.clone(), options.max_distance.unwrap_or(70.0));
 
     loop {
-      self
-        .shoot(bot, target.clone(), options.max_distance.unwrap_or(70.0))
-        .await;
+      Self::shoot(bot, target.clone(), options.max_distance.unwrap_or(70.0)).await;
       sleep(Duration::from_millis(options.delay.unwrap_or(50))).await;
     }
   }
+}
 
-  pub async fn enable(&self, username: &str, options: &BowAimOptions) {
-    BOT_REGISTRY
-      .async_get_bot(username, async |bot| {
-        self.shooting(bot, options).await;
-      })
-      .await;
+impl SalarixiModule<BowAimOptions> for BowAimModule {
+  fn new() -> Self {
+    Self
   }
 
-  pub async fn stop(&self, username: &str) {
-    kill_task(username, TaskName::BowAim);
+  fn switch(&self, username: String, options: BowAimOptions) -> bool {
+    if options.state && !TASKS.get_task_activity(&username, TaskName::BowAim) {
+      let username_clone = username.clone();
+      let task_handle = tokio::spawn(async move {
+        BOT_REGISTRY
+          .async_get_bot(&username_clone, async |bot| Self::start(bot, &options).await)
+          .await;
+      });
 
-    if let Some(bot) = BOT_REGISTRY.get_bot(username) {
-      bot.release_use_held_item();
+      push_task(&username, TaskName::BowAim, task_handle);
+    } else if !options.state && TASKS.get_task_activity(&username, TaskName::BowAim) {
+      kill_task(&username, TaskName::BowAim);
+
+      if let Some(bot) = BOT_REGISTRY.get_bot(&username) {
+        bot.release_use_held_item();
+      }
+
+      set_mutual_states(&username, "looking", false);
+      set_mutual_states(&username, "interacting", false);
+    } else {
+      return false;
     }
 
-    set_mutual_states(username, "looking", false);
-    set_mutual_states(username, "interacting", false);
+    true
   }
 }

@@ -5,11 +5,12 @@ use serde::Deserialize;
 use std::time::Duration;
 use tokio::time::sleep;
 
-use crate::service::core::bot::{get_state, kill_task, set_mutual_states, State, TaskName, TASKS};
+use crate::service::core::bot::{get_state, kill_task, push_task, set_mutual_states, State, TaskName, TASKS};
 use crate::service::core::extensions::{
   entity_type_from, BotDefaultExt, BotInventoryExt, BotMovementExt, BotRotationExt,
 };
 use crate::service::core::registry::BOT_REGISTRY;
+use crate::service::core::traits::SalarixiModule;
 use crate::service::generators::*;
 
 struct Weapon {
@@ -53,7 +54,7 @@ impl KillauraModule {
     Self
   }
 
-  fn create_config(&self, options: &KillauraOptions) -> KillauraConfig {
+  fn create_config(options: &KillauraOptions) -> KillauraConfig {
     if options.settings.as_str() == "adaptive" {
       KillauraConfig {
         target: options.target.clone(),
@@ -94,7 +95,7 @@ impl KillauraModule {
     bot.find_nearest_entity(entity_type_from(target), max_distance)
   }
 
-  async fn auto_weapon(&self, bot: &Client, weapon: &String) {
+  async fn auto_weapon(bot: &Client, weapon: &String) {
     let mut weapons = vec![];
 
     if let Some(menu) = bot.get_inventory_menu() {
@@ -213,7 +214,7 @@ impl KillauraModule {
     }
   }
 
-  fn dodging(&self, username: String) {
+  fn dodging(username: String) {
     tokio::spawn(async move {
       loop {
         let bot_available = BOT_REGISTRY
@@ -240,7 +241,6 @@ impl KillauraModule {
   }
 
   fn chase(
-    &self,
     username: String,
     target: String,
     target_nickname: Option<String>,
@@ -288,7 +288,7 @@ impl KillauraModule {
     });
   }
 
-  fn aiming(&self, username: String, target: String, target_nickname: Option<String>, distance: f64) {
+  fn aiming(username: String, target: String, target_nickname: Option<String>, distance: f64) {
     tokio::spawn(async move {
       set_mutual_states(&username, "looking", true);
 
@@ -314,10 +314,10 @@ impl KillauraModule {
     });
   }
 
-  async fn moderate_killaura(&self, bot: &Client, options: &KillauraOptions) {
-    let config = self.create_config(options);
+  async fn moderate_killaura(bot: &Client, options: &KillauraOptions) {
+    let config = Self::create_config(options);
 
-    self.aiming(
+    Self::aiming(
       bot.username(),
       config.target.clone(),
       options.target_nickname.clone(),
@@ -325,7 +325,7 @@ impl KillauraModule {
     );
 
     if options.use_chase {
-      self.chase(
+      Self::chase(
         bot.username(),
         config.target.clone(),
         options.target_nickname.clone(),
@@ -335,7 +335,7 @@ impl KillauraModule {
     }
 
     if options.use_dodging {
-      self.dodging(bot.username());
+      Self::dodging(bot.username());
     }
 
     let nickname = bot.username();
@@ -355,16 +355,16 @@ impl KillauraModule {
           set_mutual_states(&nickname, "attacking", true);
 
           if options.use_auto_weapon {
-            self.auto_weapon(bot, &options.weapon).await;
+            Self::auto_weapon(bot, &options.weapon).await;
           } else {
             if let Some(slot) = config.weapon_slot {
               if slot <= 8 {
                 bot.set_selected_hotbar_slot(slot);
               } else {
-                self.auto_weapon(bot, &options.weapon).await;
+                Self::auto_weapon(bot, &options.weapon).await;
               }
             } else {
-              self.auto_weapon(bot, &options.weapon).await;
+              Self::auto_weapon(bot, &options.weapon).await;
             }
           }
 
@@ -393,11 +393,11 @@ impl KillauraModule {
     }
   }
 
-  async fn aggressive_killaura(&self, bot: &Client, options: &KillauraOptions) {
-    let config = self.create_config(options);
+  async fn aggressive_killaura(bot: &Client, options: &KillauraOptions) {
+    let config = Self::create_config(options);
 
     if options.use_chase {
-      self.chase(
+      Self::chase(
         bot.username(),
         config.target.clone(),
         options.target_nickname.clone(),
@@ -407,7 +407,7 @@ impl KillauraModule {
     }
 
     if options.use_dodging {
-      self.dodging(bot.username());
+      Self::dodging(bot.username());
     }
 
     let nickname = bot.username();
@@ -427,16 +427,16 @@ impl KillauraModule {
           set_mutual_states(&nickname, "attacking", true);
 
           if options.use_auto_weapon {
-            self.auto_weapon(bot, &options.weapon).await;
+            Self::auto_weapon(bot, &options.weapon).await;
           } else {
             if let Some(slot) = config.weapon_slot {
               if slot <= 8 {
                 bot.set_selected_hotbar_slot(slot);
               } else {
-                self.auto_weapon(bot, &options.weapon).await;
+                Self::auto_weapon(bot, &options.weapon).await;
               }
             } else {
-              self.auto_weapon(bot, &options.weapon).await;
+              Self::auto_weapon(bot, &options.weapon).await;
             }
           }
 
@@ -464,30 +464,45 @@ impl KillauraModule {
     }
   }
 
-  pub async fn enable(&self, username: &str, options: &KillauraOptions) {
-    BOT_REGISTRY
-      .async_get_bot(username, async |bot| match options.behavior.as_str() {
-        "moderate" => {
-          self.moderate_killaura(bot, options).await;
-        }
-        "aggressive" => {
-          self.aggressive_killaura(bot, options).await;
-        }
-        _ => {}
-      })
-      .await;
+  async fn start(bot: &Client, options: &KillauraOptions) {
+    match options.behavior.as_str() {
+      "moderate" => Self::moderate_killaura(bot, &options).await,
+      "aggressive" => Self::aggressive_killaura(bot, &options).await,
+      _ => {}
+    }
+  }
+}
+
+impl SalarixiModule<KillauraOptions> for KillauraModule {
+  fn new() -> Self {
+    Self
   }
 
-  pub async fn stop(&self, username: &str) {
-    kill_task(username, TaskName::Killaura);
+  fn switch(&self, username: String, options: KillauraOptions) -> bool {
+    if options.state && !TASKS.get_task_activity(&username, TaskName::Killaura) {
+      let username_clone = username.clone();
+      let task_handle = tokio::spawn(async move {
+        BOT_REGISTRY
+          .async_get_bot(&username_clone, async |bot| Self::start(bot, &options).await)
+          .await;
+      });
 
-    if let Some(bot) = BOT_REGISTRY.get_bot(username) {
-      bot.stop_move();
-      bot.stop_crouching();
-      bot.stop_jumping();
+      push_task(&username, TaskName::Killaura, task_handle);
+    } else if !options.state && TASKS.get_task_activity(&username, TaskName::Killaura) {
+      kill_task(&username, TaskName::Killaura);
+
+      if let Some(bot) = BOT_REGISTRY.get_bot(&username) {
+        bot.stop_move();
+        bot.stop_crouching();
+        bot.stop_jumping();
+      }
+
+      set_mutual_states(&username, "looking", false);
+      set_mutual_states(&username, "attacking", false);
+    } else {
+      return false;
     }
 
-    set_mutual_states(username, "looking", false);
-    set_mutual_states(username, "attacking", false);
+    true
   }
 }

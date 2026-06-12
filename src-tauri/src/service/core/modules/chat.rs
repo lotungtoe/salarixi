@@ -5,11 +5,14 @@ use std::time::Duration;
 use tokio::time::sleep;
 
 use crate::service::core::bot::kill_task;
+use crate::service::core::bot::push_task;
 use crate::service::core::bot::TaskName;
 use crate::service::core::bot::PROFILES;
+use crate::service::core::bot::TASKS;
 use crate::service::core::common::get_player_uuid;
 use crate::service::core::extensions::BotDefaultExt;
 use crate::service::core::registry::BOT_REGISTRY;
+use crate::service::core::traits::SalarixiModule;
 use crate::service::generators::mutate_text;
 use crate::service::generators::randchance;
 use crate::service::generators::randelem;
@@ -38,11 +41,7 @@ pub struct ChatOptions {
 }
 
 impl ChatModule {
-  pub fn new() -> Self {
-    Self
-  }
-
-  fn create_magic_text(&self, text: &str) -> String {
+  fn create_magic_text(text: &str) -> String {
     let mut result = String::new();
 
     let words = text.split_whitespace();
@@ -105,7 +104,7 @@ impl ChatModule {
     result
   }
 
-  fn create_bypass_text(&self, text: &str) -> String {
+  fn create_bypass_text(text: &str) -> String {
     let stray = ["numeric", "letter", "multi", "special"];
     let separators = ["|", ":", "/", "~"];
 
@@ -127,7 +126,7 @@ impl ChatModule {
     }
   }
 
-  async fn process_extra_tags(&self, username: &str, text: String) -> String {
+  async fn process_extra_tags(username: &str, text: String) -> String {
     let mut result = text.clone();
 
     for teg in Regex::new(r"#radar\[\w+]").unwrap().find_iter(&text) {
@@ -212,11 +211,11 @@ impl ChatModule {
     result
   }
 
-  async fn message(&self, bot: &Client, options: &ChatOptions) {
+  async fn message(bot: &Client, options: &ChatOptions) {
     let mut text = options.message.clone();
 
     if options.use_text_mutation {
-      text = self.process_extra_tags(&bot.name(), text).await;
+      text = Self::process_extra_tags(&bot.name(), text).await;
       text = mutate_text(text);
     }
 
@@ -225,7 +224,7 @@ impl ChatModule {
     }
 
     if options.use_magic_text {
-      text = self.create_magic_text(&text);
+      text = Self::create_magic_text(&text);
     }
 
     if options.use_global_chat {
@@ -235,14 +234,14 @@ impl ChatModule {
     bot.chat(&text);
   }
 
-  async fn spamming(&self, bot: &Client, options: &ChatOptions) {
+  async fn spamming(bot: &Client, options: &ChatOptions) {
     let mut latest_text = String::new();
 
     loop {
       let mut text = options.message.clone();
 
       if options.use_text_mutation {
-        text = self.process_extra_tags(&bot.name(), text).await;
+        text = Self::process_extra_tags(&bot.name(), text).await;
         text = mutate_text(text);
       }
 
@@ -262,11 +261,11 @@ impl ChatModule {
       let mut final_text = text;
 
       if options.use_magic_text {
-        final_text = self.create_magic_text(&final_text);
+        final_text = Self::create_magic_text(&final_text);
       }
 
       if options.use_bypass {
-        final_text = self.create_bypass_text(&final_text);
+        final_text = Self::create_bypass_text(&final_text);
       }
 
       if options.use_global_chat {
@@ -284,21 +283,49 @@ impl ChatModule {
     }
   }
 
-  pub async fn enable(&self, username: &str, options: &ChatOptions) {
-    BOT_REGISTRY
-      .async_get_bot(username, async |bot| match options.mode.as_str() {
-        "message" => {
-          self.message(bot, &options).await;
-        }
-        "spamming" => {
-          self.spamming(bot, &options).await;
-        }
-        _ => {}
-      })
-      .await;
+  async fn start(bot: &Client, options: &ChatOptions) {
+    match options.mode.as_str() {
+      "message" => Self::message(bot, options).await,
+      "spamming" => Self::spamming(bot, options).await,
+      _ => {}
+    }
+  }
+}
+
+impl SalarixiModule<ChatOptions> for ChatModule {
+  fn new() -> Self {
+    Self
   }
 
-  pub fn stop(&self, username: &str) {
-    kill_task(username, TaskName::Spamming);
+  fn switch(&self, username: String, options: ChatOptions) -> bool {
+    let is_spamming = options.mode == "spamming";
+
+    if !is_spamming {
+      let username_clone = username.clone();
+      tokio::spawn(async move {
+        BOT_REGISTRY
+          .async_get_bot(&username_clone, async |bot| Self::start(bot, &options).await)
+          .await;
+      });
+
+      return true;
+    }
+
+    if options.state && !TASKS.get_task_activity(&username, TaskName::Spamming) {
+      let username_clone = username.clone();
+      let task_handle = tokio::spawn(async move {
+        BOT_REGISTRY
+          .async_get_bot(&username_clone, async |bot| Self::start(bot, &options).await)
+          .await;
+      });
+
+      push_task(&username, TaskName::Spamming, task_handle);
+    } else if !options.state && TASKS.get_task_activity(&username, TaskName::Spamming) {
+      kill_task(&username, TaskName::Spamming);
+    } else {
+      return false;
+    }
+
+    true
   }
 }

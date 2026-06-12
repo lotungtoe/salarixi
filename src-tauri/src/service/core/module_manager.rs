@@ -2,11 +2,11 @@ use once_cell::sync::Lazy;
 use serde::de::DeserializeOwned;
 use std::sync::Arc;
 
-use crate::api::emit::emit_log;
-use crate::service::core::bot::push_task;
-use crate::service::core::bot::TaskName;
+use crate::api::emit::{emit_log, emit_msg};
 use crate::service::core::bot::PROFILES;
-use crate::service::core::modules::*;
+use crate::service::core::traits::SalarixiModule;
+use crate::service::core::{current_options, modules::*};
+use crate::service::webhook::send_webhook;
 
 pub static MODULE_MANAGER: Lazy<Arc<ModuleManager>> = Lazy::new(|| Arc::new(ModuleManager::new()));
 
@@ -66,9 +66,13 @@ impl ModuleManager {
   }
 
   /// Метод управления определённым менеджером
-  pub async fn control(&'static self, name: String, options: serde_json::Value, group: String) -> Option<()> {
-    for username in PROFILES.get_all().into_keys() {
-      let current_options = options.clone();
+  pub async fn control(&self, module_name: String, options: serde_json::Value, group: String) -> Option<()> {
+    let profiles = PROFILES.get_all();
+    let total_count = profiles.len();
+    let mut success_count = 0;
+
+    for username in profiles.into_keys() {
+      let cur_opts = options.clone();
 
       if let Some(profile) = PROFILES.get(&username) {
         if profile.group != group {
@@ -76,252 +80,100 @@ impl ModuleManager {
         }
       }
 
-      match name.as_str() {
+      let mut success = false;
+
+      match module_name.as_str() {
         "chat" => {
-          let options: ChatOptions = try_parse_options(current_options)?;
-
-          let mode_clone = options.mode.clone();
-          let mode = mode_clone.as_str();
-
-          if mode == "spamming" {
-            self.chat.stop(&username);
-          }
-
-          if options.state {
-            let nickname = username.clone();
-
-            let task = tokio::spawn(async move {
-              self.chat.enable(&nickname, &options).await;
-            });
-
-            if mode == "spamming" {
-              push_task(&username, TaskName::Spamming, task);
-            }
-          } else if mode == "spamming" {
-            self.chat.stop(&username);
-          }
+          let options: ChatOptions = try_parse_options(cur_opts)?;
+          success = self.chat.switch(username, options);
         }
         "action" => {
-          let options: ActionOptions = try_parse_options(current_options)?;
-
-          let action = options.action.clone();
-
-          self.action.stop(&username, action.as_str()).await;
-
-          if options.state {
-            let nickname = username.clone();
-
-            let task = tokio::spawn(async move {
-              self.action.enable(&nickname, &options).await;
-            });
-
-            let task_name = match action.as_str() {
-              "jumping" => TaskName::Jumping,
-              "shifting" => TaskName::Shifting,
-              "waving" => TaskName::Waving,
-              _ => continue,
-            };
-
-            push_task(&username, task_name, task);
-          } else {
-            self.action.stop(&username, action.as_str()).await;
-          }
+          let options: ActionOptions = try_parse_options(cur_opts)?;
+          success = self.action.switch(username, options);
         }
         "inventory" => {
-          let options: InventoryOptions = try_parse_options(current_options)?;
-
-          self.inventory.interact(&username, &options).await;
+          let options: InventoryOptions = try_parse_options(cur_opts)?;
+          success = self.inventory.switch(username, options);
         }
         "movement" => {
-          let options: MovementOptions = try_parse_options(current_options)?;
-
-          self.movement.stop(&username).await;
-
-          if options.state {
-            let nickname = username.clone();
-
-            let task = tokio::spawn(async move {
-              self.movement.enable(&nickname, &options).await;
-            });
-
-            push_task(&username, TaskName::Movement, task);
-          } else {
-            self.movement.stop(&username).await;
-          }
+          let options: MovementOptions = try_parse_options(cur_opts)?;
+          success = self.movement.switch(username, options);
         }
         "anti-afk" => {
-          let options: AntiAfkOptions = try_parse_options(current_options)?;
-
-          self.anti_afk.stop(&username).await;
-
-          if options.state {
-            let nickname = username.clone();
-
-            let task = tokio::spawn(async move {
-              self.anti_afk.enable(&nickname, &options).await;
-            });
-
-            push_task(&username, TaskName::AntiAfk, task);
-          } else {
-            self.anti_afk.stop(&username).await;
-          }
+          let options: AntiAfkOptions = try_parse_options(cur_opts)?;
+          self.anti_afk.switch(username, options);
         }
         "stalker" => {
-          let options: StalkerOptions = try_parse_options(current_options)?;
-
-          self.stalker.stop(&username);
-
-          if options.state {
-            let nickname = username.clone();
-
-            let task = tokio::spawn(async move {
-              self.stalker.enable(&nickname, &options).await;
-            });
-
-            push_task(&username, TaskName::Stalker, task);
-          } else {
-            self.stalker.stop(&username);
-          }
+          let options: StalkerOptions = try_parse_options(cur_opts)?;
+          success = self.stalker.switch(username, options);
         }
         "flight" => {
-          let options: FlightOptions = try_parse_options(current_options)?;
-
-          self.flight.stop(&username);
-
-          if options.state {
-            let nickname = username.clone();
-
-            let task = tokio::spawn(async move {
-              self.flight.enable(&nickname, &options).await;
-            });
-
-            push_task(&username, TaskName::Flight, task);
-          } else {
-            self.flight.stop(&username);
-          }
+          let options: FlightOptions = try_parse_options(cur_opts)?;
+          success = self.flight.switch(username, options);
         }
         "killaura" => {
-          let options: KillauraOptions = try_parse_options(current_options)?;
-
-          self.killaura.stop(&username).await;
-
-          if options.state {
-            let nickname = username.clone();
-
-            let task = tokio::spawn(async move {
-              self.killaura.enable(&nickname, &options).await;
-            });
-
-            push_task(&username, TaskName::Killaura, task);
-          } else {
-            self.killaura.stop(&username).await;
-          }
+          let options: KillauraOptions = try_parse_options(cur_opts)?;
+          success = self.killaura.switch(username, options);
         }
         "scaffold" => {
-          let options: ScaffoldOptions = try_parse_options(current_options)?;
-
-          self.scaffold.stop(&username).await;
-
-          if options.state {
-            let nickname = username.clone();
-
-            let task = tokio::spawn(async move {
-              self.scaffold.enable(&nickname, &options).await;
-            });
-
-            push_task(&username, TaskName::Scaffold, task);
-          } else {
-            self.scaffold.stop(&username).await;
-          }
+          let options: ScaffoldOptions = try_parse_options(cur_opts)?;
+          success = self.scaffold.switch(username, options);
         }
         "anti-fall" => {
-          let options: AntiFallOptions = try_parse_options(current_options)?;
-
-          self.anti_fall.stop(&username);
-
-          if options.state {
-            let nickname = username.clone();
-
-            let task = tokio::spawn(async move {
-              self.anti_fall.enable(&nickname, &options).await;
-            });
-
-            push_task(&username, TaskName::AntiFall, task);
-          } else {
-            self.anti_fall.stop(&username);
-          }
+          let options: AntiFallOptions = try_parse_options(cur_opts)?;
+          success = self.anti_fall.switch(username, options);
         }
         "bow-aim" => {
-          let options: BowAimOptions = try_parse_options(current_options)?;
-
-          self.bow_aim.stop(&username).await;
-
-          if options.state {
-            let nickname = username.clone();
-
-            let task = tokio::spawn(async move {
-              self.bow_aim.enable(&nickname, &options).await;
-            });
-
-            push_task(&username, TaskName::BowAim, task);
-          } else {
-            self.bow_aim.stop(&username).await;
-          }
+          let options: BowAimOptions = try_parse_options(cur_opts)?;
+          success = self.bow_aim.switch(username, options);
         }
         "stealer" => {
-          let options: StealerOptions = try_parse_options(current_options)?;
-
-          self.stealer.stop(&username);
-
-          if options.state {
-            let nickname = username.clone();
-
-            let task = tokio::spawn(async move {
-              self.stealer.enable(&nickname, &options).await;
-            });
-
-            push_task(&username, TaskName::Stealer, task);
-          } else {
-            self.stealer.stop(&username);
-          }
+          let options: StealerOptions = try_parse_options(cur_opts)?;
+          success = self.stealer.switch(username, options);
         }
         "miner" => {
-          let options: MinerOptions = try_parse_options(current_options)?;
-
-          self.miner.stop(&username).await;
-
-          if options.state {
-            let nickname = username.clone();
-
-            let task = tokio::spawn(async move {
-              self.miner.enable(&nickname, &options).await;
-            });
-
-            push_task(&username, TaskName::Miner, task);
-          } else {
-            self.miner.stop(&username).await;
-          }
+          let options: MinerOptions = try_parse_options(cur_opts)?;
+          success = self.miner.switch(username, options);
         }
         "farmer" => {
-          let options: FarmerOptions = try_parse_options(current_options)?;
-
-          self.farmer.stop(&username);
-
-          if options.state {
-            let nickname = username.clone();
-
-            let task = tokio::spawn(async move {
-              self.farmer.enable(&nickname, &options).await;
-            });
-
-            push_task(&username, TaskName::Farmer, task);
-          } else {
-            self.farmer.stop(&username);
-          }
+          let options: FarmerOptions = try_parse_options(cur_opts)?;
+          success = self.farmer.switch(username, options);
         }
-        _ => {}
+        _ => continue,
+      }
+
+      if success {
+        success_count += 1;
       }
     }
+
+    if let Some(opts) = current_options() {
+      if opts.basic.use_webhook && opts.webhook.send_actions {
+        send_webhook(
+          opts.webhook.url,
+          format!(
+            "Группа ботов \"{}\" получила команду \"{}\". Выполнили {} из {} ботов.",
+            group, module_name, success_count, total_count,
+          ),
+        );
+      }
+    }
+
+    emit_log(
+      format!(
+        "Группа ботов \"{}\" получила команду \"{}\". Выполнили {} из {} ботов",
+        group, module_name, success_count, total_count,
+      ),
+      "extended",
+    );
+
+    emit_msg(
+      "Управление",
+      format!(
+        "Группа ботов \"{}\" получила команду \"{}\". Выполнили {} из {} ботов.",
+        group, module_name, success_count, total_count
+      ),
+    );
 
     Some(())
   }

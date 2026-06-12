@@ -5,11 +5,13 @@ use std::time::Duration;
 use tokio::time::sleep;
 
 use crate::service::core::bot::kill_task;
+use crate::service::core::bot::push_task;
 use crate::service::core::bot::set_mutual_states;
 use crate::service::core::bot::TaskName;
 use crate::service::core::bot::TASKS;
 use crate::service::core::extensions::{BotDefaultExt, BotMovementExt};
 use crate::service::core::registry::BOT_REGISTRY;
+use crate::service::core::traits::SalarixiModule;
 use crate::service::generators::*;
 
 pub struct AntiAfkModule;
@@ -27,7 +29,7 @@ impl AntiAfkModule {
     Self
   }
 
-  async fn minimal(&self, bot: &Client, options: &AntiAfkOptions) {
+  async fn minimal(bot: &Client, options: &AntiAfkOptions) {
     let min_delay = options.min_delay.unwrap_or(1000);
     let max_delay = options.max_delay.unwrap_or(2500);
 
@@ -54,7 +56,7 @@ impl AntiAfkModule {
     }
   }
 
-  async fn normal(&self, bot: &Client, options: &AntiAfkOptions) {
+  async fn normal(bot: &Client, options: &AntiAfkOptions) {
     let min_delay = options.min_delay.unwrap_or(1000);
     let max_delay = options.max_delay.unwrap_or(2500);
 
@@ -89,7 +91,7 @@ impl AntiAfkModule {
     }
   }
 
-  async fn advanced(&self, bot: &Client, options: &AntiAfkOptions) {
+  async fn advanced(bot: &Client, options: &AntiAfkOptions) {
     let min_delay = options.min_delay.unwrap_or(1000);
     let max_delay = options.max_delay.unwrap_or(2500);
 
@@ -141,33 +143,46 @@ impl AntiAfkModule {
     }
   }
 
-  pub async fn enable(&self, username: &str, options: &AntiAfkOptions) {
-    set_mutual_states(username, "looking", true);
+  async fn start(bot: &Client, options: &AntiAfkOptions) {
+    match options.mode.as_str() {
+      "minimal" => Self::minimal(bot, options).await,
+      "normal" => Self::normal(bot, options).await,
+      "advanced" => Self::advanced(bot, options).await,
+      _ => {}
+    }
+  }
+}
 
-    BOT_REGISTRY
-      .async_get_bot(username, async |bot| match options.mode.as_str() {
-        "minimal" => {
-          self.minimal(bot, options).await;
-        }
-        "normal" => {
-          self.normal(bot, options).await;
-        }
-        "advanced" => {
-          self.advanced(bot, options).await;
-        }
-        _ => {}
-      })
-      .await;
+impl SalarixiModule<AntiAfkOptions> for AntiAfkModule {
+  fn new() -> Self {
+    Self
   }
 
-  pub async fn stop(&self, username: &str) {
-    kill_task(username, TaskName::AntiAfk);
+  fn switch(&self, username: String, options: AntiAfkOptions) -> bool {
+    if options.state && !TASKS.get_task_activity(&username, TaskName::AntiAfk) {
+      let username_clone = username.clone();
+      let task_handle = tokio::spawn(async move {
+        set_mutual_states(&username_clone, "looking", true);
 
-    if let Some(bot) = BOT_REGISTRY.get_bot(username) {
-      bot.stop_move();
-      bot.stop_crouching();
+        BOT_REGISTRY
+          .async_get_bot(&username_clone, async |bot| Self::start(bot, &options).await)
+          .await;
+      });
+
+      push_task(&username, TaskName::AntiAfk, task_handle);
+    } else if !options.state && TASKS.get_task_activity(&username, TaskName::AntiAfk) {
+      kill_task(&username, TaskName::AntiAfk);
+
+      if let Some(bot) = BOT_REGISTRY.get_bot(&username) {
+        bot.stop_move();
+        bot.stop_crouching();
+      }
+
+      set_mutual_states(&username, "looking", false);
+    } else {
+      return false;
     }
 
-    set_mutual_states(&username, "looking", false);
+    true
   }
 }

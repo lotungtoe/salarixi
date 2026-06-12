@@ -124,31 +124,6 @@ pub async fn get_memory_usage() -> f64 {
 #[tauri::command]
 pub async fn control_bots(name: String, options: serde_json::Value, group: String) {
   if process_is_active() {
-    if let Some(opts) = current_options() {
-      if opts.basic.use_webhook && opts.webhook.send_actions {
-        send_webhook(
-          opts.webhook.url,
-          format!(
-            "Группа ботов с названием '{}' приняла команду '{}'. Полученные опции: {}",
-            group, name, options
-          ),
-        );
-      }
-    }
-
-    emit_log(
-      format!(
-        "Группа ботов с названием '{}' приняла команду '{}'. Полученные опции: {}",
-        group, name, options
-      ),
-      "extended",
-    );
-
-    emit_msg(
-      "Управление",
-      format!("Группа ботов с названием '{}' приняла команду '{}'", group, name),
-    );
-
     BOT_REGISTRY.send_event(RegistryEvent::ControlModules { name, options, group });
   }
 }

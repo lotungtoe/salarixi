@@ -6,10 +6,11 @@ use serde::Deserialize;
 use std::time::Duration;
 use tokio::time::sleep;
 
-use crate::service::core::bot::{get_state, kill_task, set_mutual_states, State, TaskName};
+use crate::service::core::bot::{get_state, kill_task, push_task, set_mutual_states, State, TaskName, TASKS};
 use crate::service::core::common::get_block_state;
 use crate::service::core::extensions::{BotDefaultExt, BotInventoryExt, BotRotationExt};
 use crate::service::core::registry::BOT_REGISTRY;
+use crate::service::core::traits::SalarixiModule;
 use crate::service::generators::*;
 
 struct Tool {
@@ -28,11 +29,7 @@ pub struct FarmerOptions {
 }
 
 impl FarmerModule {
-  pub fn new() -> Self {
-    Self
-  }
-
-  async fn auto_tool(&self, bot: &Client) {
+  async fn auto_tool(bot: &Client) {
     let mut tools = vec![];
 
     if let Some(menu) = bot.get_inventory_menu() {
@@ -103,11 +100,11 @@ impl FarmerModule {
     }
   }
 
-  fn this_is_grown_plant(&self, id: u16) -> bool {
+  fn this_is_grown_plant(id: u16) -> bool {
     return vec![10464, 5117, 14612, 10472].contains(&id);
   }
 
-  fn this_is_plant(&self, kind: BlockKind) -> bool {
+  fn this_is_plant(kind: BlockKind) -> bool {
     return vec![
       BlockKind::Potatoes,
       BlockKind::Carrots,
@@ -117,7 +114,7 @@ impl FarmerModule {
     .contains(&kind);
   }
 
-  fn this_is_farmland_without_plant(&self, bot: &Client, kind: BlockKind, block_pos: BlockPos) -> bool {
+  fn this_is_farmland_without_plant(bot: &Client, kind: BlockKind, block_pos: BlockPos) -> bool {
     if kind == BlockKind::Farmland {
       let block_above = BlockPos::new(block_pos.x, block_pos.y + 1, block_pos.z);
 
@@ -131,7 +128,7 @@ impl FarmerModule {
     false
   }
 
-  async fn fertilize_plant(&self, bot: &Client, mode: &String) {
+  async fn fertilize_plant(bot: &Client, mode: &String) {
     let mut ferilizer_slot = None;
 
     if let Some(menu) = bot.get_inventory_menu() {
@@ -149,13 +146,13 @@ impl FarmerModule {
       bot.take_item(slot, true).await;
 
       for _ in 0..=4 {
-        sleep(Duration::from_millis(self.generate_delay(mode))).await;
+        sleep(Duration::from_millis(Self::generate_delay(mode))).await;
         bot.start_use_item();
       }
     }
   }
 
-  async fn take_plant(&self, bot: &Client) -> bool {
+  async fn take_plant(bot: &Client) -> bool {
     let mut plant_slot = None;
 
     if let Some(menu) = bot.get_inventory_menu() {
@@ -180,7 +177,7 @@ impl FarmerModule {
     false
   }
 
-  fn generate_delay(&self, mode: &String) -> u64 {
+  fn generate_delay(mode: &String) -> u64 {
     if mode.as_str() == "normal" {
       return randuint(100, 150);
     } else if mode.as_str() == "quick" {
@@ -190,16 +187,16 @@ impl FarmerModule {
     }
   }
 
-  async fn plow_block(&self, bot: &Client, block_pos: BlockPos, mode: &String) {
+  async fn plow_block(bot: &Client, block_pos: BlockPos, mode: &String) {
     if let Some(state) = get_block_state(bot, block_pos) {
-      self.auto_tool(bot).await;
+      Self::auto_tool(bot).await;
       sleep(Duration::from_millis(50)).await;
 
       let kind = BlockKind::from(state);
 
       if kind == BlockKind::CoarseDirt || kind == BlockKind::RootedDirt {
         bot.start_use_item();
-        sleep(Duration::from_millis(self.generate_delay(mode))).await;
+        sleep(Duration::from_millis(Self::generate_delay(mode))).await;
         bot.start_use_item();
       } else {
         bot.start_use_item();
@@ -207,7 +204,7 @@ impl FarmerModule {
     }
   }
 
-  fn block_can_plowed(&self, bot: &Client, kind: BlockKind, block_pos: BlockPos) -> bool {
+  fn block_can_plowed(bot: &Client, kind: BlockKind, block_pos: BlockPos) -> bool {
     if let Some(state) = get_block_state(bot, BlockPos::new(block_pos.x, block_pos.y + 1, block_pos.z)) {
       return vec![
         BlockKind::Dirt,
@@ -222,7 +219,7 @@ impl FarmerModule {
     false
   }
 
-  async fn interact_with_block(&self, bot: &Client, block_pos: BlockPos, options: &FarmerOptions) {
+  async fn interact_with_block(bot: &Client, block_pos: BlockPos, options: &FarmerOptions) {
     let nickname = bot.username();
 
     if !get_state(&nickname, State::IsEating)
@@ -234,38 +231,38 @@ impl FarmerModule {
 
         let kind = BlockKind::from(state);
 
-        if self.this_is_farmland_without_plant(bot, kind, block_pos) {
+        if Self::this_is_farmland_without_plant(bot, kind, block_pos) {
           bot.look_at_block(block_pos, true).await;
 
           if options.mode.as_str() != "ultra" {
-            sleep(Duration::from_millis(self.generate_delay(&options.mode))).await;
+            sleep(Duration::from_millis(Self::generate_delay(&options.mode))).await;
           }
 
-          if self.take_plant(bot).await {
-            sleep(Duration::from_millis(self.generate_delay(&options.mode))).await;
+          if Self::take_plant(bot).await {
+            sleep(Duration::from_millis(Self::generate_delay(&options.mode))).await;
             bot.start_use_item();
-            sleep(Duration::from_millis(self.generate_delay(&options.mode))).await;
+            sleep(Duration::from_millis(Self::generate_delay(&options.mode))).await;
           }
         } else {
-          if self.this_is_plant(kind) {
+          if Self::this_is_plant(kind) {
             bot.look_at_block(block_pos, true).await;
 
-            sleep(Duration::from_millis(self.generate_delay(&options.mode))).await;
+            sleep(Duration::from_millis(Self::generate_delay(&options.mode))).await;
 
-            if self.this_is_grown_plant(state.id()) {
-              self.auto_tool(bot).await;
-              sleep(Duration::from_millis(self.generate_delay(&options.mode))).await;
+            if Self::this_is_grown_plant(state.id()) {
+              Self::auto_tool(bot).await;
+              sleep(Duration::from_millis(Self::generate_delay(&options.mode))).await;
               bot.mine(block_pos).await;
               sleep(Duration::from_millis(50)).await;
             } else {
-              self.fertilize_plant(bot, &options.mode).await;
+              Self::fertilize_plant(bot, &options.mode).await;
 
               if let Some(new_state) = get_block_state(bot, block_pos) {
                 sleep(Duration::from_millis(50)).await;
 
-                if self.this_is_grown_plant(new_state.id()) {
-                  self.auto_tool(bot).await;
-                  sleep(Duration::from_millis(self.generate_delay(&options.mode))).await;
+                if Self::this_is_grown_plant(new_state.id()) {
+                  Self::auto_tool(bot).await;
+                  sleep(Duration::from_millis(Self::generate_delay(&options.mode))).await;
                   bot.mine(block_pos).await;
                   sleep(Duration::from_millis(50)).await;
                 }
@@ -273,12 +270,12 @@ impl FarmerModule {
             }
 
             if options.mode.as_str() != "ultra" {
-              sleep(Duration::from_millis(self.generate_delay(&options.mode))).await;
+              sleep(Duration::from_millis(Self::generate_delay(&options.mode))).await;
             }
           } else {
-            if self.block_can_plowed(bot, kind, block_pos) {
+            if Self::block_can_plowed(bot, kind, block_pos) {
               bot.look_at_block(block_pos, true).await;
-              self.plow_block(bot, block_pos, &options.mode).await;
+              Self::plow_block(bot, block_pos, &options.mode).await;
             }
           }
         }
@@ -288,7 +285,7 @@ impl FarmerModule {
     }
   }
 
-  async fn farmer(&self, bot: &Client, options: &FarmerOptions) {
+  async fn start(bot: &Client, options: &FarmerOptions) {
     let username = bot.username();
 
     loop {
@@ -299,7 +296,7 @@ impl FarmerModule {
 
         let block_pos = BlockPos::from(Vec3::new(pos.x, pos.y + y as f64, pos.z));
 
-        self.interact_with_block(bot, block_pos, &options).await;
+        Self::interact_with_block(bot, block_pos, &options).await;
       }
 
       for x in -1..=1 {
@@ -310,7 +307,7 @@ impl FarmerModule {
             let block_pos = BlockPos::from(Vec3::new(pos.x + x as f64, pos.y + y as f64, pos.z + z as f64));
 
             if block_pos != BlockPos::from(Vec3::new(pos.x, pos.y + y as f64, pos.z)) {
-              self.interact_with_block(bot, block_pos, &options).await;
+              Self::interact_with_block(bot, block_pos, &options).await;
             }
           }
         }
@@ -321,19 +318,31 @@ impl FarmerModule {
       set_mutual_states(&username, "looking", false);
     }
   }
+}
 
-  pub async fn enable(&self, username: &str, options: &FarmerOptions) {
-    BOT_REGISTRY
-      .async_get_bot(username, async |bot| {
-        self.farmer(bot, options).await;
-      })
-      .await;
+impl SalarixiModule<FarmerOptions> for FarmerModule {
+  fn new() -> Self {
+    Self
   }
 
-  pub fn stop(&self, username: &str) {
-    kill_task(username, TaskName::Farmer);
+  fn switch(&self, username: String, options: FarmerOptions) -> bool {
+    if options.state && !TASKS.get_task_activity(&username, TaskName::Farmer) {
+      let username_clone = username.clone();
+      let task_handle = tokio::spawn(async move {
+        BOT_REGISTRY
+          .async_get_bot(&username_clone, async |bot| Self::start(bot, &options).await)
+          .await;
+      });
 
-    set_mutual_states(username, "looking", false);
-    set_mutual_states(username, "interacting", false);
+      push_task(&username, TaskName::Farmer, task_handle);
+    } else if !options.state && TASKS.get_task_activity(&username, TaskName::Farmer) {
+      kill_task(&username, TaskName::Farmer);
+      set_mutual_states(&username, "looking", false);
+      set_mutual_states(&username, "interacting", false);
+    } else {
+      return false;
+    }
+
+    true
   }
 }

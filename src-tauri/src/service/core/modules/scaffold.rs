@@ -5,12 +5,13 @@ use serde::Deserialize;
 use std::time::Duration;
 use tokio::time::sleep;
 
-use crate::service::core::bot::{kill_task, set_mutual_states, TaskName, TASKS};
+use crate::service::core::bot::{kill_task, push_task, set_mutual_states, TaskName, TASKS};
 use crate::service::core::common::{
   convert_hotbar_slot_to_inventory_slot, convert_inventory_slot_to_hotbar_slot, get_block_state, this_is_solid_block,
 };
 use crate::service::core::extensions::{BotDefaultExt, BotInventoryExt, BotMovementExt, BotPhysicsExt};
 use crate::service::core::registry::BOT_REGISTRY;
+use crate::service::core::traits::SalarixiModule;
 use crate::service::generators::*;
 
 pub struct ScaffoldModule;
@@ -25,11 +26,7 @@ pub struct ScaffoldOptions {
 }
 
 impl ScaffoldModule {
-  pub fn new() -> Self {
-    Self
-  }
-
-  async fn take_block(&self, bot: &Client) -> bool {
+  async fn take_block(bot: &Client) -> bool {
     if let Some(menu) = bot.get_inventory_menu() {
       if let Some(item) = menu.slot(convert_hotbar_slot_to_inventory_slot(bot.get_selected_slot())) {
         if this_is_solid_block(item.kind()) {
@@ -73,7 +70,7 @@ impl ScaffoldModule {
     false
   }
 
-  fn simulate_inaccuracy(&self, bot: &Client, direction: (f32, f32)) {
+  fn simulate_inaccuracy(bot: &Client, direction: (f32, f32)) {
     let inaccurate_direction = (
       direction.0 + randfloat(-0.08, 0.08) as f32,
       direction.1 + randfloat(-0.08, 0.08) as f32,
@@ -82,7 +79,7 @@ impl ScaffoldModule {
     bot.set_direction(inaccurate_direction.0, inaccurate_direction.1);
   }
 
-  fn direct_gaze(&self, bot: &Client, min_x_rot: Option<f32>, max_x_rot: Option<f32>) {
+  fn direct_gaze(bot: &Client, min_x_rot: Option<f32>, max_x_rot: Option<f32>) {
     let direction = bot.direction();
 
     let min_x = if let Some(rot) = min_x_rot { rot } else { 80.0 } as f64;
@@ -91,7 +88,7 @@ impl ScaffoldModule {
     bot.set_direction(direction.0, randfloat(min_x, max_x) as f32);
   }
 
-  fn go_back(&self, username: String) {
+  fn go_back(username: String) {
     tokio::spawn(async move {
       loop {
         if !TASKS.get_task_activity(&username, TaskName::Scaffold) {
@@ -107,14 +104,14 @@ impl ScaffoldModule {
     });
   }
 
-  async fn noob_bridge_scaffold(&self, bot: &Client, options: &ScaffoldOptions) {
+  async fn noob_bridge_scaffold(bot: &Client, options: &ScaffoldOptions) {
     loop {
       if !bot.crouching() {
         bot.set_crouching(true);
       }
 
-      if self.take_block(bot).await {
-        self.direct_gaze(bot, options.min_gaze_degree_x, options.max_gaze_degree_x);
+      if Self::take_block(bot).await {
+        Self::direct_gaze(bot, options.min_gaze_degree_x, options.max_gaze_degree_x);
 
         let position = bot.position();
         let block_under = BlockPos::new(
@@ -136,7 +133,7 @@ impl ScaffoldModule {
 
           sleep(Duration::from_millis(randuint(100, 200))).await;
 
-          self.simulate_inaccuracy(bot, bot.direction());
+          Self::simulate_inaccuracy(bot, bot.direction());
 
           sleep(Duration::from_millis(randuint(100, 150))).await;
         }
@@ -146,10 +143,10 @@ impl ScaffoldModule {
     }
   }
 
-  async fn ninja_bridge_scaffold(&self, bot: &Client, options: &ScaffoldOptions) {
+  async fn ninja_bridge_scaffold(bot: &Client, options: &ScaffoldOptions) {
     loop {
-      if self.take_block(bot).await {
-        self.direct_gaze(bot, options.min_gaze_degree_x, options.max_gaze_degree_x);
+      if Self::take_block(bot).await {
+        Self::direct_gaze(bot, options.min_gaze_degree_x, options.max_gaze_degree_x);
 
         let pos = bot.position();
         let block_under = BlockPos::new(pos.x.floor() as i32, (pos.y - 0.5).floor() as i32, pos.z.floor() as i32);
@@ -171,7 +168,7 @@ impl ScaffoldModule {
 
           sleep(Duration::from_millis(randuint(50, 100))).await;
 
-          self.simulate_inaccuracy(bot, bot.direction());
+          Self::simulate_inaccuracy(bot, bot.direction());
 
           sleep(Duration::from_millis(50)).await;
 
@@ -183,10 +180,10 @@ impl ScaffoldModule {
     }
   }
 
-  async fn god_bridge_scaffold(&self, bot: &Client, options: &ScaffoldOptions) {
+  async fn god_bridge_scaffold(bot: &Client, options: &ScaffoldOptions) {
     loop {
-      if self.take_block(bot).await {
-        self.direct_gaze(bot, options.min_gaze_degree_x, options.max_gaze_degree_x);
+      if Self::take_block(bot).await {
+        Self::direct_gaze(bot, options.min_gaze_degree_x, options.max_gaze_degree_x);
 
         let position = bot.position();
         let block_under = BlockPos::new(
@@ -206,7 +203,7 @@ impl ScaffoldModule {
 
           bot.start_use_item();
 
-          self.simulate_inaccuracy(bot, bot.direction());
+          Self::simulate_inaccuracy(bot, bot.direction());
         }
       }
 
@@ -214,10 +211,10 @@ impl ScaffoldModule {
     }
   }
 
-  async fn jump_bridge_scaffold(&self, bot: &Client, options: &ScaffoldOptions) {
+  async fn jump_bridge_scaffold(bot: &Client, options: &ScaffoldOptions) {
     loop {
-      if self.take_block(bot).await {
-        self.direct_gaze(bot, options.min_gaze_degree_x, options.max_gaze_degree_x);
+      if Self::take_block(bot).await {
+        Self::direct_gaze(bot, options.min_gaze_degree_x, options.max_gaze_degree_x);
 
         let position = bot.position();
         let velocity = if let Some(physics) = bot.get_physics() {
@@ -250,7 +247,7 @@ impl ScaffoldModule {
 
           bot.start_use_item();
 
-          self.simulate_inaccuracy(bot, bot.direction());
+          Self::simulate_inaccuracy(bot, bot.direction());
         }
       }
 
@@ -258,39 +255,48 @@ impl ScaffoldModule {
     }
   }
 
-  pub async fn enable(&self, username: &str, options: &ScaffoldOptions) {
-    BOT_REGISTRY
-      .async_get_bot(username, async |bot| {
-        self.go_back(bot.username());
+  async fn start(bot: &Client, options: &ScaffoldOptions) {
+    Self::go_back(bot.username());
 
-        match options.mode.as_str() {
-          "noob-bridge" => {
-            self.noob_bridge_scaffold(bot, options).await;
-          }
-          "ninja-bridge" => {
-            self.ninja_bridge_scaffold(bot, options).await;
-          }
-          "god-bridge" => {
-            self.god_bridge_scaffold(bot, options).await;
-          }
-          "jump-bridge" => {
-            self.jump_bridge_scaffold(bot, options).await;
-          }
-          _ => {}
-        }
-      })
-      .await;
+    match options.mode.as_str() {
+      "noob-bridge" => Self::noob_bridge_scaffold(bot, &options).await,
+      "ninja-bridge" => Self::ninja_bridge_scaffold(bot, &options).await,
+      "god-bridge" => Self::god_bridge_scaffold(bot, &options).await,
+      "jump-bridge" => Self::jump_bridge_scaffold(bot, &options).await,
+      _ => {}
+    }
+  }
+}
+
+impl SalarixiModule<ScaffoldOptions> for ScaffoldModule {
+  fn new() -> Self {
+    Self
   }
 
-  pub async fn stop(&self, username: &str) {
-    kill_task(username, TaskName::Scaffold);
+  fn switch(&self, username: String, options: ScaffoldOptions) -> bool {
+    if options.state && !TASKS.get_task_activity(&username, TaskName::Scaffold) {
+      let username_clone = username.clone();
+      let task_handle = tokio::spawn(async move {
+        BOT_REGISTRY
+          .async_get_bot(&username_clone, async |bot| Self::start(bot, &options).await)
+          .await;
+      });
 
-    if let Some(bot) = BOT_REGISTRY.get_bot(username) {
-      bot.set_crouching(false);
-      bot.stop_move();
+      push_task(&username, TaskName::Scaffold, task_handle);
+    } else if !options.state && TASKS.get_task_activity(&username, TaskName::Scaffold) {
+      kill_task(&username, TaskName::Scaffold);
+
+      if let Some(bot) = BOT_REGISTRY.get_bot(&username) {
+        bot.set_crouching(false);
+        bot.stop_move();
+      }
+
+      set_mutual_states(&username, "looking", false);
+      set_mutual_states(&username, "interacting", false);
+    } else {
+      return false;
     }
 
-    set_mutual_states(username, "looking", false);
-    set_mutual_states(username, "interacting", false);
+    true
   }
 }

@@ -5,9 +5,12 @@ use std::time::Duration;
 use tokio::time::sleep;
 
 use crate::service::core::bot::kill_task;
+use crate::service::core::bot::push_task;
 use crate::service::core::bot::TaskName;
+use crate::service::core::bot::TASKS;
 use crate::service::core::extensions::{go_to, BotMovementExt};
 use crate::service::core::registry::BOT_REGISTRY;
+use crate::service::core::traits::SalarixiModule;
 use crate::service::generators::*;
 
 pub struct MovementModule;
@@ -28,7 +31,7 @@ impl MovementModule {
     Self
   }
 
-  async fn default_move(&self, bot: &Client, options: &MovementOptions) {
+  async fn default_move(bot: &Client, options: &MovementOptions) {
     if options.use_impulsiveness {
       if !options.use_sync {
         sleep(Duration::from_millis(randuint(500, 2000))).await;
@@ -78,7 +81,7 @@ impl MovementModule {
     }
   }
 
-  async fn pathfinder_move(&self, bot: &Client, options: &MovementOptions) {
+  async fn pathfinder_move(bot: &Client, options: &MovementOptions) {
     if let Some(x) = options.x {
       if let Some(z) = options.z {
         if !options.use_sync {
@@ -90,26 +93,41 @@ impl MovementModule {
     }
   }
 
-  pub async fn enable(&self, username: &str, options: &MovementOptions) {
-    BOT_REGISTRY
-      .async_get_bot(username, async |bot| match options.mode.as_str() {
-        "default" => {
-          self.default_move(bot, options).await;
-        }
-        "pathfinder" => {
-          self.pathfinder_move(bot, options).await;
-        }
-        _ => {}
-      })
-      .await;
+  async fn start(bot: &Client, options: &MovementOptions) {
+    match options.mode.as_str() {
+      "default" => Self::default_move(bot, &options).await,
+      "pathfinder" => Self::pathfinder_move(bot, &options).await,
+      _ => {}
+    }
+  }
+}
+
+impl SalarixiModule<MovementOptions> for MovementModule {
+  fn new() -> Self {
+    Self
   }
 
-  pub async fn stop(&self, username: &str) {
-    kill_task(username, TaskName::Movement);
+  fn switch(&self, username: String, options: MovementOptions) -> bool {
+    if options.state && !TASKS.get_task_activity(&username, TaskName::Movement) {
+      let username_clone = username.clone();
+      let task_handle = tokio::spawn(async move {
+        BOT_REGISTRY
+          .async_get_bot(&username_clone, async |bot| Self::start(bot, &options).await)
+          .await;
+      });
 
-    if let Some(bot) = BOT_REGISTRY.get_bot(username) {
-      bot.stop_pathfinding();
-      bot.stop_move();
+      push_task(&username, TaskName::Movement, task_handle);
+    } else if !options.state && TASKS.get_task_activity(&username, TaskName::Movement) {
+      kill_task(&username, TaskName::Movement);
+
+      if let Some(bot) = BOT_REGISTRY.get_bot(&username) {
+        bot.stop_pathfinding();
+        bot.stop_move();
+      }
+    } else {
+      return false;
     }
+
+    true
   }
 }

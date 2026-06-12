@@ -11,10 +11,13 @@ use std::time::{Duration, Instant};
 use tokio::time::sleep;
 
 use crate::service::core::bot::kill_task;
+use crate::service::core::bot::push_task;
 use crate::service::core::bot::TaskName;
+use crate::service::core::bot::TASKS;
 use crate::service::core::common::get_block_state;
 use crate::service::core::extensions::{BotInventoryExt, BotPhysicsExt};
 use crate::service::core::registry::BOT_REGISTRY;
+use crate::service::core::traits::SalarixiModule;
 use crate::service::generators::*;
 
 pub struct AntiFallModule;
@@ -33,7 +36,7 @@ impl AntiFallModule {
     Self
   }
 
-  fn exist_blocks_below(&self, bot: &Client, distance_to_ground: i32) -> bool {
+  fn exist_blocks_below(bot: &Client, distance_to_ground: i32) -> bool {
     let pos = bot.position();
 
     for y in 0..=distance_to_ground {
@@ -49,7 +52,7 @@ impl AntiFallModule {
     false
   }
 
-  fn exist_water_below(&self, bot: &Client, distance_to_ground: i32) -> bool {
+  fn exist_water_below(bot: &Client, distance_to_ground: i32) -> bool {
     let pos = bot.position();
 
     for y in 0..=distance_to_ground {
@@ -67,7 +70,7 @@ impl AntiFallModule {
     false
   }
 
-  async fn take_water_bucket(&self, bot: &Client) -> bool {
+  async fn take_water_bucket(bot: &Client) -> bool {
     let menu = bot.menu();
 
     for (slot, item) in menu.slots().iter().enumerate() {
@@ -82,7 +85,7 @@ impl AntiFallModule {
     false
   }
 
-  async fn hovering_anti_fall(&self, bot: &Client, options: &AntiFallOptions) {
+  async fn hovering_anti_fall(bot: &Client, options: &AntiFallOptions) {
     loop {
       let velocity_y = if let Some(physics) = bot.get_physics() {
         physics.velocity.y
@@ -91,7 +94,7 @@ impl AntiFallModule {
       };
 
       if velocity_y < options.fall_velocity.unwrap_or(-0.5) {
-        if self.exist_blocks_below(bot, options.distance_to_ground.unwrap_or(4)) {
+        if Self::exist_blocks_below(bot, options.distance_to_ground.unwrap_or(4)) {
           let duration = Instant::now() + Duration::from_millis(randuint(300, 450));
 
           loop {
@@ -113,13 +116,13 @@ impl AntiFallModule {
     }
   }
 
-  async fn teleport_anti_fall(&self, bot: &Client, options: &AntiFallOptions) {
+  async fn teleport_anti_fall(bot: &Client, options: &AntiFallOptions) {
     loop {
       if let Some(physics) = bot.get_physics() {
         let velocity_y = physics.velocity.y;
 
         if velocity_y < options.fall_velocity.unwrap_or(-0.5) {
-          if self.exist_blocks_below(bot, options.distance_to_ground.unwrap_or(4)) {
+          if Self::exist_blocks_below(bot, options.distance_to_ground.unwrap_or(4)) {
             let pos = bot.position();
             let fake_pos = Vec3::new(pos.x, pos.y + randfloat(0.015, 0.022), pos.z);
 
@@ -138,7 +141,7 @@ impl AntiFallModule {
     }
   }
 
-  async fn water_drop_anti_fall(&self, bot: &Client, options: &AntiFallOptions) {
+  async fn water_drop_anti_fall(bot: &Client, options: &AntiFallOptions) {
     let distance_to_ground = options.distance_to_ground.unwrap_or(4);
 
     loop {
@@ -149,13 +152,13 @@ impl AntiFallModule {
       };
 
       if velocity_y < options.fall_velocity.unwrap_or(-0.5) {
-        if self.exist_blocks_below(bot, distance_to_ground) {
+        if Self::exist_blocks_below(bot, distance_to_ground) {
           let y_rot = bot.direction().0;
 
           bot.set_direction(y_rot, randfloat(85.0, 89.0) as f32);
 
-          if self.take_water_bucket(bot).await {
-            if !self.exist_water_below(bot, distance_to_ground) {
+          if Self::take_water_bucket(bot).await {
+            if !Self::exist_water_below(bot, distance_to_ground) {
               sleep(Duration::from_millis(50)).await;
 
               let direction = bot.direction();
@@ -171,7 +174,7 @@ impl AntiFallModule {
 
           sleep(Duration::from_millis(50)).await;
 
-          if self.exist_water_below(bot, distance_to_ground) {
+          if Self::exist_water_below(bot, distance_to_ground) {
             let direction = bot.direction();
 
             bot.write_packet(ServerboundUseItem {
@@ -188,24 +191,37 @@ impl AntiFallModule {
     }
   }
 
-  pub async fn enable(&self, username: &str, options: &AntiFallOptions) {
-    BOT_REGISTRY
-      .async_get_bot(username, async |bot| match options.mode.as_str() {
-        "hovering" => {
-          self.hovering_anti_fall(bot, options).await;
-        }
-        "teleport" => {
-          self.teleport_anti_fall(bot, options).await;
-        }
-        "water-drop" => {
-          self.water_drop_anti_fall(bot, options).await;
-        }
-        _ => {}
-      })
-      .await;
+  async fn start(bot: &Client, options: &AntiFallOptions) {
+    match options.mode.as_str() {
+      "hovering" => Self::hovering_anti_fall(bot, options).await,
+      "teleport" => Self::teleport_anti_fall(bot, options).await,
+      "water-drop" => Self::water_drop_anti_fall(bot, options).await,
+      _ => {}
+    }
+  }
+}
+
+impl SalarixiModule<AntiFallOptions> for AntiFallModule {
+  fn new() -> Self {
+    Self
   }
 
-  pub fn stop(&self, username: &str) {
-    kill_task(username, TaskName::AntiFall);
+  fn switch(&self, username: String, options: AntiFallOptions) -> bool {
+    if options.state && !TASKS.get_task_activity(&username, TaskName::AntiFall) {
+      let username_clone = username.clone();
+      let task_handle = tokio::spawn(async move {
+        BOT_REGISTRY
+          .async_get_bot(&username_clone, async |bot| Self::start(bot, &options).await)
+          .await;
+      });
+
+      push_task(&username, TaskName::AntiFall, task_handle);
+    } else if !options.state && TASKS.get_task_activity(&username, TaskName::AntiFall) {
+      kill_task(&username, TaskName::AntiFall);
+    } else {
+      return false;
+    }
+
+    true
   }
 }
