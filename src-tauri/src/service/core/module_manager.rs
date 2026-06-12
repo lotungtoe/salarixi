@@ -1,12 +1,28 @@
 use once_cell::sync::Lazy;
+use serde::de::DeserializeOwned;
 use std::sync::Arc;
 
+use crate::api::emit::emit_log;
 use crate::service::core::bot::push_task;
 use crate::service::core::bot::TaskName;
 use crate::service::core::bot::PROFILES;
 use crate::service::core::modules::*;
 
 pub static MODULE_MANAGER: Lazy<Arc<ModuleManager>> = Lazy::new(|| Arc::new(ModuleManager::new()));
+
+/// Вспомогательный метод парсинга опций
+fn try_parse_options<T>(value: serde_json::Value) -> Option<T>
+where
+  T: DeserializeOwned,
+{
+  match serde_json::from_value(value) {
+    Ok(o) => Some(o),
+    Err(e) => {
+      emit_log(format!("Ошибка парсинга указанных опций: {}", e), "error");
+      None
+    }
+  }
+}
 
 /// Менеджер модулей.
 /// Изначально он хранит в себе объекты всех существующих модулей.
@@ -29,6 +45,7 @@ pub struct ModuleManager {
 }
 
 impl ModuleManager {
+  /// Метод создания нового менеджера модулей
   pub fn new() -> Self {
     Self {
       chat: ChatModule::new(),
@@ -48,7 +65,8 @@ impl ModuleManager {
     }
   }
 
-  pub async fn control(&'static self, name: String, options: serde_json::Value, group: String) {
+  /// Метод управления определённым менеджером
+  pub async fn control(&'static self, name: String, options: serde_json::Value, group: String) -> Option<()> {
     for username in PROFILES.get_all().into_keys() {
       let current_options = options.clone();
 
@@ -60,9 +78,7 @@ impl ModuleManager {
 
       match name.as_str() {
         "chat" => {
-          let options: ChatOptions = serde_json::from_value(current_options)
-            .map_err(|e| format!("Ошибка парсинга опций: {}", e))
-            .unwrap();
+          let options: ChatOptions = try_parse_options(current_options)?;
 
           let mode_clone = options.mode.clone();
           let mode = mode_clone.as_str();
@@ -86,9 +102,7 @@ impl ModuleManager {
           }
         }
         "action" => {
-          let options: ActionOptions = serde_json::from_value(current_options)
-            .map_err(|e| format!("Ошибка парсинга опций: {}", e))
-            .unwrap();
+          let options: ActionOptions = try_parse_options(current_options)?;
 
           let action = options.action.clone();
 
@@ -114,16 +128,12 @@ impl ModuleManager {
           }
         }
         "inventory" => {
-          let options: InventoryOptions = serde_json::from_value(current_options)
-            .map_err(|e| format!("Ошибка парсинга опций: {}", e))
-            .unwrap();
+          let options: InventoryOptions = try_parse_options(current_options)?;
 
           self.inventory.interact(&username, &options).await;
         }
         "movement" => {
-          let options: MovementOptions = serde_json::from_value(current_options)
-            .map_err(|e| format!("Ошибка парсинга опций: {}", e))
-            .unwrap();
+          let options: MovementOptions = try_parse_options(current_options)?;
 
           self.movement.stop(&username).await;
 
@@ -140,9 +150,7 @@ impl ModuleManager {
           }
         }
         "anti-afk" => {
-          let options: AntiAfkOptions = serde_json::from_value(current_options)
-            .map_err(|e| format!("Ошибка парсинга опций: {}", e))
-            .unwrap();
+          let options: AntiAfkOptions = try_parse_options(current_options)?;
 
           self.anti_afk.stop(&username).await;
 
@@ -159,9 +167,7 @@ impl ModuleManager {
           }
         }
         "stalker" => {
-          let options: StalkerOptions = serde_json::from_value(current_options)
-            .map_err(|e| format!("Ошибка парсинга опций: {}", e))
-            .unwrap();
+          let options: StalkerOptions = try_parse_options(current_options)?;
 
           self.stalker.stop(&username);
 
@@ -178,9 +184,7 @@ impl ModuleManager {
           }
         }
         "flight" => {
-          let options: FlightOptions = serde_json::from_value(current_options)
-            .map_err(|e| format!("Ошибка парсинга опций: {}", e))
-            .unwrap();
+          let options: FlightOptions = try_parse_options(current_options)?;
 
           self.flight.stop(&username);
 
@@ -197,9 +201,7 @@ impl ModuleManager {
           }
         }
         "killaura" => {
-          let options: KillauraOptions = serde_json::from_value(current_options)
-            .map_err(|e| format!("Ошибка парсинга опций: {}", e))
-            .unwrap();
+          let options: KillauraOptions = try_parse_options(current_options)?;
 
           self.killaura.stop(&username).await;
 
@@ -216,9 +218,7 @@ impl ModuleManager {
           }
         }
         "scaffold" => {
-          let options: ScaffoldOptions = serde_json::from_value(current_options)
-            .map_err(|e| format!("Ошибка парсинга опций: {}", e))
-            .unwrap();
+          let options: ScaffoldOptions = try_parse_options(current_options)?;
 
           self.scaffold.stop(&username).await;
 
@@ -235,9 +235,7 @@ impl ModuleManager {
           }
         }
         "anti-fall" => {
-          let options: AntiFallOptions = serde_json::from_value(current_options)
-            .map_err(|e| format!("Ошибка парсинга опций: {}", e))
-            .unwrap();
+          let options: AntiFallOptions = try_parse_options(current_options)?;
 
           self.anti_fall.stop(&username);
 
@@ -254,9 +252,7 @@ impl ModuleManager {
           }
         }
         "bow-aim" => {
-          let options: BowAimOptions = serde_json::from_value(current_options)
-            .map_err(|e| format!("Ошибка парсинга опций: {}", e))
-            .unwrap();
+          let options: BowAimOptions = try_parse_options(current_options)?;
 
           self.bow_aim.stop(&username).await;
 
@@ -273,9 +269,7 @@ impl ModuleManager {
           }
         }
         "stealer" => {
-          let options: StealerOptions = serde_json::from_value(current_options)
-            .map_err(|e| format!("Ошибка парсинга опций: {}", e))
-            .unwrap();
+          let options: StealerOptions = try_parse_options(current_options)?;
 
           self.stealer.stop(&username);
 
@@ -292,9 +286,7 @@ impl ModuleManager {
           }
         }
         "miner" => {
-          let options: MinerOptions = serde_json::from_value(current_options)
-            .map_err(|e| format!("Ошибка парсинга опций: {}", e))
-            .unwrap();
+          let options: MinerOptions = try_parse_options(current_options)?;
 
           self.miner.stop(&username).await;
 
@@ -311,9 +303,7 @@ impl ModuleManager {
           }
         }
         "farmer" => {
-          let options: FarmerOptions = serde_json::from_value(current_options)
-            .map_err(|e| format!("Ошибка парсинга опций: {}", e))
-            .unwrap();
+          let options: FarmerOptions = try_parse_options(current_options)?;
 
           self.farmer.stop(&username);
 
@@ -332,5 +322,7 @@ impl ModuleManager {
         _ => {}
       }
     }
+
+    Some(())
   }
 }
