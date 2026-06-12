@@ -61,7 +61,7 @@ class Logger {
     content.className = `log-line-content ${type}`;
     content.innerText = text;
     
-    if (type === "extended") content.style.fontStyle = "italic";
+    if (type === "system") content.style.fontStyle = "italic";
     if ((line.getAttribute("log-type") === "system" && !this.statistics.visible.system) || (line.getAttribute("log-type") === "extended" && !this.statistics.visible.extended)) line.style.display = "none";
 
     line.appendChild(content);

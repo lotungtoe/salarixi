@@ -55,9 +55,14 @@ class AccountModule {
       });
 
       this.updateAccountCounter();
+
+      logger.log(`Создан новый аккаунт "${username}"`, "system");
     });
 
-    removeAllAccountsBtn.addEventListener("click", () => this.clearAccounts());
+    removeAllAccountsBtn.addEventListener("click", () => {
+      this.clearAccounts();
+      logger.log(`Все аккаунты удалены`, "system");
+    });
 
     importAccounts.addEventListener("click", async () => {
       try {
@@ -161,10 +166,13 @@ class AccountModule {
 
   /** Метод загрузки сохранённых аккаунтов из локального хранилища */
   private loadSavedAccounts(): void {
-    const accounts = localStorage.getItem("accounts");
-    if (!accounts) return;
-    for (const [username, fields] of Object.entries<AccountFields | null>(JSON.parse(accounts))) fields ? this.createAccountCard(username, fields) : null;
+    let accounts_json = localStorage.getItem("accounts");
+    if (!accounts_json) return;
+    let accounts = Object.entries<AccountFields | null>(JSON.parse(accounts_json));
+    if (accounts.length < 1) return;
+    for (let [username, fields] of accounts) fields ? this.createAccountCard(username, fields) : null;
     this.updateAccountCounter();
+    logger.log(`Сохранённые аккаунты загружены`, "system");
   }
 
   /** Метод создания карточки аккаунта */

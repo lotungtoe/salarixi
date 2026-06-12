@@ -66,16 +66,16 @@ export function setQuickTasksAllowed(value: boolean): void {
 
 /** Функция инициализации пользовательской документации */
 async function initUserDocs(): Promise<void> {
-  let content = await invoke("download_text", {
-    url: "https://codeberg.org/nullclyze/salarixi/raw/branch/main/docs/user.md"
-  }) as string | null;
-
-  if (!content) {
-    logger.log("Ошибка загрузки документации: Resource moved or is unavailable", "error");
-    return;
-  }
-
   try {
+    let content = await invoke("download_text", {
+      url: "https://codeberg.org/nullclyze/salarixi/raw/branch/main/docs/user.md"
+    }) as string | null;
+
+    if (!content) {
+      logger.log("Ошибка загрузки документации (не критично): Resource moved or is unavailable", "error");
+      return;
+    }
+
     let rawHtml = await marked.parse(content);
     let safeHtml = DOMPurify.sanitize(rawHtml, {
       ALLOWED_TAGS: [
@@ -92,21 +92,24 @@ async function initUserDocs(): Promise<void> {
 
     (document.querySelector(".documentation-wrapper") as HTMLDivElement).innerHTML = safeHtml; 
   } catch (error) {
-    logger.log(`Ошибка загрузки документации: ${error}`, "error");
+    logger.log(`Ошибка загрузки документации (не критично): ${error}`, "error");
   }
 }
 
 /** Функция получения количества скачиваний программы */
 async function initDownloadCount(): Promise<void> {
   try {
-    const content = await invoke("download_json", {
+    let content = await invoke("download_json", {
       url: "https://codeberg.org/api/v1/repos/nullclyze/salarixi/releases"
     }) as any;
 
-    if (!content) return;
+    if (!content) {
+      logger.log("Ошибка загрузки кол-ва скачиваний (не критично): Resource moved or is unavailable", "error");
+      return;
+    }
 
     let globalDownloadCount = 0;
-    for (const release of content) for (const build of release["assets"]) globalDownloadCount += build["download_count"] ? build["download_count"] as number : 0;
+    for (let release of content) for (let build of release["assets"]) globalDownloadCount += build["download_count"] ? build["download_count"] as number : 0;
     
     let globalDownloadCountStr = "0";
 
@@ -120,7 +123,7 @@ async function initDownloadCount(): Promise<void> {
 
     (document.getElementById("download-count") as HTMLElement).innerText = globalDownloadCountStr;
   } catch (error) {
-    logger.log(`Ошибка загрузки количества скачиваний: ${error}`, "error");
+    logger.log(`Ошибка загрузки количества скачиваний (не критично): ${error}`, "error");
   }
 }
 
@@ -198,7 +201,7 @@ async function startBots(): Promise<void> {
 
     radarModule.enable();
   } catch (error) {
-    logger.log(`Ошибка (start-bots-process): ${error}`, "error");
+    logger.log(`Ошибка запуска ботов: ${error}`, "error");
   }
 }
 
@@ -213,16 +216,16 @@ async function stopBots(): Promise<void> {
 
     process = "sleep";
 
-    logger.log("Выключение мониторинга...", "system");
+    logger.log("Выключение рантайм модулей...", "system");
 
     graphicModule.disable();
     monitoringModule.disable();
     captchaModule.disable();
     radarModule.disable();
 
-    logger.log("Мониторинг выключен", "system");
+    logger.log("Рантайм модули выключены", "system");
   } catch (error) {
-    logger.log(`Ошибка (stop-bots-process): ${error}`, "error");
+    logger.log(`Ошибка остановки ботов: ${error}`, "error");
   }
 }
 
@@ -1031,26 +1034,28 @@ async function loadSocialLinks(): Promise<void> {
 
 // Слушатель события DOMContent у document (#1, синхронный)
 document.addEventListener("DOMContentLoaded", () => {
-  // document.addEventListener("contextmenu", e => e.preventDefault());
+  initTitleBar();
+
+  document.addEventListener("contextmenu", e => e.preventDefault());
 
   // Инициализация логгера и сообщений
   logger.init();
   messages.init();
 
-  logger.log("Клиент запущен", "info");
+  logger.log(`Клиент запущен, версия ${client.version}`, "info");
 
   try {
-    logger.log("Инициализация, пожайлуста, подождите...", "extended");
+    logger.log("Инициализация...", "system");
 
-    // Изначально инициализируем глобальные элементы, пополняем реестр триггер-функций
-    initTitleBar();
+    // Изначально инициализация глобальных элементов и пополнение реестра триггер-функций
     initGlobalElements();
     replenishTriggerRegistry();
 
     document.querySelectorAll('[global="true"]').forEach(c => globalWrappers.push({ id: c.id, el: c as HTMLDivElement }));
     document.querySelectorAll('[sector="true"]').forEach(c => controlWrappers.push({ id: c.id, el: c as HTMLDivElement }));
 
-    // Перед инициализацией конфигуратора включаем фоновые партиклы, чтобы он мог применить к ним состояние (включены / выключены)
+    // Перед инициализацией конфигуратора должны включаться фоновые партиклы,
+    // чтобы он мог применить к ним состояние (включены / выключены)
     enableParticles();
 
     // Инициализация конфигуратора
@@ -1063,7 +1068,7 @@ document.addEventListener("DOMContentLoaded", () => {
     scriptModule.init();
     pingModule.init();
 
-    logger.log("Инициализация прошла успешно", "extended");
+    logger.log("Инициализация прошла успешно", "system");
   } catch (error) {
     logger.log(`Ошибка инициализации (sync): ${error}`, "error");
   }
@@ -1093,7 +1098,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     await initDownloadCount();
     
     await translatorModule.init();
-    await pluginModule.loadDescriptions();
+    await pluginModule.loadPluginsInfo();
 
     await loadSocialLinks();
 

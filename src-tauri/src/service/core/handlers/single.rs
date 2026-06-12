@@ -74,7 +74,7 @@ fn process_init(bot: Client) {
 /// Функция обработки спавна
 fn process_login(bot: Client) {
   let username = bot.name();
-  emit_log(format!("Бот {} подключается...", username), "system");
+  emit_log(format!("Бот {} подключается...", username), "extended");
   PROFILES.set_status(&username, BotStatus::Connecting);
 }
 

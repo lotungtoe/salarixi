@@ -117,36 +117,39 @@ class PluginModule {
     }));
   }
 
-  /** Метод загрузки описаний плагинов */
-  public async loadDescriptions(): Promise<void> {
+  /** Метод загрузки информации о плагинах */
+  public async loadPluginsInfo(): Promise<void> {
     try {
-      const content = await invoke("download_json", {
+      let content = await invoke("download_json", {
         url: "https://codeberg.org/nullclyze/salarixi/raw/branch/main/salarixi.plugins.json"
       }) as any;
       
-      if (!content) return;
+      if (!content) {
+        logger.log("Ошибка загрузки информации о плагинах (не критично): Resource moved or is unavailable", "error");
+        return;
+      }
 
-      for (const plugin of content["list"]) {
-        const name = plugin["name"];
-        const description = plugin["description"];
-        const latestUpdate = plugin["latest-update"];
+      for (let plugin of content["list"]) {
+        let name = plugin["name"];
+        let description = plugin["description"];
+        let latestUpdate = plugin["latest-update"];
 
         if (plugins[name]?.date) {
           if (latestUpdate != plugins[name].date) {
             document.getElementById(`${name}-plugin`)?.classList.add("deprecated");
             
-            const tag = document.createElement("span");
+            let tag = document.createElement("span");
             tag.className = "tag";
             tag.innerText = "Устарел";
 
             document.getElementById(`${name}-header`)?.appendChild(tag);
           }
 
-          const pluginDescriptionContainer = document.getElementById(`${name}-description`) as HTMLElement;
-          const pluginLatestUpdateContainer = document.getElementById(`${name}-latest-update`) as HTMLElement;
+          let pluginDescriptionContainer = document.getElementById(`${name}-description`) as HTMLElement;
+          let pluginLatestUpdateContainer = document.getElementById(`${name}-latest-update`) as HTMLElement;
 
-          for (const p of description) {
-            const el = document.createElement("p");
+          for (let p of description) {
+            let el = document.createElement("p");
             el.innerText = p;
 
             pluginDescriptionContainer.appendChild(el);
@@ -154,7 +157,7 @@ class PluginModule {
 
           pluginLatestUpdateContainer.innerText = latestUpdate;
         } else {
-          const pluginCard = document.createElement("div");
+          let pluginCard = document.createElement("div");
           pluginCard.className = "plugin-card";
           pluginCard.classList.add("unavailable");
 
@@ -174,6 +177,8 @@ class PluginModule {
           document.getElementById("plugin-list")?.appendChild(pluginCard);
         }
       }
+
+      logger.log("Актуальная информация о плагинах успешно загружена", "system");
     } catch (error) {
       logger.log(`Ошибка загрузки информации о плагинах: ${error}`, "error");
     }
