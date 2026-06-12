@@ -26,6 +26,10 @@ import { pluginModule } from "./modules/plugin";
 
 Chart.register(...registerables);
 
+Chart.defaults.font.family = "'Inter', sans-serif";
+Chart.defaults.font.size = 13;
+Chart.defaults.font.weight = "normal";
+
 const client = {
   version: "1.1.0"
 };

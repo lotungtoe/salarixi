@@ -2,31 +2,25 @@ import { invoke } from "@tauri-apps/api/core";
 import { Chart } from "chart.js";
 
 import { logger } from "../utils/logger";
-import { date } from "../utils/date";
 
 /** Модуль управления графиком */
 class GraphicModule {
   private active: boolean = false;
-
   private statusText: HTMLElement | null = null;
-
   private objects: Record<string, { chart: Chart | null, interval: any }> = {};
-
+  private chartWrapper: HTMLElement | null = null;
   private graphicActiveBots: HTMLElement | null = null;
   private graphicMemoryUsage: HTMLElement | null = null;
 
   /** Метод ининициализации функций, связанных с графиком */
   public init(): void {
-    try {
-      this.graphicActiveBots = document.getElementById("graphic-active-bots-container");
-      this.graphicMemoryUsage = document.getElementById("graphic-memory-usage-container");
-      this.statusText = document.getElementById("graphic-status-text");
-    } catch (error) {
-      logger.log(`Ошибка инициализации графиков: ${error}`, "error");
-    }
+    this.chartWrapper = document.querySelector(".chart-wrapper");
+    this.graphicActiveBots = document.getElementById("graphic-active-bots");
+    this.graphicMemoryUsage = document.getElementById("graphic-memory-usage");
+    this.statusText = document.getElementById("graphic-status-text");
   }
 
-  /** Метод активации графиков. */
+  /** Метод активации графиков */
   public enable(): void {
     try {
       this.active = true;
@@ -42,7 +36,7 @@ class GraphicModule {
     }
   }
 
-  /** Метод очистки и выключения графиков. */
+  /** Метод очистки и выключения графиков */
   public disable(): void {
     this.active = false;
 
@@ -55,15 +49,13 @@ class GraphicModule {
     this.statusText!.style.display = "flex";
   }
 
-  /** Метод установки отображения графиков. */
+  /** Метод установки отображения графиков */
   private setDisplay(display: string): void {
-    if (!this.graphicActiveBots || !this.graphicMemoryUsage) return;
-
-    this.graphicActiveBots.style.display = display;
-    this.graphicMemoryUsage.style.display = display;
+    if (!this.chartWrapper) return;
+    this.chartWrapper.style.display = display;
   }
 
-  /** Метод уничтожения чарта и его интервала. */
+  /** Метод уничтожения чарта и его интервала */
   private destroyChart(name: string): void {
     const object = this.objects[name];
 
@@ -74,13 +66,13 @@ class GraphicModule {
     object.interval = null;
   }
 
-  /** Метод создания чарта. */
+  /** Метод создания чарта */
   private createChart(context: CanvasRenderingContext2D, label: string, title: string, maxY: number, ps: string): Chart {
     const initialLabels: string[] = [];
     const initialData: number[] = [];
     
-    for (let i = 0; i < 10; i++) {
-      initialLabels.push(date());
+    for (let i = 0; i < 50; i++) {
+      initialLabels.push("");
       initialData.push(0);
     }
 
@@ -93,13 +85,11 @@ class GraphicModule {
             label: ` ${label}`,
             data: initialData,
             fill: true,
-            borderWidth: 1,
+            borderWidth: 2,
             borderColor: "rgb(65, 226, 25)",
             backgroundColor: "rgba(131, 255, 59, 0.05)",
             tension: 0,
-            pointStyle: "circle",
-            pointRadius: 2,
-            pointBackgroundColor: "rgb(65, 226, 25)"
+            pointStyle: false,
           }
         ]
       },
@@ -108,9 +98,7 @@ class GraphicModule {
         animation: { duration: 400 },
         scales: {
           x: {
-            ticks: { color: "#858585ff" },
-            border: { color: "#383838ab" },
-            grid: { color: "#383838ab" }
+            display: false,
           },
           y: {
             min: 0,
@@ -146,11 +134,10 @@ class GraphicModule {
     return chart;
   }
   
-  /** Метод создания графика активных ботов. */
+  /** Метод создания графика активных ботов.*/
   private createChartActiveBots(): void {
     const name = "active-bots";
-    const context = (document.getElementById("graphic-active-bots") as HTMLCanvasElement).getContext("2d");
-
+    const context = (this.graphicActiveBots as HTMLCanvasElement | null)?.getContext("2d");
     if (!context) return;
 
     let interval = setInterval(async () => {
@@ -165,7 +152,7 @@ class GraphicModule {
       } catch (error) {
         logger.log(`Ошибка графика (${name}-graphic): ${error}`, "error");
       }
-    }, 2000);
+    }, 1000);
 
     this.objects[name] = {
       chart: this.createChart(context, "Активные боты", "График активных ботов", 500, "шт"),
@@ -173,10 +160,11 @@ class GraphicModule {
     };
   }
 
-  /** Метод создания графика используемой памяти. */
+  /** Метод создания графика используемой памяти */
   private createChartMemoryUsage(): void {
     const name = "memory-usage";
-    const context = (document.getElementById("graphic-memory-usage") as HTMLCanvasElement).getContext("2d");
+    const context = (this.graphicMemoryUsage as HTMLCanvasElement | null)?.getContext("2d");
+    if (!context) return;
 
     if (!context) return;
 
@@ -195,21 +183,21 @@ class GraphicModule {
     }, 2000);
 
     this.objects[name] = {
-      chart: this.createChart(context, "Используется", "График используемой памяти", 1024, "MB"),
+      chart: this.createChart(context, "Используется", "Используемая RAM", 1024, "MB"),
       interval: interval
     };
   }
 
-  /** Метод обновления чарта. */
+  /** Метод обновления чарта */
   private updateChart(name: string, data: number): void {
     const chart = this.objects[name].chart;
 
     if (!chart) return;
     
-    chart.data.labels?.push(date());
+    chart.data.labels?.push("");
     chart.data.datasets[0].data.push(data);
 
-    if (chart.data.labels && chart.data.labels.length > 10) {
+    if (chart.data.labels && chart.data.labels.length > 50) {
       chart.data.labels.shift();
       chart.data.datasets[0].data.shift();
     }
