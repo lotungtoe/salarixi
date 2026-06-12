@@ -23,6 +23,7 @@ import { radarModule } from "./modules/radar";
 import { pingModule } from "./modules/ping";
 import { translatorModule } from "./modules/translator";
 import { pluginModule } from "./modules/plugin";
+import { timerModule } from "./modules/timer";
 
 Chart.register(...registerables);
 
@@ -1050,6 +1051,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   try {
     logger.log("Инициализация...", "system");
+
+    // Инициализация таймера
+    timerModule.init();
 
     // Изначально инициализация глобальных элементов и пополнение реестра триггер-функций
     initGlobalElements();
