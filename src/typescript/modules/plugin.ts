@@ -2,6 +2,7 @@ import { logger } from "../utils/logger";
 import { plugins } from "../common/structs";
 import { process } from "../main";
 import { invoke } from "@tauri-apps/api/core";
+import { loadCache, saveCache, TimeType } from "../utils/cache";
 
 /** Модуль загрузки и управления плагинами */
 class PluginModule {
@@ -9,6 +10,7 @@ class PluginModule {
   public async init(): Promise<void> {
     this.createCards();
     for (const name in plugins) this.updatePluginState(name, localStorage.getItem(`plugin-state:${name}`) === "true");
+    await this.initPluginsInfo();
   }
 
   /** Метод обновления и сохранения состояния плагина (включен / выключен) */
@@ -117,25 +119,35 @@ class PluginModule {
     }));
   }
 
-  /** Метод загрузки информации о плагинах */
-  public async loadPluginsInfo(): Promise<void> {
+  /** Метод инициализации информации о плагинах */
+  private async initPluginsInfo(): Promise<void> {
     try {
-      let content = await invoke("download_json", {
-        url: "https://codeberg.org/nullclyze/salarixi/raw/branch/main/salarixi.plugins.json"
-      }) as any;
+      const cachedInfo = await this.loadCachedPluginsInfo();
+      let pluginList = null;
       
-      if (!content) {
-        logger.log("Ошибка загрузки информации о плагинах (не критично): Resource moved or is unavailable", "error");
+      if (cachedInfo) {
+        pluginList = cachedInfo["list"] ?? cachedInfo["array"] ?? cachedInfo["map"] ?? cachedInfo;
+      } else {
+        const newInfo = await this.loadNewPluginsInfo();
+
+        if (newInfo) {
+          pluginList = newInfo["list"] ?? newInfo["array"] ?? newInfo["map"] ?? newInfo;
+          await this.cachePluginsInfo(newInfo);
+        }
+      }
+
+      if (!pluginList) {
+        logger.log("Ошибка инициализации информации о плагинах (не критично): Information is corrupted or missing", "error");
         return;
       }
 
-      for (let plugin of content["list"]) {
+      for (let plugin of pluginList) {
         let name = plugin["name"];
         let description = plugin["description"];
         let latestUpdate = plugin["latest-update"];
 
         if (plugins[name]?.date) {
-          if (latestUpdate != plugins[name].date) {
+          if (latestUpdate !== plugins[name].date) {
             document.getElementById(`${name}-plugin`)?.classList.add("deprecated");
             
             let tag = document.createElement("span");
@@ -177,10 +189,45 @@ class PluginModule {
           document.getElementById("plugin-list")?.appendChild(pluginCard);
         }
       }
-
-      logger.log("Актуальная информация о плагинах успешно загружена", "system");
     } catch (error) {
-      logger.log(`Ошибка загрузки информации о плагинах: ${error}`, "error");
+      logger.log(`Ошибка инициализации информации о плагинах (не критично): ${error}`, "error");
+    }
+  }
+
+  /** Метод загрузки актуальной информации о плагинах */
+  private async loadNewPluginsInfo(): Promise<any | null> {
+    try {
+      const plugins = await invoke("download_json", {
+        url: "https://codeberg.org/nullclyze/salarixi/raw/branch/main/salarixi.plugins.json"
+      }) as any;
+      
+      if (!plugins) {
+        logger.log("Ошибка загрузки информации о плагинах (не критично): Resource moved or is unavailable", "error");
+        return;
+      }
+
+      return plugins;
+    } catch (error) {
+      logger.log(`Ошибка загрузки информации о плагинах (не критично): ${error}`, "error");
+    }
+
+    return null;
+  }
+
+  /** Метод загрузки кэшированной информации о плагинах */
+  private async loadCachedPluginsInfo(): Promise<any | null> {
+    const result = await loadCache("plugins-info", "plugins-info.json", 3, TimeType.Day);
+    if (!result.data) return null;
+    return JSON.parse(result.data);
+  }
+
+  /** Метод кэширования информации о плагинах */
+  private async cachePluginsInfo(info: string): Promise<void> {
+    const result = await saveCache(JSON.stringify(info, null, 2), "plugins-info.json");
+
+    if (!result.data && result.error) {
+      logger.log(`Ошибка кэширования информации о плагинах (не критично): ${result.error}`, "error");
+      return;
     }
   }
 }

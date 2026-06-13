@@ -5658,6 +5658,7 @@ dependencies = [
  "base64 0.22.1",
  "chrono",
  "dashmap",
+ "dirs",
  "discord-presence",
  "dns-lookup",
  "hashbrown 0.16.1",

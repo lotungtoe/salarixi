@@ -1,10 +1,12 @@
 mod api;
 mod error;
 mod modules;
+mod result;
 mod service;
 
 use api::commands::*;
 use api::emit::emit_event_loop;
+use modules::cache::{get_cache_date, load_cache, save_cache};
 use modules::proxy::collect_proxies;
 
 /// Запуск приложения
@@ -45,6 +47,9 @@ pub fn run() {
       download_text,
       set_discord_rpc,
       collect_proxies,
+      get_cache_date,
+      save_cache,
+      load_cache,
     ])
     .run(tauri::generate_context!())
     .expect("error while running client");

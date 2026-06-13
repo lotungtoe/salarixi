@@ -1,52 +1,83 @@
 import { invoke } from "@tauri-apps/api/core";
 import { logger } from "../utils/logger";
+import { loadCache, saveCache, TimeType } from "../utils/cache";
 
 /** Код языка */
 export type Language = "ru" | "en" | "tr";
 
 /** Модуль переподчика */
 class TranslatorModule {
-  private cache: any;
-
-  constructor() {
-    this.cache = null;
-  }
-
-  /** Метод инициализации функций, связанных с переводчиком */
+  /** Метод инициализации переводчика */
   public async init(): Promise<void> {
-    let langSelect = document.getElementById("interface_select_client-language") as HTMLSelectElement;
-    langSelect.addEventListener("change", async () => await this.translate(langSelect.value as Language));
-    if (langSelect.value !== "ru") await this.translate(langSelect.value as Language);
-  }
-
-  /** Метод получения кэша */
-  public getCache(): any {
-    return this.cache;
-  }
-
-  /** Метод получения и установки актуального перевода */
-  private async translate(lang: Language): Promise<void> {
     try {
-      if (!this.cache) {
-        let content = await invoke("download_json", {
-          url: "https://codeberg.org/nullclyze/salarixi/raw/branch/main/salarixi.lang.json"
-        }) as any;
+      const langSelect = document.getElementById("interface_select_client-language") as HTMLSelectElement;
+      const cachedTranslation = await this.loadCachedTranslation();
 
-        if (content) {
-          this.cache = content["map"];
-        } else {
-          logger.log(`Ошибка загрузки перевода: Failed to load JSON-content`, "error");
-          return;
+      if (cachedTranslation) {
+        langSelect.addEventListener("change", () => this.translate(langSelect.value as Language, cachedTranslation));
+        if (langSelect.value !== "ru") this.translate(langSelect.value as Language, cachedTranslation);
+      } else {
+        const newTranslation = await this.loadNewTranslation();
+
+        if (newTranslation) {
+          langSelect.addEventListener("change", () => this.translate(langSelect.value as Language, newTranslation));
+          if (langSelect.value !== "ru") this.translate(langSelect.value as Language, newTranslation);
+          await this.cacheTranslation(newTranslation);
         }
       }
+    } catch (error) {
+      logger.log(`Ошибка инициализации переводчика: ${error}`, "error");
+    }
+  }
 
+  /** Метод перевода текста на другой язык */
+  private translate(lang: Language, translation: any): void {
+    try {
+      const elements = translation["map"] ?? translation["array"] ?? translation["list"] ?? translation;
       document.querySelectorAll<HTMLElement>("[translator-tag]").forEach(e => {
         let tag = e.getAttribute("translator-tag");
         if (!tag) return;
-        for (let el of this.cache) el.tags.includes(tag) && el.lang[lang] ? e.innerText = el.lang[lang] : null;
+        for (let el of elements) el.tags.includes(tag) && el.lang[lang] ? e.innerText = el.lang[lang] : null;
       });
     } catch (error) {
       logger.log(`Ошибка перевода: ${error}`, "error");
+    }
+  }
+
+  /** Метод загрузки актуального перевода */
+  private async loadNewTranslation(): Promise<string | null> {
+    try {
+      const translation = await invoke("download_json", {
+        url: "https://codeberg.org/nullclyze/salarixi/raw/branch/main/salarixi.lang.json"
+      }) as any;
+
+      if (!translation) {
+        logger.log("Ошибка загрузки перевода (не критично): Resource moved or is unavailable", "error");
+        return null;
+      }
+
+      return translation;
+    } catch (error) {
+      logger.log(`Ошибка загрузки перевода (не критично): ${error}`, "error");
+    }
+
+    return null;
+  }
+
+  /** Метод загрузки кэшированного перевода */
+  public async loadCachedTranslation(): Promise<string | null> {
+    const result = await loadCache("translation", "translation.json", 3, TimeType.Day);
+    if (!result.data) return null;
+    return JSON.parse(result.data);
+  }
+
+  /** Метод кэширования перевода */
+  private async cacheTranslation(translation: any): Promise<void> {
+    const result = await saveCache(JSON.stringify(translation, null, 2), "translation.json");
+
+    if (!result.data && result.error) {
+      logger.log(`Ошибка кэширования перевода (не критично): ${result.error}`, "error");
+      return;
     }
   }
 }

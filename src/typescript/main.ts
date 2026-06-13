@@ -2,8 +2,6 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { Chart, registerables } from "chart.js";
-import { marked } from "marked";
-import DOMPurify from "dompurify";
 
 import { plugins } from "./common/structs";
 import { logger } from "./utils/logger";
@@ -24,6 +22,9 @@ import { pingModule } from "./modules/ping";
 import { translatorModule } from "./modules/translator";
 import { pluginModule } from "./modules/plugin";
 import { timerModule } from "./modules/timer";
+import { docsModule } from "./modules/docs";
+import { infoModule } from "./modules/info";
+import { updaterModule } from "./modules/updater";
 
 Chart.register(...registerables);
 
@@ -31,9 +32,7 @@ Chart.defaults.font.family = "'Inter', sans-serif";
 Chart.defaults.font.size = 13;
 Chart.defaults.font.weight = "normal";
 
-const client = {
-  version: "1.1.0"
-};
+export const currentClientVersion = "1.1.0";
 
 export let process: "active" | "sleep" = "sleep";
 export let quickTasksAllowed: boolean = true;
@@ -67,69 +66,6 @@ export let latestControlWrapper: HTMLElement | null = null;
 /** Функция задания значения для ```quickTasksAllowed``` */
 export function setQuickTasksAllowed(value: boolean): void {
   quickTasksAllowed = value;
-}
-
-/** Функция инициализации пользовательской документации */
-async function initUserDocs(): Promise<void> {
-  try {
-    let content = await invoke("download_text", {
-      url: "https://codeberg.org/nullclyze/salarixi/raw/branch/main/docs/user.md"
-    }) as string | null;
-
-    if (!content) {
-      logger.log("Ошибка загрузки документации (не критично): Resource moved or is unavailable", "error");
-      return;
-    }
-
-    let rawHtml = await marked.parse(content);
-    let safeHtml = DOMPurify.sanitize(rawHtml, {
-      ALLOWED_TAGS: [
-        "b", "i", "em", "strong", "small", "mark", "del", "ins", "s", "sub", "sup",
-        "u", "span", "abbr", "cite", "dfn", "kbd", "samp", "var", "h1", "h2", "p",
-        "h3", "h4", "h5", "h6", "ul", "ol", "li", "dl", "dt", "dd", "table", "thead",
-        "tbody", "tfoot", "tr", "th", "td", "caption", "col", "colgroup", "a", "img",
-        "pre", "code", "section", "article", "header", "footer", "main", "aside", "nav", 
-        "figure", "figcaption", "details", "summary", "fieldset", "legend", "label"
-      ],
-      ALLOWED_ATTR: [],
-      ALLOW_DATA_ATTR: false,
-    });
-
-    (document.querySelector(".documentation-wrapper") as HTMLDivElement).innerHTML = safeHtml; 
-  } catch (error) {
-    logger.log(`Ошибка загрузки документации (не критично): ${error}`, "error");
-  }
-}
-
-/** Функция получения количества скачиваний программы */
-async function initDownloadCount(): Promise<void> {
-  try {
-    let content = await invoke("download_json", {
-      url: "https://codeberg.org/api/v1/repos/nullclyze/salarixi/releases"
-    }) as any;
-
-    if (!content) {
-      logger.log("Ошибка загрузки кол-ва скачиваний (не критично): Resource moved or is unavailable", "error");
-      return;
-    }
-
-    let globalDownloadCount = 0;
-    for (let release of content) for (let build of release["assets"]) globalDownloadCount += build["download_count"] ? build["download_count"] as number : 0;
-    
-    let globalDownloadCountStr = "0";
-
-    if (globalDownloadCount < 1000) {
-      globalDownloadCountStr = globalDownloadCount.toString();
-    } else if (globalDownloadCount >= 1000 && globalDownloadCount < 1_000_000) {
-      globalDownloadCountStr = (globalDownloadCount / 1000).toFixed(2) + "k";
-    } else {
-      globalDownloadCountStr = (globalDownloadCount / 1_000_000).toFixed(2) + "m";
-    }
-
-    (document.getElementById("download-count") as HTMLElement).innerText = globalDownloadCountStr;
-  } catch (error) {
-    logger.log(`Ошибка загрузки количества скачиваний (не критично): ${error}`, "error");
-  }
 }
 
 /** Функция запуска ботов */
@@ -938,7 +874,7 @@ export function replenishTriggerRegistry(): void {
 }
 
 /** Функция добавления открывающейся ссылки для определённого события элемента */
-function addOpeningUrlTo(id: string, event: string, url: string): void {
+export function addOpeningUrlTo(id: string, event: string, url: string): void {
   const el = document.getElementById(id);
   if (!el) return;
   el.addEventListener(event, async () => {
@@ -950,43 +886,9 @@ function addOpeningUrlTo(id: string, event: string, url: string): void {
   });
 }
 
-/** Функция проверки наличия обновлений программы */
-async function checkUpdate(ignore?: boolean): Promise<void> {
-  if (ignore) return;
-
-  try {
-    const notice = document.getElementById("notice") as HTMLElement;
-    const newVersion = document.getElementById("new-client-version") as HTMLElement;
-    const newTag = document.getElementById("new-client-tag") as HTMLElement;
-    const newReleaseDate = document.getElementById("new-client-release-date") as HTMLElement;
-
-    document.getElementById("close-notice-btn")?.addEventListener("click", () => notice.style.display = "none");
-
-    const response = await fetch("https://codeberg.org/nullclyze/salarixi/raw/branch/main/salarixi.version.json", { method: "GET" });
-
-    if (!response.ok) return;
-
-    const data = await response.json();
-
-    if (data && data.version !== client.version) {
-      const tag = `v${data.version}-${String(data.type).toLowerCase()}`;
-
-      newVersion.innerText = data.version;
-      newTag.innerText = tag;
-      newReleaseDate.innerText = data.releaseDate;
-      
-      addOpeningUrlTo("open-client-release", "click", `https://codeberg.org/nullclyze/salarixi/releases/tag/${tag}`); 
-      
-      setTimeout(() => notice.style.display = "flex", 4000);
-    }
-  } catch (error) {
-    logger.log(`Ошибка проверки обновлений: ${error}`, "error");
-  }
-}
-
 /** Вспомогательная функция инициализации титул бара */
 function initTitleBar(): void {
-  (document.getElementById("title-version") as HTMLElement).innerText = `v${client.version}`;
+  (document.getElementById("title-version") as HTMLElement).innerText = `v${currentClientVersion}`;
   (document.getElementById("window-minimize") as HTMLButtonElement).addEventListener("click", async () => await getCurrentWindow().minimize());
   (document.getElementById("window-close") as HTMLButtonElement).addEventListener("click", async () => await invoke("exit"));
 }
@@ -1012,31 +914,6 @@ async function listenEvents(): Promise<void> {
   });
 }
 
-/** Функция загрузки актуальных ссылок на социальные сети */
-async function loadSocialLinks(): Promise<void> {
-  // Думаю нету смысла хранить актуальную ссылку на репозиторий, так как 
-  // если он будет перенесён - загрузить актуальную ссылку не получится
-  addOpeningUrlTo("codeberg", "click", "https://codeberg.org/nullclyze/salarixi");
-
-  let content = await invoke("download_json", {
-    url: "https://codeberg.org/nullclyze/salarixi/raw/branch/main/salarixi.social.json"
-  }) as any;
-  
-  if (!content) {
-    [
-      "telegram", 
-      "discord", 
-      "youtube"
-    ].forEach(id => document.getElementById(id)?.remove());
-  } else {
-    [
-      ["telegram", content["telegram"]],
-      ["discord", content["discord"]],
-      ["youtube", content["youtube"]],
-    ].forEach(el => el[1] ? addOpeningUrlTo(el[0], "click", el[1]) : document.getElementById(el[0])?.remove());
-  }
-}
-
 // Слушатель события DOMContent у document (#1, синхронный)
 document.addEventListener("DOMContentLoaded", () => {
   initTitleBar();
@@ -1047,7 +924,7 @@ document.addEventListener("DOMContentLoaded", () => {
   logger.init();
   messages.init();
 
-  logger.log(`Клиент запущен, версия ${client.version}`, "info");
+  logger.log(`Клиент запущен, версия ${currentClientVersion}`, "info");
 
   try {
     logger.log("Инициализация...", "system");
@@ -1089,29 +966,22 @@ document.addEventListener("DOMContentLoaded", async () => {
     await listenEvents();
 
     // Инициализация модулей (асинхронная)
-    await pluginModule.init(); 
     await monitoringModule.init();
     await captchaModule.init();
     await proxyModule.init();
+    await docsModule.init();
+    await infoModule.init();
+    await translatorModule.init();
+    await pluginModule.init();
 
     // Инициализация Discord RPC
     const selectDiscordRpcMode = document.getElementById("interface_select_discord-rpc") as HTMLSelectElement;
 
-    selectDiscordRpcMode.addEventListener("change", async () => await invoke("set_discord_rpc", { version: client.version, state: selectDiscordRpcMode.value === "enable" }));
-    await invoke("set_discord_rpc", { version: client.version, state: selectDiscordRpcMode.value === "enable" });
-
-    // Контент с web-ресурсов должен загружаться после основной инициализации, 
-    // чтобы в случае долгой загрузки не блокировать важные функции
-    await initUserDocs();
-    await initDownloadCount();
-    
-    await translatorModule.init();
-    await pluginModule.loadPluginsInfo();
-
-    await loadSocialLinks();
+    selectDiscordRpcMode.addEventListener("change", async () => await invoke("set_discord_rpc", { version: currentClientVersion, state: selectDiscordRpcMode.value === "enable" }));
+    await invoke("set_discord_rpc", { version: currentClientVersion, state: selectDiscordRpcMode.value === "enable" });
 
     // Проверка обновлений в последнюю очередь
-    await checkUpdate(true); // true - игнорирование проверки обновлений
+    updaterModule.init();
   } catch (error) {
     logger.log(`Ошибка инициализации (async): ${error}`, "error");
   }
