@@ -21,11 +21,11 @@ Uses [azalea](https://github.com/azalea-rs/azalea) library as a base.
 - [YouTube](https://www.youtube.com/@salarixi) - Our official YouTube channel, where we publish video reviews of the client
 - [Discord](https://discord.gg/ekcC8QX7bH) - Our official Discord server, where we communicate and share ideas
 
-## System Requirements
+## System requirements
 
 - **Operating system:** Windows, Linux
-- **Free disk space:** 60 MB
-- **RAM:** 4 GB
+- **Free disk space:** 60MB
+- **RAM (for program only):** Minimum 200MB
 - **Processor:** Average
 - **Dependencies:** None
 
@@ -140,7 +140,7 @@ To run the application in dev mode:
 npm run tauri dev
 ```
 
-## Additional Information
+## Additional information
 
 - **License:** [Apache-2.0 license](./LICENSE)
 - **Latest Release:** [Release](https://codeberg.org/nullclyze/salarixi/releases/tag/v1.0.9-release)
