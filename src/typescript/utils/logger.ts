@@ -1,5 +1,6 @@
 import { date } from "./date";
 
+/** Структура статистики логгера */
 interface LoggerStatistics {
   index: number;
   visible: {

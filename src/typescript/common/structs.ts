@@ -1,38 +1,38 @@
 /** Локальная структура, содержащая информацию о плагинах текущей версии программы */
 export const plugins: Record<string, { header: string; enable: boolean; date: string }> = {
-  'auto-armor': {
-    header: 'Авто Доспехи',
+  "auto-armor": {
+    header: "Авто Доспехи",
     enable: false,
-    date: '10.02.2026'
+    date: "10.02.2026"
   },
-  'auto-totem': {
-    header: 'Авто Тотем',
+  "auto-totem": {
+    header: "Авто Тотем",
     enable: false,
-    date: '01.03.2026'
+    date: "01.03.2026"
   },
-  'auto-eat': {
-    header: 'Авто Еда',
+  "auto-eat": {
+    header: "Авто Еда",
     enable: false,
-    date: '10.02.2026'
+    date: "10.02.2026"
   },
-  'auto-potion': {
-    header: 'Авто Зелье',
+  "auto-potion": {
+    header: "Авто Зелье",
     enable: false,
-    date: '10.02.2026'
+    date: "10.02.2026"
   },
-  'auto-look': {
-    header: 'Авто Взгляд',
+  "auto-look": {
+    header: "Авто Взгляд",
     enable: false,
-    date: '01.03.2026'
+    date: "01.03.2026"
   },
-  'auto-shield': {
-    header: 'Авто Щит',
+  "auto-shield": {
+    header: "Авто Щит",
     enable: false,
-    date: '01.03.2026'
+    date: "01.03.2026"
   },
-  'auto-repair': {
-    header: 'Авто Починка',
+  "auto-repair": {
+    header: "Авто Починка",
     enable: false,
-    date: '10.02.2026'
+    date: "10.02.2026"
   }
 };

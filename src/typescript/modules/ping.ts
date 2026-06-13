@@ -125,4 +125,4 @@ class PingModule {
 
 const pingModule = new PingModule();
 
-export { pingModule };
+export { pingModule }
