@@ -21,10 +21,10 @@ macro_rules! success {
 /// Вспомогательный макрос создания неуспешного результата
 #[macro_export]
 macro_rules! failed {
-  ($err:expr) => {
+  ($($arg:tt)*) => {
     return crate::result::CommandResult {
       data: None,
-      error: Some($err.to_string()),
+      error: Some(format!($($arg)*)),
     }
   };
 }

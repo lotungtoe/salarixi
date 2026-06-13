@@ -927,8 +927,6 @@ document.addEventListener("DOMContentLoaded", () => {
   logger.log(`Клиент запущен, версия ${currentClientVersion}`, "info");
 
   try {
-    logger.log("Инициализация...", "system");
-
     // Инициализация таймера
     timerModule.init();
 
@@ -943,17 +941,12 @@ document.addEventListener("DOMContentLoaded", () => {
     // чтобы он мог применить к ним состояние (включены / выключены)
     enableParticles();
 
-    // Инициализация конфигуратора
-    configModule.init();
-
     // Инициализация модулей (синхронная)
     accountModule.init();
     graphicModule.init();
     radarModule.init();
     scriptModule.init();
     pingModule.init();
-
-    logger.log("Инициализация прошла успешно", "system");
   } catch (error) {
     logger.log(`Ошибка инициализации (sync): ${error}`, "error");
   }
@@ -966,6 +959,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     await listenEvents();
 
     // Инициализация модулей (асинхронная)
+    await configModule.init();
     await monitoringModule.init();
     await captchaModule.init();
     await proxyModule.init();
