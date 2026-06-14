@@ -172,7 +172,7 @@ class AccountModule {
     if (accounts.length < 1) return;
     for (let [username, fields] of accounts) fields ? this.createAccountCard(username, fields) : null;
     this.updateAccountCounter();
-    logger.log(`Сохранённые аккаунты загружены`, "system");
+    logger.log(`Сохранённые аккаунты загружены (${accounts.length} штук)`, "system");
   }
 
   /** Метод создания карточки аккаунта */

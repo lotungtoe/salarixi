@@ -3,6 +3,7 @@ import { plugins } from "../common/structs";
 import { process } from "../main";
 import { invoke } from "@tauri-apps/api/core";
 import { loadCache, saveCache, TimeType } from "../utils/cache";
+import { getStringSize } from "../utils/size";
 
 /** Модуль загрузки и управления плагинами */
 class PluginModule {
@@ -43,13 +44,13 @@ class PluginModule {
 
   /** Метод создания и инициализации карточек плагинов */
   private createCards(): void {
-    for (let name in plugins) {
+    for (const id in plugins) {
       try {
-        let plugin = plugins[name];
+        const plugin = plugins[id];
 
-        let pluginCard = document.createElement("div");
+        const pluginCard = document.createElement("div");
         pluginCard.className = "plugin-card";
-        pluginCard.id = `${name}-plugin`;
+        pluginCard.id = `${id}-plugin`;
 
         pluginCard.innerHTML = `
           <div class="head">
@@ -58,16 +59,16 @@ class PluginModule {
             </svg>
 
             <div class="text">
-              <div class="header" id="${name}-header">${plugin.header}</div>
+              <div class="header" id="${id}-header">${plugin.header}</div>
               <div class="meta">
-                <span translator-tag="label:plugin-status">Статус:</span> <span id="${name}-status">Выключен</span>
+                <span translator-tag="label:plugin-status">Статус:</span> <span id="${id}-status">Выключен</span>
               </div>
             </div>
           </div>
 
           <div class="controls">
-            <button class="btn" plugin-toggler="true" plugin-name="${name}" state="true" id="${name}-toggler" style="color: #d61818;">Выключен</button>
-            <button class="btn" plugin-open-description="true" path="${name}-plugin-description">Описание</button>
+            <button class="btn" plugin-toggler="true" plugin-name="${id}" state="true" id="${id}-toggler" style="color: #d61818;">Выключен</button>
+            <button class="btn" plugin-open-description="true" path="${id}-plugin-description">Описание</button>
           </div>
         `;
 
@@ -75,7 +76,7 @@ class PluginModule {
         
         let element = document.createElement("div");
         element.className = "cover";
-        element.id = `${name}-plugin-description`;
+        element.id = `${id}-plugin-description`;
 
         element.innerHTML = `
           <div class="panel with-header">
@@ -84,19 +85,19 @@ class PluginModule {
             </div>
 
             <div class="right">
-              <button class="btn min" plugin-close-description="true" path="${name}-plugin-description">
+              <button class="btn min" plugin-close-description="true" path="${id}-plugin-description">
                 ⨉
               </button>
             </div>
           </div>
 
-          <div class="plugin-description" id="${name}-description"></div>
-          <p class="plugin-latest-update">Последнее обновление плагина: <span id="${name}-latest-update">?</span></p>
+          <div class="plugin-description" id="${id}-description"></div>
+          <p class="plugin-latest-update">Последнее обновление плагина: <span id="${id}-latest-update">?</span></p>
         `;
 
         document.getElementById("plugins-container")?.appendChild(element);
       } catch (error) {
-        logger.log(`Ошибка инициализации плагинов: ${error}`, "error");
+        logger.log(`Ошибка инициализации плагина ${id}: ${error}`, "error");
       }
     }
 
@@ -122,75 +123,91 @@ class PluginModule {
   /** Метод инициализации информации о плагинах */
   private async initPluginsInfo(): Promise<void> {
     try {
+      logger.log("Загрузка информации о плагинах...", "system");
+
       const cachedInfo = await this.loadCachedPluginsInfo();
       let pluginList = null;
+      let dataSize = 0;
       
       if (cachedInfo) {
         pluginList = cachedInfo["list"] ?? cachedInfo["array"] ?? cachedInfo["map"] ?? cachedInfo;
+        dataSize = getStringSize(JSON.stringify(cachedInfo, null, 2));
       } else {
         const newInfo = await this.loadNewPluginsInfo();
 
         if (newInfo) {
           pluginList = newInfo["list"] ?? newInfo["array"] ?? newInfo["map"] ?? newInfo;
+          dataSize = getStringSize(JSON.stringify(newInfo, null, 2));
           await this.cachePluginsInfo(newInfo);
+        } else {
+          return;
         }
       }
 
       if (!pluginList) {
-        logger.log("Ошибка инициализации информации о плагинах (не критично): Information is corrupted or missing", "error");
+        logger.log("Ошибка загрузки информации о плагинах (не критично): Information is corrupted or missing", "error");
         return;
       }
 
-      for (let plugin of pluginList) {
-        let name = plugin["name"];
-        let description = plugin["description"];
-        let latestUpdate = plugin["latest-update"];
+      this.extractPluginsInfo(pluginList);
 
-        if (plugins[name]?.date) {
-          if (latestUpdate !== plugins[name].date) {
-            document.getElementById(`${name}-plugin`)?.classList.add("deprecated");
-            
-            let tag = document.createElement("span");
-            tag.className = "tag";
-            tag.innerText = "Устарел";
+      const prettyDataSize = (dataSize / 1024).toFixed(1);
 
-            document.getElementById(`${name}-header`)?.appendChild(tag);
-          }
-
-          let pluginDescriptionContainer = document.getElementById(`${name}-description`) as HTMLElement;
-          let pluginLatestUpdateContainer = document.getElementById(`${name}-latest-update`) as HTMLElement;
-
-          for (let p of description) {
-            let el = document.createElement("p");
-            el.innerText = p;
-
-            pluginDescriptionContainer.appendChild(el);
-          }
-
-          pluginLatestUpdateContainer.innerText = latestUpdate;
-        } else {
-          let pluginCard = document.createElement("div");
-          pluginCard.className = "plugin-card";
-          pluginCard.classList.add("unavailable");
-
-          pluginCard.innerHTML = `
-            <div class="head">
-              <svg class="image" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                <path fill-rule="evenodd" d="M1 8a7 7 0 1 1 2.898 5.673c-.167-.121-.216-.406-.002-.62l1.8-1.8a3.5 3.5 0 0 0 4.572-.328l1.414-1.415a.5.5 0 0 0 0-.707l-.707-.707 1.559-1.563a.5.5 0 1 0-.708-.706l-1.559 1.562-1.414-1.414 1.56-1.562a.5.5 0 1 0-.707-.706l-1.56 1.56-.707-.706a.5.5 0 0 0-.707 0L5.318 5.975a3.5 3.5 0 0 0-.328 4.571l-1.8 1.8c-.58.58-.62 1.6.121 2.137A8 8 0 1 0 0 8a.5.5 0 0 0 1 0"/>
-              </svg>
-
-              <div class="text">
-                <div class="header">${plugin["header"]} <span class="tag">Недоступен</span></div>
-                <div class="meta">Статус: <span class="status">Недоступен</span></div>
-              </div>
-            </div>
-          `;
-
-          document.getElementById("plugin-list")?.appendChild(pluginCard);
-        }
-      }
+      logger.log(`Информация о плагинах загружена (размер ${prettyDataSize}KB)`, "system");
     } catch (error) {
-      logger.log(`Ошибка инициализации информации о плагинах (не критично): ${error}`, "error");
+      logger.log(`Ошибка загрузки информации о плагинах (не критично): ${error}`, "error");
+    }
+  }
+
+  /** Метод извлечения информации плагинов */
+  private extractPluginsInfo(pluginList: any): void {
+    for (const plugin of pluginList) {
+      const name = plugin["name"] ?? plugin["id"] ?? plugin["header"] ?? plugin["kind"];
+      const desc = plugin["description"] ?? plugin["purpose"];
+      const updated = plugin["latest-update"] ?? plugin["updated"] ?? plugin["modified"];
+
+      if (plugins[name]?.date) {
+        if (updated !== plugins[name].date) {
+          document.getElementById(`${name}-plugin`)?.classList.add("deprecated");
+          
+          const tag = document.createElement("span");
+          tag.className = "tag";
+          tag.innerText = "Устарел";
+
+          document.getElementById(`${name}-header`)?.appendChild(tag);
+        }
+
+        const pluginDescriptionContainer = document.getElementById(`${name}-description`) as HTMLElement;
+        const pluginLatestUpdateContainer = document.getElementById(`${name}-latest-update`) as HTMLElement;
+
+        for (const p of desc) {
+          const el = document.createElement("p");
+          el.innerText = p;
+
+          pluginDescriptionContainer.appendChild(el);
+        }
+
+        pluginLatestUpdateContainer.innerText = updated;
+      } else {
+        const pluginCard = document.createElement("div");
+        pluginCard.className = "plugin-card";
+        pluginCard.classList.add("unavailable");
+
+        pluginCard.innerHTML = `
+          <div class="head">
+            <svg class="image" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+              <path fill-rule="evenodd" d="M1 8a7 7 0 1 1 2.898 5.673c-.167-.121-.216-.406-.002-.62l1.8-1.8a3.5 3.5 0 0 0 4.572-.328l1.414-1.415a.5.5 0 0 0 0-.707l-.707-.707 1.559-1.563a.5.5 0 1 0-.708-.706l-1.559 1.562-1.414-1.414 1.56-1.562a.5.5 0 1 0-.707-.706l-1.56 1.56-.707-.706a.5.5 0 0 0-.707 0L5.318 5.975a3.5 3.5 0 0 0-.328 4.571l-1.8 1.8c-.58.58-.62 1.6.121 2.137A8 8 0 1 0 0 8a.5.5 0 0 0 1 0"/>
+            </svg>
+
+            <div class="text">
+              <div class="header">${plugin["header"]} <span class="tag">Недоступен</span></div>
+              <div class="meta">Статус: <span class="status">Недоступен</span></div>
+            </div>
+          </div>
+        `;
+
+        document.getElementById("plugin-list")?.appendChild(pluginCard);
+      }
     }
   }
 

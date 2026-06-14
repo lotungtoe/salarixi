@@ -62,7 +62,7 @@ class InfoModule {
     } else if (count >= 1000 && count < 1_000_000) {
       return (count / 1000).toFixed(2) + "k";
     } else {
-      return (count / 1_000_000).toFixed(2) + "m";
+      return (count / 1_000_000).toFixed(2) + "M";
     }
   }
 

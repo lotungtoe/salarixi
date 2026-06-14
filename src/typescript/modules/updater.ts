@@ -37,7 +37,7 @@ class UpdaterModule {
           return;
         }
 
-        const version = latestVersion["version"] ?? latestVersion["id"] ?? latestVersion["version_id"] ?? latestVersion["name"];
+        const version = latestVersion["version"] ?? latestVersion["id"] ?? latestVersion["version-id"] ?? latestVersion["name"];
 
         if (!this.isVersionNewer(version)) {
           notice.remove();

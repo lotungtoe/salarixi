@@ -47,16 +47,16 @@ class ConfigModule {
       }
     }, 1500);
 
-    logger.log("Загрузка конфига...", "system");
-
     const result = await invoke("load_config") as CommandResult<number[]>;
 
-    if (!result.data) {
+    if (result.error) {
       logger.log(`Ошибка загрузки конфига: ${result.error}`, "error");
       return;
     }
 
-    if (result.data.length < 1) return;
+    if (!result.data || result.data.length < 1) return;
+
+    logger.log("Загрузка конфига...", "system");
 
     const uint8 = new Uint8Array(result.data);
     const decoder = new TextDecoder("utf-8");

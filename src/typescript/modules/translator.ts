@@ -1,6 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import { logger } from "../utils/logger";
 import { loadCache, saveCache, TimeType } from "../utils/cache";
+import { getStringSize } from "../utils/size";
 
 /** Код языка */
 export type Language = "ru" | "en" | "tr";
@@ -10,23 +11,34 @@ class TranslatorModule {
   /** Метод инициализации переводчика */
   public async init(): Promise<void> {
     try {
+      logger.log("Загрузка перевода...", "system");
+
       const langSelect = document.getElementById("interface_select_client-language") as HTMLSelectElement;
       const cachedTranslation = await this.loadCachedTranslation();
+      let dataSize = 0;
 
       if (cachedTranslation) {
+        dataSize = getStringSize(JSON.stringify(cachedTranslation, null, 2));
         langSelect.addEventListener("change", () => this.translate(langSelect.value as Language, cachedTranslation));
         if (langSelect.value !== "ru") this.translate(langSelect.value as Language, cachedTranslation);
       } else {
         const newTranslation = await this.loadNewTranslation();
 
         if (newTranslation) {
+          dataSize = getStringSize(JSON.stringify(newTranslation, null, 2));
           langSelect.addEventListener("change", () => this.translate(langSelect.value as Language, newTranslation));
           if (langSelect.value !== "ru") this.translate(langSelect.value as Language, newTranslation);
           await this.cacheTranslation(newTranslation);
+        } else {
+          return;
         }
       }
+
+      const prettyDataSize = (dataSize / 1024).toFixed(1);
+
+      logger.log(`Перевод загружен (размер ${prettyDataSize}KB)`, "system");
     } catch (error) {
-      logger.log(`Ошибка инициализации переводчика: ${error}`, "error");
+      logger.log(`Ошибка загрузки перевода: ${error}`, "error");
     }
   }
 
@@ -45,7 +57,7 @@ class TranslatorModule {
   }
 
   /** Метод загрузки актуального перевода */
-  private async loadNewTranslation(): Promise<string | null> {
+  private async loadNewTranslation(): Promise<any> {
     try {
       const translation = await invoke("download_json", {
         url: "https://codeberg.org/nullclyze/salarixi/raw/branch/main/salarixi.lang.json"
@@ -65,7 +77,7 @@ class TranslatorModule {
   }
 
   /** Метод загрузки кэшированного перевода */
-  public async loadCachedTranslation(): Promise<string | null> {
+  public async loadCachedTranslation(): Promise<any> {
     const result = await loadCache("translation", "translation.json", 3, TimeType.Day);
     if (!result.data) return null;
     return JSON.parse(result.data);

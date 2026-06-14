@@ -4,27 +4,39 @@ import { logger } from "../utils/logger";
 import { loadCache, saveCache, TimeType } from "../utils/cache";
 import { marked } from "marked";
 import DOMPurify from "dompurify";
+import { getStringSize } from "../utils/size";
 
 /** Модуль управления пользовательской документацией */
 class DocsModule {
   /** Метод инициализации модуля */
   public async init(): Promise<void> {
     try {
+      logger.log("Загрузка документации...", "system");
+
       const docsEl = document.querySelector(".documentation-wrapper") as HTMLDivElement;
       const cachedDocs = await this.loadCachedUserDocs();
+      let dataSize = 0;
 
       if (cachedDocs) {
         docsEl.innerHTML = cachedDocs;
+        dataSize = getStringSize(cachedDocs);
       } else {
         const newDocs = await this.loadNewUserDocs();
 
         if (newDocs) {
           docsEl.innerHTML = newDocs;
+          dataSize = getStringSize(newDocs);
           await this.cacheUserDocs(newDocs);
+        } else {
+          return;
         }
       }
+
+      const prettyDataSize = (dataSize / 1024).toFixed(1);
+
+      logger.log(`Документация загружена (размер ${prettyDataSize}KB)`, "system");
     } catch (error) {
-      logger.log(`Ошибка инициализации документации (не критично): ${error}`, "error");
+      logger.log(`Ошибка загрузки документации (не критично): ${error}`, "error");
     }
   }
 
