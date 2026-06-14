@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 use hashbrown::HashMap;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
 use crate::api::emit::{emit_log, emit_msg};
 use crate::service::core::bot::{Profile, PROFILES};
@@ -19,8 +19,13 @@ use crate::service::webhook::send_webhook;
 
 /// Функция запуска ботов
 #[tauri::command]
-pub async fn launch_bots(options: LaunchOptions) -> bool {
-  launch_bots_on_server(options)
+pub async fn launch_bots(options: Vec<u8>) -> bool {
+  let parsed_options: LaunchOptions = match serde_json::from_slice(&options) {
+    Ok(p) => p,
+    Err(_) => return false,
+  };
+
+  launch_bots_on_server(parsed_options)
 }
 
 /// Функция остановки ботов
@@ -35,18 +40,18 @@ pub async fn get_bot_profiles() -> HashMap<String, Profile> {
   PROFILES.get_all()
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Deserialize)]
 struct SendMessageCommand {
   username: String,
   message: String,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Deserialize)]
 struct ResetBotCommand {
   username: String,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Deserialize)]
 struct DisconnectBotCommand {
   username: String,
 }

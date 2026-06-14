@@ -148,7 +148,7 @@ class GraphicModule {
 
       try {
         const data = await invoke("get_active_bots_count") as number;
-        this.updateChart(name, data || 0);
+        this.updateChart(name, data);
       } catch (error) {
         logger.log(`Ошибка графика (${name}-graphic): ${error}`, "error");
       }
@@ -166,8 +166,6 @@ class GraphicModule {
     const context = (this.graphicMemoryUsage as HTMLCanvasElement | null)?.getContext("2d");
     if (!context) return;
 
-    if (!context) return;
-
     let interval = setInterval(async () => {
       if (!this.active) {
         clearInterval(this.objects[name].interval);
@@ -176,7 +174,8 @@ class GraphicModule {
 
       try {
         const data = await invoke("get_memory_usage") as number;
-        this.updateChart(name, parseFloat(data.toFixed(3)) || 0);
+        const usage = parseFloat(data.toFixed(3));
+        this.updateChart(name, usage > 1024.0 ? 1024.0 : usage);
       } catch (error) {
         logger.log(`Ошибка графика (${name}-graphic): ${error}`, "error");
       }

@@ -421,15 +421,22 @@ class MonitoringModule {
       return true;
     } else if (type === "links") {
       const patterns = [
-        "http://", "https://", "socks5://", "socks4://", 
-        ".dev", ".com", ".org", ".io", ".ai", ".net",
-        ".pro", ".gov", ".lv", ".ru", ".onion", ".ie",
-        ".co", ".fun", ".gg", ".xyz", ".club", ".eu",
-        ".me", ".us", ".online", ".br", ".cc", ".no"
+        "http://", "https://", ".dev", ".com", ".org",
+        ".io", ".ai", ".net", ".pro", ".gov", ".lv",
+        ".ru", ".onion", ".ie", ".co", ".fun", ".gg",
+        ".xyz", ".club", ".eu", ".me", ".us", ".online",
+        ".br", ".cc", ".no"
       ];
 
       let result = false;
-      patterns.forEach(p => message.toLowerCase().includes(p) ? result = true : null);
+
+      for (const p of patterns) {
+        if (message.includes(p)) {
+          result = true;
+          break;
+        }
+      }
+      
       return result;
     } else {
       const patterns: Record<string, string[]> = {

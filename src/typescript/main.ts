@@ -125,11 +125,16 @@ async function startBots(): Promise<void> {
     logger.log(text, "info");
     messages.message("Cистема", text);
 
-    const success = await invoke("launch_bots", { options: options }) as boolean;
+    const optionsStr = JSON.stringify(options);
+    const bytes = new TextEncoder().encode(optionsStr);
+
+    const success = await invoke("launch_bots", { options: bytes }) as boolean;
 
     if (!success) return;
 
     process = "active";
+
+    logger.log("Включение рантайм модулей...", "system");
 
     graphicModule.enable();
 
@@ -141,6 +146,8 @@ async function startBots(): Promise<void> {
     if (options.basic.use_anti_captcha) captchaModule.enable(options.captcha_bypass.captcha_type, options.captcha_bypass.solve_mode);
 
     radarModule.enable();
+
+    logger.log("Рантайм модули включены", "system");
   } catch (error) {
     logger.log(`Ошибка запуска ботов: ${error}`, "error");
   }
@@ -152,7 +159,6 @@ async function stopBots(): Promise<void> {
 
   try {
     const success = await invoke("stop_bots") as boolean;
-
     if (!success) return;
 
     process = "sleep";
