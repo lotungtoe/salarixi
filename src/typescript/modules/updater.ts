@@ -37,21 +37,47 @@ class UpdaterModule {
           return;
         }
 
-        if (latestVersion["version"] !== currentClientVersion) {
-          const tag = `v${latestVersion.version}-${String(latestVersion.type).toLowerCase()}`;
+        const version = latestVersion["version"] ?? latestVersion["id"] ?? latestVersion["version_id"] ?? latestVersion["name"];
 
-          newVersion.innerText = latestVersion["version"];
-          newTag.innerText = tag;
-          newReleaseDate.innerText = latestVersion["releaseDate"] ?? latestVersion["release_date"] ?? latestVersion["date"] ?? latestVersion["published"];
-
-          addOpeningUrlTo("open-client-release", "click", `https://codeberg.org/nullclyze/salarixi/releases/tag/${tag}`); 
-
-          notice.style.display = "flex";
+        if (!this.isVersionNewer(version)) {
+          notice.remove();
+          return;
         }
+        
+        const tag = `v${latestVersion.version}-${String(latestVersion.type).toLowerCase()}`;
+        newVersion.innerText = latestVersion["version"];
+        newTag.innerText = tag;
+        newReleaseDate.innerText = latestVersion["releaseDate"] ?? latestVersion["release_date"] ?? latestVersion["date"] ?? latestVersion["published"];
+
+        addOpeningUrlTo("open-client-release", "click", `https://codeberg.org/nullclyze/salarixi/releases/tag/${tag}`); 
+
+        notice.style.display = "flex";
       } catch (error) {
         logger.log(`Ошибка проверки обновлений (не критично): ${error}`, "error");
       }
     }, 4000);
+  }
+
+  /** Метод сравнения версий по системе SemVer */
+  private isVersionNewer(version: string): boolean {
+    const [nmajor, nminor, npatch] = this.parseVersion(version);
+    const [cmajor, cminor, cpatch] = this.parseVersion(currentClientVersion);
+
+    if (nmajor !== cmajor) return nmajor > cmajor ? true : false;
+    if (nminor !== cminor) return nminor > cminor ? true : false;
+    if (npatch !== cpatch) return npatch > cpatch ? true : false;
+
+    return false;
+  }
+
+  /** Метод парсинга версии */
+  private parseVersion(version: string): number[] {
+    const split = version.split("-")[0].split(".");
+    const major = parseInt(split[0]);
+    const minor = parseInt(split[1]);
+    const patch = parseInt(split[2]);
+
+    return [major, minor, patch];
   }
 
   /** Метод загрузки актуальной информации о последней версии клиента */
