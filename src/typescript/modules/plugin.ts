@@ -247,7 +247,7 @@ class PluginModule {
     const result = await saveCache(JSON.stringify(info, null, 2), "plugins-info.json");
 
     if (!result.data && result.error) {
-      logger.log(`Ошибка кэширования информации о плагинах (не критично): ${result.error}`, "error");
+      logger.log(`Ошибка кэширования информации о плагинах (не критично): ${result.error}`, "non-critical-error");
       return;
     }
   }
