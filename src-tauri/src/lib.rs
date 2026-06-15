@@ -46,6 +46,7 @@ pub fn run() {
       open_url,
       download_json,
       download_text,
+      read_text_file,
       set_discord_rpc,
       collect_proxies,
       get_cache_date,

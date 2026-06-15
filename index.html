@@ -1784,103 +1784,121 @@
 
   <div class="main-wrapper centered" id="interface-container" style="display: none;" global="true">
     <div class="interface-settings-wrapper">
-      <div class="section">
-        <div class="header" translator-tag="label:interface-section-global">Глобальные</div>
+      <div class="settings">
+        <div class="section">
+          <div class="header" translator-tag="label:interface-section-global">Глобальные</div>
 
-        <div class="options">
-          <div class="column-wrap" style="width: max-content; gap: 6px;">
-            <div class="custom-select between">
-              <label translator-tag="label:interface-particles">Партиклы: </label>
-              <select id="interface_select_particles" style="width: 150px;" keep="true" trigger>
-                <option value="enable" translator-tag="label:enable">Включить</option>
-                <option value="disable" translator-tag="label:disable">Выключить</option>
-              </select>
+          <div class="options">
+            <div class="column-wrap" style="width: max-content; gap: 6px;">
+              <div class="custom-select between">
+                <label translator-tag="label:interface-particles">Партиклы:</label>
+                <select id="interface_select_particles" style="width: 150px;" keep="true" trigger>
+                  <option value="enable" translator-tag="label:enable">Включить</option>
+                  <option value="disable" translator-tag="label:disable">Выключить</option>
+                </select>
+              </div>
+
+              <div class="custom-select between">
+                <label translator-tag="label:interface-font">Шрифт:</label>
+                <select id="interface_select_global-font-family" style="width: 170px;" keep="true" trigger>
+                  <option value="inter">Inter</option>
+                  <option value="jetbrains-mono">JetBrains Mono</option>
+                  <option value="segoe-ui">Segoe UI</option>
+                </select>
+              </div>
+
+              <div class="custom-select between">
+                <label translator-tag="label:interface-messages">Сообщения:</label>
+                <select id="interface_select_show-messages" style="width: 150px;" keep="true" trigger>
+                  <option value="show" translator-tag="label:interface-show-messages">Показать</option>
+                  <option value="hide" translator-tag="label:interface-hide-messages">Скрыть</option>
+                </select>
+              </div>
+
+              <div class="custom-select between">
+                <label translator-tag="label:interface-client-language">Язык:</label>
+                <select id="interface_select_client-language" style="width: 150px;" keep="true" trigger>
+                  <option value="ru">RU (Русский)</option>
+                  <option value="en">EN (English)</option>
+                  <option value="tr">TR (Türkçe)</option>
+                </select>
+              </div>
+
+              <div class="custom-select between">
+                <label>Discord RPC:</label>
+                <select id="interface_select_discord-rpc" style="width: 150px;" keep="true" trigger>
+                  <option value="enable" translator-tag="label:enable">Включить</option>
+                  <option value="disable" translator-tag="label:disable">Выключить</option>
+                </select>
+              </div>
             </div>
+          </div>
+        </div>
 
-            <div class="custom-select between">
-              <label translator-tag="label:interface-font">Шрифт: </label>
-              <select id="interface_select_global-font-family" style="width: 170px;" keep="true" trigger>
-                <option value="inter">Inter</option>
-                <option value="jetbrains-mono">JetBrains Mono</option>
-                <option value="segoe-ui">Segoe UI</option>
-              </select>
-            </div>
+        <div class="section">
+          <div class="header" translator-tag="label:interface-section-panel">Панель</div>
 
-            <div class="custom-select between">
-              <label translator-tag="label:interface-messages">Сообщения: </label>
-              <select id="interface_select_show-messages" style="width: 150px;" keep="true" trigger>
-                <option value="show" translator-tag="label:interface-show-messages">Показать</option>
-                <option value="hide" translator-tag="label:interface-hide-messages">Скрыть</option>
-              </select>
-            </div>
+          <div class="options">
+            <div class="column-wrap" style="width: max-content; gap: 6px;">
+              <div class="custom-select between">
+                <label translator-tag="label:interface-icons">Иконки: </label>
+                <select id="interface_select_show-panel-icons" style="width: 150px;" keep="true" trigger>
+                  <option value="show" translator-tag="label:interface-show-icons">Показать</option>
+                  <option value="hide" translator-tag="label:interface-hide-icons">Скрыть</option>
+                </select>
+              </div>
 
-            <div class="custom-select between">
-              <label translator-tag="label:interface-client-language">Язык: </label>
-              <select id="interface_select_client-language" style="width: 150px;" keep="true" trigger>
-                <option value="ru">RU (Русский)</option>
-                <option value="en">EN (English)</option>
-                <option value="tr">TR (Türkçe)</option>
-              </select>
-            </div>
+              <div class="custom-select between">
+                <label translator-tag="label:interface-font">Шрифт: </label>
+                <select id="interface_select_panel-font-family" style="width: 170px;" keep="true" trigger>
+                  <option value="inter">Inter</option>
+                  <option value="jetbrains-mono">JetBrains Mono</option>
+                  <option value="segoe-ui">Segoe UI</option>
+                  <option value="courier-new">Courier New</option>
+                  <option value="trebuchet-ms">Trebuchet MS</option>
+                </select>
+              </div>
 
-            <div class="custom-select between">
-              <label>Discord RPC: </label>
-              <select id="interface_select_discord-rpc" style="width: 150px;" keep="true" trigger>
-                <option value="enable" translator-tag="label:enable">Включить</option>
-                <option value="disable" translator-tag="label:disable">Выключить</option>
-              </select>
+              <div class="custom-select between">
+                <label translator-tag="label:interface-font-size">Размер шрифта: </label>
+                <select id="interface_select_panel-font-size" style="width: 100px;" keep="true" trigger>
+                  <option value="14px">14px</option>
+                  <option value="15px" selected>15px</option>
+                  <option value="16px">16px</option>
+                  <option value="17px">17px</option>
+                  <option value="18px">18px</option>
+                </select>
+              </div>
+
+              <div class="custom-select between">
+                <label translator-tag="label:interface-internal-gap">Внутренний отступ: </label>
+                <select id="interface_select_panel-internal-gap" style="width: 100px;" keep="true" trigger>
+                  <option value="2px">2px</option>
+                  <option value="4px">4px</option>
+                  <option value="6px" selected>6px</option>
+                  <option value="8px">8px</option>
+                  <option value="10px">10px</option>
+                </select>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div class="section">
-        <div class="header" translator-tag="label:interface-section-panel">Панель</div>
+      <div class="stylekit-panel">
+        <label translator-tag="label:stylekit">Набор стилей: <span id="current-stylekit">DEFAULT</span></label>
 
-        <div class="options">
-          <div class="column-wrap" style="width: max-content; gap: 6px;">
-            <div class="custom-select between">
-              <label translator-tag="label:interface-icons">Иконки: </label>
-              <select id="interface_select_show-panel-icons" style="width: 150px;" keep="true" trigger>
-                <option value="show" translator-tag="label:interface-show-icons">Показать</option>
-                <option value="hide" translator-tag="label:interface-hide-icons">Скрыть</option>
-              </select>
-            </div>
+        <button class="min" id="select-stylekit">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-folder2-open" viewBox="0 0 16 16">
+            <path d="M1 3.5A1.5 1.5 0 0 1 2.5 2h2.764c.958 0 1.76.56 2.311 1.184C7.985 3.648 8.48 4 9 4h4.5A1.5 1.5 0 0 1 15 5.5v.64c.57.265.94.876.856 1.546l-.64 5.124A2.5 2.5 0 0 1 12.733 15H3.266a2.5 2.5 0 0 1-2.481-2.19l-.64-5.124A1.5 1.5 0 0 1 1 6.14zM2 6h12v-.5a.5.5 0 0 0-.5-.5H9c-.964 0-1.71-.629-2.174-1.154C6.374 3.334 5.82 3 5.264 3H2.5a.5.5 0 0 0-.5.5zm-.367 1a.5.5 0 0 0-.496.562l.64 5.124A1.5 1.5 0 0 0 3.266 14h9.468a1.5 1.5 0 0 0 1.489-1.314l.64-5.124A.5.5 0 0 0 14.367 7z"/>
+          </svg>
+        </button>
 
-            <div class="custom-select between">
-              <label translator-tag="label:interface-font">Шрифт: </label>
-              <select id="interface_select_panel-font-family" style="width: 170px;" keep="true" trigger>
-                <option value="inter">Inter</option>
-                <option value="jetbrains-mono">JetBrains Mono</option>
-                <option value="segoe-ui">Segoe UI</option>
-                <option value="courier-new">Courier New</option>
-                <option value="trebuchet-ms">Trebuchet MS</option>
-              </select>
-            </div>
-
-            <div class="custom-select between">
-              <label translator-tag="label:interface-font-size">Размер шрифта: </label>
-              <select id="interface_select_panel-font-size" style="width: 100px;" keep="true" trigger>
-                <option value="14px">14px</option>
-                <option value="15px" selected>15px</option>
-                <option value="16px">16px</option>
-                <option value="17px">17px</option>
-                <option value="18px">18px</option>
-              </select>
-            </div>
-
-            <div class="custom-select between">
-              <label translator-tag="label:interface-internal-gap">Внутренний отступ: </label>
-              <select id="interface_select_panel-internal-gap" style="width: 100px;" keep="true" trigger>
-                <option value="2px">2px</option>
-                <option value="4px">4px</option>
-                <option value="6px" selected>6px</option>
-                <option value="8px">8px</option>
-                <option value="10px">10px</option>
-              </select>
-            </div>
-          </div>
-        </div>
+        <button class="min" id="reset-stylekit">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
+            <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5M8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5m3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0"/>
+          </svg>
+        </button>
       </div>
     </div>
   </div>

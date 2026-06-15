@@ -82,6 +82,7 @@
   --system-log-color: #707070;
   --extended-log-color: #919191;
 
+  --message-progress-color: #7946f0;
   --message-bg: #111111cc;
   --message-border: #2c2c2c;
   --message-border-radius: 8px;
@@ -2547,15 +2548,21 @@ button svg {
 }
 
 .interface-settings-wrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+  gap: 180px;
+  width: 94%;
+}
+
+.interface-settings-wrapper .settings {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  flex-direction: column;
-  width: 94%;
-  height: 500px;
+  width: 100%;
   gap: 20px;
 }
 
-.interface-settings-wrapper .section {
+.interface-settings-wrapper .settings .section {
   width: 100%;
   height: min-content;
   padding: 14px 8px;
@@ -2564,7 +2571,7 @@ button svg {
   border: 1px solid var(--secondary-border);
 }
 
-.interface-settings-wrapper .section .header {
+.interface-settings-wrapper .settings .section .header {
   display: flex;
   font-family: var(--global-font-family);
   font-size: 16px;
@@ -2579,7 +2586,7 @@ button svg {
   letter-spacing: 0.2px;
 }
 
-.interface-settings-wrapper .section .options {
+.interface-settings-wrapper .settings .section .options {
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -2588,6 +2595,29 @@ button svg {
   align-items: start;
   padding-left: 10px;
   gap: 12px;
+}
+
+.interface-settings-wrapper .stylekit-panel {
+  display: flex;
+  width: 100%;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 4px;
+  gap: 8px;
+}
+
+.interface-settings-wrapper .stylekit-panel label {
+  font-family: var(--global-font-family);
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--muted-color);
+}
+
+.interface-settings-wrapper .stylekit-panel label span {
+  font-family: var(--global-font-family);
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--default-color);
 }
 
 .config-wrapper {
@@ -2698,7 +2728,7 @@ button svg {
   bottom: 0;
   left: 0;
   display: flex;
-  background: linear-gradient(90deg, var(--highlight-color), var(--dull-spec-color));
+  background: var(--message-progress-color);
   width: 100%;
   height: 2px;
   animation: wane-progress-bar 3.9s linear forwards;

@@ -25,6 +25,7 @@ import { timerModule } from "./modules/timer";
 import { docsModule } from "./modules/docs";
 import { infoModule } from "./modules/info";
 import { updaterModule } from "./modules/updater";
+import { stylekitModule } from "./modules/stylekit";
 
 Chart.register(...registerables);
 
@@ -872,6 +873,7 @@ document.addEventListener("DOMContentLoaded", () => {
     radarModule.init();
     scriptModule.init();
     pingModule.init();
+    stylekitModule.init();
   } catch (error) {
     logger.log(`Ошибка инициализации (sync): ${error}`, "error");
   }

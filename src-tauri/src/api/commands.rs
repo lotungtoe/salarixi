@@ -1,3 +1,4 @@
+use std::fs;
 use std::time::Duration;
 
 use hashbrown::HashMap;
@@ -216,6 +217,15 @@ pub async fn download_text(url: String) -> Option<String> {
   }
 
   resp.text().await.ok()
+}
+
+/// Функция чтения небольшого текстового файла
+#[tauri::command]
+pub fn read_text_file(path: String) -> Vec<u8> {
+  match fs::read(&path) {
+    Ok(b) => b,
+    Err(_) => Vec::new(),
+  }
 }
 
 /// Функция остановки главного процесса
