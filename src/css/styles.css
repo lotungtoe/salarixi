@@ -5,7 +5,7 @@
   --global-font-family: "Inter", sans-serif;
   --script-font-family: "JetBrains Mono", "Fira Code", monospace;
 
-  --title-color: #7e47ff;
+  --title-color: linear-gradient(to right, #c5c5c5 8%, #7e47ff, #5096e6, #7e47ff);
   --highlight-color: #7946f0;
 
   --panel-font-family: "Inter", sans-serif;
@@ -151,7 +151,7 @@ body {
   font-size: 16px;
   font-weight: 600;
   font-family: "Inter", sans-serif;
-  background: linear-gradient(to right, #c5c5c5 8%, var(--title-color), var(--highlight-color), var(--title-color));
+  background: var(--title-color);
   -webkit-text-fill-color: transparent;
   -webkit-background-clip: text;
   background-clip: text;
