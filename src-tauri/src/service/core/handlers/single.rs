@@ -33,7 +33,6 @@ use crate::service::webhook::*;
 pub async fn single_handler(bot: Client, event: Event, _state: NoState) -> io::Result<()> {
   match event {
     Event::Init => process_init(bot),
-    Event::Login => process_login(bot),
     Event::Spawn => process_spawn(bot).await,
     Event::Disconnect(text) => process_disconnect(bot, text).await,
     Event::Chat(packet) => process_chat_message(bot, packet).await,
@@ -72,13 +71,6 @@ fn process_init(bot: Client) {
 }
 
 /// Функция обработки спавна
-fn process_login(bot: Client) {
-  let username = bot.name();
-  emit_log(format!("Бот {} подключается...", username), "extended");
-  PROFILES.set_status(&username, BotStatus::Connecting);
-}
-
-/// Функция обработки спавна
 async fn process_spawn(bot: Client) {
   let username = bot.name();
 
@@ -90,7 +82,7 @@ async fn process_spawn(bot: Client) {
     username: username.clone(),
   });
 
-  PROFILES.set_status(&username, BotStatus::Online);
+  PROFILES.set_status(&username, BotStatus::Connected);
 
   let Some(bot) = BOT_REGISTRY.get_bot(&username) else {
     return;
@@ -160,7 +152,7 @@ async fn process_disconnect(bot: Client, text: Option<FormattedText>) {
   STATES.reset(&username);
   TASKS.remove(&username);
 
-  PROFILES.set_status(&username, BotStatus::Offline);
+  PROFILES.set_status(&username, BotStatus::Disconnected);
 
   if let Some(t) = text {
     if let Some(options) = current_options() {
@@ -234,7 +226,7 @@ fn process_tick(bot: Client) {
     return;
   };
 
-  if profile.status == BotStatus::Online {
+  if profile.status == BotStatus::Connected {
     if !bot.workable() {
       return;
     }

@@ -64,13 +64,13 @@ class TranslatorModule {
       }) as any;
 
       if (!translation) {
-        logger.log("Ошибка загрузки перевода (не критично): Resource moved or is unavailable", "error");
+        logger.log("Ошибка загрузки перевода: Resource moved or is unavailable", "error");
         return null;
       }
 
       return translation;
     } catch (error) {
-      logger.log(`Ошибка загрузки перевода (не критично): ${error}`, "error");
+      logger.log(`Ошибка загрузки перевода: ${error}`, "error");
     }
 
     return null;
@@ -88,7 +88,7 @@ class TranslatorModule {
     const result = await saveCache(JSON.stringify(translation, null, 2), "translation.json");
 
     if (!result.data && result.error) {
-      logger.log(`Ошибка кэширования перевода (не критично): ${result.error}`, "error");
+      logger.log(`Ошибка кэширования перевода: ${result.error}`, "error");
       return;
     }
   }

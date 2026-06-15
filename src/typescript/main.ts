@@ -207,8 +207,8 @@ function initGlobalElements(): void {
   const setRandomValuesBtn =  document.getElementById("random") as HTMLButtonElement;
   const clearInputValuesBtn = document.getElementById("clear") as HTMLButtonElement;
 
-  const dashboardBtns = document.querySelectorAll<HTMLButtonElement>(".dashboard .pretty-btn");
-  const controlBtns = document.querySelectorAll<HTMLButtonElement>(".control-btn");
+  const dashboardBtns = document.querySelectorAll<HTMLButtonElement>(".dashboard button");
+  const controlBtns = document.querySelectorAll<HTMLButtonElement>(".control-dashboard .button-list button");
   
   dashboardBtns.forEach(btn => {
     if (btn.id === "main") btn.classList.add("selected");
@@ -686,87 +686,6 @@ export function replenishTriggerRegistry(): void {
       }
     } catch (error) {
       logger.log(`Ошибка изменения состояния партиклов: ${error}`, "error");
-    }
-  });
-
-  triggerRegistry.register("interface_select_theme", "select", (current: HTMLSelectElement) => {
-    try {
-      const root = document.documentElement;
-
-      switch (current.value) {
-        case "onion": 
-          root.style.setProperty("--title-color", "#7e47ff");
-          root.style.setProperty("--spec-color", "#7946f0");
-          root.style.setProperty("--dull-spec-color", "#5426be");
-          root.style.setProperty("--chbx-spec-color", "#7946f0");
-          root.style.setProperty("--chbx-dull-spec-color", "#5426be");
-          break;
-        case "toxic": 
-          root.style.setProperty("--title-color", "#3ec71c");
-          root.style.setProperty("--spec-color", "#40cf33");
-          root.style.setProperty("--dull-spec-color", "#51be26");
-          root.style.setProperty("--chbx-spec-color", "#25a115");
-          root.style.setProperty("--chbx-dull-spec-color", "#1d7e11");
-          break;
-        case "ice": 
-          root.style.setProperty("--title-color", "#17b2f0");
-          root.style.setProperty("--spec-color", "#46b2f0");
-          root.style.setProperty("--dull-spec-color", "#26b9be");
-          root.style.setProperty("--chbx-spec-color", "#26a9e6");
-          root.style.setProperty("--chbx-dull-spec-color", "#1386a8");
-          break;
-        case "blood":
-          root.style.setProperty("--title-color", "#f72323");
-          root.style.setProperty("--spec-color", "#f03333");
-          root.style.setProperty("--dull-spec-color", "#d62727");
-          root.style.setProperty("--chbx-spec-color", "#ce2323");
-          root.style.setProperty("--chbx-dull-spec-color", "#aa1818");
-          break;
-        case "gold": 
-          root.style.setProperty("--title-color", "#f8fc12");
-          root.style.setProperty("--spec-color", "#ccbd33");
-          root.style.setProperty("--dull-spec-color", "#bbbe26");
-          root.style.setProperty("--chbx-spec-color", "#95a319");
-          root.style.setProperty("--chbx-dull-spec-color", "#7e7c0f");
-          break;
-        case "dark": 
-          root.style.setProperty("--title-color", "#818181");
-          root.style.setProperty("--spec-color", "#646464");
-          root.style.setProperty("--dull-spec-color", "#555555");
-          root.style.setProperty("--chbx-spec-color", "#494949");
-          root.style.setProperty("--chbx-dull-spec-color", "#3f3f3f");
-          break;
-        case "magenta": 
-          root.style.setProperty("--title-color", "#f727e6");
-          root.style.setProperty("--spec-color", "#eb28db");
-          root.style.setProperty("--dull-spec-color", "#be13a1");
-          root.style.setProperty("--chbx-spec-color", "#9e0b97");
-          root.style.setProperty("--chbx-dull-spec-color", "#960676");
-          break;
-        case "snow": 
-          root.style.setProperty("--title-color", "#e2e2e2");
-          root.style.setProperty("--spec-color", "#cfcecf");
-          root.style.setProperty("--dull-spec-color", "#979797");
-          root.style.setProperty("--chbx-spec-color", "#a5a5a5");
-          root.style.setProperty("--chbx-dull-spec-color", "#999999");
-          break;
-        case "fire": 
-          root.style.setProperty("--title-color", "#ff5e00");
-          root.style.setProperty("--spec-color", "#ff6600");
-          root.style.setProperty("--dull-spec-color", "#d14d25");
-          root.style.setProperty("--chbx-spec-color", "#ee4c01");
-          root.style.setProperty("--chbx-dull-spec-color", "#d64a1f");
-          break;
-        case "ocean": 
-          root.style.setProperty("--title-color", "#0051ff");
-          root.style.setProperty("--spec-color", "#0044ff");
-          root.style.setProperty("--dull-spec-color", "#254dd1");
-          root.style.setProperty("--chbx-spec-color", "#0140ee");
-          root.style.setProperty("--chbx-dull-spec-color", "#1f41d6");
-          break;
-      }
-    } catch (error) {
-      logger.log(`Ошибка изменения темы: ${error}`, "error");
     }
   });
 

@@ -28,10 +28,9 @@ pub struct Profile {
 /// Состояние бота
 #[derive(Clone, Serialize, PartialEq)]
 pub enum BotStatus {
-  Preparation,
-  Connecting,
-  Online,
-  Offline,
+  Waiting,
+  Connected,
+  Disconnected,
 }
 
 /// Структура прокси бота
@@ -47,7 +46,7 @@ impl Profile {
   /// Метод создания нового профиля
   pub fn new(username: &str, password: Option<String>, email: Option<String>) -> Self {
     Self {
-      status: BotStatus::Preparation,
+      status: BotStatus::Waiting,
       username: username.to_string(),
       password: password,
       email: email,

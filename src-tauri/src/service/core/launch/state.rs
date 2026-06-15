@@ -14,7 +14,7 @@ pub fn active_bots_count() -> i32 {
   let mut count = 0;
 
   for (_, profile) in PROFILES.get_all() {
-    if profile.status == BotStatus::Online {
+    if profile.status == BotStatus::Connected {
       count += 1;
     }
   }

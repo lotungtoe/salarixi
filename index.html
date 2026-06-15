@@ -117,7 +117,7 @@
       <span class="text" translator-tag="panel-btn:webhook">Вебхук</span>
     </button>
 
-    <div class="separator"></div>
+    <div class="spliter"></div>
 
     <button class="pretty-btn" id="control" path="control-container" section-name="Управление">
       <svg panel-btn-icon="true" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-controller" viewBox="0 0 16 16">
@@ -157,7 +157,12 @@
       <span class="text" translator-tag="panel-btn:analysis">Анализ</span>
     </button>
 
-    <div class="separator"></div>
+    <button class="pretty-btn" id="ping" path="ping-container" section-name="Пинг">
+      <svg panel-btn-icon="true" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-activity" viewBox="0 0 16 16">
+        <path fill-rule="evenodd" d="M6 2a.5.5 0 0 1 .47.33L10 12.036l1.53-4.208A.5.5 0 0 1 12 7.5h3.5a.5.5 0 0 1 0 1h-3.15l-1.88 5.17a.5.5 0 0 1-.94 0L6 3.964 4.47 8.171A.5.5 0 0 1 4 8.5H.5a.5.5 0 0 1 0-1h3.15l1.88-5.17A.5.5 0 0 1 6 2"/>
+      </svg>
+      <span class="text" translator-tag="panel-btn:ping">Пинг</span>
+    </button>
 
     <button class="pretty-btn" id="radar" path="radar-container" section-name="Радар">
       <svg panel-btn-icon="true" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-radar" viewBox="0 0 16 16">
@@ -166,14 +171,7 @@
       <span class="text" translator-tag="panel-btn:radar">Радар</span>
     </button>
 
-    <button class="pretty-btn" id="ping" path="ping-container" section-name="Пинг">
-      <svg panel-btn-icon="true" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-activity" viewBox="0 0 16 16">
-        <path fill-rule="evenodd" d="M6 2a.5.5 0 0 1 .47.33L10 12.036l1.53-4.208A.5.5 0 0 1 12 7.5h3.5a.5.5 0 0 1 0 1h-3.15l-1.88 5.17a.5.5 0 0 1-.94 0L6 3.964 4.47 8.171A.5.5 0 0 1 4 8.5H.5a.5.5 0 0 1 0-1h3.15l1.88-5.17A.5.5 0 0 1 6 2"/>
-      </svg>
-      <span class="text" translator-tag="panel-btn:ping">Пинг</span>
-    </button>
-
-    <div class="separator"></div>
+    <div class="spliter"></div>
 
     <button class="pretty-btn" id="journal" path="journal-container" section-name="Журнал">
       <svg panel-btn-icon="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -200,7 +198,7 @@
       <span class="text" translator-tag="panel-btn:config">Конфиг</span>
     </button>
 
-    <div class="separator"></div>
+    <div class="spliter"></div>
 
     <button class="pretty-btn" id="documentation" path="documentation-container" section-name="Руководство">
       <svg panel-btn-icon="true" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-journal-text" viewBox="0 0 16 16">
@@ -246,38 +244,13 @@
 
     <div class="column-wrap">
       <div class="btn-group-flex" style="margin-top: 30px;">
-        <button class="btn green" id="start" style="width: 140px;">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-rocket-takeoff" viewBox="0 0 16 16">
-            <path d="M9.752 6.193c.599.6 1.73.437 2.528-.362s.96-1.932.362-2.531c-.599-.6-1.73-.438-2.528.361-.798.8-.96 1.933-.362 2.532"/>
-            <path d="M15.811 3.312c-.363 1.534-1.334 3.626-3.64 6.218l-.24 2.408a2.56 2.56 0 0 1-.732 1.526L8.817 15.85a.51.51 0 0 1-.867-.434l.27-1.899c.04-.28-.013-.593-.131-.956a9 9 0 0 0-.249-.657l-.082-.202c-.815-.197-1.578-.662-2.191-1.277-.614-.615-1.079-1.379-1.275-2.195l-.203-.083a10 10 0 0 0-.655-.248c-.363-.119-.675-.172-.955-.132l-1.896.27A.51.51 0 0 1 .15 7.17l2.382-2.386c.41-.41.947-.67 1.524-.734h.006l2.4-.238C9.005 1.55 11.087.582 12.623.208c.89-.217 1.59-.232 2.08-.188.244.023.435.06.57.093q.1.026.16.045c.184.06.279.13.351.295l.029.073a3.5 3.5 0 0 1 .157.721c.055.485.051 1.178-.159 2.065m-4.828 7.475.04-.04-.107 1.081a1.54 1.54 0 0 1-.44.913l-1.298 1.3.054-.38c.072-.506-.034-.993-.172-1.418a9 9 0 0 0-.164-.45c.738-.065 1.462-.38 2.087-1.006M5.205 5c-.625.626-.94 1.351-1.004 2.09a9 9 0 0 0-.45-.164c-.424-.138-.91-.244-1.416-.172l-.38.054 1.3-1.3c.245-.246.566-.401.91-.44l1.08-.107zm9.406-3.961c-.38-.034-.967-.027-1.746.163-1.558.38-3.917 1.496-6.937 4.521-.62.62-.799 1.34-.687 2.051.107.676.483 1.362 1.048 1.928.564.565 1.25.941 1.924 1.049.71.112 1.429-.067 2.048-.688 3.079-3.083 4.192-5.444 4.556-6.987.183-.771.18-1.345.138-1.713a3 3 0 0 0-.045-.283 3 3 0 0 0-.3-.041Z"/>
-            <path d="M7.009 12.139a7.6 7.6 0 0 1-1.804-1.352A7.6 7.6 0 0 1 3.794 8.86c-1.102.992-1.965 5.054-1.839 5.18.125.126 3.936-.896 5.054-1.902Z"/>
-          </svg>
-          <span translator-tag="button:start">Запустить</span>
-        </button>
-
-        <button class="btn red" id="stop" style="width: 140px;">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-stop-fill" viewBox="0 0 16 16">
-            <path d="M5 3.5h6A1.5 1.5 0 0 1 12.5 5v6a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 11V5A1.5 1.5 0 0 1 5 3.5"/>
-          </svg>
-          <span translator-tag="button:stop">Остановить</span>
-        </button>
+        <button id="start" translator-tag="button:start">Запустить</button>
+        <button id="stop" translator-tag="button:stop">Остановить</button>
       </div>
 
       <div class="btn-group-flex">
-        <button class="btn" id="random" style="width: 140px;">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-repeat" viewBox="0 0 16 16">
-            <path d="M11.534 7h3.932a.25.25 0 0 1 .192.41l-1.966 2.36a.25.25 0 0 1-.384 0l-1.966-2.36a.25.25 0 0 1 .192-.41m-11 2h3.932a.25.25 0 0 0 .192-.41L2.692 6.23a.25.25 0 0 0-.384 0L.342 8.59A.25.25 0 0 0 .534 9"/>
-            <path fill-rule="evenodd" d="M8 3c-1.552 0-2.94.707-3.857 1.818a.5.5 0 1 1-.771-.636A6.002 6.002 0 0 1 13.917 7H12.9A5 5 0 0 0 8 3M3.1 9a5.002 5.002 0 0 0 8.757 2.182.5.5 0 1 1 .771.636A6.002 6.002 0 0 1 2.083 9z"/>
-          </svg>
-          <span translator-tag="button:random">Генерация</span>
-        </button>
-
-        <button class="btn red" id="clear" style="width: 140px;">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
-            <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5M8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5m3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0"/>
-          </svg>
-          <span translator-tag="button:clear">Очистить</span>
-        </button>
+        <button id="random" translator-tag="button:random">Генерация</button>
+        <button id="clear" translator-tag="button:clear">Очистить</button>
       </div>
     </div>
   </div>
@@ -285,8 +258,8 @@
   <div class="main-wrapper centered" id="settings-container" style="display: none;" global="true">
     <div class="settings-layout">
       <div class="settings-column left">
-        <div class="separator" style="margin: 0; margin-bottom: 25px;">
-          <span class="separator-title" translator-tag="separator:basic-settings">Основные</span>
+        <div class="spliter" style="margin: 0; margin-bottom: 25px;">
+          <span class="name" translator-tag="separator:basic-settings">Основные</span>
         </div>
 
         <div class="column-wrap" style="max-width: 265px; gap: 10px; margin-bottom: 10px;">
@@ -329,8 +302,8 @@
         </div>
     
         <div class="hidden" id="auto-register-input-container">
-          <div class="separator">
-            <span class="separator-title" translator-tag="separator:registration">Регистрация</span>
+          <div class="spliter">
+            <span class="name" translator-tag="separator:registration">Регистрация</span>
           </div>
 
           <div class="custom-select" style="margin-top: 10px; margin-bottom: 10px;">
@@ -368,8 +341,8 @@
         </div>
 
         <div class="hidden" id="auto-login-input-container">
-          <div class="separator">
-            <span class="separator-title" translator-tag="separator:login">Логин</span>
+          <div class="spliter">
+            <span class="name" translator-tag="separator:login">Логин</span>
           </div>
 
           <div class="custom-select" style="margin-top: 10px; margin-bottom: 10px;">
@@ -407,8 +380,8 @@
         </div>
 
         <div class="hidden" id="auto-rejoin-input-container">
-          <div class="separator">
-            <span class="separator-title" translator-tag="separator:reconnection">Переподключение</span>
+          <div class="spliter">
+            <span class="name" translator-tag="separator:reconnection">Переподключение</span>
           </div>
 
           <div class="form-input">
@@ -417,8 +390,8 @@
           </div>
         </div>
 
-        <div class="separator">
-          <span class="separator-title" translator-tag="separator:monitoring-settings">Мониторинг</span>
+        <div class="spliter">
+          <span class="name" translator-tag="separator:monitoring-settings">Мониторинг</span>
         </div>
 
         <div class="form-input">
@@ -431,8 +404,8 @@
           <input type="number" id="monitoring_option_chat-history-length" placeholder="50" value="50" keep="true">
         </div>
 
-        <div class="separator">
-          <span class="separator-title" translator-tag="separator:additional-settings">Дополнительные</span>
+        <div class="spliter">
+          <span class="name" translator-tag="separator:additional-settings">Дополнительные</span>
         </div>
 
         <div class="form-input">
@@ -471,7 +444,7 @@
             <span translator-tag="checkbox:double-auth">Использовать Double-Auth</span>
           </label>
 
-          <div class="simple-sep"></div>
+          <div class="horizontal-spliter"></div>
 
           <label class="checkbox-container">
             <input type="checkbox" id="settings_chbx_use-auto-rejoin" keep="true" key="use_auto_rejoin" trigger launch-option checked>
@@ -503,7 +476,7 @@
             <span translator-tag="checkbox:auto-script">Использовать Auto-Script</span>
           </label>
 
-          <div class="simple-sep"></div>
+          <div class="horizontal-spliter"></div>
 
           <label class="checkbox-container">
             <input type="checkbox" id="settings_chbx_use-proxy" keep="true" key="use_proxy" trigger launch-option>
@@ -523,7 +496,7 @@
             <span translator-tag="checkbox:webhook">Использовать вебхук</span>
           </label>
 
-          <div class="simple-sep"></div>
+          <div class="horizontal-spliter"></div>
 
           <label class="checkbox-container">
             <input type="checkbox" id="settings_chbx_use-accounts" keep="true" key="use_accounts" trigger launch-option>
@@ -537,21 +510,19 @@
 
   <div class="main-wrapper centered" id="accounts-container" style="display: none;" global="true">
     <div class="accounts-top-panel">
-      <input type="text" id="account-username" placeholder="MyBot_12345" maxlength="16" style="width: 140px;">
+      <div class="input-with-button">
+        <input type="text" id="account-username" placeholder="MyBot_12345" maxlength="16" style="width: 140px;">
 
-      <div class="sep"></div>
-
-      <button class="btn min pretty ub" id="add-account">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-plus-fill" viewBox="0 0 16 16">
-          <path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
-          <path fill-rule="evenodd" d="M13.5 5a.5.5 0 0 1 .5.5V7h1.5a.5.5 0 0 1 0 1H14v1.5a.5.5 0 0 1-1 0V8h-1.5a.5.5 0 0 1 0-1H13V5.5a.5.5 0 0 1 .5-.5"/>
-        </svg>
-      </button>
-
-      <div class="sep"></div>
+        <button class="min pretty ub" id="add-account">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-plus-fill" viewBox="0 0 16 16">
+            <path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
+            <path fill-rule="evenodd" d="M13.5 5a.5.5 0 0 1 .5.5V7h1.5a.5.5 0 0 1 0 1H14v1.5a.5.5 0 0 1-1 0V8h-1.5a.5.5 0 0 1 0-1H13V5.5a.5.5 0 0 1 .5-.5"/>
+          </svg>
+        </button>
+      </div>
 
       <div style="display: flex; width: 100%; justify-content: right;">
-        <button class="btn min pretty ub" id="remove-all-accounts">
+        <button class="min pretty ub" id="remove-all-accounts">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
             <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5M8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5m3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0"/>
           </svg>
@@ -571,8 +542,8 @@
     <div class="accounts-bottom-panel">
       <p class="account-counter">Всего аккаунтов: <span id="account-counter">0</span></p>
 
-      <div style="display: flex; margin-right: 12px; gap: 6px;">
-        <button class="btn min" id="import-accounts">
+      <div style="display: flex; gap: 6px;">
+        <button id="import-accounts">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download" viewBox="0 0 16 16">
             <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/>
             <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"/>
@@ -581,7 +552,7 @@
           Импорт
         </button>
 
-        <button class="btn min" id="export-accounts">
+        <button id="export-accounts">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-share" viewBox="0 0 16 16">
             <path d="M13.5 1a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M11 2.5a2.5 2.5 0 1 1 .603 1.628l-6.718 3.12a2.5 2.5 0 0 1 0 1.504l6.718 3.12a2.5 2.5 0 1 1-.488.876l-6.718-3.12a2.5 2.5 0 1 1 0-3.256l6.718-3.12A2.5 2.5 0 0 1 11 2.5m-8.5 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3m11 5.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3"/>
           </svg>
@@ -611,7 +582,7 @@
 
       <div class="right">
         <div class="btn-group-column" style="margin-top: 2px;">
-          <button class="btn red" id="clear-proxy-list" style="width: 170px;">
+          <button class="red" id="clear-proxy-list" style="width: 170px;">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
               <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5M8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5m3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0"/>
             </svg>
@@ -682,7 +653,7 @@
             </div>
           </div>
 
-          <button class="btn green" id="find-proxy" style="width: 170px; margin-top: 20px;">
+          <button class="green" id="find-proxy" style="width: 170px; margin-top: 20px;">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
               <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
             </svg>
@@ -803,80 +774,80 @@
   <div class="main-wrapper" id="control-container" style="display: none;" global="true">
     <input type="text" class="control-group" id="control-group" placeholder="Группа">
 
-    <div class="button-card">
+    <div class="control-dashboard">
       <div class="button-list">
-        <button class="control-btn" id="control-chat" path="control-chat-container">
+        <button id="control-chat" path="control-chat-container">
           <span class="tag">‒</span>
           <span class="text" translator-tag="control:chat">Чат</span>
         </button>
 
-        <button class="control-btn" id="control-actions" path="control-action-container">
+        <button id="control-actions" path="control-action-container">
           <span class="tag">‒</span>
           <span class="text" translator-tag="control:actions">Действия</span>
         </button>
 
-        <button class="control-btn" id="control-inventory" path="control-inventory-container">
+        <button id="control-inventory" path="control-inventory-container">
           <span class="tag">‒</span>
           <span class="text" translator-tag="control:inventory">Инвентарь</span>
         </button>
 
-        <button class="control-btn" id="control-movement" path="control-movement-container">
+        <button id="control-movement" path="control-movement-container">
           <span class="tag">‒</span>
           <span class="text" translator-tag="control:movement">Движение</span>
         </button>
 
-        <div class="sep"></div>
+        <div class="spliter"></div>
 
-        <button class="control-btn" id="control-anti-afk" path="control-anti-afk-container">
+        <button id="control-anti-afk" path="control-anti-afk-container">
           <span class="tag">‒</span>
           <span class="text" translator-tag="control:anti-afk">Анти-АФК</span>
         </button>
 
-        <button class="control-btn" id="control-stalker" path="control-stalker-container">
+        <button id="control-stalker" path="control-stalker-container">
           <span class="tag">‒</span>
           <span class="text" translator-tag="control:stalker">Сталкер</span>
         </button>
 
-        <div class="sep"></div>
+        <div class="spliter"></div>
 
-        <button class="control-btn" id="control-flight" path="control-flight-container">
+        <button id="control-flight" path="control-flight-container">
           <span class="tag">‒</span>
           <span class="text" translator-tag="control:flight">Полёт</span>
         </button>
 
-        <button class="control-btn" id="control-killaura" path="control-killaura-container">
+        <button id="control-killaura" path="control-killaura-container">
           <span class="tag">‒</span>
           <span class="text" translator-tag="control:killaura">Киллаура</span>
         </button>
 
-        <button class="control-btn" id="control-scaffold" path="control-scaffold-container">
+        <button id="control-scaffold" path="control-scaffold-container">
           <span class="tag">‒</span>
           <span class="text" translator-tag="control:scaffold">Скаффолд</span>
         </button>
 
-        <button class="control-btn" id="control-anti-fall" path="control-anti-fall-container">
+        <button id="control-anti-fall" path="control-anti-fall-container">
           <span class="tag">‒</span>
           <span class="text" translator-tag="control:anti-fall">Анти-Падение</span>
         </button>
 
-        <button class="control-btn" id="control-bow-aim" path="control-bow-aim-container">
+        <button id="control-bow-aim" path="control-bow-aim-container">
           <span class="tag">‒</span>
           <span class="text" translator-tag="control:bow-aim">Лук аим</span>
         </button>
 
-        <div class="sep"></div>
+        <div class="spliter"></div>
 
-        <button class="control-btn" id="control-stealer" path="control-stealer-container">
+        <button id="control-stealer" path="control-stealer-container">
           <span class="tag">‒</span>
           <span class="text" translator-tag="control:stealer">Стиллер</span>
         </button>
 
-        <button class="control-btn" id="control-miner" path="control-miner-container">
+        <button id="control-miner" path="control-miner-container">
           <span class="tag">‒</span>
           <span class="text" translator-tag="control:miner">Майнер</span>
         </button>
 
-        <button class="control-btn" id="control-farmer" path="control-farmer-container">
+        <button id="control-farmer" path="control-farmer-container">
           <span class="tag">‒</span>
           <span class="text" translator-tag="control:farmer">Фермер</span>
         </button>
@@ -916,12 +887,12 @@
 
             <div class="btn-group-flex" style="margin-top: 25px;">
               <div class="btn-group-flex" id="chat-default-btns-container">
-                <button class="btn green toggler" control-toggler="true" name="chat" state="true">Отправить</button>
+                <button class="green toggler" control-toggler="true" name="chat" state="true">Отправить</button>
               </div>
 
               <div class="btn-group-flex" id="chat-spamming-btns-container" style="display: none;">
-                <button class="btn green toggler" control-toggler="true" name="chat" state="true">Старт</button>
-                <button class="btn red toggler" control-toggler="true" name="chat" state="false">Стоп</button>
+                <button class="green toggler" control-toggler="true" name="chat" state="true">Старт</button>
+                <button class="red toggler" control-toggler="true" name="chat" state="false">Стоп</button>
               </div>
             </div>
           </div>
@@ -934,7 +905,7 @@
                 Синхронность
               </label>
 
-              <div class="simple-sep"></div>
+              <div class="horizontal-spliter"></div>
 
               <label class="checkbox-container">
                 <input type="checkbox" control="chat" name="use_global_chat" id="module_chat_chbx_use-global-chat" keep="true">
@@ -942,7 +913,7 @@
                 Глобальный чат
               </label>
 
-              <div class="simple-sep"></div>
+              <div class="horizontal-spliter"></div>
 
               <label class="checkbox-container">
                 <input type="checkbox" control="chat" name="use_text_mutation" id="module_chat_chbx_use-text-mutation" keep="true" checked>
@@ -957,7 +928,7 @@
               </label>
 
               <div class="hidden-wrapper" id="chat-spamming-chbx-container">
-                <div class="simple-sep"></div>
+                <div class="horizontal-spliter"></div>
 
                 <label class="checkbox-container">
                   <input type="checkbox" control="chat" name="use_anti_repetition" id="module_chat_chbx_use-anti-repetition" keep="true">
@@ -989,8 +960,8 @@
             </div>
 
             <div class="btn-group-flex" style="margin-top: 25px;">
-              <button class="btn green toggler" control-toggler="true" name="action" state="true">Старт</button>
-              <button class="btn red toggler" control-toggler="true" name="action" state="false">Стоп</button>
+              <button class="green toggler" control-toggler="true" name="action" state="true">Старт</button>
+              <button class="red toggler" control-toggler="true" name="action" state="false">Стоп</button>
             </div>
           </div>
 
@@ -1002,7 +973,7 @@
                 Синхронность
               </label>
 
-              <div class="simple-sep"></div>
+              <div class="horizontal-spliter"></div>
 
               <label class="checkbox-container">
                 <input type="checkbox" control="action" name="use_impulsiveness" id="module_action_chbx_use-impulsiveness" keep="true" checked>
@@ -1042,19 +1013,19 @@
 
             <div id="inventory-basic-btn-container" style="flex-direction: column;">
               <div class="btn-group-flex" style="margin-top: 25px;">
-                <button class="btn green toggler" control-toggler="true" name="inventory" state="select">Выбрать</button>
-                <button class="btn red toggler" control-toggler="true" name="inventory" state="drop">Выбросить</button>
+                <button class="green toggler" control-toggler="true" name="inventory" state="select">Выбрать</button>
+                <button class="red toggler" control-toggler="true" name="inventory" state="drop">Выбросить</button>
               </div>
 
               <div class="btn-group-flex">
-                <button class="btn toggler" control-toggler="true" name="inventory" state="left-click">Клик (ЛКМ)</button>
-                <button class="btn toggler" control-toggler="true" name="inventory" state="right-click">Клик (ПКМ)</button>
+                <button class="toggler" control-toggler="true" name="inventory" state="left-click">Клик (ЛКМ)</button>
+                <button class="toggler" control-toggler="true" name="inventory" state="right-click">Клик (ПКМ)</button>
               </div>
             </div>
 
             <div id="inventory-swap-btn-container" style="display: none;">
               <div class="btn-group-flex" style="margin-top: 25px;">
-                <button class="btn green toggler" control-toggler="true" name="inventory" state="swap">Переместить</button>
+                <button class="green toggler" control-toggler="true" name="inventory" state="swap">Переместить</button>
               </div>
             </div>
           </div>
@@ -1103,8 +1074,8 @@
             </div>
 
             <div class="btn-group-flex" style="margin-top: 25px;">
-              <button class="btn green toggler" control-toggler="true" name="movement" state="true">Старт</button>
-              <button class="btn red toggler" control-toggler="true" name="movement" state="false">Стоп</button>
+              <button class="green toggler" control-toggler="true" name="movement" state="true">Старт</button>
+              <button class="red toggler" control-toggler="true" name="movement" state="false">Стоп</button>
             </div>
           </div>
 
@@ -1117,7 +1088,7 @@
               </label>
 
               <div class="hidden-wrapper" id="movement-impulsiveness-container" style="display: flex;">
-                <div class="simple-sep"></div>
+                <div class="horizontal-spliter"></div>
 
                 <label class="checkbox-container">
                   <input type="checkbox" control="movement" id="module_movement_chbx_use-impulsiveness" name="use_impulsiveness" keep="true">
@@ -1155,8 +1126,8 @@
             </div>
 
             <div class="btn-group-flex" style="margin-top: 25px;">
-              <button class="btn green toggler" control-toggler="true" name="anti-afk" state="true">Старт</button>
-              <button class="btn red toggler" control-toggler="true" name="anti-afk" state="false">Стоп</button>
+              <button class="green toggler" control-toggler="true" name="anti-afk" state="true">Старт</button>
+              <button class="red toggler" control-toggler="true" name="anti-afk" state="false">Стоп</button>
             </div>
           </div>
         </div>
@@ -1191,8 +1162,8 @@
             </div>
 
             <div class="btn-group-flex" style="margin-top: 25px;">
-              <button class="btn green toggler" control-toggler="true" name="stalker" state="true">Старт</button>
-              <button class="btn red toggler" control-toggler="true" name="stalker" state="false">Стоп</button>
+              <button class="green toggler" control-toggler="true" name="stalker" state="true">Старт</button>
+              <button class="red toggler" control-toggler="true" name="stalker" state="false">Стоп</button>
             </div>
           </div>
         </div>
@@ -1261,8 +1232,8 @@
             </div>
 
             <div class="btn-group-flex" style="margin-top: 25px;">
-              <button class="btn green toggler" control-toggler="true" name="flight" state="true">Старт</button>
-              <button class="btn red toggler" control-toggler="true" name="flight" state="false">Стоп</button>
+              <button class="green toggler" control-toggler="true" name="flight" state="true">Старт</button>
+              <button class="red toggler" control-toggler="true" name="flight" state="false">Стоп</button>
             </div>
           </div>
         </div>
@@ -1350,8 +1321,8 @@
             </div>
 
             <div class="btn-group-flex" style="margin-top: 25px;">
-              <button class="btn green toggler" control-toggler="true" name="killaura" state="true">Старт</button>
-              <button class="btn red toggler" control-toggler="true" name="killaura" state="false">Стоп</button>
+              <button class="green toggler" control-toggler="true" name="killaura" state="true">Старт</button>
+              <button class="red toggler" control-toggler="true" name="killaura" state="false">Стоп</button>
             </div>
           </div>
 
@@ -1363,7 +1334,7 @@
                 Авто оружие
               </label>
 
-              <div class="simple-sep"></div>
+              <div class="horizontal-spliter"></div>
 
               <label class="checkbox-container">
                 <input type="checkbox" control="killaura" id="module_killaura_chbx_use-dodging" name="use_dodging" keep="true">
@@ -1377,7 +1348,7 @@
                 Преследование
               </label>
 
-              <div class="simple-sep"></div>
+              <div class="horizontal-spliter"></div>
 
               <label class="checkbox-container">
                 <input type="checkbox" control="killaura" id="module_killaura_chbx_use-critical" name="use_critical" keep="true">
@@ -1420,8 +1391,8 @@
             </div>
 
             <div class="btn-group-flex" style="margin-top: 25px;">
-              <button class="btn green toggler" control-toggler="true" name="scaffold" state="true">Старт</button>
-              <button class="btn red toggler" control-toggler="true" name="scaffold" state="false">Стоп</button>
+              <button class="green toggler" control-toggler="true" name="scaffold" state="true">Старт</button>
+              <button class="red toggler" control-toggler="true" name="scaffold" state="false">Стоп</button>
             </div>
           </div>
         </div>
@@ -1458,8 +1429,8 @@
             </div>
 
             <div class="btn-group-flex" style="margin-top: 25px;">
-              <button class="btn green toggler" control-toggler="true" name="anti-fall" state="true">Старт</button>
-              <button class="btn red toggler" control-toggler="true" name="anti-fall" state="false">Стоп</button>
+              <button class="green toggler" control-toggler="true" name="anti-fall" state="true">Старт</button>
+              <button class="red toggler" control-toggler="true" name="anti-fall" state="false">Стоп</button>
             </div>
           </div>
         </div>
@@ -1499,8 +1470,8 @@
             </div>
 
             <div class="btn-group-flex" style="margin-top: 25px;">
-              <button class="btn green toggler" control-toggler="true" name="bow-aim" state="true">Старт</button>
-              <button class="btn red toggler" control-toggler="true" name="bow-aim" state="false">Стоп</button>
+              <button class="green toggler" control-toggler="true" name="bow-aim" state="true">Старт</button>
+              <button class="red toggler" control-toggler="true" name="bow-aim" state="false">Стоп</button>
             </div>
           </div>
         </div>
@@ -1531,8 +1502,8 @@
             </div>
 
             <div class="btn-group-flex" style="margin-top: 25px;">
-              <button class="btn green toggler" control-toggler="true" name="stealer" state="true">Старт</button>
-              <button class="btn red toggler" control-toggler="true" name="stealer" state="false">Стоп</button>
+              <button class="green toggler" control-toggler="true" name="stealer" state="true">Старт</button>
+              <button class="red toggler" control-toggler="true" name="stealer" state="false">Стоп</button>
             </div>
           </div>
         </div>
@@ -1587,8 +1558,8 @@
             </div>
 
             <div class="btn-group-flex" style="margin-top: 25px;">
-              <button class="btn green toggler" control-toggler="true" name="miner" state="true">Старт</button>
-              <button class="btn red toggler" control-toggler="true" name="miner" state="false">Стоп</button>
+              <button class="green toggler" control-toggler="true" name="miner" state="true">Старт</button>
+              <button class="red toggler" control-toggler="true" name="miner" state="false">Стоп</button>
             </div>
           </div>
         </div>
@@ -1614,8 +1585,8 @@
             </div>
 
             <div class="btn-group-flex" style="margin-top: 25px;">
-              <button class="btn green toggler" control-toggler="true" name="farmer" state="true">Старт</button>
-              <button class="btn red toggler" control-toggler="true" name="farmer" state="false">Стоп</button>
+              <button class="green toggler" control-toggler="true" name="farmer" state="true">Старт</button>
+              <button class="red toggler" control-toggler="true" name="farmer" state="false">Стоп</button>
             </div>
           </div>
         </div>
@@ -1630,14 +1601,14 @@
           <span class="editor-title">Сценарий для ботов</span>
 
           <div class="editor-controls">
-            <button class="btn green" id="execute-script">
+            <button class="green" id="execute-script">
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-play-fill" viewBox="0 0 16 16">
                 <path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692c.54.312.54.993 0 1.305z"/>
               </svg>
               <span translator-tag="button:execute-script">Выполнить</span>
             </button>
 
-            <button class="btn red" id="stop-script">
+            <button class="red" id="stop-script">
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-stop-fill" viewBox="0 0 16 16">
                 <path d="M5 3.5h6A1.5 1.5 0 0 1 12.5 5v6a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 11V5A1.5 1.5 0 0 1 5 3.5"/>
               </svg>
@@ -1659,7 +1630,7 @@
 
     <h1 class="info-text" id="monitoring-status-text">Объекты ботов отсутствуют</h1>
 
-    <div class="monitoring-wrapper" id="bot-cards-container"></div>
+    <div class="monitoring-wrapper" id="bot-cards-container" style="display: none;"></div>
     <div id="bot-wrappers-container"></div>
   </div>
 
@@ -1679,17 +1650,16 @@
   <div class="main-wrapper" id="ping-container" style="display: none;" global="true">
     <div class="ping-wrapper">
       <div style="display: flex; gap: 10px; justify-content: center; align-items: center;">
-        <div class="form-input">
-          <label for="ping-server-address" class="text" translator-tag="label:address">Адрес сервера</label>
+        <div class="input-with-button" style="margin-top: 10px;">
           <input type="text" id="ping-server-address" placeholder="mineblaze.net" keep="true" public="false">
-        </div>
 
-        <button class="btn min" id="ping-server" style="margin-top: 20px;">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-activity" viewBox="0 0 16 16">
-            <path fill-rule="evenodd" d="M6 2a.5.5 0 0 1 .47.33L10 12.036l1.53-4.208A.5.5 0 0 1 12 7.5h3.5a.5.5 0 0 1 0 1h-3.15l-1.88 5.17a.5.5 0 0 1-.94 0L6 3.964 4.47 8.171A.5.5 0 0 1 4 8.5H.5a.5.5 0 0 1 0-1h3.15l1.88-5.17A.5.5 0 0 1 6 2"/>
-          </svg>
-          Пинговать
-        </button>
+          <button id="ping-server">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-activity" viewBox="0 0 16 16">
+              <path fill-rule="evenodd" d="M6 2a.5.5 0 0 1 .47.33L10 12.036l1.53-4.208A.5.5 0 0 1 12 7.5h3.5a.5.5 0 0 1 0 1h-3.15l-1.88 5.17a.5.5 0 0 1-.94 0L6 3.964 4.47 8.171A.5.5 0 0 1 4 8.5H.5a.5.5 0 0 1 0-1h3.15l1.88-5.17A.5.5 0 0 1 6 2"/>
+            </svg>
+            Пинговать
+          </button>
+        </div>
       </div>
 
       <div class="info" id="ping-info" style="display: none;"></div>
@@ -1702,7 +1672,7 @@
 
       <div class="sep"></div>
 
-      <button class="btn min pretty ub" id="radar-add-target">
+      <button class="min pretty ub" id="radar-add-target">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-plus-fill" viewBox="0 0 16 16">
           <path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
           <path fill-rule="evenodd" d="M13.5 5a.5.5 0 0 1 .5.5V7h1.5a.5.5 0 0 1 0 1H14v1.5a.5.5 0 0 1-1 0V8h-1.5a.5.5 0 0 1 0-1H13V5.5a.5.5 0 0 1 .5-.5"/>
@@ -1711,7 +1681,7 @@
 
       <div class="sep"></div>
 
-      <button class="btn min pretty ub" id="radar-open-settings">
+      <button class="min pretty ub" id="radar-open-settings">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="12" cy="12" r="3"/>
           <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
@@ -1721,7 +1691,7 @@
       <div class="sep"></div>
 
       <div style="display: flex; width: 100%; justify-content: right;">
-        <button class="btn min pretty ub" id="radar-remove-all-targets">
+        <button class="min pretty ub" id="radar-remove-all-targets">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
             <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5M8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5m3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0"/>
           </svg>
@@ -1736,8 +1706,10 @@
         </div>
 
         <div class="right">
-          <button class="btn min" id="radar-close-settings">
-            ⨉
+          <button class="min" id="radar-close-settings">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
+              <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/>
+            </svg>
           </button>
         </div>
       </div>
@@ -1802,7 +1774,7 @@
         </label>
       </div>
 
-      <button class="btn min" id="clear-journal" style="margin-right: 15px;">
+      <button class="min" id="clear-journal" style="margin-right: 8px;">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
           <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5M8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5m3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0"/>
         </svg>
@@ -1822,22 +1794,6 @@
               <select id="interface_select_particles" style="width: 150px;" keep="true" trigger>
                 <option value="enable" translator-tag="label:enable">Включить</option>
                 <option value="disable" translator-tag="label:disable">Выключить</option>
-              </select>
-            </div>
-
-            <div class="custom-select between">
-              <label translator-tag="label:interface-theme">Тема: </label>
-              <select id="interface_select_theme" style="width: 150px;" keep="true" trigger>
-                <option value="onion">Onion</option>
-                <option value="toxic">Toxic</option>
-                <option value="ice">Ice</option>
-                <option value="blood">Blood</option>
-                <option value="gold">Gold</option>
-                <option value="dark">Dark</option>
-                <option value="magenta">Magenta</option>
-                <option value="snow">Snow</option>
-                <option value="fire">Fire</option>
-                <option value="ocean">Ocean</option>
               </select>
             </div>
 

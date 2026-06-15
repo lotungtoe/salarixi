@@ -67,8 +67,8 @@ class PluginModule {
           </div>
 
           <div class="controls">
-            <button class="btn" plugin-toggler="true" plugin-name="${id}" state="true" id="${id}-toggler" style="color: #d61818;">Выключен</button>
-            <button class="btn" plugin-open-description="true" path="${id}-plugin-description">Описание</button>
+            <button plugin-toggler="true" plugin-name="${id}" state="true" id="${id}-toggler" style="color: #d61818;">Выключен</button>
+            <button plugin-open-description="true" path="${id}-plugin-description">Описание</button>
           </div>
         `;
 
@@ -85,8 +85,10 @@ class PluginModule {
             </div>
 
             <div class="right">
-              <button class="btn min" plugin-close-description="true" path="${id}-plugin-description">
-                ⨉
+              <button class="min" plugin-close-description="true" path="${id}-plugin-description">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
+                  <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/>
+                </svg>
               </button>
             </div>
           </div>
@@ -144,8 +146,10 @@ class PluginModule {
         }
       }
 
+      // Может быть такое что названия полей изменились, или вовсе вся структура
+      // данных обновлена, поэтому здесь стоит делать ещё одну проверку
       if (!pluginList) {
-        logger.log("Ошибка загрузки информации о плагинах (не критично): Information is corrupted or missing", "error");
+        logger.log("Ошибка загрузки информации о плагинах (не критично): Information is corrupted or missing", "non-critical-error");
         return;
       }
 
@@ -155,7 +159,7 @@ class PluginModule {
 
       logger.log(`Информация о плагинах загружена (размер ${prettyDataSize}KB)`, "system");
     } catch (error) {
-      logger.log(`Ошибка загрузки информации о плагинах (не критично): ${error}`, "error");
+      logger.log(`Ошибка загрузки информации о плагинах (не критично): ${error}`, "non-critical-error");
     }
   }
 
@@ -172,7 +176,7 @@ class PluginModule {
           
           const tag = document.createElement("span");
           tag.className = "tag";
-          tag.innerText = "Устарел";
+          tag.innerText = "deprecated";
 
           document.getElementById(`${name}-header`)?.appendChild(tag);
         }
@@ -200,8 +204,8 @@ class PluginModule {
             </svg>
 
             <div class="text">
-              <div class="header">${plugin["header"]} <span class="tag">Недоступен</span></div>
-              <div class="meta">Статус: <span class="status">Недоступен</span></div>
+              <div class="header">${plugin["header"]} <span class="tag">unavailable</span></div>
+              <div class="meta">Статус: <span class="status">-</span></div>
             </div>
           </div>
         `;
@@ -219,13 +223,13 @@ class PluginModule {
       }) as any;
       
       if (!plugins) {
-        logger.log("Ошибка загрузки информации о плагинах (не критично): Resource moved or is unavailable", "error");
+        logger.log("Ошибка загрузки информации о плагинах (не критично): Resource moved or is unavailable", "non-critical-error");
         return;
       }
 
       return plugins;
     } catch (error) {
-      logger.log(`Ошибка загрузки информации о плагинах (не критично): ${error}`, "error");
+      logger.log(`Ошибка загрузки информации о плагинах (не критично): ${error}`, "non-critical-error");
     }
 
     return null;

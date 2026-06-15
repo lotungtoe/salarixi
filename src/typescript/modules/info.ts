@@ -3,6 +3,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { logger } from "../utils/logger";
 import { loadCache, saveCache, TimeType } from "../utils/cache";
 import { addOpeningUrlTo } from "../main";
+import { getStringSize } from "../utils/size";
 
 /** Структура информации клиента */
 interface ClientInfo {
@@ -16,6 +17,8 @@ class InfoModule {
   /** Метод инициализации модуля */
   public async init(): Promise<void> {
     try {
+      logger.log("Загрузка информации о клиенте...", "system");
+
       // Думаю нету смысла хранить актуальную ссылку на репозиторий, так как 
       // если он будет перенесён - загрузить актуальную ссылку не получится
       addOpeningUrlTo("codeberg", "click", "https://codeberg.org/nullclyze/salarixi");
@@ -25,22 +28,22 @@ class InfoModule {
 
       const cachedInfo = await this.loadCachedClientInfo();
       let clientInfo = null;
+      let dataSize = 0;
 
       if (cachedInfo) {
         clientInfo = cachedInfo;
+        dataSize = getStringSize(JSON.stringify(cachedInfo));
       } else {
         const newInfo = await this.loadNewClientInfo();
 
         if (newInfo) {
           clientInfo = newInfo;
+          dataSize = getStringSize(JSON.stringify(newInfo));
           await this.cacheClientInfo(newInfo);
+        } else {
+          ["telegram", "discord", "youtube"].forEach(id => document.getElementById(id)?.remove());
+          return;
         }
-      }
-
-      if (!clientInfo) {
-        ["telegram", "discord", "youtube"].forEach(id => document.getElementById(id)?.remove());
-        logger.log("Ошибка инициализации информации о клиенте (не критично): Information is corrupted or missing", "error");
-        return;
       }
 
       downloadCountEl.innerHTML = this.downloadCountToString(clientInfo.downloads);
@@ -50,8 +53,12 @@ class InfoModule {
         const link = clientInfo.social[key] as string;
         addOpeningUrlTo(key, "click", link);
       }
+
+      const prettyDataSize = (dataSize / 1024).toFixed(1);
+
+      logger.log(`Информация о клиенте загружена (размер ${prettyDataSize}KB)`, "system");
     } catch (error) {
-      logger.log(`Ошибка инициализации информации о клиенте (не критично): ${error}`, "error");
+      logger.log(`Ошибка инициализации информации о клиенте (не критично): ${error}`, "non-critical-error");
     }
   }
 
@@ -74,7 +81,7 @@ class InfoModule {
       }) as any;
 
       if (!releases) {
-        logger.log("Ошибка загрузки информации о клиенте (не критично): Resource moved or is unavailable", "error");
+        logger.log("Ошибка загрузки информации о клиенте (не критично): Resource moved or is unavailable", "non-critical-error");
         return null;
       }
     
@@ -83,7 +90,7 @@ class InfoModule {
       }) as any;
 
       if (!social) {
-        logger.log("Ошибка загрузки информации о клиенте (не критично): Resource moved or is unavailable", "error");
+        logger.log("Ошибка загрузки информации о клиенте (не критично): Resource moved or is unavailable", "non-critical-error");
         return null;
       }
 
@@ -101,7 +108,7 @@ class InfoModule {
         social: social,
       };
     } catch (error) {
-      logger.log(`Ошибка загрузки информации о клиенте (не критично): ${error}`, "error");
+      logger.log(`Ошибка загрузки информации о клиенте (не критично): ${error}`, "non-critical-error");
     }
 
     return null;
@@ -119,7 +126,7 @@ class InfoModule {
     const result = await saveCache(JSON.stringify(info, null, 2), "client-info.json");
 
     if (!result.data && result.error) {
-      logger.log(`Ошибка кэширования информации о клиенте (не критично): ${result.error}`, "error");
+      logger.log(`Ошибка кэширования информации о клиенте (не критично): ${result.error}`, "non-critical-error");
       return;
     }
   }

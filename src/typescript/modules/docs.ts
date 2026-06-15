@@ -36,7 +36,7 @@ class DocsModule {
 
       logger.log(`Документация загружена (размер ${prettyDataSize}KB)`, "system");
     } catch (error) {
-      logger.log(`Ошибка загрузки документации (не критично): ${error}`, "error");
+      logger.log(`Ошибка загрузки документации (не критично): ${error}`, "non-critical-error");
     }
   }
 
@@ -64,14 +64,14 @@ class DocsModule {
       }) as string | null;
 
       if (!docs) {
-        logger.log("Ошибка загрузки документации (не критично): Resource moved or is unavailable", "error");
+        logger.log("Ошибка загрузки документации (не критично): Resource moved or is unavailable", "non-critical-error");
         return null;
       }
 
       const html = await marked.parse(docs);
       return this.sanitizeHtml(html);
     } catch (error) {
-      logger.log(`Ошибка загрузки документации (не критично): ${error}`, "error");
+      logger.log(`Ошибка загрузки документации (не критично): ${error}`, "non-critical-error");
     }
 
     return null;
@@ -91,7 +91,7 @@ class DocsModule {
     const result = await saveCache(docs, "user-docs.md");
 
     if (!result.data && result.error) {
-      logger.log(`Ошибка кэширования документации (не критично): ${result.error}`, "error");
+      logger.log(`Ошибка кэширования документации (не критично): ${result.error}`, "non-critical-error");
       return;
     }
   }

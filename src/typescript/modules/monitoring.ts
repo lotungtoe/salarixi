@@ -46,7 +46,6 @@ class MonitoringModule {
     this.wrappers = document.getElementById("bot-wrappers-container");
 
     this.statusText!.innerText = "Объекты ботов отсутствуют";
-    this.statusText!.style.color = "#646464f7";
     this.statusText!.style.display = "flex";
 
     await listen("chat-message", (event) => {
@@ -95,9 +94,7 @@ class MonitoringModule {
   /** Метод переключения состояния мониторинга на ожидание */
   public wait(): void {
     this.statusText!.innerText = "Ожидание активных ботов...";
-    this.statusText!.style.color = "#646464f7";
     this.cards!.innerHTML = "";
-    this.cards!.style.display = "flex";
   }
 
   /** Метод активации мониторинга */
@@ -117,7 +114,7 @@ class MonitoringModule {
           for (const username in profiles) {
             if (isFirst) {
               this.statusText!.style.display = "none";
-              this.cards!.style.justifyContent = "start";
+              this.cards!.style.display = "flex";
               isFirst = false;
             }
 
@@ -144,7 +141,7 @@ class MonitoringModule {
     document.querySelectorAll('[wrapper="bot-card"]').forEach(w => w.remove());
 
     this.cards!.innerHTML = "";
-    this.cards!.style.justifyContent = "center";
+    this.cards!.style.display = "none";
     this.wrappers!.innerHTML = "";
 
     this.chatMessageCounter = {};
@@ -152,10 +149,7 @@ class MonitoringModule {
     this.usernameList = [];
 
     this.statusText!.innerText = "Объекты ботов отсутствуют";
-    this.statusText!.style.color = "#646464f7";
     this.statusText!.style.display = "flex";
-
-    this.cards!.style.display = "none";
   }
 
   /** Метод добавления временного слушателя событий */
@@ -190,7 +184,7 @@ class MonitoringModule {
           <img src="${steveIconPath.src}" class="image" draggable="false">
           <div class="text">
             <div class="username">${username}</div>
-            <div class="status" id="monitoring-status-${username}">Preparation</div>
+            <div class="status" id="monitoring-status-${username}">waiting</div>
           </div>
         </div>
 
@@ -207,9 +201,9 @@ class MonitoringModule {
       </div>
 
       <div class="buttons">
-        <button class="btn min" id="open-chat-${username}">Открыть чат</button>
-        <button class="btn min" id="reset-${username}">Сбросить</button>
-        <button class="btn min" id="disconnect-${username}">Отключить</button>
+        <button class="min" id="open-chat-${username}">Открыть чат</button>
+        <button class="min" id="reset-${username}">Сбросить</button>
+        <button class="min" id="disconnect-${username}">Отключить</button>
       </div>
     `;
 
@@ -237,7 +231,7 @@ class MonitoringModule {
             </select>
           </div>
 
-          <button class="btn min" id="filter-chat-${username}">
+          <button class="min" id="filter-chat-${username}">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-funnel-fill" viewBox="0 0 16 16">
               <path d="M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.342.474l-3 1A.5.5 0 0 1 6 14.5V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5z"/>
             </svg>
@@ -245,14 +239,16 @@ class MonitoringModule {
         </div>
 
         <div class="right">
-          <button class="btn min" id="clear-chat-${username}">
+          <button class="min" id="clear-chat-${username}">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
               <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5M8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5m3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0"/>
             </svg>
           </button>
 
-          <button class="btn min" id="close-chat-${username}">
-            ⨉
+          <button class="min" id="close-chat-${username}">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
+              <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/>
+            </svg>
           </button>
         </div>
       </div>
@@ -283,21 +279,21 @@ class MonitoringModule {
       setTimeout(() => card?.classList.remove("glow"), 300);
     }
 
-    let statusColor = "";
+    let statusColor = "var(--bot-waiting-status-color)";
 
     switch (profile.status) {
-      case "Online":
-        statusColor = "rgb(34, 237, 23)";
+      case "Connected":
+        statusColor = "var(--bot-connected-status-color)";
         break;
-      case "Offline":
-        statusColor = "rgb(237, 23, 23)"; 
+      case "Disconnected":
+        statusColor = "var(--bot-disconnected-status-color)";
         break;
-      default:
-        statusColor = "rgb(143, 143, 143)"; 
+      case "Waiting":
+        statusColor = "var(--bot-waiting-status-color)";
         break;
     }
 
-    status.innerText = profile.status;
+    status.innerText = String(profile.status).toLowerCase();
     status.style.color = statusColor;
     proxy.innerText = profile.proxy.ip_address ? profile.proxy.ip_address : "No proxy";
     ping.innerText = profile.ping.toString();

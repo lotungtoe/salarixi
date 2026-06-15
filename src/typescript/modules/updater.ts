@@ -18,7 +18,7 @@ class UpdaterModule {
         document.getElementById("close-notice-btn")?.addEventListener("click", () => notice.remove());
 
         const cachedVersion = await this.loadCachedVersionInfo();
-        let latestVersion = null;
+        let latestVersion;
 
         if (cachedVersion) {
           latestVersion = cachedVersion;
@@ -28,13 +28,10 @@ class UpdaterModule {
           if (newVersion) {
             latestVersion = newVersion;
             await this.cacheVersionInfo(newVersion);
+          } else {
+            notice.remove();
+            return;
           }
-        }
-
-        if (!latestVersion) {
-          notice.remove();
-          logger.log("Ошибка проверки обновлений (не критично): Information is corrupted or missing", "error");
-          return;
         }
 
         const version = latestVersion["version"] ?? latestVersion["id"] ?? latestVersion["version-id"] ?? latestVersion["name"];
@@ -53,7 +50,7 @@ class UpdaterModule {
 
         notice.style.display = "flex";
       } catch (error) {
-        logger.log(`Ошибка проверки обновлений (не критично): ${error}`, "error");
+        logger.log(`Ошибка проверки обновлений (не критично): ${error}`, "non-critical-error");
       }
     }, 4000);
   }
@@ -81,27 +78,27 @@ class UpdaterModule {
   }
 
   /** Метод загрузки актуальной информации о последней версии клиента */
-  private async loadNewVersionInfo(): Promise<any | null> {
+  private async loadNewVersionInfo(): Promise<any> {
     try {
       const latestVersion = await invoke("download_json", {
         url: "https://codeberg.org/nullclyze/salarixi/raw/branch/main/salarixi.version.json",
       }) as any;
 
       if (!latestVersion) {
-        logger.log(`Ошибка проверки обновлений (не критично): Resource moved or is unavailable`, "error");
+        logger.log(`Ошибка проверки обновлений (не критично): Resource moved or is unavailable`, "non-critical-error");
         return;
       }
 
       return latestVersion;
     } catch (error) {
-      logger.log(`Ошибка проверки обновлений (не критично): ${error}`, "error");
+      logger.log(`Ошибка проверки обновлений (не критично): ${error}`, "non-critical-error");
     }
 
     return null;
   }
 
   /** Метод загрузки кэшированной информации о последней версии клиента */
-  private async loadCachedVersionInfo(): Promise<any | null> {
+  private async loadCachedVersionInfo(): Promise<any> {
     const result = await loadCache("latest-version", "latest-version.json", 10, TimeType.Hours);
     if (!result.data) return null;
     return JSON.parse(result.data);
@@ -112,7 +109,7 @@ class UpdaterModule {
     const result = await saveCache(JSON.stringify(info, null, 2), "latest-version.json");
 
     if (!result.data && result.error) {
-      logger.log(`Ошибка кэширования информации о последней версии клиента (не критично): ${result.error}`, "error");
+      logger.log(`Ошибка кэширования информации о последней версии клиента (не критично): ${result.error}`, "non-critical-error");
       return;
     }
   }
