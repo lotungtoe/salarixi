@@ -801,7 +801,6 @@ button {
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 130px;
   padding: 10px 12px;
   border: 1px solid var(--button-border);
   background: var(--button-bg);
@@ -811,17 +810,24 @@ button {
   font-family: var(--global-font-family);
   font-weight: 500;
   gap: 8px;
+  white-space: nowrap;
   cursor: pointer;
   outline: none;
 }
 
+button.fixed {
+  width: 130px;
+}
+
 button.min {
+  min-width: none;
   padding: 10px;
   width: auto;
 }
 
 button.toggler {
   width: 110px;
+  min-width: 110px;
 }
 
 button:hover {
