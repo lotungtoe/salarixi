@@ -61,7 +61,7 @@ class PluginModule {
             <div class="text">
               <div class="header" id="${id}-header">${plugin.header}</div>
               <div class="meta">
-                <span translator-tag="label:plugin-status">Статус:</span> <span id="${id}-status">Выключен</span>
+                <span>Статус:</span> <span id="${id}-status">Выключен</span>
               </div>
             </div>
           </div>

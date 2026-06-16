@@ -722,6 +722,13 @@ body {
 }
 
 .accounts-bottom-panel .account-counter {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+}
+
+.accounts-bottom-panel .account-counter label {
   font-family: var(--global-font-family);
   font-size: 16px;
   font-weight: 500;
@@ -924,13 +931,11 @@ button svg {
 
 .custom-select.between label {
   text-align: left;
-  color: var(--muted-color);
-  font-size: 14px;
 }
 
 .custom-select label {
   font-family: var(--global-font-family);
-  color: #c9c9c9;
+  color: var(--muted-color);
   font-size: 15px;
   margin-right: 12px; 
 }
@@ -1582,8 +1587,8 @@ button svg {
   border: 1px solid var(--secondary-border);
   background: var(--secondary-bg);
   border-radius: 12px;
-  padding: 15px 0;
-  margin-top: 50px;
+  padding: 15px 8px;
+  margin-top: 20px;
 }
 
 .about-panel {
@@ -1605,7 +1610,14 @@ button svg {
   border-left: 2px solid var(--highlight-color);
 }
 
-.about-panel .info p {
+.about-panel .info .element {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+}
+
+.about-panel .info .element label {
   font-family: var(--global-font-family);
   font-size: 16px;
   text-align: center;
@@ -2603,20 +2615,25 @@ button svg {
   justify-content: flex-start;
   align-items: center;
   padding: 4px;
-  gap: 8px;
+  gap: 6px;
 }
 
-.interface-settings-wrapper .stylekit-panel label {
+.interface-settings-wrapper .stylekit-panel .stylekit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-right: 6px;
+}
+
+.interface-settings-wrapper .stylekit-panel .stylekit label {
   font-family: var(--global-font-family);
   font-size: 15px;
   font-weight: 500;
   color: var(--muted-color);
 }
 
-.interface-settings-wrapper .stylekit-panel label span {
-  font-family: var(--global-font-family);
-  font-size: 15px;
-  font-weight: 500;
+.interface-settings-wrapper .stylekit-panel .stylekit #current-stylekit {
   color: var(--default-color);
 }
 

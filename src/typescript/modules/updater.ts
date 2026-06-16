@@ -2,7 +2,8 @@ import { invoke } from "@tauri-apps/api/core";
 
 import { logger } from "../utils/logger";
 import { loadCache, saveCache, TimeType } from "../utils/cache";
-import { addOpeningUrlTo, currentClientVersion } from "../main";
+import { addOpeningUrlTo } from "../main";
+import { isVersionNewer } from "../utils/semver";
 
 /** Небольшой модуль управления обновлениями клиента */
 class UpdaterModule {
@@ -36,7 +37,7 @@ class UpdaterModule {
 
         const version = latestVersion["version"] ?? latestVersion["id"] ?? latestVersion["version-id"] ?? latestVersion["name"];
 
-        if (!this.isVersionNewer(version)) {
+        if (!isVersionNewer(version)) {
           notice.remove();
           return;
         }
@@ -53,28 +54,6 @@ class UpdaterModule {
         logger.log(`Ошибка проверки обновлений (не критично): ${error}`, "non-critical-error");
       }
     }, 4000);
-  }
-
-  /** Метод сравнения версий по системе SemVer */
-  private isVersionNewer(version: string): boolean {
-    const [nmajor, nminor, npatch] = this.parseVersion(version);
-    const [cmajor, cminor, cpatch] = this.parseVersion(currentClientVersion);
-
-    if (nmajor !== cmajor) return nmajor > cmajor ? true : false;
-    if (nminor !== cminor) return nminor > cminor ? true : false;
-    if (npatch !== cpatch) return npatch > cpatch ? true : false;
-
-    return false;
-  }
-
-  /** Метод парсинга версии */
-  private parseVersion(version: string): number[] {
-    const split = version.split("-")[0].split(".");
-    const major = parseInt(split[0]);
-    const minor = parseInt(split[1]);
-    const patch = parseInt(split[2]);
-
-    return [major, minor, patch];
   }
 
   /** Метод загрузки актуальной информации о последней версии клиента */
