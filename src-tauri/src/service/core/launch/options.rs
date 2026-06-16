@@ -14,7 +14,6 @@ pub struct LaunchOptions {
 #[derive(Debug, Deserialize, Clone)]
 pub struct BasicOptions {
   pub address: String,
-  pub version: String,
   pub bots_count: i32,
   pub join_delay: u64,
   pub nickname_type: String,
@@ -36,7 +35,6 @@ pub struct BasicOptions {
   pub login_trigger: String,
   pub rejoin_delay: u64,
   pub view_distance: u8,
-  pub language: String,
   pub humanoid_arm: Option<String>,
   pub use_auto_rejoin: bool,
   pub use_auto_register: bool,

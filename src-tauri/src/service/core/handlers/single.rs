@@ -49,7 +49,6 @@ fn process_init(bot: Client) {
   if let Some(opts) = current_options() {
     bot.set_client_information(ClientInformation {
       view_distance: opts.basic.view_distance,
-      language: opts.basic.language,
       chat_colors: true,
       main_hand: if let Some(arm) = opts.basic.humanoid_arm {
         if arm.as_str() == "left" {

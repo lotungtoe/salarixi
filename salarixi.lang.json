@@ -244,17 +244,6 @@
     },
     {
       "versions": "1.1.0",
-      "tag": "minecraft-version",
-      "lang": {
-        "ru": "Версия Minecraft",
-        "en": "Minecraft Version",
-        "tr": "Minecraft Sürümü",
-        "ja": "Minecraftバージョン",
-        "zh": "Minecraft版本"
-      }
-    },
-    {
-      "versions": "1.1.0",
       "tag": "bots-count",
       "lang": {
         "ru": "Кол-во ботов",
@@ -691,17 +680,6 @@
         "tr": "Görüş Mesafesi",
         "ja": "描画距離",
         "zh": "视距"
-      }
-    },
-    {
-      "versions": "1.1.0",
-      "tag": "client-language",
-      "lang": {
-        "ru": "Язык клиента",
-        "en": "Client Language",
-        "tr": "İstemci Dili",
-        "ja": "クライアント言語",
-        "zh": "客户端语言"
       }
     },
     {

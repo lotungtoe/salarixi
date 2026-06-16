@@ -4,7 +4,6 @@ use azalea::prelude::*;
 use azalea::protocol::connect::Proxy;
 use azalea::swarm::*;
 use azalea::JoinOpts;
-use azalea_viaversion::ViaVersionPlugin;
 use socks5_impl::protocol::UserKey;
 use std::net::SocketAddr;
 use std::sync::atomic::Ordering;
@@ -104,10 +103,6 @@ pub fn launch_bots_on_server(options: LaunchOptions) -> bool {
           .join_delay(Duration::from_millis(options.basic.join_delay))
           .set_swarm_handler(swarm_handler)
           .set_handler(single_handler);
-
-        if options.basic.version.as_str() != "1.21.11" {
-          flow = flow.add_plugins(ViaVersionPlugin::start(options.basic.version).await);
-        }
 
         let mut accounts = Vec::new();
 
