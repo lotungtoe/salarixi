@@ -82,6 +82,7 @@ pub struct CaptchaBypassOptions {
   pub number_of_columns: u32,
   pub number_of_rows: u32,
   pub api_key: Option<String>,
+  #[allow(unused)]
   pub api_service: String,
 }
 

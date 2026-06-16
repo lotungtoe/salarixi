@@ -3,12 +3,12 @@ use base64::Engine;
 use image::{ImageBuffer, ImageFormat, Rgb};
 use once_cell::sync::Lazy;
 use regex::Regex;
-use serde::{Deserialize, Serialize};
+use serde_json::json;
 use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::f64::consts::PI;
 use std::sync::{Arc, RwLock};
-use std::time::Instant;
+use std::time::{Duration, Instant};
 
 use crate::api::emit::emit_log;
 use crate::service::core::registry::BOT_REGISTRY;
@@ -26,6 +26,7 @@ impl WebCaptchaBypass {
     Self
   }
 
+  /// Метод поимки URL капчи из сообщения
   pub fn catch_url_from_message(
     &self,
     message: String,
@@ -53,65 +54,12 @@ impl WebCaptchaBypass {
 /// Обход map-капчи
 pub struct MapCaptchaBypass;
 
-#[derive(Serialize)]
-struct CreateTaskRequest {
-  #[serde(rename = "clientKey")]
-  client_key: String,
-  task: Service2CaptchaRequest,
-  #[serde(rename = "languagePool")]
-  language_pool: String,
-}
-
-#[derive(Serialize)]
-struct Service2CaptchaRequest {
-  #[serde(rename = "type")]
-  task_type: &'static str,
-  body: String,
-  phrase: bool,
-  #[serde(rename = "case")]
-  case_sensitive: bool,
-  numeric: i32,
-  math: bool,
-  #[serde(rename = "minLength")]
-  min_length: i32,
-  #[serde(rename = "maxLength")]
-  max_length: i32,
-  comment: String,
-}
-
-#[allow(dead_code)]
-#[derive(Deserialize)]
-#[serde(rename_all = "camelCase")]
-struct Service2CaptchaOkResponse {
-  error_id: i32,
-  status: String,
-  solution: Service2CaptchaOkResponseSolution,
-  cost: f64,
-  ip: String,
-  create_time: u64,
-  end_time: u64,
-  solve_count: i32,
-}
-
-#[derive(Deserialize)]
-struct Service2CaptchaOkResponseSolution {
-  text: String,
-}
-
-#[allow(dead_code)]
-#[derive(Deserialize)]
-#[serde(rename_all = "camelCase")]
-struct Service2CaptchaBadResponse {
-  error_id: i32,
-  error_code: String,
-  error_description: String,
-}
-
 impl MapCaptchaBypass {
   pub fn new() -> Self {
     Self
   }
 
+  /// Метод конвертации ID цвета Minecraft в RGB код
   fn convert_id_to_rgb_color(&self, id: u8) -> (u8, u8, u8) {
     match id {
       0 => (255, 255, 255),
@@ -326,6 +274,7 @@ impl MapCaptchaBypass {
     }
   }
 
+  /// Метод создания PNG картинки
   pub fn create_png_image(&self, width: u32, height: u32, map: &Vec<u8>) -> String {
     let mut img = ImageBuffer::new(width, height);
 
@@ -347,74 +296,164 @@ impl MapCaptchaBypass {
     base64_code
   }
 
+  /// Метод автоматического решения капчи
   pub fn solve_captcha(&self, username: String, base64_code: String, options: CaptchaBypassOptions) {
     tokio::spawn(async move {
-      let url = match options.api_service.as_str() {
-        "2captcha" => "https://api.2captcha.com/createTask",
-        _ => return,
-      };
-
-      let Some(api_key) = options.api_key else {
-        return;
-      };
-
-      let req_body = CreateTaskRequest {
-        client_key: api_key,
-        task: Service2CaptchaRequest {
-          task_type: "ImageToTextTask",
-          body: base64_code,
-          phrase: false,
-          case_sensitive: true,
-          numeric: 0,
-          math: false,
-          min_length: 0,
-          max_length: 0,
-          comment: "enter the code you see on the image".to_string(),
-        },
-        language_pool: "en".to_string(),
+      let api_key = match options.api_key {
+        Some(key) => key,
+        None => {
+          emit_log(
+            format!("Бот {} не смог решить капчу: API key not specified", username),
+            "error",
+          );
+          return;
+        }
       };
 
       let client = reqwest::Client::new();
+      let create_url = "https://api.rucaptcha.com/createTask";
+      let result_url = "https://api.rucaptcha.com/getTaskResult";
 
-      let resp = match client.post(url).json(&req_body).send().await {
+      let req_body = json!({
+        "clientKey": api_key,
+        "task": {
+          "type": "ImageToTextTask",
+          "body": base64_code,
+          "phrase": false,
+          "case": true,
+          "numeric": 0,
+          "math": false,
+          "minLength": 0,
+          "maxLength": 0,
+          "comment": "enter the code you see on the image"
+        },
+        "languagePool": "en"
+      });
+
+      let resp = match client.post(create_url).json(&req_body).send().await {
         Ok(r) => r,
-        Err(_) => return,
+        Err(e) => {
+          emit_log(format!("Бот {} не смог решить капчу: {}", username, e), "error");
+          return;
+        }
       };
 
-      if !resp.status().is_success() {
+      let create_resp: serde_json::Value = match resp.json().await {
+        Ok(v) => v,
+        Err(e) => {
+          emit_log(format!("Бот {} не смог решить капчу: {}", username, e), "error");
+          return;
+        }
+      };
+
+      if let Some(err_id) = create_resp["errorId"].as_i64() {
+        if err_id != 0 {
+          let err_desc = create_resp["errorDescription"].as_str().unwrap_or("No description");
+          emit_log(format!("Бот {} не смог решить капчу: {}", username, err_desc), "error");
+          return;
+        }
+      } else {
+        emit_log(
+          format!("Бот {} не смог решить капчу: Incorrect response format", username),
+          "error",
+        );
         return;
       }
 
-      let body = resp.bytes().await.expect("Response data could not be retrieved");
+      let task_id = match create_resp["taskId"].as_str() {
+        Some(id) => id.to_string(),
+        None => {
+          emit_log(
+            format!("Бот {} не смог решить капчу: Task ID is missing in response", username),
+            "error",
+          );
+          return;
+        }
+      };
 
-      let body_str = std::str::from_utf8(&body).unwrap_or("<non-utf8>");
+      emit_log(
+        format!("Задача решения капчи бота {} создана, ожидание завершения...", username),
+        "extended",
+      );
 
-      if let Ok(ok_resp) = serde_json::from_slice::<Service2CaptchaOkResponse>(&body) {
-        if ok_resp.error_id != 0 {
+      let mut attempts = 0;
+      let max_attempts = 6;
+
+      loop {
+        if attempts >= max_attempts {
+          emit_log(
+            format!("Бот {} не смог решить капчу: Timeout exceeded", username),
+            "error",
+          );
           return;
         }
 
-        BOT_REGISTRY
-          .async_get_bot(&username, async |bot| {
-            bot.chat(ok_resp.solution.text);
-          })
-          .await;
-      } else if let Ok(bad_resp) = serde_json::from_slice::<Service2CaptchaBadResponse>(&body) {
-        emit_log(
-          format!(
-            "Бот {} не смог решить капчу с помощью {}: {}",
-            username, options.api_service, bad_resp.error_description
-          ),
-          "error",
-        );
-      } else {
-        emit_log(
-          format!(
-            "Бот {} получил неизвестный формат ответа от {}: {}",
-            username, options.api_service, body_str
-          ),
-          "error",
-        );
+        tokio::time::sleep(Duration::from_secs(5)).await;
+        attempts += 1;
+
+        let result_req_body = json!({
+          "clientKey": api_key,
+          "taskId": task_id
+        });
+
+        let res_resp = match client.post(result_url).json(&result_req_body).send().await {
+          Ok(r) => r,
+          Err(e) => {
+            emit_log(format!("Бот {} не смог решить капчу: {}", username, e), "error");
+            return;
+          }
+        };
+
+        let res_data: serde_json::Value = match res_resp.json().await {
+          Ok(v) => v,
+          Err(e) => {
+            emit_log(format!("Бот {} не смог решить капчу: {}", username, e), "error");
+            return;
+          }
+        };
+
+        if let Some(err_id) = res_data["errorId"].as_i64() {
+          if err_id != 0 {
+            let err_desc = res_data["errorDescription"].as_str().unwrap_or("No description");
+            emit_log(format!("Бот {} не смог решить капчу: {}", username, err_desc), "error");
+            return;
+          }
+        }
+
+        if let Some(status) = res_data["status"].as_str() {
+          if status == "ready" {
+            if let Some(solved_text) = res_data["solution"]["text"].as_str() {
+              BOT_REGISTRY
+                .async_get_bot(&username, async |bot| {
+                  bot.chat(solved_text);
+                })
+                .await;
+
+              emit_log(format!("Бот {} решил капчу: '{}'", username, solved_text), "info");
+              return;
+            } else {
+              emit_log(
+                format!("Бот {} не смог решить капчу: Incorrect response format", username),
+                "error",
+              );
+              return;
+            }
+          } else if status == "processing" {
+            continue;
+          } else {
+            emit_log(
+              format!("Бот {} не смог решить капчу: Unknown status '{}'", username, status),
+              "error",
+            );
+            return;
+          }
+        } else {
+          emit_log(
+            format!("Бот {} не смог решить капчу: Status field is missing", username),
+            "error",
+          );
+          return;
+        }
       }
     });
   }
@@ -449,12 +488,14 @@ impl MapAccumulator {
     }
   }
 
+  /// Метод добавления позиции рамки
   pub fn add_frame_position(&self, username: &str, entity_id: i32, x: f64, y: f64, z: f64) {
     let mut positions = self.frame_positions.write().unwrap();
     let user_positions = positions.entry(username.to_string()).or_insert_with(Vec::new);
     user_positions.push((entity_id, x, y, z));
   }
 
+  /// Метод добавления данных карты
   pub fn add_map_data(
     &self,
     username: &str,
@@ -480,26 +521,31 @@ impl MapAccumulator {
     });
   }
 
+  /// Метод получения карт указанного бота
   pub fn get_maps(&self, username: &str) -> Option<Vec<MapData>> {
     let maps = self.maps.read().unwrap();
     maps.get(username).cloned()
   }
 
+  /// Метод проверки статуса сборки капчи указанного бота
   pub fn is_processing(&self, username: &str) -> bool {
     let processing = self.processing.read().unwrap();
     processing.get(username).copied().unwrap_or(false)
   }
 
+  /// Метод установки статуса сборки капчи указанного бота
   pub fn set_processing(&self, username: &str, value: bool) {
     let mut processing = self.processing.write().unwrap();
     processing.insert(username.to_string(), value);
   }
 
+  /// Метод обновления времени капчи указанного бота
   pub fn update_captcha_time(&self, username: &str) {
     let mut last_time = self.last_captcha_time.write().unwrap();
     last_time.insert(username.to_string(), Instant::now());
   }
 
+  /// Метод комбинации всех карт и созданий Base64-изображения
   pub fn combine_all(&self, username: &str) -> Option<String> {
     let mut map_data = self.get_maps(username)?;
     let positions = self.frame_positions.read().unwrap();
@@ -610,6 +656,7 @@ impl MapAccumulator {
     Some(BASE64_STANDARD.encode(&bytes))
   }
 
+  /// Метод очистки карт указанного бота
   pub fn clear_maps(&self, username: &str) {
     let mut maps = self.maps.write().unwrap();
     let mut positions = self.frame_positions.write().unwrap();
@@ -620,6 +667,7 @@ impl MapAccumulator {
     processing.remove(username);
   }
 
+  /// Метод очистки всего хранилища
   pub fn clear_all(&self) {
     let mut maps = self.maps.write().unwrap();
     let mut positions = self.frame_positions.write().unwrap();
