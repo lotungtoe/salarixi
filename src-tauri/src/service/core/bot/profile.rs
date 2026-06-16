@@ -20,7 +20,6 @@ pub struct Profile {
   pub health: u32,
   pub registered: bool,
   pub logined: bool,
-  pub skin_is_set: bool,
   pub captcha_caught: bool,
   pub group: String,
 }
@@ -60,7 +59,6 @@ impl Profile {
       health: 0,
       registered: false,
       logined: false,
-      skin_is_set: false,
       captcha_caught: false,
       group: "global".to_string(),
     }
@@ -96,10 +94,6 @@ impl Profile {
 
   pub fn set_logined(&mut self, state: bool) {
     self.logined = state;
-  }
-
-  pub fn set_skin_is_set(&mut self, state: bool) {
-    self.skin_is_set = state;
   }
 
   pub fn set_captcha_caught(&mut self, state: bool) {
@@ -188,7 +182,6 @@ impl ProfileManager {
         match field {
           "registered" => p.set_registered(value),
           "logined" => p.set_logined(value),
-          "skin_is_set" => p.set_skin_is_set(value),
           "captcha_caught" => p.set_captcha_caught(value),
           _ => {}
         }

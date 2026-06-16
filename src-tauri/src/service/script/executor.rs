@@ -49,7 +49,6 @@ fn create_dynamic_profile(username: &str) -> Dynamic {
     map.insert("captcha_caught".into(), Dynamic::from_bool(profile.captcha_caught));
     map.insert("registered".into(), Dynamic::from_bool(profile.registered));
     map.insert("logined".into(), Dynamic::from_bool(profile.logined));
-    map.insert("skin_is_set".into(), Dynamic::from_bool(profile.skin_is_set));
     map.insert("group".into(), Dynamic::from_str(profile.group.as_str()).unwrap());
     map.insert("health".into(), Dynamic::from_int(profile.health as i64));
 
