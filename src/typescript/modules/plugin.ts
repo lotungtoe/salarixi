@@ -67,8 +67,8 @@ class PluginModule {
           </div>
 
           <div class="controls">
-            <button plugin-toggler="true" plugin-name="${id}" state="true" id="${id}-toggler" style="color: #d61818;">Выключен</button>
-            <button plugin-open-description="true" path="${id}-plugin-description">Описание</button>
+            <button class="fixed" plugin-toggler="true" plugin-name="${id}" state="true" id="${id}-toggler" style="color: #d61818;">Выключен</button>
+            <button class="fixed" plugin-open-description="true" path="${id}-plugin-description">Описание</button>
           </div>
         `;
 
