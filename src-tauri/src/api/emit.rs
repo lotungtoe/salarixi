@@ -123,6 +123,7 @@ pub async fn emit_event_loop(handle: AppHandle) {
   }
 }
 
+/*
 /// Вспомогательная функция отправки чего-то
 pub fn emit_something<'e, P>(app: &AppHandle, event: impl Into<&'e str>, payload: P)
 where
@@ -130,3 +131,4 @@ where
 {
   let _ = app.emit(event.into(), payload);
 }
+*/

@@ -3,12 +3,9 @@ use std::time::Duration;
 use hashbrown::HashSet;
 use serde::Deserialize;
 use serde_json::Value;
-use tauri::AppHandle;
-
-use crate::api::emit::emit_something;
 
 /// Максимальное кол-во прокси
-const MAX_PROXY_COUNT: usize = 100000;
+const MAX_PROXY_COUNT: usize = 50000;
 
 /// Список достоверных сервисов
 const TRUSTED_SERVICES: [(&'static str, &'static str); 11] = [
@@ -405,28 +402,7 @@ async fn scrape_proxies(options: ProxyCollectorOpts) -> Vec<String> {
 
 /// Команда сбора прокси
 #[tauri::command]
-pub async fn collect_proxies(app: AppHandle, options: ProxyCollectorOpts) -> bool {
+pub async fn collect_proxies(options: ProxyCollectorOpts) -> Vec<u8> {
   let proxies = scrape_proxies(options).await;
-
-  if proxies.is_empty() {
-    return false;
-  }
-
-  // Я не знаю как ещё иначе отправить огромные данные на фронтенд, ибо
-  // сборщик прокси (вне лимитов) может находить аж до 400000 прокси за раз
-  let chunks = proxies.chunks(228);
-
-  for (i, chunk) in chunks.enumerate() {
-    emit_something(&app, "proxy-chunk", chunk);
-
-    if i % 5 == 0 {
-      tokio::time::sleep(std::time::Duration::from_millis(200)).await;
-    } else {
-      tokio::time::sleep(std::time::Duration::from_millis(30)).await;
-    }
-  }
-
-  emit_something(&app, "proxy-chunk-end", "");
-
-  true
+  proxies.join("\n").as_bytes().to_vec()
 }

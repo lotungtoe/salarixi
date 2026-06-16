@@ -1,16 +1,13 @@
 import { invoke } from "@tauri-apps/api/core";
 import { logger } from "../utils/logger";
-import { listen } from "@tauri-apps/api/event";
 
 /** Модуль управления прокси и прокси-сборщика */
 class ProxyModule {
-  private proxyList: Array<string>;
   private proxyListEl: HTMLTextAreaElement | null;
   private counter: HTMLElement | null;
   private status: HTMLElement | null;
 
   constructor() {
-    this.proxyList = [];
     this.proxyListEl = null;
     this.counter = null;
     this.status = null;
@@ -30,23 +27,6 @@ class ProxyModule {
     });
 
     document.getElementById("find-proxy")?.addEventListener("click", () => this.collectProxy());
-
-    await listen("proxy-chunk", (event) => {
-      try {
-        let proxies = event.payload as Array<string>;
-        this.proxyList.push(...proxies);
-      } catch (error) {
-        logger.log(`Ошибка обработки чанка прокси: ${error}`, "error");
-      }
-
-      this.updateCounter(this.proxyList.length.toString());
-    });
-
-    await listen("proxy-chunk-end", () => {
-      let proxies_str = this.proxyList.map(p => p).join("\n");
-      this.proxyList = [];
-      this.proxyListEl!.value = proxies_str;
-    });
 
     this.updateCounter();
   }
@@ -89,16 +69,24 @@ class ProxyModule {
 
       this.setStatus("Поиск прокси...");
 
-      let success = await invoke("collect_proxies", {
+      const bytes = await invoke("collect_proxies", {
         options: {
           algorithm: algorithm,
           country: country,
           port: port,
           count: count,
         }
-      }) as boolean;
+      }) as number[];
 
-      if (success) {
+      const uint8arr = new Uint8Array(bytes);
+      const decoder = new TextDecoder("utf-8");
+      const str = decoder.decode(uint8arr);
+      const proxyCount = str.split("\n").length;
+
+      if (proxyCount > 0) {
+        this.proxyListEl!.value = str;
+        this.updateCounter(proxyCount.toString());
+
         this.setStatus("Поиск окончен", "#0cd212ff");
       } else {
         this.setStatus("Ошибка поиска", "#cc1d1dff");

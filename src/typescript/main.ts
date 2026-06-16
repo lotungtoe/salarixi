@@ -375,7 +375,7 @@ async function listenEvents(): Promise<void> {
 document.addEventListener("DOMContentLoaded", () => {
   initTitleBar();
 
-  document.addEventListener("contextmenu", e => e.preventDefault());
+  // document.addEventListener("contextmenu", e => e.preventDefault());
 
   // Инициализация логгера и сообщений
   logger.init();
