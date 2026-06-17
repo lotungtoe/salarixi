@@ -5,7 +5,7 @@ import DOMPurify from "dompurify";
 
 import { logger } from "../utils/logger";
 import { loadCache, saveCache, TimeType } from "../utils/cache";
-import { getCacheOrNew } from "../utils/cache_or_new";
+import { getCacheOrNew, LcfResult } from "../utils/cache_or_new";
 
 /** Функция очистки HTML */
 const sanitizeHtml = (html: string): string => DOMPurify.sanitize(html, {
@@ -63,12 +63,17 @@ class DocsModule {
   }
 
   /** Метод загрузки кэшированной пользовательской документации */
-  private async lcf(): Promise<string | null> {
+  private async lcf(): Promise<LcfResult> {
     const result = await loadCache("user-docs", "user-docs.md", 2, TimeType.Day);
-    if (!result.data) return null;
+    if (!result.data) return { data: null, expired: false };
 
     const html = await marked.parse(result.data);
-    return sanitizeHtml(html);
+    const sanitized = sanitizeHtml(html);
+
+    return {
+      data: sanitized,
+      expired: result.error === "expired",
+    };
   }
 
   /** Метод кэширования пользовательской документации */

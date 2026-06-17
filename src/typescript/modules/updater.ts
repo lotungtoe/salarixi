@@ -4,7 +4,7 @@ import { logger } from "../utils/logger";
 import { loadCache, saveCache, TimeType } from "../utils/cache";
 import { addOpeningUrlTo } from "../main";
 import { isVersionNewer } from "../utils/semver";
-import { getCacheOrNew } from "../utils/cache_or_new";
+import { getCacheOrNew, LcfResult } from "../utils/cache_or_new";
 
 /** Небольшой модуль управления обновлениями клиента */
 class UpdaterModule {
@@ -64,10 +64,14 @@ class UpdaterModule {
   }
 
   /** Метод загрузки кэшированной информации о последней версии клиента */
-  private async lcf(): Promise<any> {
+  private async lcf(): Promise<LcfResult> {
     const result = await loadCache("latest-version", "latest-version.json", 10, TimeType.Hours);
-    if (!result.data) return null;
-    return JSON.parse(result.data);
+    if (!result.data) return { data: null, expired: false };
+
+    return {
+      data: JSON.parse(result.data),
+      expired: result.error === "expired",
+    };
   }
 
   /** Метод кэширования информации о последней версии клиента */

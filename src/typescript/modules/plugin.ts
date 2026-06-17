@@ -3,7 +3,7 @@ import { plugins } from "../common/structs";
 import { process } from "../main";
 import { invoke } from "@tauri-apps/api/core";
 import { loadCache, saveCache, TimeType } from "../utils/cache";
-import { getCacheOrNew } from "../utils/cache_or_new";
+import { getCacheOrNew, LcfResult } from "../utils/cache_or_new";
 
 /** Модуль загрузки и управления плагинами */
 class PluginModule {
@@ -221,10 +221,14 @@ class PluginModule {
   }
 
   /** Метод загрузки кэшированной информации о плагинах */
-  private async lcf(): Promise<any> {
+  private async lcf(): Promise<LcfResult> {
     const result = await loadCache("plugins-info", "plugins-info.json", 3, TimeType.Day);
-    if (!result.data) return null;
-    return JSON.parse(result.data);
+    if (!result.data) return { data: null, expired: false };
+
+    return {
+      data: JSON.parse(result.data),
+      expired: result.error === "expired",
+    };
   }
 
   /** Метод кэширования информации о плагинах */

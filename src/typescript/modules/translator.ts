@@ -5,7 +5,7 @@ import { loadCache, saveCache, TimeType } from "../utils/cache";
 import { getStringSize } from "../utils/size";
 import { currentClientVersion } from "../main";
 import { isVersionNewer } from "../utils/semver";
-import { getCacheOrNew } from "../utils/cache_or_new";
+import { getCacheOrNew, LcfResult } from "../utils/cache_or_new";
 
 /** Модуль переподчика */
 class TranslatorModule {
@@ -142,10 +142,14 @@ class TranslatorModule {
   }
 
   /** Метод загрузки кэшированного перевода */
-  public async lcf(): Promise<any> {
+  public async lcf(): Promise<LcfResult> {
     const result = await loadCache("translation", "translation.json", 3, TimeType.Day);
-    if (!result.data) return null;
-    return JSON.parse(result.data);
+    if (!result.data) return { data: null, expired: false };
+
+    return {
+      data: JSON.parse(result.data),
+      expired: result.error === "expired",
+    };
   }
 
   /** Метод кэширования перевода */

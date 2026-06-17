@@ -59,8 +59,8 @@ export async function loadCache(name: string, filename: string, maxStorageValue:
   
   if (isDataExpired(result1.data, maxStorageValue, timeType)) {
     return {
-      data: null,
-      error: null,
+      data: result1.data,
+      error: "expired",
     };
   }
 

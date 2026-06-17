@@ -3,7 +3,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { logger } from "../utils/logger";
 import { loadCache, saveCache, TimeType } from "../utils/cache";
 import { addOpeningUrlTo } from "../main";
-import { getCacheOrNew } from "../utils/cache_or_new";
+import { getCacheOrNew, LcfResult } from "../utils/cache_or_new";
 
 /** Структура информации клиента */
 interface ClientInfo {
@@ -97,10 +97,14 @@ class InfoModule {
   }
 
   /** Метод загрузки кэшированной информации о клиенте */
-  private async lcf(): Promise<ClientInfo | null> {
+  private async lcf(): Promise<LcfResult> {
     const result = await loadCache("client-info", "client-info.json", 2, TimeType.Day);
-    if (!result.data) return null;
-    return JSON.parse(result.data);
+    if (!result.data) return { data: null, expired: false };
+
+    return {
+      data: JSON.parse(result.data),
+      expired: result.error === "expired",
+    };
   }
 
   /** Метод кэширования информации */

@@ -6,18 +6,24 @@ interface CacheOrNewResult<T> {
   size: string;
 }
 
+/** Структура данных результата функции загрузки кэша */
+export interface LcfResult {
+  data: any;
+  expired: boolean;
+}
+
 /** Вспомогательная функция конвертации данных в строку */
 const stringify = (data: any): string => typeof data === "object" ? JSON.stringify(data) : typeof data === "number" ? data.toString() : data as string;
 
 /** Функция получения кэшированной или новой информации */
 export async function getCacheOrNew<T>(lcf: Function, lnf: Function, scf: Function, onerr?: Function): Promise<CacheOrNewResult<T>> {
-  const cachedData = await lcf();
+  const cache = await lcf() as LcfResult;
   let data = null;
   let dataSize = 0;
 
-  if (cachedData) {
-    data = cachedData;
-    dataSize = getStringSize(stringify(cachedData));
+  if (cache.data && !cache.expired) {
+    data = cache.data;
+    dataSize = getStringSize(stringify(cache.data));
   } else {
     const newData = await lnf();
 
@@ -26,9 +32,9 @@ export async function getCacheOrNew<T>(lcf: Function, lnf: Function, scf: Functi
       dataSize = getStringSize(stringify(newData));
       await scf(data);
     } else {
-      if (!cachedData["data"] && !cachedData["error"]) {
-        data = cachedData;
-        dataSize = getStringSize(stringify(cachedData));
+      if (cache.data) {
+        data = cache.data;
+        dataSize = getStringSize(stringify(cache.data));
       } else {
         if (onerr) onerr();
 
