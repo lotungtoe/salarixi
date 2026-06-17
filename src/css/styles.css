@@ -1691,24 +1691,23 @@ button svg {
   border: 1px solid var(--secondary-border);
   border-radius: 12px;
   color: var(--dim-color);
-  transition: border-color 0.2s ease;
+  transition: color 0.2s ease, border-color 0.2s ease;
 }
 
 .feature-card svg {
   width: 60px;
   height: 60px;
-  transition: color 0.2s ease;
 }
 
 .feature-card .text {
   font-family: var(--global-font-family);
   font-size: 16px;
   font-weight: 600;
-  transition: color 0.2s ease;
 }
 
 .feature-card:hover {
   color: var(--highlight-color);
+  border-color: var(--bright-border);
 }
 
 .highlight {
@@ -2191,7 +2190,6 @@ button svg {
 .ping-wrapper .info .card .head .spliter {
   display: flex;
   height: 100%;
-  border-right: var(--secondary-border);
   margin-left: 40px;
 }
 
@@ -2212,7 +2210,6 @@ button svg {
 .ping-wrapper .info .card .head .text .spliter {
   display: flex;
   width: 100%;
-  border-bottom: 1px solid var(--secondary-border);
   margin: 6px 0;
 }
 
@@ -2287,26 +2284,10 @@ button svg {
 .radar-panel {
   display: flex;
   margin: 10px 0 20px 0;
-  padding: 6px 6px;
   width: 720px;
   gap: 6px;
-  background: var(--secondary-bg);
-  border-radius: 8px;
-  border: 1px solid var(--secondary-border);
   justify-content: center;
   align-items: center;
-}
-
-.radar-panel .sep {
-  display: flex;
-  border-left: 1px solid var(--secondary-border);
-  height: 30px;
-  margin: 0 4px;
-}
-
-.radar-panel input {
-  border: none;
-  background: transparent;
 }
 
 .cover.radar {
@@ -2665,14 +2646,19 @@ button svg {
   justify-content: center;
   align-items: center;
   gap: 40px;
-  transition: transform 0.12s ease;
+  transition: transform 0.12s ease, border-color 0.12s ease;
 }
 
 .config-wrapper .card:hover {
   transform: translateY(-10px);
+  border-color: var(--bright-border);
 }
 
 .config-wrapper .card:hover .icon {
+  color: var(--highlight-color);
+}
+
+.config-wrapper .card:hover .header {
   color: var(--highlight-color);
 }
 
@@ -2698,6 +2684,7 @@ button svg {
   font-weight: 600;
   width: 90%;
   color: var(--dim-color);
+  transition: color 0.12s ease;
 }
 
 .messages-wrapper {
