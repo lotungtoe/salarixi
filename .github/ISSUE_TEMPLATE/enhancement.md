@@ -1,6 +1,6 @@
 ---
 name: Enhancement
-about: Create a bug report
+about: Suggest functionality enchantment
 title: enhancement
 labels: enhancement
 assignees: nullclyze
