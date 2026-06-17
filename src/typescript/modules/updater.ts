@@ -25,8 +25,8 @@ class UpdaterModule {
 
         const data = result.data;
         const version = data["version"] ?? data["id"] ?? data["version-id"] ?? data["name"];
-        const tag = `v${version}-${String(data["type"]).toLowerCase()}`;
-        const published = data["releaseDate"] ?? data["release-date"] ?? data["date"] ?? data["published"];
+        const tag = data["tag"] ?? data["version-tag"] ?? data["release-tag"];
+        const published = data["published"] ?? data["released"] ?? data["release-date"] ?? data["date"];
 
         if (!isVersionNewer(version)) {
           notice.remove();
