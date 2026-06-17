@@ -212,7 +212,7 @@ pub fn launch_bots_on_server(options: LaunchOptions) -> bool {
 
                   let proxy_address: Vec<&str> = clean_proxy.split("@").collect();
 
-                  let Some(address) = proxy_address.get(0) else {
+                  let Some(address) = proxy_address.get(1) else {
                     continue;
                   };
 
@@ -221,7 +221,7 @@ pub fn launch_bots_on_server(options: LaunchOptions) -> bool {
                   if let Ok(addr) = address.parse::<SocketAddr>() {
                     let mut proxy = Proxy::new(addr, None);
 
-                    if let Some(auth) = proxy_address.get(1) {
+                    if let Some(auth) = proxy_address.get(0) {
                       let split_auth: Vec<&str> = auth.split(":").collect();
 
                       let Some(username) = split_auth.get(0) else {
