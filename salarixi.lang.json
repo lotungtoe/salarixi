@@ -2892,6 +2892,72 @@
         "ja": "総リリース数",
         "zh": "总发布数"
       }
+    },
+    {
+      "versions": "1.1.0",
+      "tag": "update-available",
+      "lang": {
+        "ru": "Доступно обновление",
+        "en": "Update available",
+        "tr": "Güncelleme mevcut",
+        "ja": "アップデートが利用可能です",
+        "zh": "有更新版本可用"
+      }
+    },
+    {
+      "versions": "1.1.0",
+      "tag": "version",
+      "lang": {
+        "ru": "Версия",
+        "en": "Version",
+        "tr": "Sürüm",
+        "ja": "バージョン",
+        "zh": "版本"
+      }
+    },
+    {
+      "versions": "1.1.0",
+      "tag": "published",
+      "lang": {
+        "ru": "Опубликовано",
+        "en": "Published",
+        "tr": "Yayınlandı",
+        "ja": "公開済み",
+        "zh": "已發布"
+      }
+    },
+    {
+      "versions": "1.1.0",
+      "tag": "tag",
+      "lang": {
+        "ru": "Бирка",
+        "en": "Tag",
+        "tr": "Etiket",
+        "ja": "タグ",
+        "zh": "標籤"
+      }
+    },
+    {
+      "versions": "1.1.0",
+      "tag": "download-new-version",
+      "lang": {
+        "ru": "Скачать новую версию",
+        "en": "Download new version",
+        "tr": "Yeni sürümü indirin",
+        "ja": "新しいバージョンをダウンロード",
+        "zh": "下載新版本"
+      }
+    },
+    {
+      "versions": "1.1.0",
+      "tag": "update-warning",
+      "lang": {
+        "ru": "ПРЕДУПРЕЖДЕНИЕ: Мы не заставляем вас срочно обновить данный клиент, мы лишь предлагаем более оптимизированную и универсальную версию! Выбор комфортной версии никак не ограничен.",
+        "en": "WARNING: We don't force you to update this client immediately; we're simply offering a more optimized and versatile version! Your choice of the most convenient version is completely unlimited.",
+        "tr": "YASAL UYARI: Bu istemciyi hemen güncellemenizi zorunlu tutmuyoruz; sadece daha optimize edilmiş ve çok yönlü bir sürüm sunuyoruz! En uygun sürümü seçme özgürlüğünüz tamamen sınırsızdır.",
+        "ja": "免責事項：このクライアントをすぐにアップデートする必要はありません。より最適化され、多機能なバージョンを提供しているだけです。最も便利なバージョンを選択する権利は完全に無制限です。",
+        "zh": "免責聲明：我們不會強制您立即更新此客戶端；我們只是提供一個更優化、更全面的版本！您可以完全自由地選擇最方便的版本。"
+      }
     }
   ]
 }

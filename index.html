@@ -37,28 +37,26 @@
   </div>
 
   <div class="notice-wrap" id="notice" style="display: none;">
-    <div class="notice" role="dialog" aria-labelledby="update-title" aria-describedby="update-info">
-      <button class="close-notice-btn" aria-label="Закрыть" id="close-notice-btn">✕</button>
+    <div class="notice">
+      <button class="close-notice-btn" id="close-notice-btn">✕</button>
 
-      <div id="update-title" class="title">Доступно обновление</div>
+      <div id="update-title" class="title" tt="update-available">Доступно обновление</div>
 
       <div class="info-wrapper">
-        <div class="wrap">
-          <div class="head">
-            <img src="src/assets/logo.png" class="logo" draggable="false">
+        <div class="head">
+          <img src="src/assets/logo.png" class="logo" draggable="false">
 
-            <div class="text">
-              <div>Версия: <span id="new-client-version"></span></div>
-              <div>Бирка: <span id="new-client-tag"></span></div>
-              <div>Дата: <span id="new-client-release-date"></span></div>
-            </div>
+          <div class="text">
+            <div><span tt="version:">Версия:</span> <span id="new-client-version"></span></div>
+            <div><span tt="published:">Опубликовано:</span> <span id="new-client-published"></span></div>
+            <div><span tt="tag:">Бирка:</span> <span id="new-client-tag"></span></div>
           </div>
-
-          <div id="open-client-release" class="open-client-release">Скачать новую версию</div>
         </div>
+
+        <div id="open-client-release" class="open-client-release" tt="download-new-version">Скачать новую версию</div>
       </div>
 
-      <div class="warn">
+      <div class="warning" tt="update-warning">
         ПРЕДУПРЕЖДЕНИЕ: Мы не заставляем вас срочно обновить данный клиент, мы лишь предлагаем более оптимизированную и универсальную версию!
         Выбор комфортной версии никак не ограничен.
       </div>

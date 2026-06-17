@@ -13,9 +13,6 @@ class UpdaterModule {
     setTimeout(async () => {
       try {
         const notice = document.getElementById("notice") as HTMLElement;
-        const newVersion = document.getElementById("new-client-version") as HTMLElement;
-        const newTag = document.getElementById("new-client-tag") as HTMLElement;
-        const newReleaseDate = document.getElementById("new-client-release-date") as HTMLElement;
 
         document.getElementById("close-notice-btn")?.addEventListener("click", () => notice.remove());
 
@@ -33,9 +30,9 @@ class UpdaterModule {
           return;
         }
 
-        newVersion.innerText = version;
-        newTag.innerText = tag;
-        newReleaseDate.innerText = published;
+        (document.getElementById("new-client-version") as HTMLElement).innerText = version;
+        (document.getElementById("new-client-tag") as HTMLElement).innerText = tag;
+        (document.getElementById("new-client-published") as HTMLElement).innerText = published;
 
         addOpeningUrlTo("open-client-release", "click", `https://codeberg.org/nullclyze/salarixi/releases/tag/${tag}`); 
 

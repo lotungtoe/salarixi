@@ -90,6 +90,9 @@ class StylekitModule {
     "docs-header-color": "#dfdfdf",
     "docs-code-bg": "#3a393952",
     "docs-code-border": "#3a3939c2",
+    "update-notice-warning-color": "#ebbf31",
+    "update-notice-warning-bg": "#ebbf310d",
+    "update-notice-warning-border": "#ebc0312c",
   };
 
 	/** Метод инициализации модуля */
