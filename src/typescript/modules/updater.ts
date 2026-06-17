@@ -4,6 +4,7 @@ import { logger } from "../utils/logger";
 import { loadCache, saveCache, TimeType } from "../utils/cache";
 import { addOpeningUrlTo } from "../main";
 import { isVersionNewer } from "../utils/semver";
+import { getCacheOrNew } from "../utils/cache_or_new";
 
 /** Небольшой модуль управления обновлениями клиента */
 class UpdaterModule {
@@ -18,34 +19,23 @@ class UpdaterModule {
 
         document.getElementById("close-notice-btn")?.addEventListener("click", () => notice.remove());
 
-        const cachedVersion = await this.loadCachedVersionInfo();
-        let latestVersion;
+        const onerr = () => notice.remove();
+        const result = await getCacheOrNew<any>(this.lcf, this.lnf, this.scf, onerr);
+        if (!result.data) return;
 
-        if (cachedVersion) {
-          latestVersion = cachedVersion;
-        } else {
-          const newVersion = await this.loadNewVersionInfo();
-
-          if (newVersion) {
-            latestVersion = newVersion;
-            await this.cacheVersionInfo(newVersion);
-          } else {
-            notice.remove();
-            return;
-          }
-        }
-
-        const version = latestVersion["version"] ?? latestVersion["id"] ?? latestVersion["version-id"] ?? latestVersion["name"];
+        const data = result.data;
+        const version = data["version"] ?? data["id"] ?? data["version-id"] ?? data["name"];
+        const tag = `v${version}-${String(data["type"]).toLowerCase()}`;
+        const published = data["releaseDate"] ?? data["release-date"] ?? data["date"] ?? data["published"];
 
         if (!isVersionNewer(version)) {
           notice.remove();
           return;
         }
-        
-        const tag = `v${latestVersion.version}-${String(latestVersion.type).toLowerCase()}`;
-        newVersion.innerText = latestVersion["version"];
+
+        newVersion.innerText = version;
         newTag.innerText = tag;
-        newReleaseDate.innerText = latestVersion["releaseDate"] ?? latestVersion["release_date"] ?? latestVersion["date"] ?? latestVersion["published"];
+        newReleaseDate.innerText = published;
 
         addOpeningUrlTo("open-client-release", "click", `https://codeberg.org/nullclyze/salarixi/releases/tag/${tag}`); 
 
@@ -57,7 +47,7 @@ class UpdaterModule {
   }
 
   /** Метод загрузки актуальной информации о последней версии клиента */
-  private async loadNewVersionInfo(): Promise<any> {
+  private async lnf(): Promise<any> {
     try {
       const latestVersion = await invoke("download_json", {
         url: "https://codeberg.org/nullclyze/salarixi/raw/branch/main/salarixi.version.json",
@@ -77,14 +67,14 @@ class UpdaterModule {
   }
 
   /** Метод загрузки кэшированной информации о последней версии клиента */
-  private async loadCachedVersionInfo(): Promise<any> {
+  private async lcf(): Promise<any> {
     const result = await loadCache("latest-version", "latest-version.json", 10, TimeType.Hours);
     if (!result.data) return null;
     return JSON.parse(result.data);
   }
 
   /** Метод кэширования информации о последней версии клиента */
-  private async cacheVersionInfo(info: any): Promise<void> {
+  private async scf(info: any): Promise<void> {
     const result = await saveCache(JSON.stringify(info, null, 2), "latest-version.json");
 
     if (!result.data && result.error) {

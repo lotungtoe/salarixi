@@ -1,9 +1,11 @@
 import { invoke } from "@tauri-apps/api/core";
 import { logger } from "../utils/logger";
+
 import { loadCache, saveCache, TimeType } from "../utils/cache";
 import { getStringSize } from "../utils/size";
 import { currentClientVersion } from "../main";
 import { isVersionNewer } from "../utils/semver";
+import { getCacheOrNew } from "../utils/cache_or_new";
 
 /** Модуль переподчика */
 class TranslatorModule {
@@ -11,24 +13,13 @@ class TranslatorModule {
   public async init(): Promise<void> {
     try {
       logger.log("Загрузка перевода...", "system");
-
+      
       const langSelect = document.getElementById("interface_select_language") as HTMLSelectElement;
-      const cachedTranslation = await this.loadCachedTranslation();
-      let data = null;
 
-      if (cachedTranslation) {
-        data = cachedTranslation;
-      } else {
-        const newTranslation = await this.loadNewTranslation();
+      const result = await getCacheOrNew<any>(this.lcf, this.lnf, this.scf);
+      if (!result.data) return;
 
-        if (newTranslation) {
-          data = newTranslation;
-          await this.cacheTranslation(newTranslation);
-        } else {
-          return;
-        }
-      }
-
+      const data = result.data;
       const langs = data["languages"] ?? data["langs"] ?? data["translations"];
 
       if (!langs) {
@@ -131,7 +122,7 @@ class TranslatorModule {
   }
 
   /** Метод загрузки актуального перевода */
-  private async loadNewTranslation(): Promise<any> {
+  private async lnf(): Promise<any> {
     try {
       const translation = await invoke("download_json", {
         url: "https://codeberg.org/nullclyze/salarixi/raw/branch/main/salarixi.lang.json"
@@ -151,14 +142,14 @@ class TranslatorModule {
   }
 
   /** Метод загрузки кэшированного перевода */
-  public async loadCachedTranslation(): Promise<any> {
+  public async lcf(): Promise<any> {
     const result = await loadCache("translation", "translation.json", 3, TimeType.Day);
     if (!result.data) return null;
     return JSON.parse(result.data);
   }
 
   /** Метод кэширования перевода */
-  private async cacheTranslation(translation: any): Promise<void> {
+  private async scf(translation: any): Promise<void> {
     const result = await saveCache(JSON.stringify(translation, null, 2), "translation.json");
 
     if (!result.data && result.error) {

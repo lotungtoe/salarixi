@@ -64,7 +64,6 @@ export async function loadCache(name: string, filename: string, maxStorageValue:
     };
   }
 
-  // Изначально здесь было CommandResult<Uint8Array>, но видимо данные приходят в простом массиве чисел
   const result2 = await invoke("load_cache", { filename: filename }) as CommandResult<number[]>;
   if (!result2.data) {
     return {

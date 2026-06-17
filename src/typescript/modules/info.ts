@@ -3,7 +3,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { logger } from "../utils/logger";
 import { loadCache, saveCache, TimeType } from "../utils/cache";
 import { addOpeningUrlTo } from "../main";
-import { getStringSize } from "../utils/size";
+import { getCacheOrNew } from "../utils/cache_or_new";
 
 /** Структура информации клиента */
 interface ClientInfo {
@@ -26,37 +26,19 @@ class InfoModule {
       const downloadCountEl = document.getElementById("download-count") as HTMLSpanElement;
       const releaseCountEl = document.getElementById("release-count") as HTMLSpanElement;
 
-      const cachedInfo = await this.loadCachedClientInfo();
-      let clientInfo = null;
-      let dataSize = 0;
+      const onerr = () => ["telegram", "discord", "youtube"].forEach(id => document.getElementById(id)?.remove());
+      const result = await getCacheOrNew<ClientInfo>(this.lcf, this.lnf, this.scf, onerr);
+      if (!result.data) return;
 
-      if (cachedInfo) {
-        clientInfo = cachedInfo;
-        dataSize = getStringSize(JSON.stringify(cachedInfo));
-      } else {
-        const newInfo = await this.loadNewClientInfo();
+      downloadCountEl.innerHTML = this.downloadCountToString(result.data.downloads);
+      releaseCountEl.innerHTML = result.data.releases.toString();
 
-        if (newInfo) {
-          clientInfo = newInfo;
-          dataSize = getStringSize(JSON.stringify(newInfo));
-          await this.cacheClientInfo(newInfo);
-        } else {
-          ["telegram", "discord", "youtube"].forEach(id => document.getElementById(id)?.remove());
-          return;
-        }
-      }
-
-      downloadCountEl.innerHTML = this.downloadCountToString(clientInfo.downloads);
-      releaseCountEl.innerHTML = clientInfo.releases.toString();
-
-      for (const key in clientInfo.social) {
-        const link = clientInfo.social[key] as string;
+      for (const key in result.data.social) {
+        const link = result.data.social[key] as string;
         addOpeningUrlTo(key, "click", link);
       }
 
-      const prettyDataSize = (dataSize / 1024).toFixed(1);
-
-      logger.log(`Информация о клиенте загружена (размер ${prettyDataSize}KB)`, "system");
+      logger.log(`Информация о клиенте загружена (размер ${result.size})`, "system");
     } catch (error) {
       logger.log(`Ошибка инициализации информации о клиенте (не критично): ${error}`, "non-critical-error");
     }
@@ -74,7 +56,7 @@ class InfoModule {
   }
 
   /** Метод загрузки актуальной информации о клиенте */
-  private async loadNewClientInfo(): Promise<ClientInfo | null> {
+  private async lnf(): Promise<ClientInfo | null> {
     try {
       const releases = await invoke("download_json", {
         url: "https://codeberg.org/api/v1/repos/nullclyze/salarixi/releases"
@@ -115,14 +97,14 @@ class InfoModule {
   }
 
   /** Метод загрузки кэшированной информации о клиенте */
-  private async loadCachedClientInfo(): Promise<ClientInfo | null> {
+  private async lcf(): Promise<ClientInfo | null> {
     const result = await loadCache("client-info", "client-info.json", 2, TimeType.Day);
     if (!result.data) return null;
     return JSON.parse(result.data);
   }
 
   /** Метод кэширования информации */
-  private async cacheClientInfo(info: ClientInfo): Promise<void> {
+  private async scf(info: ClientInfo): Promise<void> {
     const result = await saveCache(JSON.stringify(info, null, 2), "client-info.json");
 
     if (!result.data && result.error) {

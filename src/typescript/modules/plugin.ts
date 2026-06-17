@@ -3,7 +3,7 @@ import { plugins } from "../common/structs";
 import { process } from "../main";
 import { invoke } from "@tauri-apps/api/core";
 import { loadCache, saveCache, TimeType } from "../utils/cache";
-import { getStringSize } from "../utils/size";
+import { getCacheOrNew } from "../utils/cache_or_new";
 
 /** Модуль загрузки и управления плагинами */
 class PluginModule {
@@ -127,24 +127,11 @@ class PluginModule {
     try {
       logger.log("Загрузка информации о плагинах...", "system");
 
-      const cachedInfo = await this.loadCachedPluginsInfo();
-      let pluginList = null;
-      let dataSize = 0;
-      
-      if (cachedInfo) {
-        pluginList = cachedInfo["list"] ?? cachedInfo["array"] ?? cachedInfo["map"] ?? cachedInfo;
-        dataSize = getStringSize(JSON.stringify(cachedInfo, null, 2));
-      } else {
-        const newInfo = await this.loadNewPluginsInfo();
+      const result = await getCacheOrNew<any>(this.lcf, this.lnf, this.scf);
+      if (!result.data) return;
 
-        if (newInfo) {
-          pluginList = newInfo["list"] ?? newInfo["array"] ?? newInfo["map"] ?? newInfo;
-          dataSize = getStringSize(JSON.stringify(newInfo, null, 2));
-          await this.cachePluginsInfo(newInfo);
-        } else {
-          return;
-        }
-      }
+      const data = result.data;
+      const pluginList = data["list"] ?? data["array"] ?? data["map"] ?? data;
 
       // Может быть такое что названия полей изменились, или вовсе вся структура
       // данных обновлена, поэтому здесь стоит делать ещё одну проверку
@@ -155,9 +142,7 @@ class PluginModule {
 
       this.extractPluginsInfo(pluginList);
 
-      const prettyDataSize = (dataSize / 1024).toFixed(1);
-
-      logger.log(`Информация о плагинах загружена (размер ${prettyDataSize}KB)`, "system");
+      logger.log(`Информация о плагинах загружена (размер ${result.size})`, "system");
     } catch (error) {
       logger.log(`Ошибка загрузки информации о плагинах (не критично): ${error}`, "non-critical-error");
     }
@@ -173,7 +158,7 @@ class PluginModule {
       if (plugins[name]?.date) {
         if (updated !== plugins[name].date) {
           document.getElementById(`${name}-plugin`)?.classList.add("deprecated");
-          
+
           const tag = document.createElement("span");
           tag.className = "tag";
           tag.innerText = "deprecated";
@@ -216,7 +201,7 @@ class PluginModule {
   }
 
   /** Метод загрузки актуальной информации о плагинах */
-  private async loadNewPluginsInfo(): Promise<any | null> {
+  private async lnf(): Promise<any> {
     try {
       const plugins = await invoke("download_json", {
         url: "https://codeberg.org/nullclyze/salarixi/raw/branch/main/salarixi.plugins.json"
@@ -236,14 +221,14 @@ class PluginModule {
   }
 
   /** Метод загрузки кэшированной информации о плагинах */
-  private async loadCachedPluginsInfo(): Promise<any | null> {
+  private async lcf(): Promise<any> {
     const result = await loadCache("plugins-info", "plugins-info.json", 3, TimeType.Day);
     if (!result.data) return null;
     return JSON.parse(result.data);
   }
 
   /** Метод кэширования информации о плагинах */
-  private async cachePluginsInfo(info: string): Promise<void> {
+  private async scf(info: string): Promise<void> {
     const result = await saveCache(JSON.stringify(info, null, 2), "plugins-info.json");
 
     if (!result.data && result.error) {
