@@ -1,8 +1,8 @@
 ---
 name: Critical error
 about: Create a detailed critical error report
-title: Some critical error
-labels: bug, help wanted
+title: critical
+labels: critical
 assignees: nullclyze
 
 ---

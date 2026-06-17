@@ -1,13 +1,13 @@
 ---
 name: Offer
-about: Create an offer for something
-title: Some offer
+about: Share your offer
+title: offer
 labels: offer
 assignees: nullclyze
 
 ---
 
-**My offer**
+**Offer**
 Description of the functionality.
 
 **Additional context**

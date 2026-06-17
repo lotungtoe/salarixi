@@ -1,7 +1,7 @@
 ---
 name: Bug report
 about: Create a bug report
-title: Some bug
+title: bug
 labels: bug
 assignees: nullclyze
 
