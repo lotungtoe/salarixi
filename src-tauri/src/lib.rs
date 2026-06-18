@@ -8,7 +8,7 @@ use api::commands::*;
 use api::emit::emit_event_loop;
 use modules::cache::{get_cache_date, load_cache, save_cache};
 use modules::config::{create_public_config, load_config, save_config};
-use modules::proxy::collect_proxies;
+use modules::proxy::{check_proxies, collect_proxies};
 
 /// Запуск приложения
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -49,6 +49,7 @@ pub fn run() {
       read_text_file,
       set_discord_rpc,
       collect_proxies,
+      check_proxies,
       get_cache_date,
       save_cache,
       load_cache,

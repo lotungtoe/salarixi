@@ -573,12 +573,19 @@
       </div>
 
       <div class="right">
-        <div class="btn-group-column" style="margin-top: 2px;">
-          <button class="red" id="clear-proxy-list" style="width: 170px;">
+        <div class="btn-group-column">
+          <button id="clear-proxy-list" style="width: 180px;">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
               <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5M8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5m3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0"/>
             </svg>
-            <span tt="clear-proxy-list">Очистить список</span>
+            <span tt="clear-list">Очистить список</span>
+          </button>
+
+          <button id="check-proxies" style="width: 180px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-activity" viewBox="0 0 16 16">
+              <path fill-rule="evenodd" d="M6 2a.5.5 0 0 1 .47.33L10 12.036l1.53-4.208A.5.5 0 0 1 12 7.5h3.5a.5.5 0 0 1 0 1h-3.15l-1.88 5.17a.5.5 0 0 1-.94 0L6 3.964 4.47 8.171A.5.5 0 0 1 4 8.5H.5a.5.5 0 0 1 0-1h3.15l1.88-5.17A.5.5 0 0 1 6 2"/>
+            </svg>
+            <span tt="check-proxies">Проверить прокси</span>
           </button>
         </div>
         
@@ -587,7 +594,7 @@
         <div class="proxy-finder">
           <div class="column-wrap" style="gap: 6px;">
             <div class="custom-select between">
-              <label tt="proxy-finder-algorithm:">Алгоритм:</label>
+              <label tt="algorithm:">Алгоритм:</label>
               <select id="proxy-finder_select_algorithm" keep="true" trigger>
                 <option value="trusted" selected>Trusted</option>
                 <option value="untrusted">Untrusted</option>
@@ -596,7 +603,7 @@
             </div>
 
             <div class="custom-select between">
-              <label tt="proxy-finder-country:">Страна:</label>
+              <label tt="country:">Страна:</label>
               <select id="proxy-finder_select_country" keep="true">
                 <option value="any" tt="country-any">Любая</option>
                 <option value="ru">Россия</option>
@@ -615,7 +622,7 @@
             </div>
 
             <div class="custom-select between">
-              <label tt="proxy-finder-port:">Порт:</label>
+              <label tt="port:">Порт:</label>
               <select id="proxy-finder_select_port" keep="true">
                 <option value="any" tt="port-any">Любой</option>
                 <option value="4145">4145</option>
@@ -629,7 +636,7 @@
             </div>
 
             <div class="custom-select between">
-              <label tt="proxy-finder-count:">Кол-во:</label>
+              <label tt="count:">Кол-во:</label>
               <select id="proxy-finder_select_count" keep="true">
                 <option value="20">20</option>
                 <option value="50">50</option>
@@ -644,11 +651,11 @@
             </div>
           </div>
 
-          <button class="green" id="find-proxy" style="width: 170px; margin-top: 20px;">
+          <button class="green" id="find-proxies" style="width: 170px; margin-top: 20px;">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
               <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
             </svg>
-            <span tt="find-proxy">Найти прокси</span>
+            <span tt="find-proxies">Найти прокси</span>
           </button>
 
           <p class="status" id="proxy-finder-status">Поиск неактивен</p>

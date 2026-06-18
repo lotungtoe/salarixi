@@ -937,7 +937,7 @@
     },
     {
       "versions": "1.1.0",
-      "tag": "clear-proxy-list",
+      "tag": "clear-list",
       "lang": {
         "ru": "Очистить список",
         "en": "Clear List",
@@ -948,7 +948,18 @@
     },
     {
       "versions": "1.1.0",
-      "tag": "proxy-algorithm",
+      "tag": "check-proxies",
+      "lang": {
+        "ru": "Проверить прокси",
+        "en": "Check proxies",
+        "tr": "Kontrol etmek",
+        "ja": "プロキシを確認する",
+        "zh": "檢查代理"
+      }
+    },
+    {
+      "versions": "1.1.0",
+      "tag": "algorithm",
       "lang": {
         "ru": "Алгоритм",
         "en": "Algorithm",
@@ -959,18 +970,7 @@
     },
     {
       "versions": "1.1.0",
-      "tag": "proxy-protocol",
-      "lang": {
-        "ru": "Протокол",
-        "en": "Protocol",
-        "tr": "Protokol",
-        "ja": "プロトコル",
-        "zh": "协议"
-      }
-    },
-    {
-      "versions": "1.1.0",
-      "tag": "proxy-country",
+      "tag": "country",
       "lang": {
         "ru": "Страна",
         "en": "Country",
@@ -992,7 +992,7 @@
     },
     {
       "versions": "1.1.0",
-      "tag": "proxy-port",
+      "tag": "port",
       "lang": {
         "ru": "Порт",
         "en": "Port",
@@ -1014,7 +1014,7 @@
     },
     {
       "versions": "1.1.0",
-      "tag": "proxy-count",
+      "tag": "count",
       "lang": {
         "ru": "Кол-во",
         "en": "Count",
@@ -1036,10 +1036,10 @@
     },
     {
       "versions": "1.1.0",
-      "tag": "find-proxy",
+      "tag": "find-proxies",
       "lang": {
         "ru": "Найти прокси",
-        "en": "Find Proxy",
+        "en": "Find Proxies",
         "tr": "Vekil Bul",
         "ja": "プロキシを探す",
         "zh": "查找代理"

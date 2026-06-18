@@ -1,8 +1,13 @@
+use std::sync::atomic::{AtomicU8, Ordering};
+use std::sync::Arc;
 use std::time::Duration;
 
 use hashbrown::HashSet;
 use serde::Deserialize;
 use serde_json::Value;
+use socks5_impl::protocol::{Address, UserKey};
+use tokio::net::TcpStream;
+use tokio::sync::RwLock;
 
 /// Максимальное кол-во прокси
 const MAX_PROXY_COUNT: usize = 50000;
@@ -400,9 +405,116 @@ async fn scrape_proxies(options: ProxyCollectorOpts) -> Vec<String> {
   filter_by_port(proxy_list, options.port)
 }
 
+/// Функция проверки одного прокси
+async fn check_proxy(proxy: String) -> bool {
+  let without_protocol = proxy.replace("socks5://", "");
+  let splited = without_protocol.split('@').collect::<Vec<&str>>();
+
+  let (auth_str, addr) = match splited.get(1) {
+    Some(addr) => (Some(splited[0]), addr.to_string()),
+    None => (None, splited[0].to_string()),
+  };
+
+  let auth = if let Some(a) = auth_str {
+    let split = a.split(':').collect::<Vec<&str>>();
+    let mut auth = None;
+
+    if let Some(username) = split.get(0) {
+      if let Some(password) = split.get(1) {
+        auth = Some(UserKey::new(*username, *password));
+      }
+    }
+
+    auth
+  } else {
+    None
+  };
+
+  let services = vec![
+    ("cloudflare.com", 80),
+    ("facebook.com", 80),
+    ("yandex.ru", 80),
+    ("youtube.com", 80),
+    ("github.com", 80),
+    ("reddit.com", 80),
+  ];
+
+  let success_requests = Arc::new(AtomicU8::new(0));
+  let mut tasks = Vec::new();
+
+  for (hostname, port) in services {
+    let hostname_string = hostname.to_string();
+    let auth_clone = auth.clone();
+    let addr_clone = addr.clone();
+    let success_requests_clone = success_requests.clone();
+    let task = tokio::spawn(async move {
+      let mut stream = match tokio::time::timeout(Duration::from_secs(8), TcpStream::connect(addr_clone)).await {
+        Ok(res) => match res {
+          Ok(s) => s,
+          Err(_) => return,
+        },
+        Err(_) => return,
+      };
+
+      let target_addr = Address::DomainAddress(hostname_string, port);
+
+      match tokio::time::timeout(
+        Duration::from_secs(8),
+        socks5_impl::client::connect(&mut stream, target_addr, auth_clone),
+      )
+      .await
+      {
+        Ok(res) => match res {
+          Ok(_) => {
+            success_requests_clone.fetch_add(1, Ordering::SeqCst);
+          }
+          _ => {}
+        },
+        _ => {}
+      }
+    });
+
+    tasks.push(task);
+  }
+
+  for task in tasks {
+    let _ = task.await;
+  }
+
+  success_requests.load(Ordering::SeqCst) >= 2
+}
+
 /// Команда сбора прокси
 #[tauri::command]
 pub async fn collect_proxies(options: ProxyCollectorOpts) -> Vec<u8> {
   let proxies = scrape_proxies(options).await;
   proxies.join("\n").as_bytes().to_vec()
+}
+
+/// Команда проверки прокси
+#[tauri::command]
+pub async fn check_proxies(bytes: Vec<u8>) -> Vec<u8> {
+  let proxies_str = String::from_utf8_lossy(&bytes);
+  let proxies = proxies_str.split('\n').collect::<Vec<&str>>();
+  let checked_proxies = Arc::new(RwLock::new(Vec::new()));
+  let mut tasks = Vec::new();
+
+  for proxy in proxies {
+    let cpc = checked_proxies.clone();
+    let proxy_string = proxy.to_string();
+    let task = tokio::spawn(async move {
+      if check_proxy(proxy_string.clone()).await {
+        cpc.write().await.push(proxy_string);
+      }
+    });
+
+    tasks.push(task);
+  }
+
+  for task in tasks {
+    let _ = task.await;
+  }
+
+  let guard = checked_proxies.read().await;
+  guard.join("\n").as_bytes().to_vec()
 }

@@ -3,30 +3,31 @@ import { logger } from "../utils/logger";
 
 /** Модуль управления прокси и прокси-сборщика */
 class ProxyModule {
-  private proxyListEl: HTMLTextAreaElement | null;
+  private proxyList: HTMLTextAreaElement | null;
   private counter: HTMLElement | null;
   private status: HTMLElement | null;
 
   constructor() {
-    this.proxyListEl = null;
+    this.proxyList = null;
     this.counter = null;
     this.status = null;
   }
   
   /** Метод инициализации функций, связанных с сборщиком прокси */
   public async init(): Promise<void> {
-    this.proxyListEl = document.getElementById("proxy-list") as HTMLTextAreaElement;
+    this.proxyList = document.getElementById("proxy-list") as HTMLTextAreaElement;
     this.counter = document.getElementById("proxy-counter") as HTMLElement;
     this.status = document.getElementById("proxy-finder-status") as HTMLElement;
 
-    this.proxyListEl.addEventListener("input", () => this.updateCounter());
+    this.proxyList.addEventListener("input", () => this.updateCounter());
 
     document.getElementById("clear-proxy-list")?.addEventListener("click", () => {
-      this.proxyListEl!.value = "";
+      this.proxyList!.value = "";
       this.updateCounter();
     });
 
-    document.getElementById("find-proxy")?.addEventListener("click", () => this.collectProxy());
+    document.getElementById("find-proxies")?.addEventListener("click", () => this.collectProxies());
+    document.getElementById("check-proxies")?.addEventListener("click", () => this.checkProxies());
 
     this.updateCounter();
   }
@@ -38,7 +39,7 @@ class ProxyModule {
       return;
     }
     
-    let text = this.proxyListEl!.value;
+    let text = this.proxyList!.value;
 
     if (!text) {
       this.counter!.innerText = "0";
@@ -50,7 +51,7 @@ class ProxyModule {
     this.counter!.innerText = matches ? matches.length.toString() : "0";
   }
 
-  /** Метод установки статуса поиска прокси */
+  /** Вспомогательный метод установки статуса поиска прокси */
   private setStatus(text: string, color?: string): void {
     if (!this.status) return;
     this.status!.style.color = color ?? "#848080";
@@ -58,9 +59,9 @@ class ProxyModule {
   }
   
   /** Метод сборки прокси */
-  private async collectProxy(): Promise<void> {
+  private async collectProxies(): Promise<void> {
     try {
-      this.proxyListEl!.value = "";
+      this.proxyList!.value = "";
 
       const algorithm = (document.getElementById("proxy-finder_select_algorithm") as HTMLSelectElement).value;
       const country = (document.getElementById("proxy-finder_select_country") as HTMLSelectElement).value;
@@ -81,22 +82,53 @@ class ProxyModule {
       const uint8arr = new Uint8Array(bytes);
       const decoder = new TextDecoder("utf-8");
       const str = decoder.decode(uint8arr);
-      const proxyCount = str.split("\n").length;
 
-      if (proxyCount > 0) {
-        this.proxyListEl!.value = str;
-        this.updateCounter(proxyCount.toString());
-
-        this.setStatus("Поиск окончен", "#0cd212ff");
-      } else {
+      if (str === "") {
         this.setStatus("Ошибка поиска", "#cc1d1dff");
         logger.log("Ошибка сборщика прокси: Could not find a proxies", "error");
+        return;
       }
+
+      const proxyCount = str.split("\n").length;
+
+      this.proxyList!.value = str;
+      this.updateCounter(proxyCount.toString());
+      this.setStatus("Поиск окончен", "#0cd212ff");
     } catch (error) {
       this.setStatus("Ошибка поиска", "#cc1d1dff");
       logger.log(`Ошибка сборщика прокси: ${error}`, "error");
     } finally {
       setTimeout(() => this.setStatus("Поиск неактивен"), 2000);
+    }
+  }
+
+  /** Метод проверки прокси */
+  private async checkProxies(): Promise<void> {
+    try {
+      const proxies = this.proxyList?.value;
+      if (!proxies) return;
+      this.proxyList!.value = "";
+      this.updateCounter("0");
+
+      const encoder = new TextEncoder();
+      const inbytes = encoder.encode(proxies);
+
+      const out = await invoke("check_proxies", {
+        bytes: Array.from(inbytes),
+      }) as number[];
+
+      const outbytes = new Uint8Array(out);
+      const decoder = new TextDecoder("utf-8");
+      const str = decoder.decode(outbytes);
+
+      if (str === "") return;
+
+      const proxyCount = str.split("\n").length;
+
+      this.proxyList!.value = str;
+      this.updateCounter(proxyCount.toString());
+    } catch (error) {
+      logger.log(`Ошибка проверки прокси: ${error}`, "error");
     }
   }
 }    

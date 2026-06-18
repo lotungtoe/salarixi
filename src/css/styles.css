@@ -1163,7 +1163,7 @@ button svg {
 .between-wrapper {
   display: flex;
   margin-top: 5px;
-  width: 90%;
+  width: 95%;
   padding-top: 0;
 }
 
@@ -1176,10 +1176,10 @@ button svg {
 .between-wrapper .right {
   display: flex;
   flex-direction: column;
-  width: 300px;
+  width: 400px;
   align-items: center;
   justify-content: center;
-  margin-right: 20px;
+  margin-right: 30px;
 }
 
 .between-wrapper .right .sep {
