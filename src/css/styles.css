@@ -106,6 +106,10 @@
   --update-notice-warning-color: #ebbf31;
   --update-notice-warning-bg: #ebbf310d;
   --update-notice-warning-border: #ebc0312c;
+
+  --scrollbar-bg: #161616;
+  --scrollbar-thumb-bg: #353535;
+  --scrollbar-thumb-hover-bg: #5e5e5e;
 }
 
 * {
@@ -2813,12 +2817,29 @@ button svg {
   padding: 0 30px;
   font-family: var(--global-font-family);
   font-size: 16px;
+  gap: 10px;
   color: var(--default-color);
   -webkit-user-select: text;
   -moz-user-select: text;
   -ms-user-select: text;
   user-select: text;
   -ms-overflow-style: text;
+}
+
+.documentation-wrapper::-webkit-scrollbar { 
+  display: flex;
+  width: 10px;
+  background: var(--scrollbar-bg);
+}
+
+.documentation-wrapper::-webkit-scrollbar-thumb { 
+  background: var(--scrollbar-thumb-bg);
+  width: 4px;
+  border-radius: 6px;
+}
+
+.documentation-wrapper::-webkit-scrollbar-thumb:hover { 
+  background: var(--scrollbar-thumb-hover-bg);
 }
 
 .documentation-wrapper h1 {
@@ -2832,11 +2853,13 @@ button svg {
 .documentation-wrapper h2 {
   color: var(--docs-header-color);
   font-size: 20px;
+  margin-bottom: 5px;
 }
 
 .documentation-wrapper h3 {
   color: var(--docs-header-color);
   font-size: 18px;
+  margin-bottom: 5px;
 }
 
 .documentation-wrapper p {
@@ -2851,6 +2874,18 @@ button svg {
   justify-content: start;
   align-items: start;
   gap: 8px;
+  margin-top: 4px;
+  padding-left: 20px;
+}
+
+.documentation-wrapper ol {
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+  align-items: start;
+  gap: 8px;
+  margin-top: 4px;
+  padding-left: 24px;
 }
 
 .documentation-wrapper code {

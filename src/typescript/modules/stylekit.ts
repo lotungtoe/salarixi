@@ -93,6 +93,9 @@ class StylekitModule {
     "update-notice-warning-color": "#ebbf31",
     "update-notice-warning-bg": "#ebbf310d",
     "update-notice-warning-border": "#ebc0312c",
+    "scrollbar-bg": "#161616",
+    "scrollbar-thumb-bg": "#353535",
+    "scrollbar-thumb-hover-bg": "#5e5e5e",
   };
 
 	/** Метод инициализации модуля */
