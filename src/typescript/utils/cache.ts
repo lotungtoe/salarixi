@@ -56,13 +56,6 @@ export async function loadCache(name: string, filename: string, maxStorageValue:
       error: result1.error,
     };
   }
-  
-  if (isDataExpired(result1.data, maxStorageValue, timeType)) {
-    return {
-      data: result1.data,
-      error: "expired",
-    };
-  }
 
   const result2 = await invoke("load_cache", { filename: filename }) as CommandResult<number[]>;
   if (!result2.data) {
@@ -74,10 +67,10 @@ export async function loadCache(name: string, filename: string, maxStorageValue:
 
   const uint8 = new Uint8Array(result2.data);
   const decoder = new TextDecoder("utf-8");
-  const cache = decoder.decode(uint8);
+  const cacheStr = decoder.decode(uint8);
 
   return {
-    data: cache,
-    error: null,
+    data: cacheStr,
+    error: isDataExpired(result1.data, maxStorageValue, timeType) ? "expired" : null,
   };
 }
