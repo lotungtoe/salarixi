@@ -25,8 +25,8 @@ pub static SCRIPT_EXECUTOR: Lazy<ScriptExecutor> = Lazy::new(|| ScriptExecutor::
 static EXECUTOR_STATES: Lazy<RwLock<HashMap<String, ()>>> = Lazy::new(|| RwLock::new(HashMap::new()));
 static EXECUTOR_GLOBAL_STATE: Lazy<AtomicBool> = Lazy::new(|| AtomicBool::new(false));
 
-/// Функция парсинга юзернейма
-fn parse_username<'a>(su: &'a str, mu: &'a str) -> &'a str {
+/// Функция выбора юзернейма
+fn select_username<'a>(su: &'a str, mu: &'a str) -> &'a str {
   if su.is_empty() {
     mu
   } else {
@@ -588,7 +588,7 @@ impl ScriptExecutor {
         let su = su.clone();
         move |mu: &str| {
           BOT_REGISTRY
-            .get_bot(parse_username(&su, mu))
+            .get_bot(select_username(&su, mu))
             .map(|b| b.id().0 as i64)
             .unwrap_or(0)
         }
@@ -597,7 +597,7 @@ impl ScriptExecutor {
         let su = su.clone();
         move |mu: &str| {
           BOT_REGISTRY
-            .get_bot(parse_username(&su, mu))
+            .get_bot(select_username(&su, mu))
             .map(|b| b.ping() as i64)
             .unwrap_or(0)
         }
@@ -606,7 +606,7 @@ impl ScriptExecutor {
         let su = su.clone();
         move |mu: &str| {
           BOT_REGISTRY
-            .get_bot(parse_username(&su, mu))
+            .get_bot(select_username(&su, mu))
             .map(|b| {
               let pos = b.feet_pos();
               create_dynamic_vec(pos.x, pos.y, pos.z)
@@ -618,7 +618,7 @@ impl ScriptExecutor {
         let su = su.clone();
         move |mu: &str| {
           BOT_REGISTRY
-            .get_bot(parse_username(&su, mu))
+            .get_bot(select_username(&su, mu))
             .map(|b| {
               let pos = b.eye_pos();
               create_dynamic_vec(pos.x, pos.y, pos.z)
@@ -630,7 +630,7 @@ impl ScriptExecutor {
         let su = su.clone();
         move |mu: &str| {
           BOT_REGISTRY
-            .get_bot(parse_username(&su, mu))
+            .get_bot(select_username(&su, mu))
             .map(|b| b.get_health() as f64)
             .unwrap_or(0.0)
         }
@@ -639,7 +639,7 @@ impl ScriptExecutor {
         let su = su.clone();
         move |mu: &str| {
           BOT_REGISTRY
-            .get_bot(parse_username(&su, mu))
+            .get_bot(select_username(&su, mu))
             .map(|b| b.get_satiety() as i64)
             .unwrap_or(0)
         }
@@ -648,138 +648,188 @@ impl ScriptExecutor {
         let su = su.clone();
         move |mu: &str| {
           BOT_REGISTRY
-            .get_bot(parse_username(&su, mu))
+            .get_bot(select_username(&su, mu))
             .map(|b| b.workable())
             .unwrap_or(false)
         }
       })
       .register_fn("get_bot_profile", {
         let su = su.clone();
-        move |mu: &str| create_dynamic_profile(parse_username(&su, mu))
+        move |mu: &str| create_dynamic_profile(select_username(&su, mu))
       });
+
+    if !su.is_empty() {
+      engine
+        .register_fn("current_bot_id", {
+          let su = su.clone();
+          move || BOT_REGISTRY.get_bot(&su).map(|b| b.id().0 as i64).unwrap_or(0)
+        })
+        .register_fn("current_bot_ping", {
+          let su = su.clone();
+          move || BOT_REGISTRY.get_bot(&su).map(|b| b.ping() as i64).unwrap_or(0)
+        })
+        .register_fn("current_bot_feet_pos", {
+          let su = su.clone();
+          move || {
+            BOT_REGISTRY
+              .get_bot(&su)
+              .map(|b| {
+                let pos = b.feet_pos();
+                create_dynamic_vec(pos.x, pos.y, pos.z)
+              })
+              .unwrap_or(create_dynamic_vec(0.0, 0.0, 0.0))
+          }
+        })
+        .register_fn("current_bot_eye_pos", {
+          let su = su.clone();
+          move || {
+            BOT_REGISTRY
+              .get_bot(&su)
+              .map(|b| {
+                let pos = b.eye_pos();
+                create_dynamic_vec(pos.x, pos.y, pos.z)
+              })
+              .unwrap_or(create_dynamic_vec(0.0, 0.0, 0.0))
+          }
+        })
+        .register_fn("current_bot_health", {
+          let su = su.clone();
+          move || BOT_REGISTRY.get_bot(&su).map(|b| b.get_health() as f64).unwrap_or(0.0)
+        })
+        .register_fn("current_bot_satiety", {
+          let su = su.clone();
+          move || BOT_REGISTRY.get_bot(&su).map(|b| b.get_satiety() as i64).unwrap_or(0)
+        })
+        .register_fn("current_bot_profile", {
+          let su = su.clone();
+          move || create_dynamic_profile(&su)
+        });
+    }
 
     engine
       .register_fn("chat", {
         let su = su.clone();
-        move |mu: &str, message: &str| Self::chat(parse_username(&su, mu), message.to_string())
+        move |mu: &str, message: &str| Self::chat(select_username(&su, mu), message.to_string())
       })
       .register_fn("jump", {
         let su = su.clone();
-        move |mu: &str| Self::jump(parse_username(&su, mu))
+        move |mu: &str| Self::jump(select_username(&su, mu))
       })
       .register_fn("swing_arm", {
         let su = su.clone();
-        move |mu: &str| Self::swing_arm(parse_username(&su, mu))
+        move |mu: &str| Self::swing_arm(select_username(&su, mu))
       })
       .register_fn("set_jumping", {
         let su = su.clone();
-        move |mu: &str, state: bool| Self::set_jumping(parse_username(&su, mu), state)
+        move |mu: &str, state: bool| Self::set_jumping(select_username(&su, mu), state)
       })
       .register_fn("set_crouching", {
         let su = su.clone();
-        move |mu: &str, state: bool| Self::set_crouching(parse_username(&su, mu), state)
+        move |mu: &str, state: bool| Self::set_crouching(select_username(&su, mu), state)
       })
       .register_fn("set_velocity", {
         let su = su.clone();
-        move |mu: &str, axis: &str, velocity: f64| Self::set_velocity(parse_username(&su, mu), axis, velocity)
+        move |mu: &str, axis: &str, velocity: f64| Self::set_velocity(select_username(&su, mu), axis, velocity)
       })
       .register_fn("set_on_ground", {
         let su = su.clone();
-        move |mu: &str, on_ground: bool| Self::set_on_ground(parse_username(&su, mu), on_ground)
+        move |mu: &str, on_ground: bool| Self::set_on_ground(select_username(&su, mu), on_ground)
       })
       .register_fn("set_old_position", {
         let su = su.clone();
-        move |mu: &str, x: f64, y: f64, z: f64| Self::set_old_position(parse_username(&su, mu), x, y, z)
+        move |mu: &str, x: f64, y: f64, z: f64| Self::set_old_position(select_username(&su, mu), x, y, z)
       })
       .register_fn("set_no_jump_delay", {
         let su = su.clone();
-        move |mu: &str, delay: i64| Self::set_no_jump_delay(parse_username(&su, mu), delay as u32)
+        move |mu: &str, delay: i64| Self::set_no_jump_delay(select_username(&su, mu), delay as u32)
       })
       .register_fn("set_was_touching_water", {
         let su = su.clone();
-        move |mu: &str, state: bool| Self::set_was_touching_water(parse_username(&su, mu), state)
+        move |mu: &str, state: bool| Self::set_was_touching_water(select_username(&su, mu), state)
       })
       .register_fn("set_has_impulse", {
         let su = su.clone();
-        move |mu: &str, state: bool| Self::set_has_impulse(parse_username(&su, mu), state)
+        move |mu: &str, state: bool| Self::set_has_impulse(select_username(&su, mu), state)
       })
       .register_fn("start_walking", {
         let su = su.clone();
-        move |mu: &str, direction: &str| Self::start_walking(parse_username(&su, mu), direction.to_string())
+        move |mu: &str, direction: &str| Self::start_walking(select_username(&su, mu), direction.to_string())
       })
       .register_fn("start_sprinting", {
         let su = su.clone();
-        move |mu: &str, direction: &str| Self::start_sprinting(parse_username(&su, mu), direction)
+        move |mu: &str, direction: &str| Self::start_sprinting(select_username(&su, mu), direction)
       })
       .register_fn("start_pathfinder", {
         let su = su.clone();
-        move |mu: &str, x: i64, z: i64| Self::start_pathfinder(parse_username(&su, mu), x as i32, z as i32)
+        move |mu: &str, x: i64, z: i64| Self::start_pathfinder(select_username(&su, mu), x as i32, z as i32)
       })
       .register_fn("stop_move", {
         let su = su.clone();
-        move |mu: &str| Self::stop_move(parse_username(&su, mu))
+        move |mu: &str| Self::stop_move(select_username(&su, mu))
       })
       .register_fn("stop_pathfinder", {
         let su = su.clone();
-        move |mu: &str| Self::stop_pathfinder(parse_username(&su, mu))
+        move |mu: &str| Self::stop_pathfinder(select_username(&su, mu))
       });
 
     engine
       .register_fn("place_block", {
         let su = su.clone();
-        move |mu: &str, x: i64, y: i64, z: i64| Self::place_block(parse_username(&su, mu), x as i32, y as i32, z as i32)
+        move |mu: &str, x: i64, y: i64, z: i64| {
+          Self::place_block(select_username(&su, mu), x as i32, y as i32, z as i32)
+        }
       })
       .register_fn("look_at", {
         let su = su.clone();
-        move |mu: &str, x: f64, y: f64, z: f64| Self::look_at(parse_username(&su, mu), x, y, z)
+        move |mu: &str, x: f64, y: f64, z: f64| Self::look_at(select_username(&su, mu), x, y, z)
       })
       .register_fn("look_at_block", {
         let su = su.clone();
         move |mu: &str, x: i64, y: i64, z: i64| {
-          Self::look_at_block(parse_username(&su, mu), x as i32, y as i32, z as i32)
+          Self::look_at_block(select_username(&su, mu), x as i32, y as i32, z as i32)
         }
       });
 
     engine
       .register_fn("drop_selected_item", {
         let su = su.clone();
-        move |mu: &str, lock: bool| Self::drop_selected_item(parse_username(&su, mu), lock)
+        move |mu: &str, lock: bool| Self::drop_selected_item(select_username(&su, mu), lock)
       })
       .register_fn("drop_all_items", {
         let su = su.clone();
-        move |mu: &str, lock: bool| Self::drop_all_items(parse_username(&su, mu), lock)
+        move |mu: &str, lock: bool| Self::drop_all_items(select_username(&su, mu), lock)
       })
       .register_fn("inv_click", {
         let su = su.clone();
         move |mu: &str, slot: i64, mode: i64, lock: bool| {
-          Self::inv_click(parse_username(&su, mu), slot as usize, mode as u8, lock)
+          Self::inv_click(select_username(&su, mu), slot as usize, mode as u8, lock)
         }
       })
       .register_fn("inv_click_on", {
         let su = su.clone();
         move |mu: &str, name: &str, mode: i64, lock: bool| {
-          Self::inv_click_on(parse_username(&su, mu), name, mode as u8, lock)
+          Self::inv_click_on(select_username(&su, mu), name, mode as u8, lock)
         }
       })
       .register_fn("set_selected_slot", {
         let su = su.clone();
-        move |mu: &str, slot: i64| Self::set_selected_slot(parse_username(&su, mu), slot as u8)
+        move |mu: &str, slot: i64| Self::set_selected_slot(select_username(&su, mu), slot as u8)
       });
 
     engine
       .register_fn("attack", {
         let su = su.clone();
         move |mu: &str, target: &str, distance: f64, look_at_target: bool| {
-          Self::attack(parse_username(&su, mu), target.to_string(), distance, look_at_target);
+          Self::attack(select_username(&su, mu), target.to_string(), distance, look_at_target);
         }
       })
       .register_fn("start_use_item", {
         let su = su.clone();
-        move |mu: &str, hand: &str| Self::start_use_item(parse_username(&su, mu), hand)
+        move |mu: &str, hand: &str| Self::start_use_item(select_username(&su, mu), hand)
       })
       .register_fn("release_use_item", {
         let su = su.clone();
-        move |mu: &str| Self::release_use_item(parse_username(&su, mu))
+        move |mu: &str| Self::release_use_item(select_username(&su, mu))
       });
 
     engine
@@ -787,7 +837,7 @@ impl ScriptExecutor {
         let su = su.clone();
         move |mu: &str, state_str: &str, value: bool| {
           if let Some(state) = State::from_str(state_str) {
-            set_state(parse_username(&su, mu), state, value);
+            set_state(select_username(&su, mu), state, value);
           }
         }
       })
@@ -795,7 +845,7 @@ impl ScriptExecutor {
         let su = su.clone();
         move |mu: &str, state_str: &str| {
           if let Some(state) = State::from_str(state_str) {
-            get_state(parse_username(&su, mu), state)
+            get_state(select_username(&su, mu), state)
           } else {
             false
           }
