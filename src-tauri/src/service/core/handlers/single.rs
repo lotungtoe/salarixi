@@ -7,7 +7,6 @@ use azalea::protocol::packets::game::ClientboundGamePacket;
 use azalea::registry::builtin::EntityKind;
 use azalea::FormattedText;
 use azalea::{ClientInformation, NoState};
-use std::io;
 use std::sync::Arc;
 
 use crate::api::emit::*;
@@ -30,7 +29,7 @@ use crate::service::script::SCRIPT_EXECUTOR;
 use crate::service::webhook::*;
 
 /// Обработчик для одного бота
-pub async fn single_handler(bot: Client, event: Event, _state: NoState) -> io::Result<()> {
+pub async fn single_handler(bot: Client, event: Event, _state: NoState) {
   match event {
     Event::Init => process_init(bot),
     Event::Spawn => process_spawn(bot).await,
@@ -40,8 +39,6 @@ pub async fn single_handler(bot: Client, event: Event, _state: NoState) -> io::R
     Event::Packet(packet) => process_packet(bot, packet),
     _ => {}
   }
-
-  Ok(())
 }
 
 /// Функция обработки инициализации

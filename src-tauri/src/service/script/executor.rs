@@ -2,10 +2,12 @@ use azalea::bot::BotClientExt;
 use azalea::prelude::PathfinderClientExt;
 use azalea::protocol::packets::game::s_interact::InteractionHand;
 use azalea::{BlockPos, SprintDirection, Vec3, WalkDirection};
+use hashbrown::HashMap;
 use once_cell::sync::Lazy;
 use rhai::{Dynamic, Engine, EvalAltResult, Map};
 use std::str::FromStr;
 use std::sync::atomic::{AtomicBool, Ordering};
+use tokio::sync::RwLock;
 
 use crate::api::emit::{emit_log, emit_msg};
 use crate::service::core::bot::{get_state, set_state, State, PROFILES};
@@ -20,7 +22,8 @@ use crate::service::webhook::*;
 
 pub static SCRIPT_EXECUTOR: Lazy<ScriptExecutor> = Lazy::new(|| ScriptExecutor::new());
 
-static EXECUTOR_STATE: Lazy<AtomicBool> = Lazy::new(|| AtomicBool::new(false));
+static EXECUTOR_STATES: Lazy<RwLock<HashMap<String, ()>>> = Lazy::new(|| RwLock::new(HashMap::new()));
+static EXECUTOR_GLOBAL_STATE: Lazy<AtomicBool> = Lazy::new(|| AtomicBool::new(false));
 
 /// Функция парсинга юзернейма
 fn parse_username<'a>(su: &'a str, mu: &'a str) -> &'a str {
@@ -494,16 +497,72 @@ impl ScriptExecutor {
 
   /// Метод исполнения пользовательского сценария
   pub fn execute(&self, su: String, script: String) {
-    EXECUTOR_STATE.store(true, Ordering::Relaxed);
+    let mut states = match EXECUTOR_STATES.try_write() {
+      Ok(g) => g,
+      Err(_) => {
+        if su.is_empty() {
+          emit_msg("Сценарий", "Не удалось выполнить сценарий");
+          emit_log(
+            "Не выполнить запустить сценарий: States are currently occupied",
+            "warning",
+          );
+        } else {
+          emit_msg("Сценарий", format!("Не удалось выполнить сценарий для {}", su));
+          emit_log(
+            format!(
+              "Не выполнить запустить сценарий для {}: States are currently occupied",
+              su
+            ),
+            "warning",
+          );
+        }
+
+        return;
+      }
+    };
+
+    if su.is_empty() {
+      if !states.is_empty() || EXECUTOR_GLOBAL_STATE.load(Ordering::SeqCst) {
+        emit_msg("Сценарий", "Не удалось выполнить сценарий");
+        emit_log("Не выполнить запустить сценарий: Script is already running", "warning");
+        return;
+      }
+    } else {
+      if states.contains_key(&su) {
+        emit_msg("Сценарий", format!("Не удалось выполнить сценарий для {}", su));
+        emit_log(
+          format!("Не выполнить запустить сценарий для {}: Script is already running", su),
+          "warning",
+        );
+        return;
+      }
+    }
+
+    if su.is_empty() {
+      EXECUTOR_GLOBAL_STATE.store(true, Ordering::SeqCst);
+    } else {
+      states.insert(su.clone(), ());
+    }
+
+    drop(states);
 
     let mut engine = Engine::new();
 
+    let su_clone = su.clone();
     engine.on_progress(move |_| {
-      if !EXECUTOR_STATE.load(Ordering::Relaxed) {
-        Some(Dynamic::UNIT)
+      if su_clone.is_empty() {
+        if !EXECUTOR_GLOBAL_STATE.load(Ordering::SeqCst) {
+          return Some(Dynamic::UNIT);
+        }
       } else {
-        None
+        if let Ok(states) = EXECUTOR_STATES.try_read() {
+          if !states.contains_key(&su_clone) {
+            return Some(Dynamic::UNIT);
+          }
+        }
       }
+
+      None
     });
 
     engine
@@ -522,7 +581,7 @@ impl ScriptExecutor {
         }
       });
 
-    engine.register_fn("active_bots_count", || active_bots_count());
+    engine.register_fn("active_bots_count", || active_bots_count() as i64);
 
     engine
       .register_fn("get_bot_id", {
@@ -736,7 +795,9 @@ impl ScriptExecutor {
         let su = su.clone();
         move |mu: &str, state_str: &str| {
           if let Some(state) = State::from_str(state_str) {
-            get_state(parse_username(&su, mu), state);
+            get_state(parse_username(&su, mu), state)
+          } else {
+            false
           }
         }
       });
@@ -744,35 +805,43 @@ impl ScriptExecutor {
     match engine.eval::<()>(&script) {
       Ok(_) => {
         if !su.is_empty() {
-          emit_log(format!("Скрипт автоматически выполнен для {}", su), "info");
+          emit_log(format!("Сценарий автоматически выполнен для {}", su), "info");
         } else {
-          emit_log("Скрипт выполнен", "info");
-          emit_msg("Скриптинг", "Скрипт выполнен");
+          emit_log("Сценарий выполнен", "info");
+          emit_msg("Сценарий", "Сценарий выполнен");
         }
       }
       Err(err) => match err.as_ref() {
         &EvalAltResult::ErrorTerminated(_, _) => {
-          emit_log("Скрипт принудительно остановлен", "info");
-          emit_msg("Скриптинг", "Скрипт принудительно остановлен");
+          emit_log("Сценарий принудительно остановлен", "info");
+          emit_msg("Сценарий", "Сценарий принудительно остановлен");
         }
         _ => {
           if !su.is_empty() {
-            emit_log(format!("Ошибка выполнения скрипта для {}: {}", su, err), "info");
+            emit_log(format!("Ошибка выполнения сценария для {}: {}", su, err), "info");
           } else {
-            emit_log(format!("Ошибка выполнения скрипта: {}", err), "error");
-            emit_msg("Скриптинг", "Не удалось выполнить скрипт");
+            emit_log(format!("Ошибка выполнения сценария: {}", err), "error");
+            emit_msg("Сценарий", "Не удалось выполнить сценарий");
           }
         }
       },
     }
 
-    EXECUTOR_STATE.store(false, Ordering::Relaxed);
+    if su.is_empty() {
+      EXECUTOR_GLOBAL_STATE.store(false, Ordering::SeqCst);
+    } else {
+      if let Ok(mut states) = EXECUTOR_STATES.try_write() {
+        states.remove(&su);
+      }
+    }
   }
 
   /// Метод остановки процесса исполнения пользовательского сценария
   pub fn stop(&self) {
-    if EXECUTOR_STATE.load(Ordering::Relaxed) {
-      EXECUTOR_STATE.store(false, Ordering::Relaxed);
+    EXECUTOR_GLOBAL_STATE.store(false, Ordering::SeqCst);
+
+    if let Ok(mut states) = EXECUTOR_STATES.try_write() {
+      states.clear();
     }
   }
 }
