@@ -139,7 +139,7 @@ async fn process_disconnect(bot: Client, text: Option<FormattedText>) {
   let username = bot.name();
 
   TASKS.reset(&username);
-  PLUGIN_MANAGER.destroy_all_tasks(&username);
+  PLUGIN_MANAGER.destroy_all_tasks(&username).await;
 
   BOT_REGISTRY.take_bot(&username).await;
 

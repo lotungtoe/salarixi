@@ -4,8 +4,9 @@ use std::sync::Arc;
 
 use crate::api::emit::{emit_log, emit_msg};
 use crate::service::core::bot::PROFILES;
+use crate::service::core::current_options;
+use crate::service::core::modules::*;
 use crate::service::core::traits::SalarixiModule;
-use crate::service::core::{current_options, modules::*};
 use crate::service::webhook::send_webhook;
 
 pub static MODULE_MANAGER: Lazy<Arc<ModuleManager>> = Lazy::new(|| Arc::new(ModuleManager::new()));
@@ -45,7 +46,7 @@ pub struct ModuleManager {
 }
 
 impl ModuleManager {
-  /// Метод создания нового менеджера модулей
+  /// Метод создания менеджера модулей
   pub fn new() -> Self {
     Self {
       chat: ChatModule::new(),
@@ -80,7 +81,7 @@ impl ModuleManager {
         }
       }
 
-      let mut success = false;
+      let success;
 
       match module_name.as_str() {
         "chat" => {
@@ -101,7 +102,7 @@ impl ModuleManager {
         }
         "anti-afk" => {
           let options: AntiAfkOptions = try_parse_options(cur_opts)?;
-          self.anti_afk.switch(username, options);
+          success = self.anti_afk.switch(username, options);
         }
         "stalker" => {
           let options: StalkerOptions = try_parse_options(cur_opts)?;

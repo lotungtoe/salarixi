@@ -39,12 +39,13 @@ fn clear_proxy(proxy: &str) -> String {
 }
 
 /// Функция запуска ботов на сервер
-pub fn launch_bots_on_server(options: LaunchOptions) -> bool {
+pub async fn launch_bots_on_server(options: LaunchOptions) -> bool {
   if process_is_active() {
     emit_log(
       format!("Запуск ботов невозможен: The process is already active"),
       "warning",
     );
+
     return false;
   }
 
@@ -282,9 +283,7 @@ pub fn launch_bots_on_server(options: LaunchOptions) -> bool {
 }
 
 /// Функция остановки ботов
-pub fn stop_bots_and_destroy_data() -> bool {
-  let active_bots = active_bots_count();
-
+pub async fn stop_bots_and_destroy_data() -> bool {
   emit_msg("Система", "Остановка ботов...".to_string());
 
   if !process_is_active() {
@@ -292,13 +291,16 @@ pub fn stop_bots_and_destroy_data() -> bool {
       format!("Остановка ботов невозможна: The process is not active now"),
       "warning",
     );
+
     return false;
   }
 
-  PLUGIN_MANAGER.clear();
-  TASKS.clear();
-  STATES.clear();
-  PROFILES.clear();
+  let active_bots = active_bots_count();
+
+  PLUGIN_MANAGER.clear().await;
+  TASKS.clear().await;
+  STATES.clear().await;
+  PROFILES.clear().await;
 
   MAP_ACCUMULATOR.clear_all();
 

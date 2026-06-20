@@ -1,5 +1,4 @@
 mod api;
-mod error;
 mod modules;
 mod result;
 mod service;

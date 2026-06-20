@@ -26,13 +26,13 @@ pub async fn launch_bots(options: Vec<u8>) -> bool {
     Err(_) => return false,
   };
 
-  launch_bots_on_server(parsed_options)
+  launch_bots_on_server(parsed_options).await
 }
 
 /// Функция остановки ботов
 #[tauri::command]
 pub async fn stop_bots() -> bool {
-  stop_bots_and_destroy_data()
+  stop_bots_and_destroy_data().await
 }
 
 /// Функция получения профилей ботов

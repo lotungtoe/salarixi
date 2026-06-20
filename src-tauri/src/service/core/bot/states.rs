@@ -178,11 +178,8 @@ impl StateManager {
   }
 
   /// Метод очистки хранилища состояний
-  pub fn clear(&self) {
-    if let Ok(mut states) = self.map.try_write() {
-      states.clear();
-    }
-
+  pub async fn clear(&self) {
+    self.map.write().await.clear();
     emit_log("Состояния ботов очищены", "extended");
   }
 

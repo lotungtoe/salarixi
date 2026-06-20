@@ -133,11 +133,10 @@ impl TaskManager {
   }
 
   /// Метод остановки всех активных задач и очистки хранилища
-  pub fn clear(&self) {
-    if let Ok(mut tasks) = self.map.try_write() {
-      tasks.iter_mut().for_each(|(_, t)| t.kill_all_tasks());
-      tasks.clear();
-    }
+  pub async fn clear(&self) {
+    let mut tasks = self.map.write().await;
+    tasks.iter_mut().for_each(|(_, t)| t.kill_all_tasks());
+    tasks.clear();
 
     emit_log("Активные задачи ботов остановлены", "extended");
   }

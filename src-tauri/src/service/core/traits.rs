@@ -13,5 +13,5 @@ pub trait SalarixiPlugin {
   fn new() -> Self;
 
   /// Метод активации плагина для определённого бота
-  fn activate(&'static self, username: String) -> std::io::Result<()>;
+  fn activate(&'static self, username: String);
 }

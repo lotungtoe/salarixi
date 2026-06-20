@@ -36,7 +36,7 @@ pub fn reset_bot(username: String) {
 pub fn disconnect_bot(username: String) {
   tokio::spawn(async move {
     TASKS.reset(&username);
-    PLUGIN_MANAGER.destroy_all_tasks(&username);
+    PLUGIN_MANAGER.destroy_all_tasks(&username).await;
 
     if let Some(bot) = BOT_REGISTRY.take_bot(&username).await {
       bot.disconnect();

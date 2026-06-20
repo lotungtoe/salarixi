@@ -268,7 +268,7 @@ impl SalarixiPlugin for AutoPotionPlugin {
     Self
   }
 
-  fn activate(&'static self, username: String) -> std::io::Result<()> {
+  fn activate(&'static self, username: String) {
     let username_clone = username.clone();
 
     let task = tokio::spawn(async move {
@@ -292,7 +292,5 @@ impl SalarixiPlugin for AutoPotionPlugin {
     });
 
     PLUGIN_MANAGER.push_task(&username, "auto-potion", task);
-
-    Ok(())
   }
 }

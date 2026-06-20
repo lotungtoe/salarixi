@@ -311,7 +311,7 @@ impl SalarixiPlugin for AutoEatPlugin {
     Self
   }
 
-  fn activate(&'static self, username: String) -> std::io::Result<()> {
+  fn activate(&'static self, username: String) {
     let username_clone = username.clone();
 
     let task = tokio::spawn(async move {
@@ -335,7 +335,5 @@ impl SalarixiPlugin for AutoEatPlugin {
     });
 
     PLUGIN_MANAGER.push_task(&username, "auto-eat", task);
-
-    Ok(())
   }
 }

@@ -126,11 +126,8 @@ impl ProfileManager {
   }
 
   /// Метод очистки хранилища всех профилей
-  pub fn clear(&self) {
-    if let Ok(mut profiles) = self.map.try_write() {
-      profiles.clear();
-    }
-
+  pub async fn clear(&self) {
+    self.map.write().await.clear();
     emit_log("Профили ботов очищены", "extended");
   }
 

@@ -5,11 +5,12 @@ use tokio::sync::RwLock;
 use tokio::task::JoinHandle;
 
 use crate::api::emit::emit_log;
-use crate::error;
+use crate::result::CommandResult;
 use crate::service::core::bot::PROFILES;
 use crate::service::core::launch::options::PluginOptions;
 use crate::service::core::plugins::*;
 use crate::service::core::traits::SalarixiPlugin;
+use crate::{failed, success};
 
 pub static PLUGIN_MANAGER: Lazy<Arc<PluginManager>> = Lazy::new(|| Arc::new(PluginManager::new()));
 
@@ -32,6 +33,7 @@ struct PluginList {
 }
 
 impl PluginManager {
+  /// Метод создания менеджера плагинов
   pub fn new() -> Self {
     Self {
       tasks: RwLock::new(HashMap::new()),
@@ -47,47 +49,45 @@ impl PluginManager {
     }
   }
 
-  pub fn activate_for(&'static self, username: String, plugins: PluginOptions) -> std::io::Result<()> {
+  /// Метод активации плагинов для указанного бота
+  pub fn activate_for(&'static self, username: String, plugins: PluginOptions) -> CommandResult<()> {
     match self.tasks.try_write() {
-      Ok(mut guard) => {
-        guard.insert(username.clone(), HashMap::new());
-      }
-      Err(_) => {
-        error!("plugin task list is already in use");
-      }
-    }
+      Ok(mut guard) => guard.insert(username.clone(), HashMap::new()),
+      Err(_) => failed!("plugin task list is already in use"),
+    };
 
     if plugins.auto_armor {
-      self.plugins.auto_armor.activate(username.clone())?;
+      self.plugins.auto_armor.activate(username.clone());
     }
 
     if plugins.auto_totem {
-      self.plugins.auto_totem.activate(username.clone())?;
+      self.plugins.auto_totem.activate(username.clone());
     }
 
     if plugins.auto_eat {
-      self.plugins.auto_eat.activate(username.clone())?;
+      self.plugins.auto_eat.activate(username.clone());
     }
 
     if plugins.auto_potion {
-      self.plugins.auto_potion.activate(username.clone())?;
+      self.plugins.auto_potion.activate(username.clone());
     }
 
     if plugins.auto_look {
-      self.plugins.auto_look.activate(username.clone())?;
+      self.plugins.auto_look.activate(username.clone());
     }
 
     if plugins.auto_shield {
-      self.plugins.auto_shield.activate(username.clone())?;
+      self.plugins.auto_shield.activate(username.clone());
     }
 
     if plugins.auto_repair {
-      self.plugins.auto_repair.activate(username.clone())?;
+      self.plugins.auto_repair.activate(username.clone());
     }
 
-    Ok(())
+    success!(());
   }
 
+  /// Метод добавления задачи плагина указанному боту
   pub fn push_task(&self, username: &str, plugin: &str, task: JoinHandle<()>) {
     if let Ok(mut guard) = self.tasks.try_write() {
       if let Some(tasks) = guard.get_mut(username) {
@@ -102,21 +102,23 @@ impl PluginManager {
     }
   }
 
-  pub fn destroy_all_tasks(&self, username: &str) {
-    if let Ok(mut guard) = self.tasks.try_write() {
-      if let Some(tasks) = guard.get_mut(username) {
-        for (_, task) in tasks {
-          if let Some(handle) = task {
-            handle.abort();
-          }
+  /// Метод уничтожения всех задач плагинов указанного бота
+  pub async fn destroy_all_tasks(&self, username: &str) {
+    let mut map = self.tasks.write().await;
+
+    if let Some(tasks) = map.get_mut(username) {
+      for (_, t) in tasks {
+        if let Some(h) = t {
+          h.abort();
         }
       }
     }
   }
 
-  pub fn clear(&self) {
+  /// Метод очистки всех задач
+  pub async fn clear(&self) {
     for (username, _) in PROFILES.get_all() {
-      self.destroy_all_tasks(&username);
+      self.destroy_all_tasks(&username).await;
     }
 
     emit_log("Активные задачи плагинов остановлены", "extended");

@@ -344,7 +344,7 @@ impl SalarixiPlugin for AutoArmorPlugin {
     Self
   }
 
-  fn activate(&'static self, username: String) -> std::io::Result<()> {
+  fn activate(&'static self, username: String) {
     let username_clone = username.clone();
 
     let task = tokio::spawn(async move {
@@ -368,7 +368,5 @@ impl SalarixiPlugin for AutoArmorPlugin {
     });
 
     PLUGIN_MANAGER.push_task(&username, "auto-armor", task);
-
-    Ok(())
   }
 }
