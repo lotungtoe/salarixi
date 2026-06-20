@@ -35,8 +35,6 @@ class MonitoringModule {
   private chatMessageCounter: Record<string, number> = {};
   private chatHistoryFilters: Record<string, string> = {};
 
-  private listeners: Map<string, any> = new Map();
-
   public maxChatHistoryLength: number = 0;
 
   /** Метод инициализации функций, связанных с мониторингом */
@@ -133,10 +131,6 @@ class MonitoringModule {
 
   /** Метод очистки и выключения мониторинга */
   public disable(): void {
-    for (const [id, data] of this.listeners) document.getElementById(id)?.removeEventListener(data.event, data.listener);
-
-    this.listeners.clear();
-
     document.querySelectorAll('[wrapper="bot-chat"]').forEach(w => w.remove());
     document.querySelectorAll('[wrapper="bot-card"]').forEach(w => w.remove());
 
@@ -150,12 +144,6 @@ class MonitoringModule {
 
     this.statusText!.innerText = "Объекты ботов отсутствуют";
     this.statusText!.style.display = "flex";
-  }
-
-  /** Метод добавления временного слушателя событий */
-  private addTempListener(id: string, event: string, listener: EventListener): void {
-    document.getElementById(id)?.addEventListener(event, listener);
-    this.listeners.set(id, { event: event, listener: listener });
   }
 
   /** Метод создания карточки бота */
@@ -307,7 +295,7 @@ class MonitoringModule {
 
     const chatWrapper = this.createChatWrapper(username);
 
-    this.addTempListener(`bot-group-${username}`, "input", async () => {
+    document.getElementById(`bot-group-${username}`)?.addEventListener("input", async () => {
       try {
         const group = (document.getElementById(`bot-group-${username}`) as HTMLInputElement).value.replace(" ", "");
 
@@ -320,10 +308,10 @@ class MonitoringModule {
       }
     });
 
-    this.addTempListener(`open-chat-${username}`, "click", () => chatWrapper.style.display = "flex");
-    this.addTempListener(`close-chat-${username}`, "click", () => chatWrapper.style.display = "none");
+    document.getElementById(`open-chat-${username}`)?.addEventListener("click", () => chatWrapper.style.display = "flex");
+    document.getElementById(`close-chat-${username}`)?.addEventListener("click", () => chatWrapper.style.display = "none");
 
-    this.addTempListener(`disconnect-${username}`, "click", async () => {
+    document.getElementById(`disconnect-${username}`)?.addEventListener("click", async () => {
       try {
         await invoke("send_command", {
           command: "disconnect_bot",
@@ -336,7 +324,7 @@ class MonitoringModule {
       }
     });
 
-    this.addTempListener(`reset-${username}`, "click", async () => {
+    document.getElementById(`reset-${username}`)?.addEventListener("click", async () => {
       try {
         await invoke("send_command", {
           command: "reset_bot",
@@ -349,7 +337,7 @@ class MonitoringModule {
       }
     });
 
-    this.addTempListener(`filter-chat-${username}`, "click", () => {
+    document.getElementById(`filter-chat-${username}`)?.addEventListener("click", () => {
       try {
         const content = document.getElementById(`monitoring-chat-content-${username}`);
         const type = document.getElementById(`select-chat-filter-${username}`) as HTMLSelectElement;
@@ -364,13 +352,13 @@ class MonitoringModule {
       }
     });
 
-    this.addTempListener(`clear-chat-${username}`, "click", () => {
+    document.getElementById(`clear-chat-${username}`)?.addEventListener("click", () => {
       const messages = document.querySelectorAll(`[monitoring-message="${username}"]`);
       messages.forEach(msg => msg.remove());
       this.chatMessageCounter[username] = 0;
     });
 
-    this.addTempListener(`chat-${username}`, "keydown", async (e) => {
+    document.getElementById(`chat-${username}`)?.addEventListener("keydown", async (e) => {
       if ((e as KeyboardEvent).key === "Enter") {
         const input = document.getElementById(`chat-message-${username}`) as HTMLInputElement;
 

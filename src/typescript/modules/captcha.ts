@@ -18,8 +18,6 @@ class CaptchaModule {
   private cards: HTMLElement | null = null;
   private wrappers: HTMLElement | null = null;
 
-  private listeners: Map<string, any> = new Map();
-
   /** Метод инициализации функций, связанных с обходом капчи */
   public async init(): Promise<void> {
     this.settings = document.getElementById("anti-captcha-settings");
@@ -75,10 +73,6 @@ class CaptchaModule {
 
   /** Метод очистки и выключения обхода капчи */
   public disable(): void {
-    for (const [id, data] of this.listeners) document.getElementById(id)?.removeEventListener(data.event, data.listener);
-
-    this.listeners.clear();
-
     document.querySelectorAll('[wrapper="captcha-card"]').forEach(w => w.remove());
     document.querySelectorAll('[wrapper="captcha-img"]').forEach(w => w.remove());
 
@@ -88,12 +82,6 @@ class CaptchaModule {
     this.wrappers!.innerHTML = "";
 
     this.settings!.style.display = "flex";
-  }
-
-  /** Метод добавления временного слушателя событий */
-  private addTempListener(id: string, event: string, listener: EventListener): void {
-    document.getElementById(id)?.addEventListener(event, listener);
-    this.listeners.set(id, { event: event, listener: listener });
   }
 
   /** Метод создания карточки капчи */
@@ -129,7 +117,7 @@ class CaptchaModule {
   /** Метод инициализации карточки капчи */
   private initializeCaptchaCard(username: string, captcha: Captcha): void {
     if (captcha.type === "web") {
-      this.addTempListener(`solve-captcha-${username}`, "click", async () => {
+      document.getElementById(`solve-captcha-${username}`)?.addEventListener("click", async () => {
         const url = captcha.data.url;
         if (url && url !== "") await invoke("open_url", { url: url });
       });
@@ -173,10 +161,10 @@ class CaptchaModule {
         img.style.height = (img.naturalHeight * scale) + "px";
       };
 
-      this.addTempListener(`solve-captcha-${username}`, "click", () => wrapper.style.display = "flex");
-      this.addTempListener(`close-captcha-wrapper-${username}`, "click", () => wrapper.style.display = "none");
+      document.getElementById(`solve-captcha-${username}`)?.addEventListener("click", () => wrapper.style.display = "flex");
+      document.getElementById(`close-captcha-wrapper-${username}`)?.addEventListener("click", () => wrapper.style.display = "none");
 
-      this.addTempListener(`captcha-wrapper-${username}`, "keydown", async (e: Event) => {
+      document.getElementById(`captcha-wrapper-${username}`)?.addEventListener("keydown", async (e: Event) => {
         if ((e as KeyboardEvent).key === "Enter") {
           const input = document.getElementById(`captcha-code-${username}`) as HTMLInputElement;
 
@@ -193,7 +181,7 @@ class CaptchaModule {
       });
     }
 
-    this.addTempListener(`remove-captcha-${username}`, "click", async () => {
+    document.getElementById(`remove-captcha-${username}`)?.addEventListener("click", async () => {
       document.getElementById(`bot-captcha-${username}`)?.remove();
       document.getElementById(`captcha-wrapper-${username}`)?.remove();
     });
