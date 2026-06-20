@@ -16,36 +16,7 @@ class ConfigModule {
     document.getElementById("upload-config")?.addEventListener("click", async () => await this.uploadConfig());
     document.getElementById("share-config")?.addEventListener("click", async () => await this.shareConfig());
 
-    setInterval(async () => {
-      const elements = document.querySelectorAll<HTMLElement>('[keep="true"]');
-      const config: Record<string, ConfigValue> = {};
-
-      elements.forEach(e => {
-        const id = e.id.replaceAll("_", ".");
-
-        if (e.tagName.toLocaleLowerCase() === "input") {
-          const el = e as HTMLInputElement;
-          el.type === "checkbox" ? config[id] = el.checked : config[id] = el.type === "number" ? el.value.includes(".") || el.value.includes(",") ? parseFloat(el.value) : parseInt(el.value) : el.value;
-        } else if (e.tagName.toLocaleLowerCase() === "textarea") {
-          const el = e as HTMLTextAreaElement;
-          config[id] = el.type === "number" ? parseInt(el.value) : el.value;
-        } else {
-          const el = e as HTMLSelectElement;
-          config[id] = el.selectedIndex;
-        }
-      });
-
-      const encoder = new TextEncoder();
-      const uint8 = encoder.encode(JSON.stringify(config));
-
-      const result = await invoke("save_config", {
-        bytes: Array.from(uint8),
-      }) as CommandResult<null>;
-
-      if (result.error) {
-        logger.log(`Ошибка сохранения конфига: ${result.error}`, "error");
-      }
-    }, 1500);
+    setInterval(async () => await this.saveCurrentConfig(), 5000);
 
     const result = await invoke("load_config") as CommandResult<number[]>;
 
@@ -67,6 +38,38 @@ class ConfigModule {
     triggerRegistry.triggerAll();
 
     logger.log("Конфиг успешно загружен", "system");
+  }
+
+  /** Метод сохранения текущего конфига */
+  public async saveCurrentConfig(): Promise<void> {
+    const elements = document.querySelectorAll<HTMLElement>('[keep="true"]');
+    const config: Record<string, ConfigValue> = {};
+
+    elements.forEach(e => {
+      const id = e.id.replaceAll("_", ".");
+
+      if (e.tagName.toLocaleLowerCase() === "input") {
+        const el = e as HTMLInputElement;
+        el.type === "checkbox" ? config[id] = el.checked : config[id] = el.type === "number" ? el.value.includes(".") || el.value.includes(",") ? parseFloat(el.value) : parseInt(el.value) : el.value;
+      } else if (e.tagName.toLocaleLowerCase() === "textarea") {
+        const el = e as HTMLTextAreaElement;
+        config[id] = el.type === "number" ? parseInt(el.value) : el.value;
+      } else {
+        const el = e as HTMLSelectElement;
+        config[id] = el.selectedIndex;
+      }
+    });
+
+    const encoder = new TextEncoder();
+    const uint8 = encoder.encode(JSON.stringify(config));
+
+    const result = await invoke("save_config", {
+      bytes: Array.from(uint8),
+    }) as CommandResult<null>;
+
+    if (result.error) {
+      logger.log(`Ошибка сохранения конфига: ${result.error}`, "error");
+    }
   }
 
   /** Метод установки значения для элемента */

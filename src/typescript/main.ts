@@ -347,7 +347,10 @@ export function addOpeningUrlTo(id: string, event: string, url: string): void {
 function initTitleBar(): void {
   (document.getElementById("title-version") as HTMLElement).innerText = `v${currentClientVersion}`;
   (document.getElementById("window-minimize") as HTMLButtonElement).addEventListener("click", async () => await getCurrentWindow().minimize());
-  (document.getElementById("window-close") as HTMLButtonElement).addEventListener("click", async () => await invoke("exit"));
+  (document.getElementById("window-close") as HTMLButtonElement).addEventListener("click", async () => {
+    await configModule.saveCurrentConfig();
+    await invoke("exit");
+  });
 }
 
 /** Функция инициализации слушателей основных событий */
