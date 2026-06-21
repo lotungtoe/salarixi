@@ -11,9 +11,12 @@ Uses [azalea](https://github.com/azalea-rs/azalea) library as a base.
 ---
 
 > [!WARNING]
-> This client does not promise stability and good support on all operating systems. If you encounter any problems, please report them to the [issues](https://codeberg.org/nullclyze/salarixi/issues).
->
-> If the message concerns an error or bug, it should include the client version, operating system, a clear description of the problem, and screenshots (if possible).
+> This client does not promise stability and good support on all operating systems. If you encounter any problems, please report them to the [issues](https://codeberg.org/nullclyze/salarixi/issues). If the message concerns an error or bug, it should include the client version, operating system, a clear description of the problem, and screenshots.
+
+---
+
+> [!IMPORTANT]
+> This is just a fan project.
 
 ## Social
 
