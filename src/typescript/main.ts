@@ -424,9 +424,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     await monitoringModule.init();
     await captchaModule.init();
     await proxyModule.init();
+    await translatorModule.init();
     await docsModule.init();
     await infoModule.init();
-    await translatorModule.init();
     await pluginModule.init();
 
     // Инициализация Discord RPC
