@@ -592,11 +592,26 @@ body {
   display: flex;
   width: 720px;
   border-radius: 8px;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
 }
 
-.accounts-top-panel .input-with-button input {
+.accounts-top-panel .left,
+.accounts-top-panel .right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.accounts-top-panel .left {
+  justify-content: flex-start;
+}
+
+.accounts-top-panel .right {
+  justify-content: flex-end;
+}
+
+.accounts-top-panel .left .input-with-button input {
   min-width: 200px;
 }
 
@@ -776,7 +791,7 @@ input::-webkit-inner-spin-button {
 .input-with-button {
   display: flex;
   width: auto;
-  height: 40px;
+  height: 37px;
   background: var(--input-bg);
   border: 1px solid var(--input-border);
   border-radius: var(--input-border-radius);

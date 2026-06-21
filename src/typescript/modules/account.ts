@@ -37,6 +37,8 @@ class AccountModule {
 
     const accountsContainer = document.getElementById("accounts-container") as HTMLDivElement;
 
+    const changeAccountPanelBtn = document.getElementById("change-account-panel") as HTMLButtonElement;
+
     const selectedAccountsEditor = document.getElementById("selected-accounts-editor") as HTMLDivElement;
     const selectedAccountsPassword = document.getElementById("selected-accounts-password") as HTMLInputElement;
     const selectedAccountsEmail = document.getElementById("selected-accounts-email") as HTMLInputElement;
@@ -50,6 +52,22 @@ class AccountModule {
     const removeSelectedAccountsBtn = document.getElementById("remove-selected-accounts") as HTMLButtonElement;
     const importAccounts = document.getElementById("import-accounts") as HTMLButtonElement;
     const exportAccounts = document.getElementById("export-accounts") as HTMLButtonElement;
+
+    const generateAccountsBtn = document.getElementById("generate-accounts") as HTMLButtonElement;
+
+    changeAccountPanelBtn.addEventListener("click", () => {
+      const defaultAccountPanel = document.getElementById("default-account-panel");
+      const generationAccountPanel = document.getElementById("generation-account-panel");
+      if (!defaultAccountPanel || !generationAccountPanel) return;
+
+      if (generationAccountPanel.style.display === "none") {
+        defaultAccountPanel.style.display = "none";
+        generationAccountPanel.style.display = "flex";
+      } else {
+        defaultAccountPanel.style.display = "flex";
+        generationAccountPanel.style.display = "none";
+      }
+    });
 
     accountsContainer.addEventListener("keydown", e => {
       if (e.key.toLowerCase() !== "escape") return;
@@ -80,7 +98,7 @@ class AccountModule {
 
       usernameInput.value = "";
 
-      this.createAccountCard(username, {
+      const success = this.createAccountCard(username, {
         creation_date: date("exact"),
         password: null,
         email: null,
@@ -90,9 +108,12 @@ class AccountModule {
         selected: false,
       });
 
-      this.updateAccountCounter();
-
-      logger.log(`Создан новый аккаунт "${username}"`, "system");
+      if (success) {
+        this.updateAccountCounter();
+        logger.log(`Создан новый аккаунт "${username}"`, "system");
+      } else {
+        logger.log(`Не удалось создать аккаунт "${username}": Number of generated accounts is out of limits (minimum 1, maximum 200)`, "warning");
+      }
     });
 
     openSelectedAccountsEditorBtn.addEventListener("click", () => selectedAccountsEditor.style.display = "flex");
@@ -105,7 +126,7 @@ class AccountModule {
     selectedAccountsProxyPassword.addEventListener("input", () => this.setValueForAllSelected("proxy_password", selectedAccountsProxyPassword.value));
 
     removeSelectedAccountsBtn.addEventListener("click", () => {
-      let removedAccounts = [];
+      let removedCount = 0;
 
       for (const username in this.accounts) {
         const account = this.accounts[username];
@@ -116,14 +137,14 @@ class AccountModule {
         document.getElementById(`account-editor-${username}`)?.remove();
         document.getElementById(`account-card-${username}`)?.remove();
 
-        removedAccounts.push(username);
+        removedCount++;
       }
 
       this.noSelected = true;
       this.changeSelectorsState();
 
-      messages.message("Аккаунты", `Удалено ${removedAccounts.length} аккаунтов`);
-      logger.log(`Аккаунты ${removedAccounts.join(", ")} удалены`, "system");
+      messages.message("Аккаунты", `Удалено ${removedCount} аккаунтов`);
+      logger.log(`Удалено ${removedCount} аккаунтов`, "system");
     });
 
     importAccounts.addEventListener("click", async () => {
@@ -205,25 +226,44 @@ class AccountModule {
       }
     });
 
-    setInterval(() => {
-      let cleanAccounts: any = {};
+    generateAccountsBtn.addEventListener("click", () => {
+      const template = (document.getElementById("account-username-template") as HTMLInputElement).value;
+      const count = parseInt((document.getElementById("generated-account-count") as HTMLInputElement).value);
 
-      for (const username in this.accounts) {
-        const account = this.accounts[username];
-        if (!account) continue;
+      if (template === "") return;
 
-        cleanAccounts[username] = {
-          creation_date: account.creation_date,
-          password: account.password,
-          email: account.email,
-          proxy: account.proxy,
-          proxy_username: account.proxy_username,
-          proxy_password: account.proxy_password,
-        };
+      if (count > 200 || count < 1) {
+        messages.message("Аккаунты", "Не удалось сгенерировать аккаунты");
+        logger.log(`Не удалось сгенерировать аккаунты: Number of generated accounts is out of limits (minimum 1, maximum 200)`, "warning");
+        return;
       }
 
-      localStorage.setItem("accounts", JSON.stringify(cleanAccounts))
-    }, 2000);
+      let generated = 0;
+
+      for (let i = 0; i < count; i++) {
+        const username = this.generateUsername(i, template);
+        if (this.accounts[username]) continue;
+
+        const success = this.createAccountCard(username, {
+          creation_date: date("exact"),
+          password: null,
+          email: null,
+          proxy: null,
+          proxy_username: null,
+          proxy_password: null,
+          selected: false,
+        });
+
+        if (success) generated++;
+      }
+
+      this.updateAccountCounter();
+
+      messages.message("Аккаунты", `Сгенерировано ${generated} аккаунтов`);
+      logger.log(`Сгенерировано ${generated} аккаунтов по шаблону "${template}"`, "system");
+    });
+
+    this.watch();
   }
 
   /** Метод получения всех существующих аккаунтов (без лишних полей) */
@@ -244,6 +284,29 @@ class AccountModule {
     }
 
     return cleanAccounts;
+  }
+
+  /** Метод запуска цикла сохранения пользовательских аккаунтов */
+  private watch(): void {
+    setInterval(() => {
+      let cleanAccounts: any = {};
+
+      for (const username in this.accounts) {
+        const account = this.accounts[username];
+        if (!account) continue;
+
+        cleanAccounts[username] = {
+          creation_date: account.creation_date,
+          password: account.password,
+          email: account.email,
+          proxy: account.proxy,
+          proxy_username: account.proxy_username,
+          proxy_password: account.proxy_password,
+        };
+      }
+
+      localStorage.setItem("accounts", JSON.stringify(cleanAccounts))
+    }, 2000);
   }
 
   /** Метод обновления счётчика аккаунтов */
@@ -298,11 +361,42 @@ class AccountModule {
 
     this.updateAccountCounter();
 
-    logger.log(`Сохранённые аккаунты загружены (${accounts.length} штук)`, "system");
+    logger.log(`Сохранённые аккаунты загружены (${accounts.length > 200 ? 200 : accounts.length} штук)`, "system");
+  }
+
+  /** Метод генерации юзернейма */
+  private generateUsername(index: number, template: string): string {
+    const chars = {
+      "numeric": "0123456789",
+      "letter": "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", 
+      "multi": "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",
+    };
+
+    const threeRandom = (type: "numeric" | "letter" | "multi"): string => {
+      let result = "";
+      for (let i = 0; i < 3; i++) {
+        result += chars[type][Math.floor(Math.random() * chars[type].length)];
+      }
+
+      return result;
+    }
+
+    const username = template
+      .replace(/#n/g, () => threeRandom("numeric"))
+      .replace(/#l/g, () => threeRandom("letter"))
+      .replace(/#m/g, () => threeRandom("multi"))
+      .replace(/#i/g, () => index.toString())
+      .slice(0, 16);
+  
+    return username;
   }
 
   /** Метод создания карточки аккаунта */
-  private createAccountCard(username: string, account: Account): void {
+  private createAccountCard(username: string, account: Account): boolean {
+    let accountCount = 0;
+    for (const _ in this.accounts) accountCount++;
+    if (accountCount >= 200) return false;
+
     this.accounts[username] = account;
 
     const editorWrapper = this.createEditWrapper(username, account);
@@ -401,6 +495,8 @@ class AccountModule {
     row.appendChild(actionsCell);
 
     this.accountList?.appendChild(row);
+
+    return true;
   }
 
   /** Метод создания обёркти редактора настроек аккаунта */
