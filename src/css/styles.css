@@ -275,6 +275,7 @@ body {
   font-family: var(--global-font-family);
   font-size: 18px;
   font-weight: bold;
+  white-space: nowrap;
 }
 
 .cover .panel .right {
@@ -663,24 +664,19 @@ body {
   border-bottom: none;
 }
 
-.account-list .account-row:hover {
-  background: var(--hover-bg);
-}
-
 .account-list .account-cell {
   display: flex;
   align-items: center;
 }
 
 .account-list .account-cell.username-cell {
+  display: flex;
+  justify-content: start;
+  align-items: center;
   font-family: var(--global-font-family);
-  font-size: 15px;
+  font-size: 17px;
   font-weight: 500;
   color: var(--default-color);
-  -webkit-user-select: text; 
-  -moz-user-select: text;
-  -ms-user-select: text;
-  user-select: text;
 }
 
 .account-list .account-cell.date-cell {
@@ -741,6 +737,12 @@ body {
   font-size: 16px;
   font-weight: 500;
   color: var(--muted-color);
+}
+
+.account-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 input {
@@ -831,6 +833,25 @@ button.min {
   min-width: none;
   padding: 10px;
   width: auto;
+}
+
+button.min:disabled {
+  cursor: not-allowed;
+  color: var(--dim-color);
+}
+
+button.min:disabled:hover {
+  border: 1px solid var(--button-border);
+  background: var(--button-bg);
+  border-radius: var(--button-border-radius);
+  color: var(--dim-color);
+}
+
+button.min:disabled:active {
+  border: 1px solid var(--button-border);
+  background: var(--button-bg);
+  border-radius: var(--button-border-radius);
+  color: var(--dim-color);
 }
 
 button.toggler {
@@ -1013,14 +1034,13 @@ button svg {
 .control-group {
   position: absolute;
   left: 0;
-  bottom: 10px;
+  bottom: 0;
   width: 190px;
   z-index: 1;
   background: transparent;
   border: none;
   border-radius: 0;
   border-top: 1px solid var(--primary-border);
-  border-bottom: 1px solid var(--primary-border);
 }
 
 .control-dashboard {
@@ -1533,7 +1553,7 @@ button svg {
 .log-line-date {
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: start;
   min-width: 85px;
   padding: 4px;
   text-align: center;
