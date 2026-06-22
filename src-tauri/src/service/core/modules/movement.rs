@@ -4,10 +4,10 @@ use serde::Deserialize;
 use std::time::Duration;
 use tokio::time::sleep;
 
-use crate::service::core::bot::kill_task;
-use crate::service::core::bot::push_task;
-use crate::service::core::bot::TaskName;
-use crate::service::core::bot::TASKS;
+use crate::service::core::controllers::kill_task;
+use crate::service::core::controllers::push_root_task;
+use crate::service::core::controllers::TaskName;
+use crate::service::core::controllers::TASKS;
 use crate::service::core::extensions::{go_to, BotMovementExt};
 use crate::service::core::registry::BOT_REGISTRY;
 use crate::service::core::traits::SalarixiModule;
@@ -116,7 +116,7 @@ impl SalarixiModule<MovementOptions> for MovementModule {
           .await;
       });
 
-      push_task(&username, TaskName::Movement, task_handle);
+      push_root_task(&username, TaskName::Movement, task_handle);
     } else if !options.state && TASKS.get_task_activity(&username, TaskName::Movement) {
       kill_task(&username, TaskName::Movement);
 

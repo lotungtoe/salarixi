@@ -3,7 +3,7 @@ use azalea::core::position::BlockPos;
 use azalea::prelude::*;
 use azalea::Vec3;
 
-use crate::service::core::bot::PROFILES;
+use crate::service::core::controllers::PROFILES;
 use crate::service::core::extensions::BotDefaultExt;
 use crate::service::core::registry::BOT_REGISTRY;
 

@@ -2,7 +2,7 @@ use azalea::prelude::*;
 use std::time::Duration;
 use tokio::time::sleep;
 
-use crate::service::core::bot::{get_state, State};
+use crate::service::core::controllers::{get_state, State};
 use crate::service::core::extensions::{BotDefaultExt, BotRotationExt, EntityType};
 use crate::service::core::registry::BOT_REGISTRY;
 use crate::service::core::traits::SalarixiPlugin;
@@ -53,6 +53,6 @@ impl SalarixiPlugin for AutoLookPlugin {
       }
     });
 
-    PLUGIN_MANAGER.push_task(&username, "auto-look", task);
+    PLUGIN_MANAGER.push_root_task(&username, "auto-look", task);
   }
 }

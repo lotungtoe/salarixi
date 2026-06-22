@@ -3,7 +3,7 @@ use serde::de::DeserializeOwned;
 use std::sync::Arc;
 
 use crate::api::emit::{emit_log, emit_msg};
-use crate::service::core::bot::PROFILES;
+use crate::service::core::controllers::PROFILES;
 use crate::service::core::current_options;
 use crate::service::core::modules::*;
 use crate::service::core::traits::SalarixiModule;

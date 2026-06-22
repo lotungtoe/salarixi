@@ -2,7 +2,7 @@ use once_cell::sync::Lazy;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, RwLock};
 
-use crate::service::core::bot::{BotStatus, PROFILES};
+use crate::service::core::controllers::{BotStatus, PROFILES};
 
 use super::options::LaunchOptions;
 
@@ -35,5 +35,5 @@ pub fn current_options() -> Option<LaunchOptions> {
 
 /// Функция проверки активности основного процесса
 pub fn process_is_active() -> bool {
-  ACTIVE.load(Ordering::Relaxed)
+  ACTIVE.load(Ordering::SeqCst)
 }

@@ -6,7 +6,7 @@ use tokio::task::JoinHandle;
 
 use crate::api::emit::emit_log;
 use crate::result::CommandResult;
-use crate::service::core::bot::PROFILES;
+use crate::service::core::controllers::PROFILES;
 use crate::service::core::launch::options::PluginOptions;
 use crate::service::core::plugins::*;
 use crate::service::core::traits::SalarixiPlugin;
@@ -88,7 +88,7 @@ impl PluginManager {
   }
 
   /// Метод добавления задачи плагина указанному боту
-  pub fn push_task(&self, username: &str, plugin: &str, task: JoinHandle<()>) {
+  pub fn push_root_task(&self, username: &str, plugin: &str, task: JoinHandle<()>) {
     if let Ok(mut guard) = self.tasks.try_write() {
       if let Some(tasks) = guard.get_mut(username) {
         if let Some(old_task) = tasks.get(plugin) {

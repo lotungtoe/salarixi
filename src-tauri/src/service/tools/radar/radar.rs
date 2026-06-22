@@ -6,7 +6,7 @@ use std::fs::OpenOptions;
 use std::io::Write;
 use std::sync::Arc;
 
-use crate::service::core::bot::PROFILES;
+use crate::service::core::controllers::PROFILES;
 use crate::service::core::extensions::{go_to, BotDefaultExt};
 use crate::service::core::registry::BOT_REGISTRY;
 

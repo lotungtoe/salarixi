@@ -7,7 +7,7 @@ use serde::Deserialize;
 use std::time::{Duration, Instant};
 use tokio::time::sleep;
 
-use crate::service::core::bot::{kill_task, push_task, TaskName, TASKS};
+use crate::service::core::controllers::{kill_task, push_root_task, TaskName, TASKS};
 use crate::service::core::extensions::{BotDefaultExt, BotPhysicsExt};
 use crate::service::core::registry::BOT_REGISTRY;
 use crate::service::core::traits::SalarixiModule;
@@ -365,7 +365,7 @@ impl SalarixiModule<FlightOptions> for FlightModule {
           .await;
       });
 
-      push_task(&username, TaskName::Flight, task_handle);
+      push_root_task(&username, TaskName::Flight, task_handle);
     } else if !options.state && TASKS.get_task_activity(&username, TaskName::Flight) {
       kill_task(&username, TaskName::Flight);
     } else {

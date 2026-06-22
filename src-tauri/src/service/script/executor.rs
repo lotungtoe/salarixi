@@ -10,12 +10,13 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use tokio::sync::RwLock;
 
 use crate::api::emit::{emit_log, emit_msg};
-use crate::service::core::bot::{get_state, set_state, State, PROFILES};
 use crate::service::core::common::convert_hotbar_slot_to_inventory_slot;
+use crate::service::core::controllers::{get_state, set_state, State, PROFILES};
 use crate::service::core::extensions::{
   entity_type_from, go_to, BotDefaultExt, BotInteractExt, BotInventoryExt, BotMovementExt, BotPhysicsExt,
   BotRotationExt, InvClick,
 };
+use crate::service::core::launch::state::ACTIVE;
 use crate::service::core::registry::BOT_REGISTRY;
 use crate::service::core::{active_bots_count, current_options};
 use crate::service::webhook::*;
@@ -550,6 +551,10 @@ impl ScriptExecutor {
 
     let su_clone = su.clone();
     engine.on_progress(move |_| {
+      if !ACTIVE.load(Ordering::SeqCst) {
+        return Some(Dynamic::UNIT);
+      }
+
       if su_clone.is_empty() {
         if !EXECUTOR_GLOBAL_STATE.load(Ordering::SeqCst) {
           return Some(Dynamic::UNIT);

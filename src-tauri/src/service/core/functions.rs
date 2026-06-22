@@ -1,5 +1,5 @@
 use crate::api::emit::*;
-use crate::service::core::bot::*;
+use crate::service::core::controllers::*;
 use crate::service::core::registry::BOT_REGISTRY;
 use crate::service::core::PLUGIN_MANAGER;
 

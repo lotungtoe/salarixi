@@ -11,7 +11,7 @@ use std::thread;
 use std::time::Duration;
 
 use crate::api::emit::{emit_log, emit_msg};
-use crate::service::core::bot::{ProfileProxy, PROFILES, STATES, TASKS};
+use crate::service::core::controllers::{ProfileProxy, PROFILES, STATES, TASKS};
 use crate::service::core::handlers::single::single_handler;
 use crate::service::core::handlers::swarm::swarm_handler;
 use crate::service::core::plugin_manager::PLUGIN_MANAGER;
@@ -299,14 +299,18 @@ pub async fn stop_bots_and_destroy_data() -> bool {
 
   PLUGIN_MANAGER.clear().await;
   TASKS.clear().await;
+
+  tokio::time::sleep(Duration::from_secs(3)).await;
+
   STATES.clear().await;
   PROFILES.clear().await;
-
   MAP_ACCUMULATOR.clear_all();
+
+  tokio::time::sleep(Duration::from_secs(1)).await;
 
   BOT_REGISTRY.clear();
 
-  ACTIVE.store(false, Ordering::Relaxed);
+  ACTIVE.store(false, Ordering::SeqCst);
 
   if let Some(options) = current_options() {
     if options.basic.use_webhook {
@@ -317,6 +321,7 @@ pub async fn stop_bots_and_destroy_data() -> bool {
     }
   }
 
+  emit_msg("Система", "Остановка ботов завершена");
   emit_log(format!("Остановка ботов завершена"), "info");
 
   true

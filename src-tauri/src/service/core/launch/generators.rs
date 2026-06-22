@@ -1,4 +1,4 @@
-use crate::service::core::bot::PROFILES;
+use crate::service::core::controllers::PROFILES;
 use crate::service::generators::mutate_text;
 use crate::service::generators::randchance;
 use crate::service::generators::randelem;
@@ -142,7 +142,6 @@ pub fn generate_username_or_password(item: &str, class: &str, template: &str) ->
       } else {
         LEGIT_PASSWORDS
       })
-      .unwrap()
       .to_string();
 
       value = value
@@ -197,7 +196,7 @@ pub fn generate_username_or_password(item: &str, class: &str, template: &str) ->
       let templates = vec![
         "#m#m#m#m", "#n#n#n#n", "#l#l#l#l", "#m#l#n#m", "#l#m#n#n", "#m#m", "#n#n", "#m#n#l",
       ];
-      let chosen_template = randelem(&templates).unwrap();
+      let chosen_template = randelem(&templates);
 
       Some(mutate_text(chosen_template.to_string()))
     }
@@ -226,8 +225,8 @@ pub fn generate_email(class: &str) -> Option<String> {
 
       let services = vec!["gmail.com", "proton.me", "yandex.ru", "mail.ru"];
 
-      let chosen_template = randelem(&templates).unwrap();
-      let chosen_service = randelem(&services).unwrap();
+      let chosen_template = randelem(&templates);
+      let chosen_service = randelem(&services);
 
       Some(format!(
         "{}@{}",

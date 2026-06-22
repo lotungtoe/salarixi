@@ -5,9 +5,11 @@ use serde::Deserialize;
 use std::time::Duration;
 use tokio::time::sleep;
 
-use crate::service::core::bot::{kill_task, push_task, set_mutual_states, TaskName, TASKS};
 use crate::service::core::common::{
   convert_hotbar_slot_to_inventory_slot, convert_inventory_slot_to_hotbar_slot, get_block_state, this_is_solid_block,
+};
+use crate::service::core::controllers::{
+  kill_task, push_extra_task, push_root_task, set_mutual_states, TaskName, TASKS,
 };
 use crate::service::core::extensions::{BotDefaultExt, BotInventoryExt, BotMovementExt, BotPhysicsExt};
 use crate::service::core::registry::BOT_REGISTRY;
@@ -89,19 +91,18 @@ impl ScaffoldModule {
   }
 
   fn go_back(username: String) {
-    tokio::spawn(async move {
+    let username_clone = username.clone();
+    let extra_task = tokio::spawn(async move {
       loop {
-        if !TASKS.get_task_activity(&username, TaskName::Scaffold) {
-          break;
-        }
-
-        if let Some(bot) = BOT_REGISTRY.get_bot(&username) {
+        if let Some(bot) = BOT_REGISTRY.get_bot(&username_clone) {
           bot.start_walking(WalkDirection::Backward);
         }
 
         sleep(Duration::from_millis(50)).await;
       }
     });
+
+    push_extra_task(&username, TaskName::Scaffold, extra_task);
   }
 
   async fn noob_bridge_scaffold(bot: &Client, options: &ScaffoldOptions) {
@@ -282,7 +283,7 @@ impl SalarixiModule<ScaffoldOptions> for ScaffoldModule {
           .await;
       });
 
-      push_task(&username, TaskName::Scaffold, task_handle);
+      push_root_task(&username, TaskName::Scaffold, task_handle);
     } else if !options.state && TASKS.get_task_activity(&username, TaskName::Scaffold) {
       kill_task(&username, TaskName::Scaffold);
 

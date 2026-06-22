@@ -6,7 +6,7 @@ use azalea::registry::builtin::ItemKind;
 use std::time::Duration;
 use tokio::time::sleep;
 
-use crate::service::core::bot::{get_state, set_mutual_states, State};
+use crate::service::core::controllers::{get_state, set_mutual_states, State};
 use crate::service::core::extensions::{BotDefaultExt, BotInteractExt, BotInventoryExt};
 use crate::service::core::registry::BOT_REGISTRY;
 use crate::service::core::traits::SalarixiPlugin;
@@ -193,6 +193,6 @@ impl SalarixiPlugin for AutoRepairPlugin {
       }
     });
 
-    PLUGIN_MANAGER.push_task(&username, "auto-repair", task);
+    PLUGIN_MANAGER.push_root_task(&username, "auto-repair", task);
   }
 }

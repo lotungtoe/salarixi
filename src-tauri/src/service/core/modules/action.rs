@@ -3,7 +3,7 @@ use serde::Deserialize;
 use std::time::Duration;
 use tokio::time::sleep;
 
-use crate::service::core::bot::{kill_task, push_task, TaskName, TASKS};
+use crate::service::core::controllers::{kill_task, push_root_task, TaskName, TASKS};
 use crate::service::core::extensions::BotDefaultExt;
 use crate::service::core::registry::BOT_REGISTRY;
 use crate::service::core::traits::SalarixiModule;
@@ -116,7 +116,7 @@ impl SalarixiModule<ActionOptions> for ActionModule {
           .await;
       });
 
-      push_task(&username, task_name, task_handle);
+      push_root_task(&username, task_name, task_handle);
     } else if !options.state && TASKS.get_task_activity(&username, task_name.clone()) {
       kill_task(&username, task_name);
 

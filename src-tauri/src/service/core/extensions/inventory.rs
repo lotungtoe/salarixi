@@ -12,8 +12,8 @@ use azalea::registry::builtin::ItemKind;
 use std::time::Duration;
 use tokio::time::sleep;
 
-use crate::service::core::bot::{get_state, set_mutual_states, set_state, State};
 use crate::service::core::common::convert_inventory_slot_to_hotbar_slot;
+use crate::service::core::controllers::{get_state, set_mutual_states, set_state, State};
 use crate::service::core::extensions::{BotDefaultExt, BotMovementExt};
 use crate::service::generators::randint;
 

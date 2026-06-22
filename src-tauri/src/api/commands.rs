@@ -5,7 +5,7 @@ use hashbrown::HashMap;
 use serde::Deserialize;
 
 use crate::api::emit::{emit_log, emit_msg};
-use crate::service::core::bot::{Profile, PROFILES};
+use crate::service::core::controllers::{Profile, PROFILES};
 use crate::service::core::functions::{disconnect_bot, reset_bot, send_message_from_bot};
 use crate::service::core::registry::{RegistryEvent, BOT_REGISTRY};
 use crate::service::core::{

@@ -5,7 +5,7 @@ use azalea::pathfinder::PathfinderOpts;
 use azalea::{prelude::*, SprintDirection, StartSprintEvent, StartWalkEvent, WalkDirection};
 use std::time::Duration;
 
-use crate::service::core::bot::{get_state, set_mutual_states, set_state, State};
+use crate::service::core::controllers::{get_state, set_mutual_states, set_state, State};
 use crate::service::core::extensions::BotDefaultExt;
 use crate::service::core::registry::BOT_REGISTRY;
 

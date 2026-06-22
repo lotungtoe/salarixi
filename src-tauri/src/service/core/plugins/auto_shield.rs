@@ -5,7 +5,7 @@ use azalea::registry::builtin::ItemKind;
 use std::time::Duration;
 use tokio::time::sleep;
 
-use crate::service::core::bot::{get_state, set_mutual_states, State};
+use crate::service::core::controllers::{get_state, set_mutual_states, State};
 use crate::service::core::extensions::{BotDefaultExt, BotInteractExt, BotInventoryExt, EntityType};
 use crate::service::core::registry::BOT_REGISTRY;
 use crate::service::core::traits::SalarixiPlugin;
@@ -129,6 +129,6 @@ impl SalarixiPlugin for AutoShieldPlugin {
       }
     });
 
-    PLUGIN_MANAGER.push_task(&username, "auto-shield", task);
+    PLUGIN_MANAGER.push_root_task(&username, "auto-shield", task);
   }
 }

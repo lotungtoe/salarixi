@@ -6,7 +6,9 @@ use serde::Deserialize;
 use std::time::Duration;
 use tokio::time::sleep;
 
-use crate::service::core::bot::{get_state, kill_task, push_task, set_mutual_states, State, TaskName, TASKS};
+use crate::service::core::controllers::{
+  get_state, kill_task, push_extra_task, push_root_task, set_mutual_states, State, TaskName, TASKS,
+};
 use crate::service::core::extensions::{entity_type_from, BotDefaultExt, BotInteractExt, BotInventoryExt};
 use crate::service::core::registry::BOT_REGISTRY;
 use crate::service::core::traits::SalarixiModule;
@@ -41,16 +43,15 @@ impl BowAimModule {
   }
 
   fn aiming(username: String, target: String, distance: f64) {
-    tokio::spawn(async move {
+    let username_clone = username.clone();
+    let extra_task = tokio::spawn(async move {
       BOT_REGISTRY
-        .async_get_bot(&username, async |bot| {
-          let nickname = bot.name();
-
-          if get_state(&nickname, State::CanLooking) {
-            set_mutual_states(&nickname, "looking", true);
+        .async_get_bot(&username_clone, async |bot| {
+          if get_state(&username_clone, State::CanLooking) {
+            set_mutual_states(&username_clone, "looking", true);
 
             loop {
-              if !TASKS.get_task_activity(&nickname, TaskName::BowAim) {
+              if !TASKS.get_task_activity(&username_clone, TaskName::BowAim) {
                 break;
               }
 
@@ -70,6 +71,8 @@ impl BowAimModule {
         })
         .await;
     });
+
+    push_extra_task(&username, TaskName::BowAim, extra_task);
   }
 
   async fn shoot(bot: &Client, target: String, distance: f64) {
@@ -154,7 +157,7 @@ impl SalarixiModule<BowAimOptions> for BowAimModule {
           .await;
       });
 
-      push_task(&username, TaskName::BowAim, task_handle);
+      push_root_task(&username, TaskName::BowAim, task_handle);
     } else if !options.state && TASKS.get_task_activity(&username, TaskName::BowAim) {
       kill_task(&username, TaskName::BowAim);
 

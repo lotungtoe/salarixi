@@ -7,11 +7,11 @@ use serde::Deserialize;
 use std::time::Duration;
 use tokio::time::sleep;
 
-use crate::service::core::bot::push_task;
-use crate::service::core::bot::TaskName;
-use crate::service::core::bot::TASKS;
-use crate::service::core::bot::{kill_task, set_mutual_states};
 use crate::service::core::common::get_block_state;
+use crate::service::core::controllers::push_root_task;
+use crate::service::core::controllers::TaskName;
+use crate::service::core::controllers::TASKS;
+use crate::service::core::controllers::{kill_task, set_mutual_states};
 use crate::service::core::extensions::{BotDefaultExt, BotInventoryExt, BotMovementExt};
 use crate::service::core::registry::BOT_REGISTRY;
 use crate::service::core::traits::SalarixiModule;
@@ -60,11 +60,9 @@ impl MinerModule {
 
       let walk_direction = randelem(walk_directions.as_ref());
 
-      if let Some(dir) = walk_direction {
-        bot.walk(*dir);
-        sleep(Duration::from_millis(randuint(150, 250))).await;
-        bot.walk(WalkDirection::None);
-      }
+      bot.walk(*walk_direction);
+      sleep(Duration::from_millis(randuint(150, 250))).await;
+      bot.walk(WalkDirection::None);
     }
   }
 
@@ -300,7 +298,7 @@ impl SalarixiModule<MinerOptions> for MinerModule {
           .await;
       });
 
-      push_task(&username, TaskName::Miner, task_handle);
+      push_root_task(&username, TaskName::Miner, task_handle);
     } else if !options.state && TASKS.get_task_activity(&username, TaskName::Miner) {
       kill_task(&username, TaskName::Miner);
 

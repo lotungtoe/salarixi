@@ -5,7 +5,9 @@ use serde::Deserialize;
 use std::time::Duration;
 use tokio::time::sleep;
 
-use crate::service::core::bot::{get_state, kill_task, push_task, set_mutual_states, State, TaskName, TASKS};
+use crate::service::core::controllers::{
+  get_state, kill_task, push_extra_task, push_root_task, set_mutual_states, State, TaskName, TASKS,
+};
 use crate::service::core::extensions::{
   entity_type_from, BotDefaultExt, BotInventoryExt, BotMovementExt, BotRotationExt,
 };
@@ -215,11 +217,12 @@ impl KillauraModule {
   }
 
   fn dodging(username: String) {
-    tokio::spawn(async move {
+    let username_clone = username.clone();
+    let extra_task = tokio::spawn(async move {
       loop {
         let bot_available = BOT_REGISTRY
-          .async_get_bot(&username, async |bot| {
-            if !TASKS.get_task_activity(&username, TaskName::Killaura) {
+          .async_get_bot(&username_clone, async |bot| {
+            if !TASKS.get_task_activity(&username_clone, TaskName::Killaura) {
               bot.stop_crouching();
               return;
             }
@@ -231,13 +234,15 @@ impl KillauraModule {
           .await
           .is_some();
 
-        if !bot_available || !TASKS.get_task_activity(&username, TaskName::Killaura) {
+        if !bot_available || !TASKS.get_task_activity(&username_clone, TaskName::Killaura) {
           break;
         }
 
         sleep(Duration::from_millis(50)).await;
       }
     });
+
+    push_extra_task(&username, TaskName::Killaura, extra_task);
   }
 
   fn chase(
@@ -247,14 +252,10 @@ impl KillauraModule {
     distance: f64,
     min_distance_to_target: f64,
   ) {
-    tokio::spawn(async move {
+    let username_clone = username.clone();
+    let extra_task = tokio::spawn(async move {
       loop {
-        if let Some(bot) = BOT_REGISTRY.get_bot(&username) {
-          if !TASKS.get_task_activity(&username, TaskName::Killaura) {
-            bot.stop_move();
-            return;
-          }
-
+        if let Some(bot) = BOT_REGISTRY.get_bot(&username_clone) {
           if let Some(entity) = Self::find_nearest_entity(&bot, target.clone(), target_nickname.clone(), distance) {
             let eye_pos = bot.eye_pos();
 
@@ -266,52 +267,47 @@ impl KillauraModule {
             } else {
               bot.stop_jumping();
 
-              if get_state(&username, State::IsSprinting) {
+              if get_state(&username_clone, State::IsSprinting) {
                 bot.stop_move();
               }
             }
           } else {
             bot.stop_jumping();
 
-            if get_state(&username, State::IsSprinting) {
+            if get_state(&username_clone, State::IsSprinting) {
               bot.stop_move();
             }
           }
         }
 
-        if !TASKS.get_task_activity(&username, TaskName::Killaura) {
+        if !TASKS.get_task_activity(&username_clone, TaskName::Killaura) {
           break;
         }
 
         sleep(Duration::from_millis(50)).await;
       }
     });
+
+    push_extra_task(&username, TaskName::Killaura, extra_task);
   }
 
   fn aiming(username: String, target: String, target_nickname: Option<String>, distance: f64) {
-    tokio::spawn(async move {
-      set_mutual_states(&username, "looking", true);
+    let username_clone = username.clone();
+    let extra_task = tokio::spawn(async move {
+      set_mutual_states(&username_clone, "looking", true);
 
       loop {
-        if let Some(bot) = BOT_REGISTRY.get_bot(&username) {
-          if !TASKS.get_task_activity(&username, TaskName::Killaura) {
-            set_mutual_states(&username, "looking", false);
-            return;
-          }
-
+        if let Some(bot) = BOT_REGISTRY.get_bot(&username_clone) {
           if let Some(entity) = Self::find_nearest_entity(&bot, target.clone(), target_nickname.clone(), distance) {
             bot.look_at_entity(entity, false);
           }
         }
 
-        if !TASKS.get_task_activity(&username, TaskName::Killaura) {
-          set_mutual_states(&username, "looking", false);
-          break;
-        }
-
         sleep(Duration::from_millis(50)).await;
       }
     });
+
+    push_extra_task(&username, TaskName::Killaura, extra_task);
   }
 
   async fn moderate_killaura(bot: &Client, options: &KillauraOptions) {
@@ -487,7 +483,7 @@ impl SalarixiModule<KillauraOptions> for KillauraModule {
           .await;
       });
 
-      push_task(&username, TaskName::Killaura, task_handle);
+      push_root_task(&username, TaskName::Killaura, task_handle);
     } else if !options.state && TASKS.get_task_activity(&username, TaskName::Killaura) {
       kill_task(&username, TaskName::Killaura);
 

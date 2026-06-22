@@ -1,6 +1,6 @@
 pub mod auth;
-pub mod bot;
 pub mod common;
+pub mod controllers;
 pub mod extensions;
 pub mod functions;
 pub mod handlers;

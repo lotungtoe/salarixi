@@ -61,6 +61,6 @@ impl SalarixiPlugin for AutoTotemPlugin {
       }
     });
 
-    PLUGIN_MANAGER.push_task(&username, "auto-totem", task);
+    PLUGIN_MANAGER.push_root_task(&username, "auto-totem", task);
   }
 }

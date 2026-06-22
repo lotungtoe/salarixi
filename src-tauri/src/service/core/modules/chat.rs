@@ -4,12 +4,12 @@ use serde::Deserialize;
 use std::time::Duration;
 use tokio::time::sleep;
 
-use crate::service::core::bot::kill_task;
-use crate::service::core::bot::push_task;
-use crate::service::core::bot::TaskName;
-use crate::service::core::bot::PROFILES;
-use crate::service::core::bot::TASKS;
 use crate::service::core::common::get_player_uuid;
+use crate::service::core::controllers::kill_task;
+use crate::service::core::controllers::push_root_task;
+use crate::service::core::controllers::TaskName;
+use crate::service::core::controllers::PROFILES;
+use crate::service::core::controllers::TASKS;
 use crate::service::core::extensions::BotDefaultExt;
 use crate::service::core::registry::BOT_REGISTRY;
 use crate::service::core::traits::SalarixiModule;
@@ -108,8 +108,8 @@ impl ChatModule {
     let stray = ["numeric", "letter", "multi", "special"];
     let separators = ["|", ":", "/", "~"];
 
-    let random_stray = randelem(&stray).unwrap();
-    let random_separator = randelem(&separators).unwrap();
+    let random_stray = randelem(&stray);
+    let random_separator = randelem(&separators);
 
     let stray_text = match random_stray {
       &"numeric" => randstr(Classes::Numeric, randint(3, 7)),
@@ -129,9 +129,9 @@ impl ChatModule {
   async fn process_extra_tags(username: &str, text: String) -> String {
     let mut result = text.clone();
 
-    for teg in Regex::new(r"#radar\[\w+]").unwrap().find_iter(&text) {
-      if !teg.is_empty() {
-        let split_target: Vec<&str> = teg.as_str().split("[").collect();
+    for tag in Regex::new(r"#radar\[\w+]").unwrap().find_iter(&text) {
+      if !tag.is_empty() {
+        let split_target: Vec<&str> = tag.as_str().split("[").collect();
 
         if let Some(target) = split_target.get(1) {
           let target_nickname = target.replace("]", "").replace(" ", "");
@@ -145,64 +145,64 @@ impl ChatModule {
               radar_info.z.round()
             );
 
-            result = text.replace(teg.as_str(), msg.as_str());
+            result = text.replace(tag.as_str(), msg.as_str());
           } else {
-            result = text.replace(teg.as_str(), "");
+            result = text.replace(tag.as_str(), "");
           }
         }
       }
     }
 
-    for teg in Regex::new(r"#uuid\[\w+]").unwrap().find_iter(&text) {
-      if !teg.is_empty() {
-        let split_target: Vec<&str> = teg.as_str().split("[").collect();
+    for tag in Regex::new(r"#uuid\[\w+]").unwrap().find_iter(&text) {
+      if !tag.is_empty() {
+        let split_target: Vec<&str> = tag.as_str().split("[").collect();
 
         if let Some(target) = split_target.get(1) {
           let target_nickname = target.replace("]", "").replace(" ", "");
 
           if let Some(uuid) = get_player_uuid(target_nickname.clone()).await {
             let msg = format!("{} > UUID: {}", target_nickname, uuid);
-            result = text.replace(teg.as_str(), msg.as_str());
+            result = text.replace(tag.as_str(), msg.as_str());
           } else {
-            result = text.replace(teg.as_str(), "");
+            result = text.replace(tag.as_str(), "");
           }
         }
       }
     }
 
-    for teg in Regex::new(r"#pass").unwrap().find_iter(&text) {
-      if !teg.is_empty() {
+    for tag in Regex::new(r"#pass").unwrap().find_iter(&text) {
+      if !tag.is_empty() {
         if let Some(profile) = PROFILES.get(username) {
-          result = text.replace(teg.as_str(), profile.password.unwrap_or("".to_string()).as_str());
+          result = text.replace(tag.as_str(), profile.password.unwrap_or("".to_string()).as_str());
         }
       }
     }
 
-    for teg in Regex::new(r"#name").unwrap().find_iter(&text) {
-      if !teg.is_empty() {
-        result = text.replace(teg.as_str(), username);
+    for tag in Regex::new(r"#name").unwrap().find_iter(&text) {
+      if !tag.is_empty() {
+        result = text.replace(tag.as_str(), username);
       }
     }
 
-    for teg in Regex::new(r"#health").unwrap().find_iter(&text) {
-      if !teg.is_empty() {
+    for tag in Regex::new(r"#health").unwrap().find_iter(&text) {
+      if !tag.is_empty() {
         if let Some(profile) = PROFILES.get(username) {
-          result = text.replace(teg.as_str(), profile.health.to_string().as_str());
+          result = text.replace(tag.as_str(), profile.health.to_string().as_str());
         }
       }
     }
 
-    for teg in Regex::new(r"#player").unwrap().find_iter(&text) {
-      if !teg.is_empty() {
+    for tag in Regex::new(r"#player").unwrap().find_iter(&text) {
+      if !tag.is_empty() {
         if let Some(bot) = BOT_REGISTRY.get_bot(username) {
           if let Some(players) = bot.get_players() {
             let mut usernames = Vec::new();
 
             for info in players.values() {
-              usernames.push(info.profile.name.as_str());
+              usernames.push(info.profile.name.clone());
             }
 
-            result = text.replace(teg.as_str(), randelem(&usernames).unwrap());
+            result = text.replace(tag.as_str(), randelem(&usernames).as_str());
           }
         }
       }
@@ -319,7 +319,7 @@ impl SalarixiModule<ChatOptions> for ChatModule {
           .await;
       });
 
-      push_task(&username, TaskName::Spamming, task_handle);
+      push_root_task(&username, TaskName::Spamming, task_handle);
     } else if !options.state && TASKS.get_task_activity(&username, TaskName::Spamming) {
       kill_task(&username, TaskName::Spamming);
     } else {

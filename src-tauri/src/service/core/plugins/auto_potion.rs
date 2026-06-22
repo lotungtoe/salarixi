@@ -7,8 +7,8 @@ use azalea::registry::builtin::Potion as PotionKind;
 use std::time::Duration;
 use tokio::time::sleep;
 
-use crate::service::core::bot::State;
-use crate::service::core::bot::{get_state, set_mutual_states, set_state};
+use crate::service::core::controllers::State;
+use crate::service::core::controllers::{get_state, set_mutual_states, set_state};
 use crate::service::core::extensions::{BotDefaultExt, BotInteractExt, BotInventoryExt, BotMovementExt, BotPhysicsExt};
 use crate::service::core::registry::BOT_REGISTRY;
 use crate::service::core::traits::SalarixiPlugin;
@@ -291,6 +291,6 @@ impl SalarixiPlugin for AutoPotionPlugin {
       }
     });
 
-    PLUGIN_MANAGER.push_task(&username, "auto-potion", task);
+    PLUGIN_MANAGER.push_root_task(&username, "auto-potion", task);
   }
 }

@@ -8,8 +8,8 @@ use std::f32::consts::PI;
 use std::sync::Arc;
 use tokio::time::sleep;
 
-use crate::service::core::bot::{get_state, set_mutual_states, State, PROFILES, STATES, TASKS};
 use crate::service::core::common::{get_average_coordinates_of_bots, this_is_solid_block};
+use crate::service::core::controllers::{get_state, set_mutual_states, State, PROFILES, STATES, TASKS};
 use crate::service::core::extensions::{
   go_to, BotDefaultExt, BotInventoryExt, BotMovementExt, BotPhysicsExt, InvClick,
 };

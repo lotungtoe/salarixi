@@ -29,37 +29,62 @@ pub enum TaskName {
 
 /// Структура задач бота
 pub struct Tasks {
-  pub tasks: HashMap<TaskName, JoinHandle<()>>,
+  pub root: HashMap<TaskName, JoinHandle<()>>,
+  pub extra: HashMap<TaskName, Vec<JoinHandle<()>>>,
 }
 
 impl Tasks {
   /// Метод создания нового списка задач
   pub fn new() -> Self {
-    Self { tasks: HashMap::new() }
-  }
-
-  /// Метод получения активности задачи
-  pub fn get_task_activity(&self, name: TaskName) -> bool {
-    self.tasks.get(&name).is_some()
-  }
-
-  /// Метод добавления задачи
-  pub fn push_task(&mut self, name: TaskName, handle: JoinHandle<()>) {
-    self.tasks.insert(name.clone(), handle);
-  }
-
-  /// Метод остановки задачи
-  pub fn kill_task(&mut self, name: TaskName) {
-    if let Some(handle) = self.tasks.get(&name) {
-      handle.abort();
-      self.tasks.remove(&name);
+    Self {
+      root: HashMap::new(),
+      extra: HashMap::new(),
     }
+  }
+
+  /// Метод получения активности корневой задачи
+  pub fn get_root_task_activity(&self, name: TaskName) -> bool {
+    self.root.get(&name).is_some()
+  }
+
+  /// Метод добавления корневой задачи
+  pub fn push_root_task(&mut self, name: TaskName, handle: JoinHandle<()>) {
+    self.root.insert(name.clone(), handle);
+  }
+
+  /// Метод добавления дополнительной задачи
+  pub fn push_extra_task(&mut self, name: TaskName, handle: JoinHandle<()>) {
+    if let Some(tasks) = self.extra.get_mut(&name) {
+      tasks.push(handle);
+    } else {
+      self.extra.insert(name, vec![handle]);
+    }
+  }
+
+  /// Метод остановки корневой задачи и её дополнительных задач
+  pub fn kill_task(&mut self, name: TaskName) {
+    if let Some(tasks) = self.extra.get_mut(&name) {
+      tasks.iter().for_each(|t| t.abort());
+      tasks.clear();
+    }
+
+    if let Some(handle) = self.root.get(&name) {
+      handle.abort();
+    }
+
+    self.extra.remove(&name);
+    self.root.remove(&name);
   }
 
   /// Метод остановки всех задач
   pub fn kill_all_tasks(&mut self) {
-    self.tasks.iter().for_each(|(_, handle)| handle.abort());
-    self.tasks.clear();
+    self
+      .extra
+      .iter()
+      .for_each(|(_, tasks)| tasks.iter().for_each(|t| t.abort()));
+    self.root.iter().for_each(|(_, t)| t.abort());
+    self.extra.clear();
+    self.root.clear();
   }
 }
 
@@ -87,11 +112,20 @@ impl TaskManager {
     }
   }
 
-  /// Метод добавления задачи указанному бота
-  pub fn push_task_for(&self, username: &str, task_name: TaskName, task_handle: JoinHandle<()>) {
+  /// Метод добавления корневой задачи указанному бота
+  pub fn push_root_task_for(&self, username: &str, task_name: TaskName, root_task: JoinHandle<()>) {
     if let Ok(mut tasks) = self.map.try_write() {
       if let Some(t) = tasks.get_mut(username) {
-        t.push_task(task_name, task_handle);
+        t.push_root_task(task_name, root_task);
+      }
+    }
+  }
+
+  /// Метод добавления дополнительной задачи указанному бота
+  pub fn push_extra_task_for(&self, username: &str, task_name: TaskName, extra_task: JoinHandle<()>) {
+    if let Ok(mut tasks) = self.map.try_write() {
+      if let Some(t) = tasks.get_mut(username) {
+        t.push_extra_task(task_name, extra_task);
       }
     }
   }
@@ -146,7 +180,7 @@ impl TaskManager {
     if let Ok(tasks) = self.map.try_read() {
       for (name, t) in tasks.iter() {
         if name.as_str() == username {
-          return t.get_task_activity(task_name);
+          return t.get_root_task_activity(task_name);
         }
       }
     }
@@ -155,9 +189,14 @@ impl TaskManager {
   }
 }
 
-/// Вспомогательная функция добавления задачи указанному боту
-pub fn push_task(username: &str, task_name: TaskName, task_handle: JoinHandle<()>) {
-  TASKS.push_task_for(username, task_name, task_handle);
+/// Вспомогательная функция добавления корневой задачи указанному боту
+pub fn push_root_task(username: &str, task_name: TaskName, root_task: JoinHandle<()>) {
+  TASKS.push_root_task_for(username, task_name, root_task);
+}
+
+/// Вспомогательная функция добавления дополнительной задачи указанному боту
+pub fn push_extra_task(username: &str, task_name: TaskName, extra_task: JoinHandle<()>) {
+  TASKS.push_extra_task_for(username, task_name, extra_task);
 }
 
 /// Вспомогательная функция остановки определённой задачи указанного бота

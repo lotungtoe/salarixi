@@ -6,8 +6,10 @@ use serde::Deserialize;
 use std::time::Duration;
 use tokio::time::sleep;
 
-use crate::service::core::bot::{get_state, kill_task, push_task, set_mutual_states, State, TaskName, TASKS};
 use crate::service::core::common::get_block_state;
+use crate::service::core::controllers::{
+  get_state, kill_task, push_root_task, set_mutual_states, State, TaskName, TASKS,
+};
 use crate::service::core::extensions::{BotDefaultExt, BotInventoryExt, BotRotationExt};
 use crate::service::core::registry::BOT_REGISTRY;
 use crate::service::core::traits::SalarixiModule;
@@ -334,7 +336,7 @@ impl SalarixiModule<FarmerOptions> for FarmerModule {
           .await;
       });
 
-      push_task(&username, TaskName::Farmer, task_handle);
+      push_root_task(&username, TaskName::Farmer, task_handle);
     } else if !options.state && TASKS.get_task_activity(&username, TaskName::Farmer) {
       kill_task(&username, TaskName::Farmer);
       set_mutual_states(&username, "looking", false);
