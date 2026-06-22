@@ -253,62 +253,90 @@ Webhook — это механизм, который позволяет одно�
 
 Системные функции:
 
-- `sleep(delay: u64)`: остановка выполнения скрипта на время (в секундах).
-- `print(str: &str)`: печать информации в текущий терминал.
-- `log(text: &str, class: &str)`: логгирование информации в журнал клиента.
-- `message(name: &str, content: &str)`: отправка уведомления в клиент.
-- `webhook(content: &str)`: отправка вебхука по ранее указанной ссылке.
+- `sleep(delay: u64)`: Остановка выполнения сценари на время (в секундах).
+- `print(str: &str)`: Печать информации в текущий терминал.
+- `log(text: &str, class: &str)`: Логгирование информации в журнал клиента.
+- `message(name: &str, content: &str)`: Отправка уведомления в клиент.
+- `webhook(content: &str)`: Отправка вебхука по ранее указанной ссылке.
 
 Простые функции:
 
-- `chat(mu: &str, message: &str)`: отправить сообщение в чат.
-- `jump(mu: &str)`: одноразовый прыжок.
-- `swing_arm(mu: &str)`: махнуть рукой.
+- `chat(mu: &str, message: &str)`: Отправка сообщения в чат от указанного бота(ов).
+- `jump(mu: &str)`: Одноразовый прыжок.
+- `swing_arm(mu: &str)`: Махнуть рукой.
 
 Основные функции-геттеры:
 
-- `active_bots_count() -> i64`: получить количество активных ботов.
-- `get_bot_id(mu: &str) -> i64`: получить Entity ID определённого бота.
-- `get_bot_ping(mu: &str) -> i64`: получить пинг определённого бота.
-- `get_bot_feet_pos(mu: &str) -> (f64, f64, f64)`: получить позицию ног определённого бота.
-- `get_bot_eye_pos(mu: &str) -> (f64, f64, f64)`: получить позицию глаз определённого бота.
-- `get_bot_health(mu: &str) -> f64`: получить здоровье определённого бота.
-- `get_bot_satiety(mu: &str) -> i64`: получить сытость определённого бота.
-- `bot_is_workable(mu: &str) -> bool`: получить состояние работоспособности определённого бота.
+- `active_bots_count() -> i64`: Получение количества активных ботов.
+- `get_bot_id(mu: &str) -> i64`: Получение Entity ID указанного бота.
+- `get_bot_ping(mu: &str) -> i64`: Получение пинга указанного бота.
+- `get_bot_feet_pos(mu: &str) -> Position`: Получение позиции ног указанного бота.
+- `get_bot_eye_pos(mu: &str) -> Position`: Получение позиции глаз указанного бота.
+- `get_bot_health(mu: &str) -> f64`: Получение здоровья указанного бота.
+- `get_bot_satiety(mu: &str) -> i64`: Получение сытости указанного бота.
+- `get_bot_profile(mu: &str) -> Profile`: Получение профиля указанного бота.
+- `bot_is_workable(mu: &str) -> bool`: Получение состояния работоспособности указанного бота.
 
 Основные функции-сеттеры:
 
-- `set_jumping(mu: &str, state: bool)`: задать состояние для jumping.
-- `set_crouching(mu: &str, state: bool)`: задать состояние для crouching.
-- `set_velocity(mu: &str, axis: &str, velocity: f64)`: задать скорость по определённой оси.
-- `set_on_ground(mu: &str, on_ground: bool)`: задать состояние для on_ground.
-- `set_old_position(mu: &str, x: f64, y: f64, z: f64)`: задать значение для old_position.
-- `set_no_jump_delay(mu: &str, delay: i64)`: задать значение для no_jump_delay.
-- `set_was_touching_water(mu: &str, state: bool)`: задать значение для was_touching_water.
-- `set_has_impulse(mu: &str, state: bool)`: задать значение для has_impulse.
+- `set_jumping(mu: &str, state: bool)`: Установка состояния jumping.
+- `set_crouching(mu: &str, state: bool)`: Установка состояния crouching.
+- `set_velocity(mu: &str, axis: &str, velocity: f64)`: Установка скорости по определённой оси.
+- `set_on_ground(mu: &str, on_ground: bool)`: Установка значения для on_ground.
+- `set_old_position(mu: &str, x: f64, y: f64, z: f64)`: Установка значения для old_position.
+- `set_no_jump_delay(mu: &str, delay: i64)`: Установка значения для no_jump_delay.
+- `set_was_touching_water(mu: &str, state: bool)`: Установка значения для was_touching_water.
+- `set_has_impulse(mu: &str, state: bool)`: Установка значения для has_impulse.
 
 Функции, отвечающие за различные действия:
 
-- `start_walking(mu: &str, direction: &str)`: идти по указанному направлению.
-- `start_sprinting(mu: &str, direction: &str)`: бежать по указанному направлению.
-- `start_pathfinder(mu: &str, x: i64, z: i64)`: идти на укзанные координаты.
-- `stop_move(mu: &str)`: остановить движение (walk && sprint).
-- `stop_pathfinder(mu: &str)`: остановить задачи pathfinder'а.
-- `place_block(mu: &str, x: i64, y: i64, z: i64)`: установить блок на указанных координатах.
-- `look_at(mu: &str, x: f64, y: f64, z: f64)`: повернуться на укзанные координаты.
-- `look_at_block(mu: &str, x: f64, y: f64, z: f64)`: повернуться на блок с учётом его центра.
-- `drop_selected_item(mu: &str, lock: bool)`: выбросить предмет, лежащий в руке.
-- `inv_click(mu: &str, slot: i64, mode: &str, lock: bool)`: кликнуть определённым образом на указанный слот. Доступные режимы: `left`, `right`, `shift`, `drop`, `drop-all`.
-- `inv_click_on(mu: &str, name: &str, mode: &str, lock: bool)`: кликнуть определённым образом на предмет с указанным именем.
+- `start_walking(mu: &str, direction: &str)`: Ходьба по указанному направлению.
+- `start_sprinting(mu: &str, direction: &str)`: Спринт по указанному направлению.
+- `start_pathfinder(mu: &str, x: i64, z: i64)`: Ходьба на укзанные координаты (pathfinder).
+- `stop_move(mu: &str)`: Остановка движения (walk && sprint).
+- `stop_pathfinder(mu: &str)`: Отсановка задач pathfinder.
+- `place_block(mu: &str, x: i64, y: i64, z: i64)`: Установка блока на указанных координатах.
+- `look_at(mu: &str, x: f64, y: f64, z: f64)`: Поворот на укзанные координаты.
+- `look_at_block(mu: &str, x: f64, y: f64, z: f64)`: Поворот на блок с учётом его центра.
+- `drop_selected_item(mu: &str, lock: bool)`: Выбросить предмет, лежащий в руке.
+- `inv_click(mu: &str, slot: i64, mode: &str, lock: bool)`: Кликнуть определённым образом на указанный слот. Доступные режимы: `left`, `right`, `shift`, `drop`, `drop-all`.
+- `inv_click_on(mu: &str, name: &str, mode: &str, lock: bool)`: Кликнуть определённым образом на предмет с указанным именем.
 - `set_selected_slot(mu: &str, slot: i64)`: установить выбранный слот в хотбаре.
-- `attack(mu: &str, target: &str, distance: f64, look_at_target: bool)`: атака определённой ближайшей сущности. Аргумент `target` может иметь значения: any (любая сущность), player, monster, animal, vehicle.
-- `start_use_item(mu: &str, hand: &str)`: начать использовать предмет в указанной руке (mainhand / offhand).
-- `release_use_item(mu: &str)`: завершить использование предмета.
+- `attack(mu: &str, target: &str, distance: f64, look_at_target: bool)`: Атака определённой ближайшей сущности. Аргумент `target` может иметь значения: any (любая сущность), player, monster, animal, vehicle.
+- `start_use_item(mu: &str, hand: &str)`: Начать использование предмета в указанной руке (mainhand / offhand).
+- `release_use_item(mu: &str)`: Завершить использование предмета.
 
 Функции, отвечающие за состояния ботов:
 
-- `set_state(mu: &str, field: &str, value: bool)`: установить значение (true / false) для состояния определённого бота.
-- `get_state(mu: &str, field: &str) -> bool`: получить значение состояния у опредлённого бота.
+- `set_state(mu: &str, field: &str, value: bool)`: Установка значения (true / false) для определённого состояния указанного бота.
+- `get_state(mu: &str, field: &str) -> bool`: Получение значения определённого состояния у указанного бота.
+
+Функции, доступные при фичи "Auto-Script":
+
+- `current_bot_id() -> i64`: Получение Entity ID текущего бота.
+- `current_bot_ping() -> i64`: Получение пинга текущего бота.
+- `current_bot_feet_pos() -> Position`: Получение позиции ног текущего бота.
+- `current_bot_eye_pos() -> Position`: Получение позиции глаз текущего бота.
+- `current_bot_health() -> f64`: Получение здоровья текущего бота.
+- `current_bot_satiety() -> i64`: Получение сытости текущего бота.
+- `current_bot_profile() -> Profile`: Получение профиля текущего бота.
+
+## Структуры данных
+
+- **Position**
+  - x: `f64`
+  - y: `f64`
+  - z: `f64`
+
+- **Profile**
+  - ping: `i64`
+  - captcha_caught: `bool`
+  - registered: `bool`
+  - logined: `bool`
+  - group: `&str`
+  - health: `i64`
+  - password: `&str`
+  - email: `&str`
 
 ## Что за состояния ботов?
 
