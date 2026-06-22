@@ -9,7 +9,7 @@ use std::sync::Arc;
 use tokio::time::sleep;
 
 use crate::service::core::common::{get_average_coordinates_of_bots, this_is_solid_block};
-use crate::service::core::controllers::{get_state, set_mutual_states, State, PROFILES, STATES, TASKS};
+use crate::service::core::controllers::{get_state, set_mutual_states, State, StateName, PROFILES, STATES, TASKS};
 use crate::service::core::extensions::{
   go_to, BotDefaultExt, BotInventoryExt, BotMovementExt, BotPhysicsExt, InvClick,
 };
@@ -28,12 +28,12 @@ impl QuickTaskManager {
   }
 
   pub fn execute(&self, name: String) {
-    for (number, nickname) in PROFILES.get_all().into_keys().enumerate() {
+    for (number, username) in PROFILES.get_all().into_keys().enumerate() {
       let name = name.clone();
 
       tokio::spawn(async move {
         BOT_REGISTRY
-          .async_get_bot(&nickname, async |bot| match name.as_str() {
+          .async_get_bot(&username, async |bot| match name.as_str() {
             "clear-inventory" => {
               if let Some(menu) = bot.get_inventory_menu() {
                 for (slot, _) in menu.slots().iter().enumerate() {
@@ -79,7 +79,7 @@ impl QuickTaskManager {
               }
             }
             "rise" => {
-              if get_state(&nickname, State::CanLooking) && get_state(&nickname, State::CanInteracting) {
+              if get_state(&username, State::CanLooking) && get_state(&username, State::CanInteracting) {
                 let mut block_slot = None;
 
                 if let Some(menu) = bot.get_inventory_menu() {
@@ -94,8 +94,8 @@ impl QuickTaskManager {
                 }
 
                 if let Some(slot) = block_slot {
-                  set_mutual_states(&nickname, "looking", true);
-                  set_mutual_states(&nickname, "interacting", true);
+                  set_mutual_states(&username, StateName::Looking, true);
+                  set_mutual_states(&username, StateName::Interacting, true);
 
                   bot.take_item(slot, true).await;
 
@@ -123,8 +123,8 @@ impl QuickTaskManager {
 
                   bot.set_direction(original_direction_1.0, original_direction_1.1);
 
-                  set_mutual_states(&nickname, "looking", false);
-                  set_mutual_states(&nickname, "interacting", false);
+                  set_mutual_states(&username, StateName::Looking, false);
+                  set_mutual_states(&username, StateName::Interacting, false);
                 }
               }
             }
@@ -201,9 +201,9 @@ impl QuickTaskManager {
                 }
 
                 if let Some(slot) = block_slot {
-                  if get_state(&nickname, State::CanLooking) && get_state(&nickname, State::CanInteracting) {
-                    set_mutual_states(&nickname, "looking", true);
-                    set_mutual_states(&nickname, "interacting", true);
+                  if get_state(&username, State::CanLooking) && get_state(&username, State::CanInteracting) {
+                    set_mutual_states(&username, StateName::Looking, true);
+                    set_mutual_states(&username, StateName::Interacting, true);
 
                     bot.take_item(slot, true).await;
 
@@ -231,8 +231,8 @@ impl QuickTaskManager {
                       bot.set_crouching(false);
                     }
 
-                    set_mutual_states(&nickname, "looking", false);
-                    set_mutual_states(&nickname, "interacting", false);
+                    set_mutual_states(&username, StateName::Looking, false);
+                    set_mutual_states(&username, StateName::Interacting, false);
 
                     sleep(Duration::from_millis(randuint(100, 150))).await;
                   }
@@ -306,13 +306,13 @@ impl QuickTaskManager {
           .await;
 
         if name.as_str() == "quit" {
-          let _ = BOT_REGISTRY.take_bot(&nickname).await;
+          let _ = BOT_REGISTRY.take_bot(&username).await;
 
-          TASKS.kill_all_tasks_for(&nickname);
+          TASKS.kill_all_tasks_for(&username);
 
-          STATES.reset(&nickname);
-          TASKS.remove(&nickname);
-          PROFILES.set_str(&nickname, "status", "Оффлайн");
+          STATES.reset(&username);
+          TASKS.remove(&username);
+          PROFILES.set_str(&username, "status", "Оффлайн");
         }
       });
     }

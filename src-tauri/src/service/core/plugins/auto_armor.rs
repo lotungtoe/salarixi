@@ -5,13 +5,23 @@ use std::time::Duration;
 use tokio::time::sleep;
 
 use crate::service::core::extensions::{BotDefaultExt, BotInventoryExt, InvClick};
+use crate::service::core::plugin_manager::PluginName;
 use crate::service::core::registry::BOT_REGISTRY;
 use crate::service::core::traits::SalarixiPlugin;
 use crate::service::core::{process_is_active, PLUGIN_MANAGER};
 
+/// Часть брони
+#[derive(PartialEq)]
+pub enum ArmorPart {
+  Helmet,
+  Chestplate,
+  Leggings,
+  Boots,
+}
+
 /// Структура информации об элементе брони
 struct Armor {
-  part: String,
+  part: ArmorPart,
   slot: usize,
   priority: u8,
 }
@@ -88,161 +98,156 @@ impl AutoArmorPlugin {
 
   /// Метод проверки предмета, является ли тот бронёй
   fn is_armor(&self, item: &ItemStack, slot: usize) -> Option<Armor> {
-    let helmet = "helmet".to_string();
-    let chestplate = "chestplate".to_string();
-    let leggings = "leggings".to_string();
-    let boots = "boots".to_string();
-
     return Some(match item.kind() {
       // Шлема
       ItemKind::TurtleHelmet => Armor {
-        part: helmet,
+        part: ArmorPart::Helmet,
         slot: slot,
         priority: 0,
       },
       ItemKind::LeatherHelmet => Armor {
-        part: helmet,
+        part: ArmorPart::Helmet,
         slot: slot,
         priority: 1,
       },
       ItemKind::GoldenHelmet => Armor {
-        part: helmet,
+        part: ArmorPart::Helmet,
         slot: slot,
         priority: 2,
       },
       ItemKind::ChainmailHelmet => Armor {
-        part: helmet,
+        part: ArmorPart::Helmet,
         slot: slot,
         priority: 3,
       },
       ItemKind::CopperHelmet => Armor {
-        part: helmet,
+        part: ArmorPart::Helmet,
         slot: slot,
         priority: 4,
       },
       ItemKind::IronHelmet => Armor {
-        part: helmet,
+        part: ArmorPart::Helmet,
         slot: slot,
         priority: 5,
       },
       ItemKind::DiamondHelmet => Armor {
-        part: helmet,
+        part: ArmorPart::Helmet,
         slot: slot,
         priority: 6,
       },
       ItemKind::NetheriteHelmet => Armor {
-        part: helmet,
+        part: ArmorPart::Helmet,
         slot: slot,
         priority: 7,
       },
 
       // Нагрудники
       ItemKind::LeatherChestplate => Armor {
-        part: chestplate,
+        part: ArmorPart::Chestplate,
         slot: slot,
         priority: 0,
       },
       ItemKind::GoldenChestplate => Armor {
-        part: chestplate,
+        part: ArmorPart::Chestplate,
         slot: slot,
         priority: 1,
       },
       ItemKind::ChainmailChestplate => Armor {
-        part: chestplate,
+        part: ArmorPart::Chestplate,
         slot: slot,
         priority: 2,
       },
       ItemKind::CopperChestplate => Armor {
-        part: chestplate,
+        part: ArmorPart::Chestplate,
         slot: slot,
         priority: 3,
       },
       ItemKind::IronChestplate => Armor {
-        part: chestplate,
+        part: ArmorPart::Chestplate,
         slot: slot,
         priority: 4,
       },
       ItemKind::DiamondChestplate => Armor {
-        part: chestplate,
+        part: ArmorPart::Chestplate,
         slot: slot,
         priority: 5,
       },
       ItemKind::NetheriteChestplate => Armor {
-        part: chestplate,
+        part: ArmorPart::Chestplate,
         slot: slot,
         priority: 6,
       },
 
       // Поножи
       ItemKind::LeatherLeggings => Armor {
-        part: leggings,
+        part: ArmorPart::Leggings,
         slot: slot,
         priority: 0,
       },
       ItemKind::GoldenLeggings => Armor {
-        part: leggings,
+        part: ArmorPart::Leggings,
         slot: slot,
         priority: 1,
       },
       ItemKind::ChainmailLeggings => Armor {
-        part: leggings,
+        part: ArmorPart::Leggings,
         slot: slot,
         priority: 2,
       },
       ItemKind::CopperLeggings => Armor {
-        part: leggings,
+        part: ArmorPart::Leggings,
         slot: slot,
         priority: 3,
       },
       ItemKind::IronLeggings => Armor {
-        part: leggings,
+        part: ArmorPart::Leggings,
         slot: slot,
         priority: 4,
       },
       ItemKind::DiamondLeggings => Armor {
-        part: leggings,
+        part: ArmorPart::Leggings,
         slot: slot,
         priority: 5,
       },
       ItemKind::NetheriteLeggings => Armor {
-        part: leggings,
+        part: ArmorPart::Leggings,
         slot: slot,
         priority: 6,
       },
 
       // Ботинки
       ItemKind::LeatherBoots => Armor {
-        part: boots,
+        part: ArmorPart::Boots,
         slot: slot,
         priority: 0,
       },
       ItemKind::GoldenBoots => Armor {
-        part: boots,
+        part: ArmorPart::Boots,
         slot: slot,
         priority: 1,
       },
       ItemKind::ChainmailBoots => Armor {
-        part: boots,
+        part: ArmorPart::Boots,
         slot: slot,
         priority: 2,
       },
       ItemKind::CopperBoots => Armor {
-        part: boots,
+        part: ArmorPart::Boots,
         slot: slot,
         priority: 3,
       },
       ItemKind::IronBoots => Armor {
-        part: boots,
+        part: ArmorPart::Boots,
         slot: slot,
         priority: 7,
       },
       ItemKind::DiamondBoots => Armor {
-        part: boots,
+        part: ArmorPart::Boots,
         slot: slot,
         priority: 5,
       },
       ItemKind::NetheriteBoots => Armor {
-        part: boots,
+        part: ArmorPart::Boots,
         slot: slot,
         priority: 6,
       },
@@ -261,8 +266,8 @@ impl AutoArmorPlugin {
     };
 
     for armor in armors {
-      match armor.part.as_str() {
-        "helmet" => {
+      match armor.part {
+        ArmorPart::Helmet => {
           if let Some(helmet) = &armor_set.helmet {
             if armor.priority <= helmet.priority {
               continue;
@@ -273,7 +278,7 @@ impl AutoArmorPlugin {
             armor_set.helmet = Some(armor);
           }
         }
-        "chestplate" => {
+        ArmorPart::Chestplate => {
           if let Some(chestplate) = &armor_set.chestplate {
             if armor.priority <= chestplate.priority {
               continue;
@@ -284,7 +289,7 @@ impl AutoArmorPlugin {
             armor_set.chestplate = Some(armor);
           }
         }
-        "leggings" => {
+        ArmorPart::Leggings => {
           if let Some(leggings) = &armor_set.leggings {
             if armor.priority <= leggings.priority {
               continue;
@@ -295,7 +300,7 @@ impl AutoArmorPlugin {
             armor_set.leggings = Some(armor);
           }
         }
-        "boots" => {
+        ArmorPart::Boots => {
           if let Some(boots) = &armor_set.boots {
             if armor.priority <= boots.priority {
               continue;
@@ -306,7 +311,6 @@ impl AutoArmorPlugin {
             armor_set.boots = Some(armor);
           }
         }
-        _ => {}
       }
     }
 
@@ -315,12 +319,11 @@ impl AutoArmorPlugin {
 
   /// Метод сравнения текущей брони с другой
   fn is_armor_better(&self, bot: &Client, armor: &Armor) -> bool {
-    let current_armor_slot = match armor.part.as_str() {
-      "helmet" => 5,
-      "chestplate" => 6,
-      "leggings" => 7,
-      "boots" => 8,
-      _ => return false,
+    let current_armor_slot = match armor.part {
+      ArmorPart::Helmet => 5,
+      ArmorPart::Chestplate => 6,
+      ArmorPart::Leggings => 7,
+      ArmorPart::Boots => 8,
     };
 
     if let Some(menu) = bot.get_inventory_menu() {
@@ -367,6 +370,6 @@ impl SalarixiPlugin for AutoArmorPlugin {
       }
     });
 
-    PLUGIN_MANAGER.push_root_task(&username, "auto-armor", task);
+    PLUGIN_MANAGER.push_root_task(&username, PluginName::AutoArmorPlugin, task);
   }
 }

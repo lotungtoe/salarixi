@@ -18,14 +18,16 @@ pub enum EntityType {
   Custom(String),
 }
 
-pub fn entity_type_from(value: String) -> EntityType {
-  match value.as_str() {
-    "player" => EntityType::Player,
-    "monster" => EntityType::Monster,
-    "animal" => EntityType::Animal,
-    "vehicle" => EntityType::Vehicle,
-    "any" => EntityType::Any,
-    _ => EntityType::Custom(value),
+impl From<String> for EntityType {
+  fn from(value: String) -> Self {
+    match value.as_str() {
+      "player" => EntityType::Player,
+      "monster" => EntityType::Monster,
+      "animal" => EntityType::Animal,
+      "vehicle" => EntityType::Vehicle,
+      "any" => EntityType::Any,
+      _ => EntityType::Custom(value),
+    }
   }
 }
 

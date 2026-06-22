@@ -2443,11 +2443,9 @@ button svg {
   flex-direction: column;
   justify-content: start;
   align-items: center;
-  gap: 10px;
-  width: 720px;
-  margin-top: 10px;
-  padding-bottom: 20px;
+  width: 100%;
   overflow-y: auto;
+  border-radius: 12px;
 }
 
 .plugin-list .plugin-card {
@@ -2457,10 +2455,12 @@ button svg {
   height: auto;
   min-height: 95px;
   width: 100%;
-  background: var(--secondary-bg);
-  border: 1px solid var(--secondary-border);
-  border-radius: 12px;
+  border-bottom: 1px solid var(--secondary-border);
   padding: 8px;
+}
+
+.plugin-list .plugin-card:last-child {
+  border-bottom: none;
 }
 
 .plugin-list .plugin-card .head {
@@ -2527,7 +2527,7 @@ button svg {
   font-family: var(--global-font-family);
   font-size: 14px;
   font-weight: 500;
-  margin-left: 4px;
+  margin-left: 8px;
 }
 
 .plugin-list .plugin-card.unavailable .head .text .header .tag {
@@ -2552,8 +2552,9 @@ button svg {
 }
 
 .plugin-list .plugin-card .controls button {
-  padding: 8px 6px;
+  padding: 6px 6px;
   font-weight: 600;
+  border-radius: 6px;
 }
 
 .plugin-description {

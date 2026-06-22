@@ -13,7 +13,7 @@ use std::time::Duration;
 use tokio::time::sleep;
 
 use crate::service::core::common::convert_inventory_slot_to_hotbar_slot;
-use crate::service::core::controllers::{get_state, set_mutual_states, set_state, State};
+use crate::service::core::controllers::{get_state, set_mutual_states, set_state, State, StateName};
 use crate::service::core::extensions::{BotDefaultExt, BotMovementExt};
 use crate::service::generators::randint;
 
@@ -52,8 +52,6 @@ impl InvClick {
       2 => InvClickMode::Shift,
       3 => InvClickMode::Drop,
       4 => InvClickMode::DropAll,
-
-      // Значение по умолчанию
       _ => InvClickMode::Shift,
     })
   }
@@ -109,7 +107,7 @@ impl BotInventoryExt for Client {
     set_state(&username, State::CanDrinking, false);
     set_state(&username, State::CanAttacking, false);
 
-    set_mutual_states(&username, "interacting", true);
+    set_mutual_states(&username, StateName::Interacting, true);
   }
 
   fn stop_interacting_with_inventory(&self) {
@@ -121,7 +119,7 @@ impl BotInventoryExt for Client {
     set_state(&username, State::CanDrinking, true);
     set_state(&username, State::CanAttacking, true);
 
-    set_mutual_states(&username, "interacting", false);
+    set_mutual_states(&username, StateName::Interacting, false);
   }
 
   async fn take_item(&self, source_slot: usize, lock: bool) {

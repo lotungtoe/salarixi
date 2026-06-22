@@ -9,7 +9,7 @@ use crate::service::core::common::{
   convert_hotbar_slot_to_inventory_slot, convert_inventory_slot_to_hotbar_slot, get_block_state, this_is_solid_block,
 };
 use crate::service::core::controllers::{
-  kill_task, push_extra_task, push_root_task, set_mutual_states, TaskName, TASKS,
+  kill_task, push_extra_task, push_root_task, set_mutual_states, StateName, TaskName, TASKS,
 };
 use crate::service::core::extensions::{BotDefaultExt, BotInventoryExt, BotMovementExt, BotPhysicsExt};
 use crate::service::core::registry::BOT_REGISTRY;
@@ -292,8 +292,8 @@ impl SalarixiModule<ScaffoldOptions> for ScaffoldModule {
         bot.stop_move();
       }
 
-      set_mutual_states(&username, "looking", false);
-      set_mutual_states(&username, "interacting", false);
+      set_mutual_states(&username, StateName::Looking, false);
+      set_mutual_states(&username, StateName::Interacting, false);
     } else {
       return false;
     }

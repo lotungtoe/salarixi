@@ -26,6 +26,17 @@ pub enum State {
   IsInteracting,
 }
 
+/// Имя состояния бота
+pub enum StateName {
+  Walking,
+  Sprinting,
+  Eating,
+  Drinking,
+  Attacking,
+  Looking,
+  Interacting,
+}
+
 impl State {
   /// Метод конвертации строки в состояние
   pub fn from_str<'a>(str: impl Into<&'a str>) -> Option<Self> {
@@ -170,16 +181,15 @@ pub fn set_state(username: &str, state: State, value: bool) {
 }
 
 /// Вспомогательная функция взаимной установки значений для ```can``` и ```is``` состояний
-pub fn set_mutual_states(username: &str, name: &str, current_value: bool) {
-  let (is_state, can_state) = match name {
-    "walking" => (State::IsWalking, State::CanWalking),
-    "sprinting" => (State::IsSprinting, State::CanSprinting),
-    "eating" => (State::IsEating, State::CanEating),
-    "drinking" => (State::IsDrinking, State::CanDrinking),
-    "attacking" => (State::IsAttacking, State::CanAttacking),
-    "looking" => (State::IsLooking, State::CanLooking),
-    "interacting" => (State::IsInteracting, State::CanInteracting),
-    _ => return,
+pub fn set_mutual_states(username: &str, state_name: StateName, current_value: bool) {
+  let (is_state, can_state) = match state_name {
+    StateName::Walking => (State::IsWalking, State::CanWalking),
+    StateName::Sprinting => (State::IsSprinting, State::CanSprinting),
+    StateName::Eating => (State::IsEating, State::CanEating),
+    StateName::Drinking => (State::IsDrinking, State::CanDrinking),
+    StateName::Attacking => (State::IsAttacking, State::CanAttacking),
+    StateName::Looking => (State::IsLooking, State::CanLooking),
+    StateName::Interacting => (State::IsInteracting, State::CanInteracting),
   };
 
   if let Ok(mut states) = STATES.map.try_write() {

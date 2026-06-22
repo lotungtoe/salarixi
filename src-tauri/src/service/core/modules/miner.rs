@@ -9,6 +9,7 @@ use tokio::time::sleep;
 
 use crate::service::core::common::get_block_state;
 use crate::service::core::controllers::push_root_task;
+use crate::service::core::controllers::StateName;
 use crate::service::core::controllers::TaskName;
 use crate::service::core::controllers::TASKS;
 use crate::service::core::controllers::{kill_task, set_mutual_states};
@@ -308,8 +309,8 @@ impl SalarixiModule<MinerOptions> for MinerModule {
         bot.stop_move();
       }
 
-      set_mutual_states(&username, "interacting", false);
-      set_mutual_states(&username, "looking", false);
+      set_mutual_states(&username, StateName::Interacting, false);
+      set_mutual_states(&username, StateName::Looking, false);
     } else {
       return false;
     }

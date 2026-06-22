@@ -5,6 +5,7 @@ use std::time::Duration;
 use tokio::time::sleep;
 
 use crate::service::core::controllers::push_root_task;
+use crate::service::core::controllers::StateName;
 use crate::service::core::controllers::TASKS;
 use crate::service::core::controllers::{get_state, kill_task, set_mutual_states, State, TaskName};
 use crate::service::core::extensions::{go_to, BotDefaultExt, BotMovementExt, EntityType};
@@ -96,7 +97,7 @@ impl StalkerModule {
   async fn start(bot: &Client, options: &StalkerOptions) {
     let username = bot.username();
 
-    set_mutual_states(&username, "looking", true);
+    set_mutual_states(&username, StateName::Looking, true);
 
     match options.mode.as_str() {
       "default" => Self::default_stalking(bot, options).await,
@@ -129,7 +130,7 @@ impl SalarixiModule<StalkerOptions> for StalkerModule {
         bot.stop_jumping();
       }
 
-      set_mutual_states(&username, "looking", false);
+      set_mutual_states(&username, StateName::Looking, false);
     } else {
       return false;
     }

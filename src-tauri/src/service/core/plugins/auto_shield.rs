@@ -5,8 +5,9 @@ use azalea::registry::builtin::ItemKind;
 use std::time::Duration;
 use tokio::time::sleep;
 
-use crate::service::core::controllers::{get_state, set_mutual_states, State};
+use crate::service::core::controllers::{get_state, set_mutual_states, State, StateName};
 use crate::service::core::extensions::{BotDefaultExt, BotInteractExt, BotInventoryExt, EntityType};
+use crate::service::core::plugin_manager::PluginName;
 use crate::service::core::registry::BOT_REGISTRY;
 use crate::service::core::traits::SalarixiPlugin;
 use crate::service::core::{process_is_active, PLUGIN_MANAGER};
@@ -74,8 +75,8 @@ impl AutoShieldPlugin {
     let username = bot.name();
 
     if get_state(&username, State::CanLooking) && get_state(&username, State::CanInteracting) {
-      set_mutual_states(&username, "looking", true);
-      set_mutual_states(&username, "interacting", true);
+      set_mutual_states(&username, StateName::Looking, true);
+      set_mutual_states(&username, StateName::Interacting, true);
 
       bot.start_use_held_item(InteractionHand::OffHand);
 
@@ -95,8 +96,8 @@ impl AutoShieldPlugin {
 
       bot.release_use_held_item();
 
-      set_mutual_states(&username, "looking", false);
-      set_mutual_states(&username, "interacting", false);
+      set_mutual_states(&username, StateName::Looking, false);
+      set_mutual_states(&username, StateName::Interacting, false);
     }
   }
 }
@@ -129,6 +130,6 @@ impl SalarixiPlugin for AutoShieldPlugin {
       }
     });
 
-    PLUGIN_MANAGER.push_root_task(&username, "auto-shield", task);
+    PLUGIN_MANAGER.push_root_task(&username, PluginName::AutoShieldPlugin, task);
   }
 }

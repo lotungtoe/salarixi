@@ -8,6 +8,7 @@ use crate::service::core::controllers::kill_task;
 use crate::service::core::controllers::push_extra_task;
 use crate::service::core::controllers::push_root_task;
 use crate::service::core::controllers::set_mutual_states;
+use crate::service::core::controllers::StateName;
 use crate::service::core::controllers::TaskName;
 use crate::service::core::controllers::TASKS;
 use crate::service::core::extensions::{BotDefaultExt, BotMovementExt};
@@ -161,7 +162,7 @@ impl SalarixiModule<AntiAfkOptions> for AntiAfkModule {
     if options.state && !TASKS.get_task_activity(&username, TaskName::AntiAfk) {
       let username_clone = username.clone();
       let task_handle = tokio::spawn(async move {
-        set_mutual_states(&username_clone, "looking", true);
+        set_mutual_states(&username_clone, StateName::Looking, true);
 
         BOT_REGISTRY
           .async_get_bot(&username_clone, async |bot| Self::start(bot, &options).await)
@@ -177,7 +178,7 @@ impl SalarixiModule<AntiAfkOptions> for AntiAfkModule {
         bot.stop_crouching();
       }
 
-      set_mutual_states(&username, "looking", false);
+      set_mutual_states(&username, StateName::Looking, false);
     } else {
       return false;
     }

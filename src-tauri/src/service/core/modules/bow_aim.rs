@@ -7,9 +7,9 @@ use std::time::Duration;
 use tokio::time::sleep;
 
 use crate::service::core::controllers::{
-  get_state, kill_task, push_extra_task, push_root_task, set_mutual_states, State, TaskName, TASKS,
+  get_state, kill_task, push_extra_task, push_root_task, set_mutual_states, State, StateName, TaskName, TASKS,
 };
-use crate::service::core::extensions::{entity_type_from, BotDefaultExt, BotInteractExt, BotInventoryExt};
+use crate::service::core::extensions::{BotDefaultExt, BotInteractExt, BotInventoryExt, EntityType};
 use crate::service::core::registry::BOT_REGISTRY;
 use crate::service::core::traits::SalarixiModule;
 use crate::service::generators::*;
@@ -48,14 +48,14 @@ impl BowAimModule {
       BOT_REGISTRY
         .async_get_bot(&username_clone, async |bot| {
           if get_state(&username_clone, State::CanLooking) {
-            set_mutual_states(&username_clone, "looking", true);
+            set_mutual_states(&username_clone, StateName::Looking, true);
 
             loop {
               if !TASKS.get_task_activity(&username_clone, TaskName::BowAim) {
                 break;
               }
 
-              if let Some(entity) = bot.find_nearest_entity(entity_type_from(target.clone()), distance) {
+              if let Some(entity) = bot.find_nearest_entity(EntityType::from(target.clone()), distance) {
                 let target_pos = bot.get_entity_position(entity);
 
                 bot.look_at(Vec3::new(
@@ -76,15 +76,15 @@ impl BowAimModule {
   }
 
   async fn shoot(bot: &Client, target: String, distance: f64) {
-    let nickname = bot.name();
+    let username = bot.name();
 
-    if get_state(&nickname, State::CanInteracting)
-      && !get_state(&nickname, State::IsEating)
-      && !get_state(&nickname, State::IsDrinking)
-      && !get_state(&nickname, State::IsAttacking)
+    if get_state(&username, State::CanInteracting)
+      && !get_state(&username, State::IsEating)
+      && !get_state(&username, State::IsDrinking)
+      && !get_state(&username, State::IsAttacking)
     {
       if let Some(slot) = Self::find_bow_in_inventory(bot) {
-        set_mutual_states(&nickname, "interacting", true);
+        set_mutual_states(&username, StateName::Interacting, true);
 
         bot.take_item(slot, true).await;
 
@@ -94,7 +94,7 @@ impl BowAimModule {
 
         sleep(Duration::from_millis(randuint(900, 1100))).await;
 
-        if let Some(entity) = bot.find_nearest_entity(entity_type_from(target), distance) {
+        if let Some(entity) = bot.find_nearest_entity(EntityType::from(target), distance) {
           let target_pos = bot.get_entity_position(entity);
 
           let distance = bot.eye_pos().distance_to(target_pos);
@@ -118,7 +118,7 @@ impl BowAimModule {
 
         bot.release_use_held_item();
 
-        set_mutual_states(&nickname, "interacting", false);
+        set_mutual_states(&username, StateName::Interacting, false);
       }
     }
   }
@@ -165,8 +165,8 @@ impl SalarixiModule<BowAimOptions> for BowAimModule {
         bot.release_use_held_item();
       }
 
-      set_mutual_states(&username, "looking", false);
-      set_mutual_states(&username, "interacting", false);
+      set_mutual_states(&username, StateName::Looking, false);
+      set_mutual_states(&username, StateName::Interacting, false);
     } else {
       return false;
     }

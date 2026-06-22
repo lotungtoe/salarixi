@@ -14,11 +14,23 @@ use crate::{failed, success};
 
 pub static PLUGIN_MANAGER: Lazy<Arc<PluginManager>> = Lazy::new(|| Arc::new(PluginManager::new()));
 
+/// Имя плагина
+#[derive(Eq, Hash, PartialEq)]
+pub enum PluginName {
+  AutoArmorPlugin,
+  AutoTotemPlugin,
+  AutoEatPlugin,
+  AutoPotionPlugin,
+  AutoLookPlugin,
+  AutoShieldPlugin,
+  AutoRepairPlugin,
+}
+
 /// Менеджер плагинов.
 /// Изначально он хранит в себе объекты всех существующих плагинов и список их задач.
 /// Данный менеджер выполняет роль загрузчика плагинов для бота.
 pub struct PluginManager {
-  tasks: RwLock<HashMap<String, HashMap<String, Option<JoinHandle<()>>>>>,
+  tasks: RwLock<HashMap<String, HashMap<PluginName, Option<JoinHandle<()>>>>>,
   plugins: PluginList,
 }
 
@@ -88,16 +100,16 @@ impl PluginManager {
   }
 
   /// Метод добавления задачи плагина указанному боту
-  pub fn push_root_task(&self, username: &str, plugin: &str, task: JoinHandle<()>) {
+  pub fn push_root_task(&self, username: &str, plugin_name: PluginName, task: JoinHandle<()>) {
     if let Ok(mut guard) = self.tasks.try_write() {
       if let Some(tasks) = guard.get_mut(username) {
-        if let Some(old_task) = tasks.get(plugin) {
+        if let Some(old_task) = tasks.get(&plugin_name) {
           if let Some(active_old_task) = old_task {
             active_old_task.abort();
           }
         }
 
-        tasks.insert(plugin.to_string(), Some(task));
+        tasks.insert(plugin_name, Some(task));
       }
     }
   }

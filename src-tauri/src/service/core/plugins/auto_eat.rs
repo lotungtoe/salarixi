@@ -5,8 +5,9 @@ use azalea::registry::builtin::ItemKind;
 use std::time::Duration;
 use tokio::time::sleep;
 
-use crate::service::core::controllers::{get_state, set_mutual_states, set_state, State};
+use crate::service::core::controllers::{get_state, set_mutual_states, set_state, State, StateName};
 use crate::service::core::extensions::{BotDefaultExt, BotInteractExt, BotInventoryExt, BotMovementExt};
+use crate::service::core::plugin_manager::PluginName;
 use crate::service::core::registry::BOT_REGISTRY;
 use crate::service::core::traits::SalarixiPlugin;
 use crate::service::core::{process_is_active, PLUGIN_MANAGER};
@@ -24,7 +25,6 @@ impl AutoEatPlugin {
   async fn eat(&self, bot: &Client) {
     let satiety = bot.get_satiety();
     let health = bot.get_health();
-
     let username = bot.name();
 
     if satiety < 20 || health < 15.0 {
@@ -44,7 +44,7 @@ impl AutoEatPlugin {
           if should_eat {
             set_state(&username, State::CanDrinking, false);
             set_state(&username, State::CanInteracting, false);
-            set_mutual_states(&username, "eating", true);
+            set_mutual_states(&username, StateName::Eating, true);
 
             bot.take_item(best_food.slot, false).await;
             sleep(Duration::from_millis(50)).await;
@@ -53,7 +53,7 @@ impl AutoEatPlugin {
 
             set_state(&username, State::CanDrinking, true);
             set_state(&username, State::CanInteracting, true);
-            set_mutual_states(&username, "eating", false);
+            set_mutual_states(&username, StateName::Eating, false);
           } else {
             sleep(Duration::from_millis(1800)).await;
           }
@@ -334,6 +334,6 @@ impl SalarixiPlugin for AutoEatPlugin {
       }
     });
 
-    PLUGIN_MANAGER.push_root_task(&username, "auto-eat", task);
+    PLUGIN_MANAGER.push_root_task(&username, PluginName::AutoEatPlugin, task);
   }
 }

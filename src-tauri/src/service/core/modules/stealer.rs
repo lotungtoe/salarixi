@@ -9,6 +9,7 @@ use tokio::time::sleep;
 use crate::service::core::common::get_block_state;
 use crate::service::core::controllers::push_root_task;
 use crate::service::core::controllers::State;
+use crate::service::core::controllers::StateName;
 use crate::service::core::controllers::TaskName;
 use crate::service::core::controllers::TASKS;
 use crate::service::core::controllers::{get_state, kill_task, set_mutual_states, set_state};
@@ -106,7 +107,7 @@ impl StealerModule {
   }
 
   async fn start(bot: &Client, options: &StealerOptions) {
-    let nickname = bot.username();
+    let username = bot.username();
 
     loop {
       let position = bot.position();
@@ -115,9 +116,9 @@ impl StealerModule {
       let target_positions = Self::find_nearest_targets(bot, position, &options.target, options.radius.unwrap_or(5));
 
       for pos in target_positions {
-        if get_state(&nickname, State::CanLooking) && get_state(&nickname, State::CanInteracting) {
-          set_mutual_states(&nickname, "looking", true);
-          set_mutual_states(&nickname, "interacting", true);
+        if get_state(&username, State::CanLooking) && get_state(&username, State::CanInteracting) {
+          set_mutual_states(&username, StateName::Looking, true);
+          set_mutual_states(&username, StateName::Interacting, true);
 
           bot.look_at(pos.center());
 
@@ -129,12 +130,12 @@ impl StealerModule {
             sleep(Duration::from_millis(randuint(200, 350))).await;
           }
 
-          set_mutual_states(&nickname, "looking", false);
-          set_mutual_states(&nickname, "interacting", false);
+          set_mutual_states(&username, StateName::Looking, false);
+          set_mutual_states(&username, StateName::Interacting, false);
         }
       }
 
-      if get_state(&nickname, State::CanLooking) {
+      if get_state(&username, State::CanLooking) {
         bot.set_direction(
           direction.0 + randfloat(-2.5, 2.5) as f32,
           direction.1 + randfloat(-2.5, 2.5) as f32,

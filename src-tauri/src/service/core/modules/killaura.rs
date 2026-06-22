@@ -6,11 +6,9 @@ use std::time::Duration;
 use tokio::time::sleep;
 
 use crate::service::core::controllers::{
-  get_state, kill_task, push_extra_task, push_root_task, set_mutual_states, State, TaskName, TASKS,
+  get_state, kill_task, push_extra_task, push_root_task, set_mutual_states, State, StateName, TaskName, TASKS,
 };
-use crate::service::core::extensions::{
-  entity_type_from, BotDefaultExt, BotInventoryExt, BotMovementExt, BotRotationExt,
-};
+use crate::service::core::extensions::{BotDefaultExt, BotInventoryExt, BotMovementExt, BotRotationExt, EntityType};
 use crate::service::core::registry::BOT_REGISTRY;
 use crate::service::core::traits::SalarixiModule;
 use crate::service::generators::*;
@@ -94,7 +92,7 @@ impl KillauraModule {
       return None;
     };
 
-    bot.find_nearest_entity(entity_type_from(target), max_distance)
+    bot.find_nearest_entity(EntityType::from(target), max_distance)
   }
 
   async fn auto_weapon(bot: &Client, weapon: &String) {
@@ -294,7 +292,7 @@ impl KillauraModule {
   fn aiming(username: String, target: String, target_nickname: Option<String>, distance: f64) {
     let username_clone = username.clone();
     let extra_task = tokio::spawn(async move {
-      set_mutual_states(&username_clone, "looking", true);
+      set_mutual_states(&username_clone, StateName::Looking, true);
 
       loop {
         if let Some(bot) = BOT_REGISTRY.get_bot(&username_clone) {
@@ -334,13 +332,13 @@ impl KillauraModule {
       Self::dodging(bot.username());
     }
 
-    let nickname = bot.username();
+    let username = bot.username();
 
     loop {
-      if get_state(&nickname, State::CanAttacking)
-        && !get_state(&nickname, State::IsInteracting)
-        && !get_state(&nickname, State::IsEating)
-        && !get_state(&nickname, State::IsDrinking)
+      if get_state(&username, State::CanAttacking)
+        && !get_state(&username, State::IsInteracting)
+        && !get_state(&username, State::IsEating)
+        && !get_state(&username, State::IsDrinking)
       {
         if let Some(entity) = Self::find_nearest_entity(
           bot,
@@ -348,7 +346,7 @@ impl KillauraModule {
           options.target_nickname.clone(),
           config.attack_distance,
         ) {
-          set_mutual_states(&nickname, "attacking", true);
+          set_mutual_states(&username, StateName::Attacking, true);
 
           if options.use_auto_weapon {
             Self::auto_weapon(bot, &options.weapon).await;
@@ -381,7 +379,7 @@ impl KillauraModule {
             bot.attack(entity);
           }
 
-          set_mutual_states(&nickname, "attacking", false);
+          set_mutual_states(&username, StateName::Attacking, false);
         }
       }
 
@@ -406,13 +404,13 @@ impl KillauraModule {
       Self::dodging(bot.username());
     }
 
-    let nickname = bot.username();
+    let username = bot.username();
 
     loop {
-      if get_state(&nickname, State::CanAttacking)
-        && !get_state(&nickname, State::IsInteracting)
-        && !get_state(&nickname, State::IsEating)
-        && !get_state(&nickname, State::IsDrinking)
+      if get_state(&username, State::CanAttacking)
+        && !get_state(&username, State::IsInteracting)
+        && !get_state(&username, State::IsEating)
+        && !get_state(&username, State::IsDrinking)
       {
         if let Some(entity) = Self::find_nearest_entity(
           bot,
@@ -420,7 +418,7 @@ impl KillauraModule {
           options.target_nickname.clone(),
           config.attack_distance,
         ) {
-          set_mutual_states(&nickname, "attacking", true);
+          set_mutual_states(&username, StateName::Attacking, true);
 
           if options.use_auto_weapon {
             Self::auto_weapon(bot, &options.weapon).await;
@@ -452,7 +450,7 @@ impl KillauraModule {
             bot.attack(entity);
           }
 
-          set_mutual_states(&nickname, "attacking", false);
+          set_mutual_states(&username, StateName::Attacking, false);
         }
       }
 
@@ -493,8 +491,8 @@ impl SalarixiModule<KillauraOptions> for KillauraModule {
         bot.stop_jumping();
       }
 
-      set_mutual_states(&username, "looking", false);
-      set_mutual_states(&username, "attacking", false);
+      set_mutual_states(&username, StateName::Looking, false);
+      set_mutual_states(&username, StateName::Attacking, false);
     } else {
       return false;
     }

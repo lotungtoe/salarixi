@@ -4,6 +4,7 @@ use std::time::Duration;
 use tokio::time::sleep;
 
 use crate::service::core::extensions::{BotDefaultExt, BotInventoryExt};
+use crate::service::core::plugin_manager::PluginName;
 use crate::service::core::registry::BOT_REGISTRY;
 use crate::service::core::traits::SalarixiPlugin;
 use crate::service::core::{process_is_active, PLUGIN_MANAGER};
@@ -61,6 +62,6 @@ impl SalarixiPlugin for AutoTotemPlugin {
       }
     });
 
-    PLUGIN_MANAGER.push_root_task(&username, "auto-totem", task);
+    PLUGIN_MANAGER.push_root_task(&username, PluginName::AutoTotemPlugin, task);
   }
 }

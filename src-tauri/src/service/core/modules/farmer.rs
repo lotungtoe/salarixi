@@ -8,7 +8,7 @@ use tokio::time::sleep;
 
 use crate::service::core::common::get_block_state;
 use crate::service::core::controllers::{
-  get_state, kill_task, push_root_task, set_mutual_states, State, TaskName, TASKS,
+  get_state, kill_task, push_root_task, set_mutual_states, State, StateName, TaskName, TASKS,
 };
 use crate::service::core::extensions::{BotDefaultExt, BotInventoryExt, BotRotationExt};
 use crate::service::core::registry::BOT_REGISTRY;
@@ -222,14 +222,14 @@ impl FarmerModule {
   }
 
   async fn interact_with_block(bot: &Client, block_pos: BlockPos, options: &FarmerOptions) {
-    let nickname = bot.username();
+    let username = bot.name();
 
-    if !get_state(&nickname, State::IsEating)
-      && !get_state(&nickname, State::IsDrinking)
-      && get_state(&nickname, State::CanInteracting)
+    if !get_state(&username, State::IsEating)
+      && !get_state(&username, State::IsDrinking)
+      && get_state(&username, State::CanInteracting)
     {
       if let Some(state) = get_block_state(bot, block_pos) {
-        set_mutual_states(&nickname, "interacting", true);
+        set_mutual_states(&username, StateName::Interacting, true);
 
         let kind = BlockKind::from(state);
 
@@ -282,7 +282,7 @@ impl FarmerModule {
           }
         }
 
-        set_mutual_states(&nickname, "interacting", false);
+        set_mutual_states(&username, StateName::Interacting, false);
       }
     }
   }
@@ -291,7 +291,7 @@ impl FarmerModule {
     let username = bot.username();
 
     loop {
-      set_mutual_states(&username, "looking", true);
+      set_mutual_states(&username, StateName::Looking, true);
 
       for y in -1..=1 {
         let pos = bot.feet_pos();
@@ -317,7 +317,7 @@ impl FarmerModule {
 
       sleep(Duration::from_millis(options.delay.unwrap_or(100))).await;
 
-      set_mutual_states(&username, "looking", false);
+      set_mutual_states(&username, StateName::Looking, false);
     }
   }
 }
@@ -339,8 +339,8 @@ impl SalarixiModule<FarmerOptions> for FarmerModule {
       push_root_task(&username, TaskName::Farmer, task_handle);
     } else if !options.state && TASKS.get_task_activity(&username, TaskName::Farmer) {
       kill_task(&username, TaskName::Farmer);
-      set_mutual_states(&username, "looking", false);
-      set_mutual_states(&username, "interacting", false);
+      set_mutual_states(&username, StateName::Looking, false);
+      set_mutual_states(&username, StateName::Interacting, false);
     } else {
       return false;
     }

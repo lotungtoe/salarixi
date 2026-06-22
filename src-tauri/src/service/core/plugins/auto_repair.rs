@@ -6,8 +6,9 @@ use azalea::registry::builtin::ItemKind;
 use std::time::Duration;
 use tokio::time::sleep;
 
-use crate::service::core::controllers::{get_state, set_mutual_states, State};
+use crate::service::core::controllers::{get_state, set_mutual_states, State, StateName};
 use crate::service::core::extensions::{BotDefaultExt, BotInteractExt, BotInventoryExt};
+use crate::service::core::plugin_manager::PluginName;
 use crate::service::core::registry::BOT_REGISTRY;
 use crate::service::core::traits::SalarixiPlugin;
 use crate::service::core::{process_is_active, PLUGIN_MANAGER};
@@ -58,8 +59,8 @@ impl AutoRepairPlugin {
           continue;
         }
 
-        set_mutual_states(&nickname, "interacting", true);
-        set_mutual_states(&nickname, "looking", true);
+        set_mutual_states(&nickname, StateName::Interacting, true);
+        set_mutual_states(&nickname, StateName::Looking, true);
 
         if broken_item.slot != 45 && broken_item.slot > 8 {
           bot.take_item(broken_item.slot, false).await;
@@ -96,8 +97,8 @@ impl AutoRepairPlugin {
           }
         }
 
-        set_mutual_states(&nickname, "interacting", false);
-        set_mutual_states(&nickname, "looking", false);
+        set_mutual_states(&nickname, StateName::Interacting, false);
+        set_mutual_states(&nickname, StateName::Looking, false);
       }
 
       sleep(Duration::from_millis(50)).await;
@@ -193,6 +194,6 @@ impl SalarixiPlugin for AutoRepairPlugin {
       }
     });
 
-    PLUGIN_MANAGER.push_root_task(&username, "auto-repair", task);
+    PLUGIN_MANAGER.push_root_task(&username, PluginName::AutoRepairPlugin, task);
   }
 }

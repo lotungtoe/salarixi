@@ -13,8 +13,8 @@ use crate::api::emit::{emit_log, emit_msg};
 use crate::service::core::common::convert_hotbar_slot_to_inventory_slot;
 use crate::service::core::controllers::{get_state, set_state, State, PROFILES};
 use crate::service::core::extensions::{
-  entity_type_from, go_to, BotDefaultExt, BotInteractExt, BotInventoryExt, BotMovementExt, BotPhysicsExt,
-  BotRotationExt, InvClick,
+  go_to, BotDefaultExt, BotInteractExt, BotInventoryExt, BotMovementExt, BotPhysicsExt, BotRotationExt, EntityType,
+  InvClick,
 };
 use crate::service::core::launch::state::ACTIVE;
 use crate::service::core::registry::BOT_REGISTRY;
@@ -440,7 +440,7 @@ impl ScriptExecutor {
     if username == "*" {
       PROFILES.get_all().keys().for_each(|name| {
         if let Some(bot) = BOT_REGISTRY.get_bot(name) {
-          if let Some(entity) = bot.find_nearest_entity(entity_type_from(target.clone()), distance) {
+          if let Some(entity) = bot.find_nearest_entity(EntityType::from(target.clone()), distance) {
             if look_at_target {
               bot.look_at_entity(entity, false);
             }
@@ -451,7 +451,7 @@ impl ScriptExecutor {
       });
     } else {
       if let Some(bot) = BOT_REGISTRY.get_bot(username) {
-        if let Some(entity) = bot.find_nearest_entity(entity_type_from(target), distance) {
+        if let Some(entity) = bot.find_nearest_entity(EntityType::from(target), distance) {
           if look_at_target {
             bot.look_at_entity(entity, false);
           }

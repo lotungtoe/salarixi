@@ -5,7 +5,7 @@ use azalea::pathfinder::PathfinderOpts;
 use azalea::{prelude::*, SprintDirection, StartSprintEvent, StartWalkEvent, WalkDirection};
 use std::time::Duration;
 
-use crate::service::core::controllers::{get_state, set_mutual_states, set_state, State};
+use crate::service::core::controllers::{get_state, set_mutual_states, set_state, State, StateName};
 use crate::service::core::extensions::BotDefaultExt;
 use crate::service::core::registry::BOT_REGISTRY;
 
@@ -31,7 +31,7 @@ impl BotMovementExt for Client {
         direction: direction,
       });
 
-      set_mutual_states(&username, "walking", true);
+      set_mutual_states(&username, StateName::Walking, true);
     }
   }
 
@@ -48,7 +48,7 @@ impl BotMovementExt for Client {
         direction: direction,
       });
 
-      set_mutual_states(&username, "sprinting", true);
+      set_mutual_states(&username, StateName::Sprinting, true);
     }
   }
 
@@ -60,8 +60,8 @@ impl BotMovementExt for Client {
 
     let username = self.name();
 
-    set_mutual_states(&username, "walking", false);
-    set_mutual_states(&username, "sprinting", false);
+    set_mutual_states(&username, StateName::Walking, false);
+    set_mutual_states(&username, StateName::Sprinting, false);
   }
 
   fn freeze_move(&self) {
@@ -92,9 +92,9 @@ pub fn go_to(username: String, x: i32, z: i32) {
     tokio::spawn(async move {
       BOT_REGISTRY
         .async_get_bot(&username, async |bot| {
-          set_mutual_states(&username, "looking", true);
-          set_mutual_states(&username, "sprinting", true);
-          set_mutual_states(&username, "walking", true);
+          set_mutual_states(&username, StateName::Looking, true);
+          set_mutual_states(&username, StateName::Sprinting, true);
+          set_mutual_states(&username, StateName::Walking, true);
 
           let goal = XZGoal { x: x, z: z };
           let opts = PathfinderOpts::new()
@@ -105,9 +105,9 @@ pub fn go_to(username: String, x: i32, z: i32) {
 
           bot.goto_with_opts(goal, opts).await;
 
-          set_mutual_states(&username, "looking", false);
-          set_mutual_states(&username, "sprinting", false);
-          set_mutual_states(&username, "walking", false);
+          set_mutual_states(&username, StateName::Looking, false);
+          set_mutual_states(&username, StateName::Sprinting, false);
+          set_mutual_states(&username, StateName::Walking, false);
         })
         .await;
     });

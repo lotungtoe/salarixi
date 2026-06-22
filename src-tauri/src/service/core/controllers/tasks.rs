@@ -1,7 +1,8 @@
 use hashbrown::HashMap;
 use once_cell::sync::Lazy;
 use std::sync::Arc;
-use tokio::{sync::RwLock, task::JoinHandle};
+use tokio::sync::RwLock;
+use tokio::task::JoinHandle;
 
 use crate::api::emit::emit_log;
 
@@ -82,7 +83,9 @@ impl Tasks {
       .extra
       .iter()
       .for_each(|(_, tasks)| tasks.iter().for_each(|t| t.abort()));
+
     self.root.iter().for_each(|(_, t)| t.abort());
+
     self.extra.clear();
     self.root.clear();
   }

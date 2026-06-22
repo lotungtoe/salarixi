@@ -1,7 +1,7 @@
 use azalea::core::direction::Direction;
-use azalea::protocol::packets::game::{
-  s_interact::InteractionHand, s_player_action::Action, ServerboundPlayerAction, ServerboundUseItem,
-};
+use azalea::protocol::packets::game::s_interact::InteractionHand;
+use azalea::protocol::packets::game::s_player_action::Action;
+use azalea::protocol::packets::game::{ServerboundPlayerAction, ServerboundUseItem};
 use azalea::{BlockPos, Client};
 
 pub trait BotInteractExt {

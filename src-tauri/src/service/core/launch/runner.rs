@@ -300,14 +300,11 @@ pub async fn stop_bots_and_destroy_data() -> bool {
   PLUGIN_MANAGER.clear().await;
   TASKS.clear().await;
 
-  tokio::time::sleep(Duration::from_secs(3)).await;
+  tokio::time::sleep(Duration::from_secs(2)).await;
 
   STATES.clear().await;
   PROFILES.clear().await;
   MAP_ACCUMULATOR.clear_all();
-
-  tokio::time::sleep(Duration::from_secs(1)).await;
-
   BOT_REGISTRY.clear();
 
   ACTIVE.store(false, Ordering::SeqCst);
