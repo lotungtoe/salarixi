@@ -1,5 +1,6 @@
 use hashbrown::HashMap;
 use once_cell::sync::Lazy;
+use std::sync::atomic::{AtomicU16, Ordering};
 use std::sync::Arc;
 use tokio::sync::RwLock;
 
@@ -26,6 +27,7 @@ pub enum State {
 }
 
 impl State {
+  /// Метод конвертации строки в состояние
   pub fn from_str<'a>(str: impl Into<&'a str>) -> Option<Self> {
     match str.into() {
       "can_walking" => Some(Self::CanWalking),
@@ -45,111 +47,65 @@ impl State {
       _ => None,
     }
   }
+
+  /// Метод получени индекса состояния
+  pub fn index(&self) -> u16 {
+    match self {
+      Self::CanWalking => 0,
+      Self::CanSprinting => 1,
+      Self::CanEating => 2,
+      Self::CanDrinking => 3,
+      Self::CanAttacking => 4,
+      Self::CanLooking => 5,
+      Self::CanInteracting => 6,
+      Self::IsWalking => 7,
+      Self::IsSprinting => 8,
+      Self::IsEating => 9,
+      Self::IsDrinking => 10,
+      Self::IsAttacking => 11,
+      Self::IsLooking => 12,
+      Self::IsInteracting => 13,
+    }
+  }
 }
 
 /// Структура состояний бота
 pub struct States {
-  pub can_walking: bool,
-  pub can_sprinting: bool,
-  pub can_eating: bool,
-  pub can_drinking: bool,
-  pub can_attacking: bool,
-  pub can_looking: bool,
-  pub can_interacting: bool,
-  pub is_walking: bool,
-  pub is_sprinting: bool,
-  pub is_eating: bool,
-  pub is_drinking: bool,
-  pub is_attacking: bool,
-  pub is_looking: bool,
-  pub is_interacting: bool,
+  pub mask: AtomicU16,
 }
 
 impl States {
   /// Метод создания состояний по умолчанию
   pub fn new() -> Self {
     Self {
-      can_walking: true,
-      can_sprinting: true,
-      can_eating: true,
-      can_drinking: true,
-      can_attacking: true,
-      can_looking: true,
-      can_interacting: true,
-      is_walking: false,
-      is_sprinting: false,
-      is_eating: false,
-      is_drinking: false,
-      is_attacking: false,
-      is_looking: false,
-      is_interacting: false,
+      mask: AtomicU16::new(0x7F),
     }
   }
 
   /// Метод получения значения указанного состояния
   pub fn get(&self, state: State) -> bool {
-    match state {
-      State::CanWalking => self.can_walking,
-      State::CanSprinting => self.can_sprinting,
-      State::CanEating => self.can_eating,
-      State::CanDrinking => self.can_drinking,
-      State::CanAttacking => self.can_attacking,
-      State::CanLooking => self.can_looking,
-      State::CanInteracting => self.can_interacting,
-      State::IsWalking => self.is_walking,
-      State::IsSprinting => self.is_sprinting,
-      State::IsEating => self.is_eating,
-      State::IsDrinking => self.is_drinking,
-      State::IsAttacking => self.is_attacking,
-      State::IsLooking => self.is_looking,
-      State::IsInteracting => self.is_interacting,
-    }
+    let mask = self.mask.load(Ordering::SeqCst);
+    (mask >> state.index()) & 1 == 1
   }
 
   /// Метод установки значения для указанного состояния
   pub fn set(&mut self, state: State, value: bool) {
-    match state {
-      State::CanWalking => {
-        self.can_walking = value;
-      }
-      State::CanSprinting => {
-        self.can_sprinting = value;
-      }
-      State::CanEating => {
-        self.can_eating = value;
-      }
-      State::CanDrinking => {
-        self.can_drinking = value;
-      }
-      State::CanAttacking => {
-        self.can_attacking = value;
-      }
-      State::CanLooking => {
-        self.can_looking = value;
-      }
-      State::CanInteracting => {
-        self.can_interacting = value;
-      }
-      State::IsWalking => {
-        self.is_walking = value;
-      }
-      State::IsSprinting => {
-        self.is_sprinting = value;
-      }
-      State::IsEating => {
-        self.is_eating = value;
-      }
-      State::IsDrinking => {
-        self.is_drinking = value;
-      }
-      State::IsAttacking => {
-        self.is_attacking = value;
-      }
-      State::IsLooking => {
-        self.is_looking = value;
-      }
-      State::IsInteracting => {
-        self.is_interacting = value;
+    let index = state.index();
+
+    loop {
+      let mask = self.mask.load(Ordering::SeqCst);
+      let new_mask = if value {
+        mask | (1 << index)
+      } else {
+        mask & !(1 << index)
+      };
+
+      match self
+        .mask
+        .compare_exchange(mask, new_mask, Ordering::SeqCst, Ordering::SeqCst)
+      {
+        Ok(_) => break,
+        Err(_) => continue,
       }
     }
   }
@@ -185,22 +141,9 @@ impl StateManager {
 
   /// Метод сброса состояний определённого бота
   pub fn reset(&self, username: &str) {
-    if let Ok(mut states) = self.map.try_write() {
-      if let Some(s) = states.get_mut(username) {
-        s.can_walking = true;
-        s.can_sprinting = true;
-        s.can_eating = true;
-        s.can_drinking = true;
-        s.can_attacking = true;
-        s.can_looking = true;
-        s.can_interacting = true;
-        s.is_walking = false;
-        s.is_sprinting = false;
-        s.is_eating = false;
-        s.is_drinking = false;
-        s.is_attacking = false;
-        s.is_looking = false;
-        s.is_interacting = false;
+    if let Ok(mut guard) = self.map.try_write() {
+      if let Some(s) = guard.get_mut(username) {
+        s.mask.store(0x7F, Ordering::SeqCst);
       }
     }
   }
