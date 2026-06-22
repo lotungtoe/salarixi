@@ -132,11 +132,11 @@ impl ProfileManager {
   }
 
   /// Метод получения количества профилей
-  pub fn get_count(&self) -> usize {
+  pub fn get_count(&self) -> i32 {
     if let Ok(profiles) = self.map.try_read() {
-      profiles.len()
+      profiles.len() as i32
     } else {
-      0
+      -1
     }
   }
 

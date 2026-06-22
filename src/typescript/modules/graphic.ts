@@ -148,6 +148,7 @@ class GraphicModule {
 
       try {
         const data = await invoke("get_active_bots_count") as number;
+        if (data < 0) return;
         this.updateChart(name, data);
       } catch (error) {
         logger.log(`Ошибка графика (${name}-graphic): ${error}`, "error");
