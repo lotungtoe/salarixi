@@ -90,6 +90,8 @@ class StylekitModule {
     "docs-header-color": "#dfdfdf",
     "docs-code-bg": "#3a393952",
     "docs-code-border": "#3a3939c2",
+    "docs-navigation-bg": "#111111",
+    "docs-navigation-border": "#2c2c2c",
     "update-notice-warning-color": "#ebbf31",
     "update-notice-warning-bg": "#ebbf310d",
     "update-notice-warning-border": "#ebc0312c",

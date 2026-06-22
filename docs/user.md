@@ -592,6 +592,8 @@ while true {
 - `docs-header-color`
 - `docs-code-bg`
 - `docs-code-border`
+- `docs-navigation-bg`
+- `docs-navigation-border`
 - `update-notice-warning-color`
 - `update-notice-warning-bg`
 - `update-notice-warning-border`
