@@ -50,10 +50,12 @@ struct KillauraConfig {
 }
 
 impl KillauraModule {
+  /// Метод создания модуля
   pub fn new() -> Self {
     Self
   }
 
+  /// Метод создания конфига
   fn create_config(options: &KillauraOptions) -> KillauraConfig {
     if options.settings.as_str() == "adaptive" {
       KillauraConfig {
@@ -76,6 +78,7 @@ impl KillauraModule {
     }
   }
 
+  /// Метод поиска ближайшей сущности
   fn find_nearest_entity(
     bot: &Client,
     target: String,
@@ -95,7 +98,8 @@ impl KillauraModule {
     bot.find_nearest_entity(EntityType::from(target), max_distance)
   }
 
-  async fn auto_weapon(bot: &Client, weapon: &String) {
+  /// Метод взятия оружия в руку
+  async fn take_weapon(bot: &Client, weapon: &String) {
     let mut weapons = vec![];
 
     if let Some(menu) = bot.get_inventory_menu() {
@@ -214,7 +218,8 @@ impl KillauraModule {
     }
   }
 
-  fn dodging(username: String) {
+  /// Метод включения доджинга
+  fn start_dodging(username: String) {
     let username_clone = username.clone();
     let extra_task = tokio::spawn(async move {
       loop {
@@ -243,7 +248,8 @@ impl KillauraModule {
     push_extra_task(&username, TaskName::Killaura, extra_task);
   }
 
-  fn chase(
+  /// Метод включения преследования
+  fn start_chase(
     username: String,
     target: String,
     target_nickname: Option<String>,
@@ -289,7 +295,8 @@ impl KillauraModule {
     push_extra_task(&username, TaskName::Killaura, extra_task);
   }
 
-  fn aiming(username: String, target: String, target_nickname: Option<String>, distance: f64) {
+  /// Метод включения автоматической наводки
+  fn start_aiming(username: String, target: String, target_nickname: Option<String>, distance: f64) {
     let username_clone = username.clone();
     let extra_task = tokio::spawn(async move {
       set_mutual_states(&username_clone, StateName::Looking, true);
@@ -308,19 +315,20 @@ impl KillauraModule {
     push_extra_task(&username, TaskName::Killaura, extra_task);
   }
 
+  /// Метод запуска умеренной киллауры
   async fn moderate_killaura(bot: &Client, options: &KillauraOptions) {
     let config = Self::create_config(options);
 
-    Self::aiming(
-      bot.username(),
+    Self::start_aiming(
+      bot.name(),
       config.target.clone(),
       options.target_nickname.clone(),
       config.attack_distance,
     );
 
     if options.use_chase {
-      Self::chase(
-        bot.username(),
+      Self::start_chase(
+        bot.name(),
         config.target.clone(),
         options.target_nickname.clone(),
         config.chase_distance,
@@ -329,10 +337,10 @@ impl KillauraModule {
     }
 
     if options.use_dodging {
-      Self::dodging(bot.username());
+      Self::start_dodging(bot.name());
     }
 
-    let username = bot.username();
+    let username = bot.name();
 
     loop {
       if get_state(&username, State::CanAttacking)
@@ -349,16 +357,16 @@ impl KillauraModule {
           set_mutual_states(&username, StateName::Attacking, true);
 
           if options.use_auto_weapon {
-            Self::auto_weapon(bot, &options.weapon).await;
+            Self::take_weapon(bot, &options.weapon).await;
           } else {
             if let Some(slot) = config.weapon_slot {
               if slot <= 8 {
                 bot.set_selected_hotbar_slot(slot);
               } else {
-                Self::auto_weapon(bot, &options.weapon).await;
+                Self::take_weapon(bot, &options.weapon).await;
               }
             } else {
-              Self::auto_weapon(bot, &options.weapon).await;
+              Self::take_weapon(bot, &options.weapon).await;
             }
           }
 
@@ -387,12 +395,13 @@ impl KillauraModule {
     }
   }
 
+  /// Метод запуска агрессивной киллауры
   async fn aggressive_killaura(bot: &Client, options: &KillauraOptions) {
     let config = Self::create_config(options);
 
     if options.use_chase {
-      Self::chase(
-        bot.username(),
+      Self::start_chase(
+        bot.name(),
         config.target.clone(),
         options.target_nickname.clone(),
         config.chase_distance,
@@ -401,10 +410,10 @@ impl KillauraModule {
     }
 
     if options.use_dodging {
-      Self::dodging(bot.username());
+      Self::start_dodging(bot.name());
     }
 
-    let username = bot.username();
+    let username = bot.name();
 
     loop {
       if get_state(&username, State::CanAttacking)
@@ -421,16 +430,16 @@ impl KillauraModule {
           set_mutual_states(&username, StateName::Attacking, true);
 
           if options.use_auto_weapon {
-            Self::auto_weapon(bot, &options.weapon).await;
+            Self::take_weapon(bot, &options.weapon).await;
           } else {
             if let Some(slot) = config.weapon_slot {
               if slot <= 8 {
                 bot.set_selected_hotbar_slot(slot);
               } else {
-                Self::auto_weapon(bot, &options.weapon).await;
+                Self::take_weapon(bot, &options.weapon).await;
               }
             } else {
-              Self::auto_weapon(bot, &options.weapon).await;
+              Self::take_weapon(bot, &options.weapon).await;
             }
           }
 
@@ -458,6 +467,7 @@ impl KillauraModule {
     }
   }
 
+  /// Метод запуска киллауры
   async fn start(bot: &Client, options: &KillauraOptions) {
     match options.behavior.as_str() {
       "moderate" => Self::moderate_killaura(bot, &options).await,

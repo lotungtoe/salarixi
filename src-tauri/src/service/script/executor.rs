@@ -13,8 +13,8 @@ use crate::api::emit::{emit_log, emit_msg};
 use crate::service::core::common::convert_hotbar_slot_to_inventory_slot;
 use crate::service::core::controllers::{get_state, set_state, State, PROFILES};
 use crate::service::core::extensions::{
-  go_to, BotDefaultExt, BotInteractExt, BotInventoryExt, BotMovementExt, BotPhysicsExt, BotRotationExt, EntityType,
-  InvClick,
+  go_to, BotDefaultExt, BotInteractExt, BotInventoryExt, BotMovementExt, BotPhysicsExt, BotRotationExt, ClickMode,
+  EntityType,
 };
 use crate::service::core::launch::state::ACTIVE;
 use crate::service::core::registry::BOT_REGISTRY;
@@ -361,13 +361,13 @@ impl ScriptExecutor {
       PROFILES.get_all().keys().for_each(|name| {
         if let Some(bot) = BOT_REGISTRY.get_bot(name) {
           let selected_slot = convert_hotbar_slot_to_inventory_slot(bot.get_selected_slot());
-          bot.inventory_click(selected_slot, InvClick::from(4), lock);
+          bot.inventory_click(selected_slot, ClickMode::DropAll, lock);
         }
       });
     } else {
       if let Some(bot) = BOT_REGISTRY.get_bot(username) {
         let selected_slot = convert_hotbar_slot_to_inventory_slot(bot.get_selected_slot());
-        bot.inventory_click(selected_slot, InvClick::from(4), lock);
+        bot.inventory_click(selected_slot, ClickMode::DropAll, lock);
       }
     }
   }
@@ -378,7 +378,7 @@ impl ScriptExecutor {
         if let Some(bot) = BOT_REGISTRY.get_bot(name) {
           if let Some(menu) = bot.get_inventory_menu() {
             for (slot, _) in menu.slots().iter().enumerate() {
-              bot.inventory_click(slot, InvClick::from(4), lock);
+              bot.inventory_click(slot, ClickMode::DropAll, lock);
             }
           }
         }
@@ -387,37 +387,37 @@ impl ScriptExecutor {
       if let Some(bot) = BOT_REGISTRY.get_bot(username) {
         if let Some(menu) = bot.get_inventory_menu() {
           for (slot, _) in menu.slots().iter().enumerate() {
-            bot.inventory_click(slot, InvClick::from(4), lock);
+            bot.inventory_click(slot, ClickMode::DropAll, lock);
           }
         }
       }
     }
   }
 
-  fn inv_click(username: &str, slot: usize, click_mode: u8, lock: bool) {
+  fn inv_click(username: &str, slot: usize, mode: &str, lock: bool) {
     if username == "*" {
       PROFILES.get_all().keys().for_each(|name| {
         if let Some(bot) = BOT_REGISTRY.get_bot(name) {
-          bot.inventory_click(slot, InvClick::from(click_mode), lock);
+          bot.inventory_click(slot, ClickMode::from(mode), lock);
         }
       });
     } else {
       if let Some(bot) = BOT_REGISTRY.get_bot(username) {
-        bot.inventory_click(slot, InvClick::from(click_mode), lock);
+        bot.inventory_click(slot, ClickMode::from(mode), lock);
       }
     }
   }
 
-  fn inv_click_on(username: &str, name: &str, click_mode: u8, lock: bool) {
+  fn inv_click_on(username: &str, name: &str, mode: &str, lock: bool) {
     if username == "*" {
       PROFILES.get_all().keys().for_each(|name| {
         if let Some(bot) = BOT_REGISTRY.get_bot(name) {
-          bot.inventory_click_on(name, InvClick::from(click_mode), lock);
+          bot.inventory_click_on(name, ClickMode::from(mode), lock);
         }
       });
     } else {
       if let Some(bot) = BOT_REGISTRY.get_bot(username) {
-        bot.inventory_click_on(name, InvClick::from(click_mode), lock);
+        bot.inventory_click_on(name, ClickMode::from(mode), lock);
       }
     }
   }
@@ -806,14 +806,14 @@ impl ScriptExecutor {
       })
       .register_fn("inv_click", {
         let su = su.clone();
-        move |mu: &str, slot: i64, mode: i64, lock: bool| {
-          Self::inv_click(select_username(&su, mu), slot as usize, mode as u8, lock)
+        move |mu: &str, slot: i64, mode: &str, lock: bool| {
+          Self::inv_click(select_username(&su, mu), slot as usize, mode, lock)
         }
       })
       .register_fn("inv_click_on", {
         let su = su.clone();
-        move |mu: &str, name: &str, mode: i64, lock: bool| {
-          Self::inv_click_on(select_username(&su, mu), name, mode as u8, lock)
+        move |mu: &str, name: &str, mode: &str, lock: bool| {
+          Self::inv_click_on(select_username(&su, mu), name, mode, lock)
         }
       })
       .register_fn("set_selected_slot", {

@@ -2,7 +2,7 @@ use azalea::Client;
 use serde::Deserialize;
 
 use crate::api::emit::*;
-use crate::service::core::extensions::{BotInventoryExt, InvClick};
+use crate::service::core::extensions::{BotInventoryExt, ClickMode};
 use crate::service::core::registry::BOT_REGISTRY;
 use crate::service::core::traits::SalarixiModule;
 
@@ -34,13 +34,13 @@ impl InventoryModule {
       } else {
         match options.state.as_str() {
           "drop" => {
-            bot.inventory_click(s, InvClick::from(4), true);
+            bot.inventory_click(s, ClickMode::DropAll, true);
           }
           "left-click" => {
-            bot.inventory_click(s, InvClick::from(0), true);
+            bot.inventory_click(s, ClickMode::Left, true);
           }
           "right-click" => {
-            bot.inventory_click(s, InvClick::from(1), true);
+            bot.inventory_click(s, ClickMode::Right, true);
           }
           "swap" => {
             bot

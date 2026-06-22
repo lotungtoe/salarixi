@@ -194,11 +194,21 @@ impl TaskManager {
 
 /// Вспомогательная функция добавления корневой задачи указанному боту
 pub fn push_root_task(username: &str, task_name: TaskName, root_task: JoinHandle<()>) {
+  if username.is_empty() {
+    root_task.abort();
+    return;
+  }
+
   TASKS.push_root_task_for(username, task_name, root_task);
 }
 
 /// Вспомогательная функция добавления дополнительной задачи указанному боту
 pub fn push_extra_task(username: &str, task_name: TaskName, extra_task: JoinHandle<()>) {
+  if username.is_empty() {
+    extra_task.abort();
+    return;
+  }
+
   TASKS.push_extra_task_for(username, task_name, extra_task);
 }
 

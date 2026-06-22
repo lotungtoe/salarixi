@@ -298,8 +298,8 @@ Webhook — это механизм, который позволяет одно�
 - `look_at(mu: &str, x: f64, y: f64, z: f64)`: повернуться на укзанные координаты.
 - `look_at_block(mu: &str, x: f64, y: f64, z: f64)`: повернуться на блок с учётом его центра.
 - `drop_selected_item(mu: &str, lock: bool)`: выбросить предмет, лежащий в руке.
-- `inv_click(mu: &str, slot: i64, mode: i64, lock: bool)`: кликнуть определённым образом на указанный слот. Доступные режимы: 0 (left click), 1 (right click), 2 (shift click), 3 (single drop), 4 (drop all).
-- `inv_click_on(mu: &str, name: &str, mode: i64, lock: bool)`: кликнуть определённым образом на предмет с указанным именем.
+- `inv_click(mu: &str, slot: i64, mode: &str, lock: bool)`: кликнуть определённым образом на указанный слот. Доступные режимы: `left`, `right`, `shift`, `drop`, `drop-all`.
+- `inv_click_on(mu: &str, name: &str, mode: &str, lock: bool)`: кликнуть определённым образом на предмет с указанным именем.
 - `set_selected_slot(mu: &str, slot: i64)`: установить выбранный слот в хотбаре.
 - `attack(mu: &str, target: &str, distance: f64, look_at_target: bool)`: атака определённой ближайшей сущности. Аргумент `target` может иметь значения: any (любая сущность), player, monster, animal, vehicle.
 - `start_use_item(mu: &str, hand: &str)`: начать использовать предмет в указанной руке (mainhand / offhand).

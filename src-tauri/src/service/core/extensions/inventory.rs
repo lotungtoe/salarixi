@@ -25,15 +25,15 @@ pub trait BotInventoryExt {
   fn start_interacting_with_inventory(&self);
   fn stop_interacting_with_inventory(&self);
   fn move_item_to_offhand(&self, kind: ItemKind);
-  fn inventory_click(&self, slot: usize, click: InvClick, lock: bool);
-  fn inventory_click_on(&self, name: &str, click: InvClick, lock: bool);
+  fn inventory_click(&self, slot: usize, mode: ClickMode, lock: bool);
+  fn inventory_click_on(&self, name: &str, mode: ClickMode, lock: bool);
   async fn take_item(&self, source_slot: usize, lock: bool);
   async fn inventory_swap_click(&self, source_slot: usize, target_slot: usize, lock: bool);
   async fn inventory_move_item(&self, kind: ItemKind, source_slot: usize, target_slot: usize, lock: bool);
 }
 
-#[derive(Debug, Clone)]
-pub enum InvClickMode {
+/// Режим клика в инвентаре
+pub enum ClickMode {
   Left,
   Right,
   Shift,
@@ -41,19 +41,15 @@ pub enum InvClickMode {
   DropAll,
 }
 
-#[derive(Debug, Clone)]
-pub struct InvClick(InvClickMode);
-
-impl InvClick {
-  pub fn from(n: u8) -> Self {
-    Self(match n {
-      0 => InvClickMode::Left,
-      1 => InvClickMode::Right,
-      2 => InvClickMode::Shift,
-      3 => InvClickMode::Drop,
-      4 => InvClickMode::DropAll,
-      _ => InvClickMode::Shift,
-    })
+impl From<&str> for ClickMode {
+  fn from(value: &str) -> Self {
+    match value {
+      "left" => Self::Left,
+      "right" => Self::Right,
+      "drop" => Self::Drop,
+      "drop-all" => Self::DropAll,
+      _ => Self::Shift,
+    }
   }
 }
 
@@ -140,7 +136,7 @@ impl BotInventoryExt for Client {
       } else {
         let random_slot = randint(36, 44) as usize;
 
-        self.inventory_click(random_slot, InvClick::from(2), lock);
+        self.inventory_click(random_slot, ClickMode::Shift, lock);
         sleep(Duration::from_millis(50)).await;
         self.inventory_swap_click(source_slot, random_slot, lock).await;
 
@@ -189,19 +185,19 @@ impl BotInventoryExt for Client {
           if !item.is_empty() {
             if let Some(empty_slot) = self.find_empty_slot_in_invenotry() {
               inventory.left_click(target_slot);
-              sleep(Duration::from_millis(100)).await;
+              sleep(Duration::from_millis(50)).await;
               inventory.left_click(empty_slot);
             } else {
-              self.inventory_click(target_slot, InvClick::from(4), false);
+              self.inventory_click(target_slot, ClickMode::DropAll, false);
             }
 
-            sleep(Duration::from_millis(100)).await;
+            sleep(Duration::from_millis(50)).await;
           }
         }
       }
 
       inventory.left_click(source_slot);
-      sleep(Duration::from_millis(100)).await;
+      sleep(Duration::from_millis(50)).await;
       inventory.left_click(target_slot);
 
       sleep(Duration::from_millis(50)).await;
@@ -212,7 +208,7 @@ impl BotInventoryExt for Client {
     }
   }
 
-  fn inventory_click(&self, slot: usize, click: InvClick, lock: bool) {
+  fn inventory_click(&self, slot: usize, mode: ClickMode, lock: bool) {
     let username = self.name();
 
     if let Some(inventory) = self.get_current_inventory() {
@@ -224,20 +220,20 @@ impl BotInventoryExt for Client {
         self.start_interacting_with_inventory();
       }
 
-      match click.0 {
-        InvClickMode::Left => {
+      match mode {
+        ClickMode::Left => {
           inventory.left_click(slot);
         }
-        InvClickMode::Right => {
+        ClickMode::Right => {
           inventory.right_click(slot);
         }
-        InvClickMode::Shift => {
+        ClickMode::Shift => {
           inventory.shift_click(slot);
         }
-        InvClickMode::Drop => {
+        ClickMode::Drop => {
           inventory.click(ThrowClick::Single { slot: slot as u16 });
         }
-        InvClickMode::DropAll => {
+        ClickMode::DropAll => {
           inventory.click(ThrowClick::All { slot: slot as u16 });
         }
       }
@@ -248,7 +244,7 @@ impl BotInventoryExt for Client {
     }
   }
 
-  fn inventory_click_on(&self, name: &str, click: InvClick, lock: bool) {
+  fn inventory_click_on(&self, name: &str, mode: ClickMode, lock: bool) {
     let string_name = name.to_string();
 
     if let Some(menu) = self.get_inventory_menu() {
@@ -258,7 +254,7 @@ impl BotInventoryExt for Client {
         };
 
         if item_name.name.to_string() == string_name {
-          self.inventory_click(slot, click, lock);
+          self.inventory_click(slot, mode, lock);
           break;
         }
       }

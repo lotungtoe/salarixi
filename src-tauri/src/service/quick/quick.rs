@@ -11,7 +11,7 @@ use tokio::time::sleep;
 use crate::service::core::common::{get_average_coordinates_of_bots, this_is_solid_block};
 use crate::service::core::controllers::{get_state, set_mutual_states, State, StateName, PROFILES, STATES, TASKS};
 use crate::service::core::extensions::{
-  go_to, BotDefaultExt, BotInventoryExt, BotMovementExt, BotPhysicsExt, InvClick,
+  go_to, BotDefaultExt, BotInventoryExt, BotMovementExt, BotPhysicsExt, ClickMode,
 };
 use crate::service::core::registry::BOT_REGISTRY;
 use crate::service::generators::{randfloat, randint, randuint};
@@ -37,7 +37,7 @@ impl QuickTaskManager {
             "clear-inventory" => {
               if let Some(menu) = bot.get_inventory_menu() {
                 for (slot, _) in menu.slots().iter().enumerate() {
-                  bot.inventory_click(slot, InvClick::from(4), true);
+                  bot.inventory_click(slot, ClickMode::DropAll, true);
                 }
               }
             }
