@@ -28,12 +28,61 @@ class DocsModule {
     try {
       logger.log("Загрузка документации...", "system");
 
-      const docsWrapper = document.querySelector(".documentation-wrapper") as HTMLDivElement;
+      const docsText = document.querySelector(".documentation-wrapper .text") as HTMLDivElement;
+      const docsNavigation = document.querySelector(".documentation-wrapper .navigation") as HTMLDivElement;
      
       const result = await getCacheOrNew<string>(this.lcf, this.lnf, this.scf);
       if (!result.data) return;
 
-      docsWrapper.innerHTML = result.data;
+      docsText.innerHTML = result.data;
+
+      let navigationOpened = false;
+      const headers = document.querySelectorAll<HTMLElement>(".documentation-wrapper .text h1");
+
+      docsNavigation.addEventListener("click", () => {
+        if (navigationOpened) return;
+        navigationOpened = true;
+
+        docsNavigation.style.width = "auto";
+        docsNavigation.style.paddingLeft = "10px";
+        docsNavigation.style.paddingRight = "20px";
+
+        headers.forEach((header, i) => {
+          const headerTag = document.createElement("label");
+          headerTag.className = "header";
+          headerTag.innerHTML = `<span>${i + 1}.</span> ${header.innerText}`;
+          headerTag.addEventListener("click", () => header.scrollIntoView({ behavior: "smooth", block: "start" }));
+          docsNavigation.appendChild(headerTag);
+
+          let nextElement = header.nextElementSibling as HTMLElement;
+          let ii = 1;
+
+          while (nextElement && !nextElement.matches("h1")) {
+            if (nextElement.matches("h2")) {
+              const subheader = nextElement;
+
+              const subheaderTag = document.createElement("label");
+              subheaderTag.className = "subheader";
+              subheaderTag.innerHTML = `<span>${ii}.</span> ${subheader.innerText}`;
+              subheaderTag.addEventListener("click", () => subheader.scrollIntoView({ behavior: "smooth", block: "start" }));
+              docsNavigation.appendChild(subheaderTag);
+
+              ii++;
+            }
+
+            nextElement = nextElement.nextElementSibling as HTMLElement;
+          }
+        });
+      });
+
+      docsText.addEventListener("click", () => {
+        if (!navigationOpened) return;
+        navigationOpened = false;
+
+        docsNavigation.innerHTML = "";
+        docsNavigation.style.padding = "8px 0";
+        docsNavigation.style.width = "18px";
+      });
 
       logger.log(`Документация загружена (размер ${result.size})`, "system");
     } catch (error) {
