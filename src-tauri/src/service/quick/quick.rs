@@ -55,12 +55,12 @@ impl QuickTaskManager {
             bot.stop_move();
           }
           "move-left" => {
-            bot.start_walking(WalkDirection::Left);
+            bot.start_walking(WalkDirection::Right);
             sleep(Duration::from_millis(200)).await;
             bot.stop_move();
           }
           "move-right" => {
-            bot.start_walking(WalkDirection::Right);
+            bot.start_walking(WalkDirection::Left);
             sleep(Duration::from_millis(200)).await;
             bot.stop_move();
           }
