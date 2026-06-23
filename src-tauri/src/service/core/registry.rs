@@ -8,7 +8,7 @@ use tokio::sync::{broadcast, RwLock};
 use crate::api::emit::emit_log;
 use crate::service::core::launch::state::current_options;
 use crate::service::core::module_manager::MODULE_MANAGER;
-use crate::service::core::plugin_manager::PLUGIN_MANAGER;
+use crate::service::core::plugin_manager::PLUGINS;
 use crate::service::quick::QUICK_TASK_MANAGER;
 
 pub static BOT_REGISTRY: Lazy<Arc<BotRegistry>> = Lazy::new(|| Arc::new(BotRegistry::new()));
@@ -18,7 +18,7 @@ pub static BOT_REGISTRY: Lazy<Arc<BotRegistry>> = Lazy::new(|| Arc::new(BotRegis
 /// Так же данный реестр содержит в себе канал, по которому передаются все основные события для ботов (загрузить плагины, выполнить быструю задачу и так далее).
 pub struct BotRegistry {
   pub swarm: Arc<RwLock<Option<Swarm>>>,
-  pub bots: Arc<DashMap<String, Arc<Client>>>,
+  pub bots: DashMap<String, Arc<Client>>,
   pub events: broadcast::Sender<RegistryEvent>,
 }
 
@@ -46,7 +46,7 @@ impl BotRegistry {
 
     Self {
       swarm: Arc::new(RwLock::new(None)),
-      bots: Arc::new(DashMap::new()),
+      bots: DashMap::new(),
       events: tx,
     }
   }
@@ -69,8 +69,8 @@ impl BotRegistry {
     self.bots.insert(username.to_string(), Arc::new(bot));
   }
 
-  /// Метод взятия бота
-  pub async fn take_bot(&self, username: &str) -> Option<Client> {
+  /// Метод удаления бота из реестра
+  pub async fn remove_bot(&self, username: &str) -> Option<Client> {
     let (_, cell) = self.bots.remove(username)?;
     Some((*cell).clone())
   }
@@ -115,7 +115,7 @@ pub async fn registry_event_loop() {
     match event {
       RegistryEvent::LoadPlugins { username } => {
         if let Some(opts) = current_options() {
-          let _ = PLUGIN_MANAGER.activate_for(username, opts.plugins);
+          let _ = PLUGINS.activate_for(username, opts.plugins);
         }
       }
       RegistryEvent::ControlModules { name, options, group } => {
@@ -132,4 +132,14 @@ pub async fn registry_event_loop() {
       }
     }
   }
+}
+
+/// Вспомогательный макрос захвата
+#[macro_export]
+macro_rules! take_bot {
+  ($username:expr, $func:expr) => {
+    crate::service::core::registry::BOT_REGISTRY
+      .async_get_bot($username, $func)
+      .await;
+  };
 }

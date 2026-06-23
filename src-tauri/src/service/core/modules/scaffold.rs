@@ -12,9 +12,9 @@ use crate::service::core::controllers::{
   kill_task, push_extra_task, push_root_task, set_mutual_states, StateName, TaskName, TASKS,
 };
 use crate::service::core::extensions::{BotDefaultExt, BotInventoryExt, BotMovementExt, BotPhysicsExt};
-use crate::service::core::registry::BOT_REGISTRY;
 use crate::service::core::traits::SalarixiModule;
 use crate::service::generators::*;
+use crate::take_bot;
 
 pub struct ScaffoldModule;
 
@@ -94,11 +94,11 @@ impl ScaffoldModule {
     let username_clone = username.clone();
     let extra_task = tokio::spawn(async move {
       loop {
-        if let Some(bot) = BOT_REGISTRY.get_bot(&username_clone) {
+        take_bot!(&username_clone, async |bot| {
           bot.start_walking(WalkDirection::Backward);
-        }
+        });
 
-        sleep(Duration::from_millis(50)).await;
+        sleep(Duration::from_millis(100)).await;
       }
     });
 
@@ -274,23 +274,21 @@ impl SalarixiModule<ScaffoldOptions> for ScaffoldModule {
     Self
   }
 
-  fn switch(&self, username: String, options: ScaffoldOptions) -> bool {
+  async fn switch(&self, username: String, options: ScaffoldOptions) -> bool {
     if options.state && !TASKS.get_task_activity(&username, TaskName::Scaffold) {
       let username_clone = username.clone();
       let task_handle = tokio::spawn(async move {
-        BOT_REGISTRY
-          .async_get_bot(&username_clone, async |bot| Self::start(bot, &options).await)
-          .await;
+        take_bot!(&username_clone, async |bot| Self::start(bot, &options).await);
       });
 
       push_root_task(&username, TaskName::Scaffold, task_handle);
     } else if !options.state && TASKS.get_task_activity(&username, TaskName::Scaffold) {
       kill_task(&username, TaskName::Scaffold);
 
-      if let Some(bot) = BOT_REGISTRY.get_bot(&username) {
+      take_bot!(&username, async |bot| {
         bot.set_crouching(false);
         bot.stop_move();
-      }
+      });
 
       set_mutual_states(&username, StateName::Looking, false);
       set_mutual_states(&username, StateName::Interacting, false);

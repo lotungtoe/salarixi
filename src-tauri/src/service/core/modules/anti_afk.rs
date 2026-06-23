@@ -12,9 +12,9 @@ use crate::service::core::controllers::StateName;
 use crate::service::core::controllers::TaskName;
 use crate::service::core::controllers::TASKS;
 use crate::service::core::extensions::{BotDefaultExt, BotMovementExt};
-use crate::service::core::registry::BOT_REGISTRY;
 use crate::service::core::traits::SalarixiModule;
 use crate::service::generators::*;
+use crate::take_bot;
 
 pub struct AntiAfkModule;
 
@@ -97,19 +97,19 @@ impl AntiAfkModule {
     let min_delay = options.min_delay.unwrap_or(1000);
     let max_delay = options.max_delay.unwrap_or(2500);
 
-    let username = bot.name();
+    let username = bot.username();
     let username_clone = username.clone();
 
     let extra_task = tokio::spawn(async move {
       loop {
-        if let Some(bot) = BOT_REGISTRY.get_bot(&username_clone) {
+        take_bot!(&username_clone, async |bot| {
           let direction = bot.direction();
 
           bot.set_direction(
             direction.0 + randfloat(-35.0, 35.0) as f32,
             direction.1 + randfloat(-10.0, 10.0) as f32,
           );
-        }
+        });
 
         sleep(Duration::from_millis(50)).await;
       }
@@ -158,25 +158,21 @@ impl SalarixiModule<AntiAfkOptions> for AntiAfkModule {
     Self
   }
 
-  fn switch(&self, username: String, options: AntiAfkOptions) -> bool {
+  async fn switch(&self, username: String, options: AntiAfkOptions) -> bool {
     if options.state && !TASKS.get_task_activity(&username, TaskName::AntiAfk) {
       let username_clone = username.clone();
       let task_handle = tokio::spawn(async move {
-        set_mutual_states(&username_clone, StateName::Looking, true);
-
-        BOT_REGISTRY
-          .async_get_bot(&username_clone, async |bot| Self::start(bot, &options).await)
-          .await;
+        take_bot!(&username_clone, async |bot| Self::start(bot, &options).await);
       });
 
       push_root_task(&username, TaskName::AntiAfk, task_handle);
     } else if !options.state && TASKS.get_task_activity(&username, TaskName::AntiAfk) {
       kill_task(&username, TaskName::AntiAfk);
 
-      if let Some(bot) = BOT_REGISTRY.get_bot(&username) {
+      take_bot!(&username, async |bot| {
         bot.stop_move();
         bot.stop_crouching();
-      }
+      });
 
       set_mutual_states(&username, StateName::Looking, false);
     } else {

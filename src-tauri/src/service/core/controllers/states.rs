@@ -150,12 +150,19 @@ impl StateManager {
     emit_log("Состояния ботов очищены", "extended");
   }
 
-  /// Метод сброса состояний определённого бота
+  /// Метод сброса состояний указанного бота
   pub fn reset(&self, username: &str) {
     if let Ok(mut guard) = self.map.try_write() {
       if let Some(s) = guard.get_mut(username) {
         s.mask.store(0x7F, Ordering::SeqCst);
       }
+    }
+  }
+
+  /// Метод удаления всех состояний указанного бота
+  pub fn remove(&self, username: &str) {
+    if let Ok(mut guard) = self.map.try_write() {
+      guard.remove(username);
     }
   }
 }

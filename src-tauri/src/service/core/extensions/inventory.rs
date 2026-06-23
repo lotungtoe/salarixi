@@ -14,7 +14,7 @@ use tokio::time::sleep;
 
 use crate::service::core::common::convert_inventory_slot_to_hotbar_slot;
 use crate::service::core::controllers::{get_state, set_mutual_states, set_state, State, StateName};
-use crate::service::core::extensions::{BotDefaultExt, BotMovementExt};
+use crate::service::core::extensions::BotMovementExt;
 use crate::service::generators::randint;
 
 pub trait BotInventoryExt {
@@ -95,7 +95,7 @@ impl BotInventoryExt for Client {
   }
 
   fn start_interacting_with_inventory(&self) {
-    let username = self.name();
+    let username = self.username();
 
     self.freeze_move();
 
@@ -107,7 +107,7 @@ impl BotInventoryExt for Client {
   }
 
   fn stop_interacting_with_inventory(&self) {
-    let username = self.name();
+    let username = self.username();
 
     self.unfreeze_move();
 
@@ -169,7 +169,7 @@ impl BotInventoryExt for Client {
   }
 
   async fn inventory_swap_click(&self, source_slot: usize, target_slot: usize, lock: bool) {
-    let username = self.name();
+    let username = self.username();
 
     if let Some(inventory) = self.get_current_inventory() {
       if lock {
@@ -209,7 +209,7 @@ impl BotInventoryExt for Client {
   }
 
   fn inventory_click(&self, slot: usize, mode: ClickMode, lock: bool) {
-    let username = self.name();
+    let username = self.username();
 
     if let Some(inventory) = self.get_current_inventory() {
       if lock {

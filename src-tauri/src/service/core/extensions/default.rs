@@ -33,7 +33,6 @@ impl From<String> for EntityType {
 
 pub trait BotDefaultExt {
   fn workable(&self) -> bool;
-  fn name(&self) -> String;
   fn id(&self) -> MinecraftEntityId;
   fn ping(&self) -> u32;
   fn feet_pos(&self) -> Vec3;
@@ -68,14 +67,6 @@ impl BotDefaultExt for Client {
       && states_exist
   }
 
-  fn name(&self) -> String {
-    if let Some(profile) = self.get_component::<GameProfileComponent>() {
-      return profile.name.to_owned();
-    }
-
-    String::new()
-  }
-
   fn id(&self) -> MinecraftEntityId {
     self
       .get_component::<MinecraftEntityId>()
@@ -87,7 +78,7 @@ impl BotDefaultExt for Client {
       let mut result = 0;
 
       for (_, info) in tab.iter() {
-        if info.profile.name == self.name() {
+        if info.profile.name == self.username() {
           result = info.latency as u32;
           break;
         }
@@ -190,7 +181,7 @@ impl BotDefaultExt for Client {
   }
 
   fn find_nearest_entity(&self, entity_type: EntityType, distance: f64) -> Option<Entity> {
-    let excluded_name = self.name();
+    let excluded_name = self.username();
     let excluded_id = self.id();
     let eye_pos = self.eye_pos();
 

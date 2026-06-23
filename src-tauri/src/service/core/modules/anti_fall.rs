@@ -16,9 +16,9 @@ use crate::service::core::controllers::push_root_task;
 use crate::service::core::controllers::TaskName;
 use crate::service::core::controllers::TASKS;
 use crate::service::core::extensions::{BotInventoryExt, BotPhysicsExt};
-use crate::service::core::registry::BOT_REGISTRY;
 use crate::service::core::traits::SalarixiModule;
 use crate::service::generators::*;
+use crate::take_bot;
 
 pub struct AntiFallModule;
 
@@ -206,13 +206,11 @@ impl SalarixiModule<AntiFallOptions> for AntiFallModule {
     Self
   }
 
-  fn switch(&self, username: String, options: AntiFallOptions) -> bool {
+  async fn switch(&self, username: String, options: AntiFallOptions) -> bool {
     if options.state && !TASKS.get_task_activity(&username, TaskName::AntiFall) {
       let username_clone = username.clone();
       let task_handle = tokio::spawn(async move {
-        BOT_REGISTRY
-          .async_get_bot(&username_clone, async |bot| Self::start(bot, &options).await)
-          .await;
+        take_bot!(&username_clone, async |bot| Self::start(bot, &options).await);
       });
 
       push_root_task(&username, TaskName::AntiFall, task_handle);

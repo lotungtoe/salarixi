@@ -86,59 +86,59 @@ impl ModuleManager {
       match module_name.as_str() {
         "chat" => {
           let options: ChatOptions = try_parse_options(cur_opts)?;
-          success = self.chat.switch(username, options);
+          success = self.chat.switch(username, options).await;
         }
         "action" => {
           let options: ActionOptions = try_parse_options(cur_opts)?;
-          success = self.action.switch(username, options);
+          success = self.action.switch(username, options).await;
         }
         "inventory" => {
           let options: InventoryOptions = try_parse_options(cur_opts)?;
-          success = self.inventory.switch(username, options);
+          success = self.inventory.switch(username, options).await;
         }
         "movement" => {
           let options: MovementOptions = try_parse_options(cur_opts)?;
-          success = self.movement.switch(username, options);
+          success = self.movement.switch(username, options).await;
         }
         "anti-afk" => {
           let options: AntiAfkOptions = try_parse_options(cur_opts)?;
-          success = self.anti_afk.switch(username, options);
+          success = self.anti_afk.switch(username, options).await;
         }
         "stalker" => {
           let options: StalkerOptions = try_parse_options(cur_opts)?;
-          success = self.stalker.switch(username, options);
+          success = self.stalker.switch(username, options).await;
         }
         "flight" => {
           let options: FlightOptions = try_parse_options(cur_opts)?;
-          success = self.flight.switch(username, options);
+          success = self.flight.switch(username, options).await;
         }
         "killaura" => {
           let options: KillauraOptions = try_parse_options(cur_opts)?;
-          success = self.killaura.switch(username, options);
+          success = self.killaura.switch(username, options).await;
         }
         "scaffold" => {
           let options: ScaffoldOptions = try_parse_options(cur_opts)?;
-          success = self.scaffold.switch(username, options);
+          success = self.scaffold.switch(username, options).await;
         }
         "anti-fall" => {
           let options: AntiFallOptions = try_parse_options(cur_opts)?;
-          success = self.anti_fall.switch(username, options);
+          success = self.anti_fall.switch(username, options).await;
         }
         "bow-aim" => {
           let options: BowAimOptions = try_parse_options(cur_opts)?;
-          success = self.bow_aim.switch(username, options);
+          success = self.bow_aim.switch(username, options).await;
         }
         "stealer" => {
           let options: StealerOptions = try_parse_options(cur_opts)?;
-          success = self.stealer.switch(username, options);
+          success = self.stealer.switch(username, options).await;
         }
         "miner" => {
           let options: MinerOptions = try_parse_options(cur_opts)?;
-          success = self.miner.switch(username, options);
+          success = self.miner.switch(username, options).await;
         }
         "farmer" => {
           let options: FarmerOptions = try_parse_options(cur_opts)?;
-          success = self.farmer.switch(username, options);
+          success = self.farmer.switch(username, options).await;
         }
         _ => continue,
       }

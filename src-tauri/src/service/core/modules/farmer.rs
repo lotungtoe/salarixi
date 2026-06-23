@@ -11,9 +11,9 @@ use crate::service::core::controllers::{
   get_state, kill_task, push_root_task, set_mutual_states, State, StateName, TaskName, TASKS,
 };
 use crate::service::core::extensions::{BotDefaultExt, BotInventoryExt, BotRotationExt};
-use crate::service::core::registry::BOT_REGISTRY;
 use crate::service::core::traits::SalarixiModule;
 use crate::service::generators::*;
+use crate::take_bot;
 
 struct Tool {
   slot: Option<usize>,
@@ -222,7 +222,7 @@ impl FarmerModule {
   }
 
   async fn interact_with_block(bot: &Client, block_pos: BlockPos, options: &FarmerOptions) {
-    let username = bot.name();
+    let username = bot.username();
 
     if !get_state(&username, State::IsEating)
       && !get_state(&username, State::IsDrinking)
@@ -327,13 +327,11 @@ impl SalarixiModule<FarmerOptions> for FarmerModule {
     Self
   }
 
-  fn switch(&self, username: String, options: FarmerOptions) -> bool {
+  async fn switch(&self, username: String, options: FarmerOptions) -> bool {
     if options.state && !TASKS.get_task_activity(&username, TaskName::Farmer) {
       let username_clone = username.clone();
       let task_handle = tokio::spawn(async move {
-        BOT_REGISTRY
-          .async_get_bot(&username_clone, async |bot| Self::start(bot, &options).await)
-          .await;
+        take_bot!(&username_clone, async |bot| Self::start(bot, &options).await);
       });
 
       push_root_task(&username, TaskName::Farmer, task_handle);

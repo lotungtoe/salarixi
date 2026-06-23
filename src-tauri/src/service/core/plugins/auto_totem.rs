@@ -5,9 +5,9 @@ use tokio::time::sleep;
 
 use crate::service::core::extensions::{BotDefaultExt, BotInventoryExt};
 use crate::service::core::plugin_manager::PluginName;
-use crate::service::core::registry::BOT_REGISTRY;
 use crate::service::core::traits::SalarixiPlugin;
-use crate::service::core::{process_is_active, PLUGIN_MANAGER};
+use crate::service::core::{process_is_active, PLUGINS};
+use crate::take_bot;
 
 pub struct AutoTotemPlugin;
 
@@ -48,20 +48,18 @@ impl SalarixiPlugin for AutoTotemPlugin {
           break;
         }
 
-        let _ = BOT_REGISTRY
-          .async_get_bot(&username_clone, async |bot| {
-            if !bot.workable() {
-              return;
-            }
+        take_bot!(&username_clone, async |bot| {
+          if !bot.workable() {
+            return;
+          }
 
-            self.take_totem(bot).await;
-          })
-          .await;
+          self.take_totem(bot).await;
+        });
 
         sleep(Duration::from_millis(50)).await;
       }
     });
 
-    PLUGIN_MANAGER.push_root_task(&username, PluginName::AutoTotemPlugin, task);
+    PLUGINS.push_root_task(&username, PluginName::AutoTotemPlugin, task);
   }
 }

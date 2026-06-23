@@ -5,17 +5,17 @@ use tokio::time::sleep;
 use crate::service::core::controllers::{get_state, State};
 use crate::service::core::extensions::{BotDefaultExt, BotRotationExt, EntityType};
 use crate::service::core::plugin_manager::PluginName;
-use crate::service::core::registry::BOT_REGISTRY;
 use crate::service::core::traits::SalarixiPlugin;
-use crate::service::core::{process_is_active, PLUGIN_MANAGER};
+use crate::service::core::{process_is_active, PLUGINS};
 use crate::service::generators::randuint;
+use crate::take_bot;
 
 pub struct AutoLookPlugin;
 
 impl AutoLookPlugin {
   /// Метод поворота головы на ближайшую сущность
   async fn look(&self, bot: &Client) {
-    let username = bot.name();
+    let username = bot.username();
 
     if get_state(&username, State::CanLooking) && bot.is_goto_target_reached() {
       if let Some(entity) = bot.find_nearest_entity(EntityType::Any, 14.0) {
@@ -40,20 +40,18 @@ impl SalarixiPlugin for AutoLookPlugin {
           break;
         }
 
-        let _ = BOT_REGISTRY
-          .async_get_bot(&username_clone, async |bot| {
-            if !bot.workable() {
-              return;
-            }
+        take_bot!(&username_clone, async |bot| {
+          if !bot.workable() {
+            return;
+          }
 
-            self.look(bot).await;
-          })
-          .await;
+          self.look(bot).await;
+        });
 
         sleep(Duration::from_millis(50)).await;
       }
     });
 
-    PLUGIN_MANAGER.push_root_task(&username, PluginName::AutoLookPlugin, task);
+    PLUGINS.push_root_task(&username, PluginName::AutoLookPlugin, task);
   }
 }

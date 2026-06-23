@@ -9,9 +9,9 @@ use crate::service::core::controllers::push_root_task;
 use crate::service::core::controllers::TaskName;
 use crate::service::core::controllers::TASKS;
 use crate::service::core::extensions::{go_to, BotMovementExt};
-use crate::service::core::registry::BOT_REGISTRY;
 use crate::service::core::traits::SalarixiModule;
 use crate::service::generators::*;
+use crate::take_bot;
 
 pub struct MovementModule;
 
@@ -107,23 +107,21 @@ impl SalarixiModule<MovementOptions> for MovementModule {
     Self
   }
 
-  fn switch(&self, username: String, options: MovementOptions) -> bool {
+  async fn switch(&self, username: String, options: MovementOptions) -> bool {
     if options.state && !TASKS.get_task_activity(&username, TaskName::Movement) {
       let username_clone = username.clone();
       let task_handle = tokio::spawn(async move {
-        BOT_REGISTRY
-          .async_get_bot(&username_clone, async |bot| Self::start(bot, &options).await)
-          .await;
+        take_bot!(&username_clone, async |bot| Self::start(bot, &options).await);
       });
 
       push_root_task(&username, TaskName::Movement, task_handle);
     } else if !options.state && TASKS.get_task_activity(&username, TaskName::Movement) {
       kill_task(&username, TaskName::Movement);
 
-      if let Some(bot) = BOT_REGISTRY.get_bot(&username) {
+      take_bot!(&username, async |bot| {
         bot.stop_pathfinding();
         bot.stop_move();
-      }
+      });
     } else {
       return false;
     }

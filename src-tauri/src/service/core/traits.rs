@@ -4,7 +4,7 @@ pub trait SalarixiModule<T> {
   fn new() -> Self;
 
   /// Метод изменения состояния модуля (включить / выключить)
-  fn switch(&self, username: String, options: T) -> bool;
+  fn switch(&self, username: String, options: T) -> impl std::future::Future<Output = bool> + Send + Sync;
 }
 
 /// Трейт плагина

@@ -22,6 +22,7 @@ use crate::service::generators::randstr;
 use crate::service::generators::randuint;
 use crate::service::generators::Classes;
 use crate::service::tools::radar::RADAR_MANAGER;
+use crate::take_bot;
 
 pub struct ChatModule;
 
@@ -215,7 +216,7 @@ impl ChatModule {
     let mut text = options.message.clone();
 
     if options.use_text_mutation {
-      text = Self::process_extra_tags(&bot.name(), text).await;
+      text = Self::process_extra_tags(&bot.username(), text).await;
       text = mutate_text(text);
     }
 
@@ -241,7 +242,7 @@ impl ChatModule {
       let mut text = options.message.clone();
 
       if options.use_text_mutation {
-        text = Self::process_extra_tags(&bot.name(), text).await;
+        text = Self::process_extra_tags(&bot.username(), text).await;
         text = mutate_text(text);
       }
 
@@ -297,15 +298,13 @@ impl SalarixiModule<ChatOptions> for ChatModule {
     Self
   }
 
-  fn switch(&self, username: String, options: ChatOptions) -> bool {
+  async fn switch(&self, username: String, options: ChatOptions) -> bool {
     let is_spamming = options.mode == "spamming";
 
     if !is_spamming {
       let username_clone = username.clone();
       tokio::spawn(async move {
-        BOT_REGISTRY
-          .async_get_bot(&username_clone, async |bot| Self::start(bot, &options).await)
-          .await;
+        take_bot!(&username_clone, async |bot| Self::start(bot, &options).await);
       });
 
       return true;
@@ -314,9 +313,7 @@ impl SalarixiModule<ChatOptions> for ChatModule {
     if options.state && !TASKS.get_task_activity(&username, TaskName::Spamming) {
       let username_clone = username.clone();
       let task_handle = tokio::spawn(async move {
-        BOT_REGISTRY
-          .async_get_bot(&username_clone, async |bot| Self::start(bot, &options).await)
-          .await;
+        take_bot!(&username_clone, async |bot| Self::start(bot, &options).await);
       });
 
       push_root_task(&username, TaskName::Spamming, task_handle);

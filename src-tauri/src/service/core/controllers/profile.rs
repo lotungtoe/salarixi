@@ -131,10 +131,18 @@ impl ProfileManager {
     emit_log("Профили ботов очищены", "extended");
   }
 
-  /// Метод получения количества профилей
-  pub fn get_count(&self) -> i32 {
+  /// Метод получения количества активных ботов
+  pub fn get_active_count(&self) -> i32 {
     if let Ok(profiles) = self.map.try_read() {
-      profiles.len() as i32
+      let mut count = 0;
+
+      for (_, profile) in profiles.iter() {
+        if profile.status == BotStatus::Connected {
+          count += 1;
+        }
+      }
+
+      count
     } else {
       -1
     }

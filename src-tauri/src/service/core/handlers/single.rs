@@ -23,10 +23,11 @@ use crate::service::core::registry::BOT_REGISTRY;
 use crate::service::core::utils::MAP_ACCUMULATOR;
 use crate::service::core::utils::MAP_CAPTCHA_BYPASS;
 use crate::service::core::utils::WEB_CAPTCHA_BYPASS;
-use crate::service::core::PLUGIN_MANAGER;
+use crate::service::core::PLUGINS;
 use crate::service::generators::*;
 use crate::service::script::SCRIPT_EXECUTOR;
 use crate::service::webhook::*;
+use crate::take_bot;
 
 /// Обработчик для одного бота
 pub async fn single_handler(bot: Client, event: Event, _state: NoState) {
@@ -68,7 +69,7 @@ fn process_init(bot: Client) {
 
 /// Функция обработки спавна
 async fn process_spawn(bot: Client) {
-  let username = bot.name();
+  let username = bot.username();
 
   BOT_REGISTRY.register_bot(&username, bot);
   TASKS.register(&username);
@@ -80,68 +81,66 @@ async fn process_spawn(bot: Client) {
 
   PROFILES.set_status(&username, BotStatus::Connected);
 
-  let Some(bot) = BOT_REGISTRY.get_bot(&username) else {
-    return;
-  };
-
   let Some(opts) = current_options() else {
     return;
   };
 
-  let pos = bot.feet_pos();
-  let health = bot.get_health();
-  let str_pos = format!("{}, {}, {}", pos.x as i32, pos.y as i32, pos.z as i32);
+  take_bot!(&username, async |bot| {
+    let pos = bot.feet_pos();
+    let health = bot.get_health();
+    let str_pos = format!("{}, {}, {}", pos.x as i32, pos.y as i32, pos.z as i32);
 
-  if opts.basic.use_webhook {
-    send_webhook(
-      opts.webhook.url,
+    if opts.basic.use_webhook {
+      send_webhook(
+        opts.webhook.url,
+        format!(
+          "Бот {} заспавнился | Координаты (XYZ): {} | Здоровье: {} / 20",
+          &username, str_pos, health
+        ),
+      );
+    }
+
+    emit_log(
+      format!("Бот {} заспавнился, координаты (XYZ): {}", &username, str_pos),
+      "info",
+    );
+
+    emit_msg(
+      "Система",
       format!(
-        "Бот {} заспавнился | Координаты (XYZ): {} | Здоровье: {} / 20",
+        "Бот {} заспавнился<br><br>Координаты (XYZ): {}<br>Здоровье: {} / 20",
         &username, str_pos, health
       ),
     );
-  }
 
-  emit_log(
-    format!("Бот {} заспавнился, координаты (XYZ): {}", &username, str_pos),
-    "info",
-  );
+    // Я без понятия что ставить в приоретет - сценарий пользователя или авторизацию.
+    // Если я оберну авторизацию и сценарий в отдельные асинхронные задачи, то в таком
+    // случае может возникнуть конфликт между ними. Наверное логичнее будет поставить
+    // в приоретет авторизацию, ведь часто пользователь может использовать авто-скрипт
+    // с включенной авторизацией, и если сценарий пользователя не будет выполнять процесс
+    // авторизации и при этом на сервере она явно стоит - бот просто будет ожидать
+    // некоторое время в лобби и его кикнет. Кароче, легче вперёд поставить авторизацию,
+    // так как в большинстве случаев выполнения сценария предпологается после авторизации,
+    // если что это всегда можно сделать иначе - просто отключить опции рода авто-регистр.
+    default_authorize(&bot).await;
 
-  emit_msg(
-    "Система",
-    format!(
-      "Бот {} заспавнился<br><br>Координаты (XYZ): {}<br>Здоровье: {} / 20",
-      &username, str_pos, health
-    ),
-  );
-
-  // Я без понятия что ставить в приоретет - сценарий пользователя или авторизацию.
-  // Если я оберну авторизацию и сценарий в отдельные асинхронные задачи, то в таком
-  // случае может возникнуть конфликт между ними. Наверное логичнее будет поставить
-  // в приоретет авторизацию, ведь часто пользователь может использовать авто-скрипт
-  // с включенной авторизацией, и если сценарий пользователя не будет выполнять процесс
-  // авторизации и при этом на сервере она явно стоит - бот просто будет ожидать
-  // некоторое время в лобби и его кикнет. Кароче, легче вперёд поставить авторизацию,
-  // так как в большинстве случаев выполнения сценария предпологается после авторизации,
-  // если что это всегда можно сделать иначе - просто отключить опции рода авто-регистр.
-  default_authorize(&bot).await;
-
-  if opts.basic.use_auto_script {
-    if let Some(script) = opts.basic.script {
-      // Здесь нужно указывать юзернейм бота, чтобы исполнитель работал только с ним
-      SCRIPT_EXECUTOR.execute(bot.username(), script);
+    if opts.basic.use_auto_script {
+      if let Some(script) = opts.basic.script {
+        // Здесь нужно указывать юзернейм бота, чтобы исполнитель работал только с ним
+        SCRIPT_EXECUTOR.execute(bot.username(), script);
+      }
     }
-  }
+  });
 }
 
 /// Функция обработки отключения
 async fn process_disconnect(bot: Client, text: Option<FormattedText>) {
-  let username = bot.name();
+  let username = bot.username();
 
-  TASKS.reset(&username);
-  PLUGIN_MANAGER.destroy_all_tasks(&username).await;
+  TASKS.kill_all_tasks_for(&username).await;
+  PLUGINS.kill_all_tasks_for(&username).await;
 
-  BOT_REGISTRY.take_bot(&username).await;
+  BOT_REGISTRY.remove_bot(&username).await;
 
   PROFILES.set_bool(&username, "logined", false);
   PROFILES.set_bool(&username, "captcha_caught", false);
@@ -167,7 +166,7 @@ async fn process_disconnect(bot: Client, text: Option<FormattedText>) {
 
 /// Функция обработки сообщения из чата
 async fn process_chat_message(bot: Client, packet: ChatPacket) {
-  let username = bot.name();
+  let username = bot.username();
 
   let Some(options) = current_options() else {
     return;
@@ -216,7 +215,7 @@ async fn process_chat_message(bot: Client, packet: ChatPacket) {
 
 /// Функция обработки тика
 fn process_tick(bot: Client) {
-  let username = bot.name();
+  let username = bot.username();
 
   let Some(profile) = PROFILES.get(&username) else {
     return;
@@ -234,17 +233,16 @@ fn process_tick(bot: Client) {
 
 /// Функция обработки пакета
 fn process_packet(bot: Client, packet: Arc<ClientboundGamePacket>) {
+  let username = bot.username();
+
   match &*packet {
     ClientboundGamePacket::AddEntity(entity_packet) => {
       if entity_packet.entity_type == EntityKind::ItemFrame || entity_packet.entity_type == EntityKind::GlowItemFrame {
-        let username = bot.name();
         let pos = entity_packet.position;
         MAP_ACCUMULATOR.add_frame_position(&username, entity_packet.id.0 as i32, pos.x, pos.y, pos.z);
       }
     }
     ClientboundGamePacket::MapItemData(data) => {
-      let username = bot.name();
-
       if let Some(options) = current_options() {
         if options.basic.use_anti_captcha && options.captcha_bypass.captcha_type.as_str() == "map" {
           let Some(map_patch) = &data.color_patch.0 else {
@@ -304,7 +302,7 @@ fn process_packet(bot: Client, packet: Arc<ClientboundGamePacket>) {
                 );
 
                 if options.captcha_bypass.solve_mode == "auto" {
-                  MAP_CAPTCHA_BYPASS.solve_captcha(bot.name(), combined_base64, options.captcha_bypass);
+                  MAP_CAPTCHA_BYPASS.solve_captcha(username.clone(), combined_base64, options.captcha_bypass);
                 } else {
                   send_optional_event(OptionalEmitEvent::AntiMapCaptcha(AntiMapCaptchaEventPayload {
                     base64_code: combined_base64,
@@ -336,7 +334,7 @@ fn process_packet(bot: Client, packet: Arc<ClientboundGamePacket>) {
               );
 
               if options.captcha_bypass.solve_mode == "auto" {
-                MAP_CAPTCHA_BYPASS.solve_captcha(bot.name(), base64_code, options.captcha_bypass);
+                MAP_CAPTCHA_BYPASS.solve_captcha(username, base64_code, options.captcha_bypass);
               } else {
                 send_optional_event(OptionalEmitEvent::AntiMapCaptcha(AntiMapCaptchaEventPayload {
                   base64_code,

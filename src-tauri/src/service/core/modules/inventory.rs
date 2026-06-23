@@ -3,8 +3,8 @@ use serde::Deserialize;
 
 use crate::api::emit::*;
 use crate::service::core::extensions::{BotInventoryExt, ClickMode};
-use crate::service::core::registry::BOT_REGISTRY;
 use crate::service::core::traits::SalarixiModule;
+use crate::take_bot;
 
 pub struct InventoryModule;
 
@@ -59,11 +59,9 @@ impl SalarixiModule<InventoryOptions> for InventoryModule {
     Self
   }
 
-  fn switch(&self, username: String, options: InventoryOptions) -> bool {
+  async fn switch(&self, username: String, options: InventoryOptions) -> bool {
     tokio::spawn(async move {
-      BOT_REGISTRY
-        .async_get_bot(&username, async |bot| Self::interact(bot, &username, &options).await)
-        .await;
+      take_bot!(&username, async |bot| Self::interact(bot, &username, &options).await);
     });
 
     true

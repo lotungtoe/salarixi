@@ -14,9 +14,9 @@ use crate::service::core::controllers::TaskName;
 use crate::service::core::controllers::TASKS;
 use crate::service::core::controllers::{get_state, kill_task, set_mutual_states, set_state};
 use crate::service::core::extensions::BotMovementExt;
-use crate::service::core::registry::BOT_REGISTRY;
 use crate::service::core::traits::SalarixiModule;
 use crate::service::generators::*;
+use crate::take_bot;
 
 pub struct StealerModule;
 
@@ -152,13 +152,11 @@ impl SalarixiModule<StealerOptions> for StealerModule {
     Self
   }
 
-  fn switch(&self, username: String, options: StealerOptions) -> bool {
+  async fn switch(&self, username: String, options: StealerOptions) -> bool {
     if options.state && !TASKS.get_task_activity(&username, TaskName::Stealer) {
       let username_clone = username.clone();
       let task_handle = tokio::spawn(async move {
-        BOT_REGISTRY
-          .async_get_bot(&username_clone, async |bot| Self::start(bot, &options).await)
-          .await;
+        take_bot!(&username_clone, async |bot| Self::start(bot, &options).await);
       });
 
       push_root_task(&username, TaskName::Stealer, task_handle);

@@ -14,7 +14,7 @@ use crate::api::emit::{emit_log, emit_msg};
 use crate::service::core::controllers::{ProfileProxy, PROFILES, STATES, TASKS};
 use crate::service::core::handlers::single::single_handler;
 use crate::service::core::handlers::swarm::swarm_handler;
-use crate::service::core::plugin_manager::PLUGIN_MANAGER;
+use crate::service::core::plugin_manager::PLUGINS;
 use crate::service::core::registry::{registry_event_loop, BOT_REGISTRY};
 use crate::service::core::utils::MAP_ACCUMULATOR;
 use crate::service::webhook::send_webhook;
@@ -297,7 +297,7 @@ pub async fn stop_bots_and_destroy_data() -> bool {
 
   let active_bots = active_bots_count();
 
-  PLUGIN_MANAGER.clear().await;
+  PLUGINS.clear().await;
   TASKS.clear().await;
 
   tokio::time::sleep(Duration::from_secs(2)).await;

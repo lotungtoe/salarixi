@@ -8,10 +8,10 @@ use tokio::time::sleep;
 use crate::service::core::controllers::{get_state, set_mutual_states, State, StateName};
 use crate::service::core::extensions::{BotDefaultExt, BotInteractExt, BotInventoryExt, EntityType};
 use crate::service::core::plugin_manager::PluginName;
-use crate::service::core::registry::BOT_REGISTRY;
 use crate::service::core::traits::SalarixiPlugin;
-use crate::service::core::{process_is_active, PLUGIN_MANAGER};
+use crate::service::core::{process_is_active, PLUGINS};
 use crate::service::generators::*;
+use crate::take_bot;
 
 pub struct AutoShieldPlugin;
 
@@ -22,7 +22,7 @@ impl AutoShieldPlugin {
       return;
     };
 
-    let username = bot.name();
+    let username = bot.username();
 
     if let Some(menu) = bot.get_inventory_menu() {
       if let Some(item) = menu.slot(45) {
@@ -72,7 +72,7 @@ impl AutoShieldPlugin {
 
   /// Метод прикрытия щитом
   async fn start_defending(&self, bot: &Client, entity: Entity) {
-    let username = bot.name();
+    let username = bot.username();
 
     if get_state(&username, State::CanLooking) && get_state(&username, State::CanInteracting) {
       set_mutual_states(&username, StateName::Looking, true);
@@ -116,20 +116,18 @@ impl SalarixiPlugin for AutoShieldPlugin {
           break;
         }
 
-        let _ = BOT_REGISTRY
-          .async_get_bot(&username_clone, async |bot| {
-            if !bot.workable() {
-              return;
-            }
+        take_bot!(&username_clone, async |bot| {
+          if !bot.workable() {
+            return;
+          }
 
-            self.defend(bot).await;
-          })
-          .await;
+          self.defend(bot).await;
+        });
 
         sleep(Duration::from_millis(50)).await;
       }
     });
 
-    PLUGIN_MANAGER.push_root_task(&username, PluginName::AutoShieldPlugin, task);
+    PLUGINS.push_root_task(&username, PluginName::AutoShieldPlugin, task);
   }
 }

@@ -8,7 +8,7 @@ use std::sync::Arc;
 
 use crate::service::core::controllers::PROFILES;
 use crate::service::core::extensions::{go_to, BotDefaultExt};
-use crate::service::core::registry::BOT_REGISTRY;
+use crate::take_bot;
 
 pub static RADAR_MANAGER: Lazy<Arc<RadarManager>> = Lazy::new(|| Arc::new(RadarManager::new()));
 
@@ -34,51 +34,54 @@ pub struct RadarObserver {
 pub struct RadarManager;
 
 impl RadarManager {
+  /// Метод создания менеджера
   pub fn new() -> Self {
     Self
   }
 
+  /// Метод поиска цели
   pub async fn find_target(&self, target: String) -> Option<RadarInfo> {
+    let mut info = None;
+
     for username in PROFILES.get_all().keys() {
-      let Some(bot) = BOT_REGISTRY.get_bot(username) else {
-        continue;
-      };
-
-      let Some(tab_list) = bot.get_players() else {
-        continue;
-      };
-
-      for uuid in tab_list.keys() {
-        let Some(entity) = bot.entity_by_uuid(*uuid) else {
-          continue;
+      take_bot!(username, async |bot| {
+        let Some(tab_list) = bot.get_players() else {
+          return;
         };
 
-        let Some(profile) = bot.get_entity_component::<GameProfileComponent>(entity) else {
-          continue;
-        };
+        for uuid in tab_list.keys() {
+          let Some(entity) = bot.entity_by_uuid(*uuid) else {
+            continue;
+          };
 
-        if profile.0.name == target {
-          let player_pos = bot.get_entity_position(entity);
-          let client_pos = bot.feet_pos();
+          let Some(profile) = bot.get_entity_component::<GameProfileComponent>(entity) else {
+            continue;
+          };
 
-          return Some(RadarInfo {
-            status: "Найден".to_string(),
-            uuid: uuid.to_string(),
-            x: player_pos.x,
-            y: player_pos.y,
-            z: player_pos.z,
-            observer: RadarObserver {
-              x: client_pos.x,
-              z: client_pos.z,
-            },
-          });
+          if profile.0.name == target {
+            let player_pos = bot.get_entity_position(entity);
+            let client_pos = bot.feet_pos();
+
+            info = Some(RadarInfo {
+              status: "Найден".to_string(),
+              uuid: uuid.to_string(),
+              x: player_pos.x,
+              y: player_pos.y,
+              z: player_pos.z,
+              observer: RadarObserver {
+                x: client_pos.x,
+                z: client_pos.z,
+              },
+            });
+          }
         }
-      }
+      });
     }
 
-    None
+    info
   }
 
+  /// Метод сохранения данных в указанный файл
   pub fn save_data(&self, target: String, mut path: String, filename: String, x: f64, y: f64, z: f64) {
     let date = Local::now().format("%H:%M:%S").to_string();
     let content = format!("[ {} ] {} ~ X: {}, Y: {}, Z: {}", date, target, x, y, z);
@@ -91,6 +94,7 @@ impl RadarManager {
     writeln!(&mut file, "{}", content).unwrap();
   }
 
+  /// Метод преследования цели
   pub fn follow(&self, x: i32, z: i32) {
     for username in PROFILES.get_all().into_keys() {
       go_to(username, x, z);

@@ -62,25 +62,28 @@ struct DisconnectBotCommand {
 pub async fn send_command(command: String, options: serde_json::Value) {
   match command.as_str() {
     "send_message" => {
-      let opts: SendMessageCommand = serde_json::from_value(options)
-        .map_err(|e| format!("Ошибка парсинга опций: {}", e))
-        .unwrap();
+      let opts: SendMessageCommand = match serde_json::from_value(options) {
+        Ok(o) => o,
+        Err(_) => return,
+      };
 
-      send_message_from_bot(opts.username, opts.message);
+      send_message_from_bot(opts.username, opts.message).await;
     }
     "reset_bot" => {
-      let opts: ResetBotCommand = serde_json::from_value(options)
-        .map_err(|e| format!("Ошибка парсинга опций: {}", e))
-        .unwrap();
+      let opts: ResetBotCommand = match serde_json::from_value(options) {
+        Ok(o) => o,
+        Err(_) => return,
+      };
 
-      reset_bot(opts.username);
+      reset_bot(opts.username).await;
     }
     "disconnect_bot" => {
-      let opts: DisconnectBotCommand = serde_json::from_value(options)
-        .map_err(|e| format!("Ошибка парсинга опций: {}", e))
-        .unwrap();
+      let opts: DisconnectBotCommand = match serde_json::from_value(options) {
+        Ok(o) => o,
+        Err(_) => return,
+      };
 
-      disconnect_bot(opts.username);
+      disconnect_bot(opts.username).await;
     }
     _ => {}
   }

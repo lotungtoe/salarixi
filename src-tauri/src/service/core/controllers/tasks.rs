@@ -143,11 +143,10 @@ impl TaskManager {
   }
 
   /// Метод остановки всех задач указанного бота
-  pub fn kill_all_tasks_for(&self, username: &str) {
-    if let Ok(mut tasks) = self.map.try_write() {
-      if let Some(t) = tasks.get_mut(username) {
-        t.kill_all_tasks();
-      }
+  pub async fn kill_all_tasks_for(&self, username: &str) {
+    let mut tasks = self.map.write().await;
+    if let Some(t) = tasks.get_mut(username) {
+      t.kill_all_tasks();
     }
   }
 
@@ -155,17 +154,6 @@ impl TaskManager {
   pub fn remove(&self, username: &str) {
     if let Ok(mut tasks) = self.map.try_write() {
       tasks.remove(username);
-    }
-  }
-
-  /// Метод сброса задач указанного бота
-  pub fn reset(&self, username: &str) {
-    if let Ok(mut tasks) = self.map.try_write() {
-      for (name, t) in tasks.iter_mut() {
-        if name.as_str() == username {
-          t.kill_all_tasks();
-        }
-      }
     }
   }
 

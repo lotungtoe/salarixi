@@ -5,9 +5,9 @@ use tokio::time::sleep;
 
 use crate::service::core::controllers::{kill_task, push_root_task, TaskName, TASKS};
 use crate::service::core::extensions::BotDefaultExt;
-use crate::service::core::registry::BOT_REGISTRY;
 use crate::service::core::traits::SalarixiModule;
 use crate::service::generators::*;
+use crate::take_bot;
 
 pub struct ActionModule;
 
@@ -100,7 +100,7 @@ impl SalarixiModule<ActionOptions> for ActionModule {
     Self
   }
 
-  fn switch(&self, username: String, options: ActionOptions) -> bool {
+  async fn switch(&self, username: String, options: ActionOptions) -> bool {
     let task_name = match options.action.as_str() {
       "jumping" => TaskName::Jumping,
       "shifting" => TaskName::Shifting,
@@ -110,23 +110,19 @@ impl SalarixiModule<ActionOptions> for ActionModule {
 
     if options.state && !TASKS.get_task_activity(&username, task_name.clone()) {
       let username_clone = username.clone();
-      let task_handle = tokio::spawn(async move {
-        BOT_REGISTRY
-          .async_get_bot(&username_clone, async |bot| Self::start(bot, &options).await)
-          .await;
+      let root_task = tokio::spawn(async move {
+        take_bot!(&username_clone, async |bot| Self::start(bot, &options).await);
       });
 
-      push_root_task(&username, task_name, task_handle);
+      push_root_task(&username, task_name, root_task);
     } else if !options.state && TASKS.get_task_activity(&username, task_name.clone()) {
       kill_task(&username, task_name);
 
-      if let Some(bot) = BOT_REGISTRY.get_bot(&username) {
-        match options.action.as_str() {
-          "jumping" => bot.set_jumping(false),
-          "shifting" => bot.set_crouching(false),
-          _ => {}
-        }
-      }
+      take_bot!(&username, async |bot| match options.action.as_str() {
+        "jumping" => bot.set_jumping(false),
+        "shifting" => bot.set_crouching(false),
+        _ => {}
+      });
     } else {
       return false;
     }

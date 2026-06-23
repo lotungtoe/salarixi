@@ -14,7 +14,9 @@ use crate::service::core::extensions::{
   go_to, BotDefaultExt, BotInventoryExt, BotMovementExt, BotPhysicsExt, ClickMode,
 };
 use crate::service::core::registry::BOT_REGISTRY;
+use crate::service::core::PLUGINS;
 use crate::service::generators::{randfloat, randint, randuint};
+use crate::take_bot;
 
 pub static QUICK_TASK_MANAGER: Lazy<Arc<QuickTaskManager>> = Lazy::new(|| Arc::new(QuickTaskManager::new()));
 
@@ -23,297 +25,297 @@ pub static QUICK_TASK_MANAGER: Lazy<Arc<QuickTaskManager>> = Lazy::new(|| Arc::n
 pub struct QuickTaskManager;
 
 impl QuickTaskManager {
+  /// Метод создания менеджера
   pub fn new() -> Self {
     Self
   }
 
+  /// Метод выполненя быстрой задачи
   pub fn execute(&self, name: String) {
     for (number, username) in PROFILES.get_all().into_keys().enumerate() {
       let name = name.clone();
 
       tokio::spawn(async move {
-        BOT_REGISTRY
-          .async_get_bot(&username, async |bot| match name.as_str() {
-            "clear-inventory" => {
-              if let Some(menu) = bot.get_inventory_menu() {
-                for (slot, _) in menu.slots().iter().enumerate() {
-                  bot.inventory_click(slot, ClickMode::DropAll, true);
-                }
+        take_bot!(&username, async |bot| match name.as_str() {
+          "clear-inventory" => {
+            if let Some(menu) = bot.get_inventory_menu() {
+              for (slot, _) in menu.slots().iter().enumerate() {
+                bot.inventory_click(slot, ClickMode::DropAll, true);
               }
             }
-            "move-forward" => {
-              bot.start_walking(WalkDirection::Forward);
-              sleep(Duration::from_millis(200)).await;
-              bot.stop_move();
+          }
+          "move-forward" => {
+            bot.start_walking(WalkDirection::Forward);
+            sleep(Duration::from_millis(200)).await;
+            bot.stop_move();
+          }
+          "move-backward" => {
+            bot.start_walking(WalkDirection::Backward);
+            sleep(Duration::from_millis(200)).await;
+            bot.stop_move();
+          }
+          "move-left" => {
+            bot.start_walking(WalkDirection::Left);
+            sleep(Duration::from_millis(200)).await;
+            bot.stop_move();
+          }
+          "move-right" => {
+            bot.start_walking(WalkDirection::Right);
+            sleep(Duration::from_millis(200)).await;
+            bot.stop_move();
+          }
+          "jump" => {
+            bot.jump();
+          }
+          "shift" => {
+            bot.set_crouching(true);
+            sleep(Duration::from_millis(200)).await;
+            bot.set_crouching(false);
+          }
+          "fly" => {
+            for i in 0..randint(3, 5) {
+              bot.set_velocity("y", randfloat(0.022 * i as f64, 0.031 * i as f64));
+              sleep(Duration::from_millis(50)).await;
             }
-            "move-backward" => {
-              bot.start_walking(WalkDirection::Backward);
-              sleep(Duration::from_millis(200)).await;
-              bot.stop_move();
-            }
-            "move-left" => {
-              bot.start_walking(WalkDirection::Left);
-              sleep(Duration::from_millis(200)).await;
-              bot.stop_move();
-            }
-            "move-right" => {
-              bot.start_walking(WalkDirection::Right);
-              sleep(Duration::from_millis(200)).await;
-              bot.stop_move();
-            }
-            "jump" => {
-              bot.jump();
-            }
-            "shift" => {
-              bot.set_crouching(true);
-              sleep(Duration::from_millis(200)).await;
-              bot.set_crouching(false);
-            }
-            "quit" => {
-              bot.disconnect();
-            }
-            "fly" => {
-              for i in 0..randint(3, 5) {
-                bot.set_velocity("y", randfloat(0.022 * i as f64, 0.031 * i as f64));
-                sleep(Duration::from_millis(50)).await;
-              }
-            }
-            "rise" => {
-              if get_state(&username, State::CanLooking) && get_state(&username, State::CanInteracting) {
-                let mut block_slot = None;
+          }
+          "quit" => {
+            PLUGINS.kill_all_tasks_for(&username).await;
+            TASKS.kill_all_tasks_for(&username).await;
 
-                if let Some(menu) = bot.get_inventory_menu() {
-                  for (slot, item) in menu.slots().iter().enumerate() {
-                    if !item.is_empty() {
-                      if this_is_solid_block(item.kind()) {
-                        block_slot = Some(slot);
-                        break;
-                      }
+            tokio::time::sleep(Duration::from_secs(2)).await;
+
+            bot.disconnect();
+
+            STATES.remove(&username);
+            TASKS.remove(&username);
+
+            PROFILES.set_str(&username, "status", "Оффлайн");
+          }
+          "rise" => {
+            if get_state(&username, State::CanLooking) && get_state(&username, State::CanInteracting) {
+              let mut block_slot = None;
+
+              if let Some(menu) = bot.get_inventory_menu() {
+                for (slot, item) in menu.slots().iter().enumerate() {
+                  if !item.is_empty() {
+                    if this_is_solid_block(item.kind()) {
+                      block_slot = Some(slot);
+                      break;
                     }
                   }
                 }
+              }
 
-                if let Some(slot) = block_slot {
+              if let Some(slot) = block_slot {
+                set_mutual_states(&username, StateName::Looking, true);
+                set_mutual_states(&username, StateName::Interacting, true);
+
+                bot.take_item(slot, true).await;
+
+                let original_direction_1 = bot.direction();
+
+                bot.set_direction(
+                  original_direction_1.0 + randfloat(-5.0, 5.0) as f32,
+                  randfloat(40.0, 58.0) as f32,
+                );
+                sleep(Duration::from_millis(randuint(50, 100))).await;
+                bot.jump();
+
+                let original_direction_2 = bot.direction();
+
+                bot.set_direction(
+                  original_direction_2.0 + randfloat(-5.0, 5.0) as f32,
+                  randfloat(86.0, 90.0) as f32,
+                );
+                sleep(Duration::from_millis(randuint(250, 350))).await;
+
+                bot.swing_arm();
+                bot.start_use_item();
+
+                sleep(Duration::from_millis(randuint(150, 250))).await;
+
+                bot.set_direction(original_direction_1.0, original_direction_1.1);
+
+                set_mutual_states(&username, StateName::Looking, false);
+                set_mutual_states(&username, StateName::Interacting, false);
+              }
+            }
+          }
+          "capsule" => {
+            let position = bot.feet_pos();
+
+            let block_positions = vec![
+              BlockPos {
+                x: (position.x - 1.0).floor() as i32,
+                y: position.y.floor() as i32,
+                z: position.z.floor() as i32,
+              },
+              BlockPos {
+                x: (position.x + 1.0).floor() as i32,
+                y: position.y.floor() as i32,
+                z: position.z.floor() as i32,
+              },
+              BlockPos {
+                x: position.x.floor() as i32,
+                y: position.y.floor() as i32,
+                z: (position.z - 1.0).floor() as i32,
+              },
+              BlockPos {
+                x: position.x.floor() as i32,
+                y: position.y.floor() as i32,
+                z: (position.z + 1.0).floor() as i32,
+              },
+              BlockPos {
+                x: (position.x - 1.0).floor() as i32,
+                y: (position.y + 1.0).floor() as i32,
+                z: position.z.floor() as i32,
+              },
+              BlockPos {
+                x: (position.x + 1.0).floor() as i32,
+                y: (position.y + 1.0).floor() as i32,
+                z: position.z.floor() as i32,
+              },
+              BlockPos {
+                x: position.x.floor() as i32,
+                y: (position.y + 1.0).floor() as i32,
+                z: (position.z - 1.0).floor() as i32,
+              },
+              BlockPos {
+                x: position.x.floor() as i32,
+                y: (position.y + 1.0).floor() as i32,
+                z: (position.z + 1.0).floor() as i32,
+              },
+              BlockPos {
+                x: (position.x - 1.0).floor() as i32,
+                y: (position.y + 2.0).floor() as i32,
+                z: position.z.floor() as i32,
+              },
+              BlockPos {
+                x: position.x.floor() as i32,
+                y: (position.y + 2.0).floor() as i32,
+                z: position.z.floor() as i32,
+              },
+            ];
+
+            let mut count = 0;
+
+            for pos in block_positions {
+              let mut block_slot = None;
+
+              if let Some(menu) = bot.get_inventory_menu() {
+                for (slot, item) in menu.slots().iter().enumerate() {
+                  if !item.is_empty() {
+                    if this_is_solid_block(item.kind()) {
+                      block_slot = Some(slot);
+                      break;
+                    }
+                  }
+                }
+              }
+
+              if let Some(slot) = block_slot {
+                if get_state(&username, State::CanLooking) && get_state(&username, State::CanInteracting) {
                   set_mutual_states(&username, StateName::Looking, true);
                   set_mutual_states(&username, StateName::Interacting, true);
 
                   bot.take_item(slot, true).await;
 
-                  let original_direction_1 = bot.direction();
+                  count = count + 1;
 
-                  bot.set_direction(
-                    original_direction_1.0 + randfloat(-5.0, 5.0) as f32,
-                    randfloat(40.0, 58.0) as f32,
-                  );
+                  if count == 10 {
+                    sleep(Duration::from_millis(randuint(150, 200))).await;
+                  }
+
+                  if count == 9 {
+                    bot.jump();
+                    sleep(Duration::from_millis(50)).await;
+                    bot.set_crouching(true);
+                    sleep(Duration::from_millis(randuint(100, 150))).await;
+                  }
+
+                  bot.look_at(Vec3::new(pos.x as f64, pos.y as f64, pos.z as f64));
+
                   sleep(Duration::from_millis(randuint(50, 100))).await;
-                  bot.jump();
-
-                  let original_direction_2 = bot.direction();
-
-                  bot.set_direction(
-                    original_direction_2.0 + randfloat(-5.0, 5.0) as f32,
-                    randfloat(86.0, 90.0) as f32,
-                  );
-                  sleep(Duration::from_millis(randuint(250, 350))).await;
 
                   bot.swing_arm();
                   bot.start_use_item();
 
-                  sleep(Duration::from_millis(randuint(150, 250))).await;
-
-                  bot.set_direction(original_direction_1.0, original_direction_1.1);
+                  if count == 10 {
+                    bot.set_crouching(false);
+                  }
 
                   set_mutual_states(&username, StateName::Looking, false);
                   set_mutual_states(&username, StateName::Interacting, false);
+
+                  sleep(Duration::from_millis(randuint(100, 150))).await;
                 }
               }
             }
-            "capsule" => {
-              let position = bot.feet_pos();
+          }
+          "unite" => {
+            let mut positions = vec![];
 
-              let block_positions = vec![
-                BlockPos {
-                  x: (position.x - 1.0).floor() as i32,
-                  y: position.y.floor() as i32,
-                  z: position.z.floor() as i32,
-                },
-                BlockPos {
-                  x: (position.x + 1.0).floor() as i32,
-                  y: position.y.floor() as i32,
-                  z: position.z.floor() as i32,
-                },
-                BlockPos {
-                  x: position.x.floor() as i32,
-                  y: position.y.floor() as i32,
-                  z: (position.z - 1.0).floor() as i32,
-                },
-                BlockPos {
-                  x: position.x.floor() as i32,
-                  y: position.y.floor() as i32,
-                  z: (position.z + 1.0).floor() as i32,
-                },
-                BlockPos {
-                  x: (position.x - 1.0).floor() as i32,
-                  y: (position.y + 1.0).floor() as i32,
-                  z: position.z.floor() as i32,
-                },
-                BlockPos {
-                  x: (position.x + 1.0).floor() as i32,
-                  y: (position.y + 1.0).floor() as i32,
-                  z: position.z.floor() as i32,
-                },
-                BlockPos {
-                  x: position.x.floor() as i32,
-                  y: (position.y + 1.0).floor() as i32,
-                  z: (position.z - 1.0).floor() as i32,
-                },
-                BlockPos {
-                  x: position.x.floor() as i32,
-                  y: (position.y + 1.0).floor() as i32,
-                  z: (position.z + 1.0).floor() as i32,
-                },
-                BlockPos {
-                  x: (position.x - 1.0).floor() as i32,
-                  y: (position.y + 2.0).floor() as i32,
-                  z: position.z.floor() as i32,
-                },
-                BlockPos {
-                  x: position.x.floor() as i32,
-                  y: (position.y + 2.0).floor() as i32,
-                  z: position.z.floor() as i32,
-                },
-              ];
+            for username in PROFILES.get_all().keys() {
+              let Some(b) = BOT_REGISTRY.get_bot(username) else {
+                continue;
+              };
 
-              let mut count = 0;
-
-              for pos in block_positions {
-                let mut block_slot = None;
-
-                if let Some(menu) = bot.get_inventory_menu() {
-                  for (slot, item) in menu.slots().iter().enumerate() {
-                    if !item.is_empty() {
-                      if this_is_solid_block(item.kind()) {
-                        block_slot = Some(slot);
-                        break;
-                      }
-                    }
-                  }
-                }
-
-                if let Some(slot) = block_slot {
-                  if get_state(&username, State::CanLooking) && get_state(&username, State::CanInteracting) {
-                    set_mutual_states(&username, StateName::Looking, true);
-                    set_mutual_states(&username, StateName::Interacting, true);
-
-                    bot.take_item(slot, true).await;
-
-                    count = count + 1;
-
-                    if count == 10 {
-                      sleep(Duration::from_millis(randuint(150, 200))).await;
-                    }
-
-                    if count == 9 {
-                      bot.jump();
-                      sleep(Duration::from_millis(50)).await;
-                      bot.set_crouching(true);
-                      sleep(Duration::from_millis(randuint(100, 150))).await;
-                    }
-
-                    bot.look_at(Vec3::new(pos.x as f64, pos.y as f64, pos.z as f64));
-
-                    sleep(Duration::from_millis(randuint(50, 100))).await;
-
-                    bot.swing_arm();
-                    bot.start_use_item();
-
-                    if count == 10 {
-                      bot.set_crouching(false);
-                    }
-
-                    set_mutual_states(&username, StateName::Looking, false);
-                    set_mutual_states(&username, StateName::Interacting, false);
-
-                    sleep(Duration::from_millis(randuint(100, 150))).await;
-                  }
-                }
-              }
+              positions.push(b.feet_pos());
             }
-            "unite" => {
-              let mut positions = vec![];
 
-              for username in PROFILES.get_all().keys() {
-                let Some(b) = BOT_REGISTRY.get_bot(username) else {
-                  continue;
-                };
+            let average_cords = get_average_coordinates_of_bots(&positions);
 
-                positions.push(b.feet_pos());
-              }
+            go_to(bot.username(), average_cords.0 as i32, average_cords.2 as i32);
+          }
+          "turn" => {
+            let direction = bot.direction();
+            bot.set_direction(direction.0 - 90.0, direction.1);
+          }
+          "zero" => {
+            bot.set_direction(0.0, 0.0);
+          }
+          "form-circle" => {
+            let mut positions = vec![];
 
-              let average_cords = get_average_coordinates_of_bots(&positions);
+            for username in PROFILES.get_all().keys() {
+              let Some(b) = BOT_REGISTRY.get_bot(username) else {
+                continue;
+              };
 
-              go_to(bot.username(), average_cords.0 as i32, average_cords.2 as i32);
+              positions.push(b.feet_pos());
             }
-            "turn" => {
-              let direction = bot.direction();
-              bot.set_direction(direction.0 - 90.0, direction.1);
+
+            let average_cords = get_average_coordinates_of_bots(&positions);
+
+            let angle = 2.0 * PI * (number as f32) / (PROFILES.get_active_count() as f32);
+            let x = average_cords.0 + positions.len() as f64 * 0.5 * angle.cos() as f64;
+            let z = average_cords.2 + positions.len() as f64 * 0.5 * angle.sin() as f64;
+
+            go_to(bot.username(), x as i32, z as i32);
+          }
+          "form-line" => {
+            let mut positions = vec![];
+
+            for username in PROFILES.get_all().keys() {
+              let Some(b) = BOT_REGISTRY.get_bot(username) else {
+                continue;
+              };
+
+              positions.push(b.feet_pos());
             }
-            "zero" => {
-              bot.set_direction(0.0, 0.0);
-            }
-            "form-circle" => {
-              let mut positions = vec![];
 
-              for username in PROFILES.get_all().keys() {
-                let Some(b) = BOT_REGISTRY.get_bot(username) else {
-                  continue;
-                };
+            let average_cords = get_average_coordinates_of_bots(&positions);
 
-                positions.push(b.feet_pos());
-              }
+            let x = average_cords.0 + 1.0 * (number as f64 * 1.0);
+            let z = average_cords.2 * (number as f64 * 1.0);
 
-              let average_cords = get_average_coordinates_of_bots(&positions);
-
-              let angle = 2.0 * PI * (number as f32) / (PROFILES.get_count() as f32);
-              let x = average_cords.0 + positions.len() as f64 * 0.5 * angle.cos() as f64;
-              let z = average_cords.2 + positions.len() as f64 * 0.5 * angle.sin() as f64;
-
-              go_to(bot.username(), x as i32, z as i32);
-            }
-            "form-line" => {
-              let mut positions = vec![];
-
-              for username in PROFILES.get_all().keys() {
-                let Some(b) = BOT_REGISTRY.get_bot(username) else {
-                  continue;
-                };
-
-                positions.push(b.feet_pos());
-              }
-
-              let average_cords = get_average_coordinates_of_bots(&positions);
-
-              let x = average_cords.0 + 1.0 * (number as f64 * 1.0);
-              let z = average_cords.2 * (number as f64 * 1.0);
-
-              go_to(bot.username(), x as i32, z as i32);
-            }
-            "pathfinder-stop" => {
-              bot.stop_pathfinding();
-            }
-            _ => {}
-          })
-          .await;
-
-        if name.as_str() == "quit" {
-          let _ = BOT_REGISTRY.take_bot(&username).await;
-
-          TASKS.kill_all_tasks_for(&username);
-
-          STATES.reset(&username);
-          TASKS.remove(&username);
-          PROFILES.set_str(&username, "status", "Оффлайн");
-        }
+            go_to(bot.username(), x as i32, z as i32);
+          }
+          "pathfinder-stop" => {
+            bot.stop_pathfinding();
+          }
+          _ => {}
+        });
       });
     }
   }

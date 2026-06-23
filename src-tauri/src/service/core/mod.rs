@@ -16,4 +16,4 @@ pub mod utils;
 pub use launch::options::*;
 pub use launch::runner::{launch_bots_on_server, stop_bots_and_destroy_data};
 pub use launch::state::{active_bots_count, current_options, process_is_active};
-pub use plugin_manager::PLUGIN_MANAGER;
+pub use plugin_manager::PLUGINS;

@@ -10,9 +10,9 @@ use crate::service::core::controllers::{
   get_state, kill_task, push_extra_task, push_root_task, set_mutual_states, State, StateName, TaskName, TASKS,
 };
 use crate::service::core::extensions::{BotDefaultExt, BotInteractExt, BotInventoryExt, EntityType};
-use crate::service::core::registry::BOT_REGISTRY;
 use crate::service::core::traits::SalarixiModule;
 use crate::service::generators::*;
+use crate::take_bot;
 
 pub struct BowAimModule;
 
@@ -45,38 +45,38 @@ impl BowAimModule {
   fn aiming(username: String, target: String, distance: f64) {
     let username_clone = username.clone();
     let extra_task = tokio::spawn(async move {
-      BOT_REGISTRY
-        .async_get_bot(&username_clone, async |bot| {
-          if get_state(&username_clone, State::CanLooking) {
-            set_mutual_states(&username_clone, StateName::Looking, true);
+      take_bot!(&username_clone, async |bot| {
+        if !get_state(&username_clone, State::CanLooking) {
+          return;
+        }
 
-            loop {
-              if !TASKS.get_task_activity(&username_clone, TaskName::BowAim) {
-                break;
-              }
+        set_mutual_states(&username_clone, StateName::Looking, true);
 
-              if let Some(entity) = bot.find_nearest_entity(EntityType::from(target.clone()), distance) {
-                let target_pos = bot.get_entity_position(entity);
-
-                bot.look_at(Vec3::new(
-                  target_pos.x,
-                  target_pos.y + bot.get_entity_eye_height(entity),
-                  target_pos.z,
-                ));
-              }
-
-              sleep(Duration::from_millis(50)).await;
-            }
+        loop {
+          if !TASKS.get_task_activity(&username_clone, TaskName::BowAim) {
+            break;
           }
-        })
-        .await;
+
+          if let Some(entity) = bot.find_nearest_entity(EntityType::from(target.clone()), distance) {
+            let target_pos = bot.get_entity_position(entity);
+
+            bot.look_at(Vec3::new(
+              target_pos.x,
+              target_pos.y + bot.get_entity_eye_height(entity),
+              target_pos.z,
+            ));
+          }
+
+          sleep(Duration::from_millis(50)).await;
+        }
+      });
     });
 
     push_extra_task(&username, TaskName::BowAim, extra_task);
   }
 
   async fn shoot(bot: &Client, target: String, distance: f64) {
-    let username = bot.name();
+    let username = bot.username();
 
     if get_state(&username, State::CanInteracting)
       && !get_state(&username, State::IsEating)
@@ -134,7 +134,7 @@ impl BowAimModule {
       return;
     };
 
-    Self::aiming(bot.name(), target.clone(), options.max_distance.unwrap_or(70.0));
+    Self::aiming(bot.username(), target.clone(), options.max_distance.unwrap_or(70.0));
 
     loop {
       Self::shoot(bot, target.clone(), options.max_distance.unwrap_or(70.0)).await;
@@ -148,22 +148,20 @@ impl SalarixiModule<BowAimOptions> for BowAimModule {
     Self
   }
 
-  fn switch(&self, username: String, options: BowAimOptions) -> bool {
+  async fn switch(&self, username: String, options: BowAimOptions) -> bool {
     if options.state && !TASKS.get_task_activity(&username, TaskName::BowAim) {
       let username_clone = username.clone();
       let task_handle = tokio::spawn(async move {
-        BOT_REGISTRY
-          .async_get_bot(&username_clone, async |bot| Self::start(bot, &options).await)
-          .await;
+        take_bot!(&username_clone, async |bot| Self::start(bot, &options).await);
       });
 
       push_root_task(&username, TaskName::BowAim, task_handle);
     } else if !options.state && TASKS.get_task_activity(&username, TaskName::BowAim) {
       kill_task(&username, TaskName::BowAim);
 
-      if let Some(bot) = BOT_REGISTRY.get_bot(&username) {
+      take_bot!(&username, async |bot| {
         bot.release_use_held_item();
-      }
+      });
 
       set_mutual_states(&username, StateName::Looking, false);
       set_mutual_states(&username, StateName::Interacting, false);

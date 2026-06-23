@@ -8,10 +8,10 @@ use tokio::time::sleep;
 use crate::service::core::controllers::{get_state, set_mutual_states, set_state, State, StateName};
 use crate::service::core::extensions::{BotDefaultExt, BotInteractExt, BotInventoryExt, BotMovementExt};
 use crate::service::core::plugin_manager::PluginName;
-use crate::service::core::registry::BOT_REGISTRY;
 use crate::service::core::traits::SalarixiPlugin;
-use crate::service::core::{process_is_active, PLUGIN_MANAGER};
+use crate::service::core::{process_is_active, PLUGINS};
 use crate::service::generators::randchance;
+use crate::take_bot;
 
 #[derive(Clone, Copy)]
 struct Food {
@@ -25,7 +25,7 @@ impl AutoEatPlugin {
   async fn eat(&self, bot: &Client) {
     let satiety = bot.get_satiety();
     let health = bot.get_health();
-    let username = bot.name();
+    let username = bot.username();
 
     if satiety < 20 || health < 15.0 {
       let food_list = self.find_food_in_inventory(bot);
@@ -320,20 +320,18 @@ impl SalarixiPlugin for AutoEatPlugin {
           break;
         }
 
-        let _ = BOT_REGISTRY
-          .async_get_bot(&username_clone, async |bot| {
-            if !bot.workable() {
-              return;
-            }
+        take_bot!(&username_clone, async |bot| {
+          if !bot.workable() {
+            return;
+          }
 
-            self.eat(bot).await;
-          })
-          .await;
+          self.eat(bot).await;
+        });
 
         sleep(Duration::from_millis(50)).await;
       }
     });
 
-    PLUGIN_MANAGER.push_root_task(&username, PluginName::AutoEatPlugin, task);
+    PLUGINS.push_root_task(&username, PluginName::AutoEatPlugin, task);
   }
 }

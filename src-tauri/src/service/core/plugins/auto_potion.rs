@@ -12,10 +12,10 @@ use crate::service::core::controllers::StateName;
 use crate::service::core::controllers::{get_state, set_mutual_states, set_state};
 use crate::service::core::extensions::{BotDefaultExt, BotInteractExt, BotInventoryExt, BotMovementExt, BotPhysicsExt};
 use crate::service::core::plugin_manager::PluginName;
-use crate::service::core::registry::BOT_REGISTRY;
 use crate::service::core::traits::SalarixiPlugin;
-use crate::service::core::{process_is_active, PLUGIN_MANAGER};
+use crate::service::core::{process_is_active, PLUGINS};
 use crate::service::generators::*;
+use crate::take_bot;
 
 /// Структура информации и зелье
 #[derive(Clone)]
@@ -32,7 +32,7 @@ impl AutoPotionPlugin {
   async fn drink(&self, bot: &Client) {
     let health = bot.get_health();
 
-    let username = bot.name();
+    let username = bot.username();
 
     if health < 20.0 {
       let potions = self.find_potion_in_inventory(bot);
@@ -77,7 +77,7 @@ impl AutoPotionPlugin {
 
   /// Метод отправки пакета об использовании зелья
   async fn use_potion(&self, bot: &Client, kind: String) {
-    let username = bot.name();
+    let username = bot.username();
 
     match kind.as_str() {
       "default" => {
@@ -281,20 +281,18 @@ impl SalarixiPlugin for AutoPotionPlugin {
           break;
         }
 
-        let _ = BOT_REGISTRY
-          .async_get_bot(&username_clone, async |bot| {
-            if !bot.workable() {
-              return;
-            }
+        take_bot!(&username_clone, async |bot| {
+          if !bot.workable() {
+            return;
+          }
 
-            self.drink(bot).await;
-          })
-          .await;
+          self.drink(bot).await;
+        });
 
         sleep(Duration::from_millis(50)).await;
       }
     });
 
-    PLUGIN_MANAGER.push_root_task(&username, PluginName::AutoPotionPlugin, task);
+    PLUGINS.push_root_task(&username, PluginName::AutoPotionPlugin, task);
   }
 }

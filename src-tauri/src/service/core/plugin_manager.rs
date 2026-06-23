@@ -12,7 +12,7 @@ use crate::service::core::plugins::*;
 use crate::service::core::traits::SalarixiPlugin;
 use crate::{failed, success};
 
-pub static PLUGIN_MANAGER: Lazy<Arc<PluginManager>> = Lazy::new(|| Arc::new(PluginManager::new()));
+pub static PLUGINS: Lazy<Arc<PluginManager>> = Lazy::new(|| Arc::new(PluginManager::new()));
 
 /// Имя плагина
 #[derive(Eq, Hash, PartialEq)]
@@ -115,7 +115,7 @@ impl PluginManager {
   }
 
   /// Метод уничтожения всех задач плагинов указанного бота
-  pub async fn destroy_all_tasks(&self, username: &str) {
+  pub async fn kill_all_tasks_for(&self, username: &str) {
     let mut map = self.tasks.write().await;
 
     if let Some(tasks) = map.get_mut(username) {
@@ -130,7 +130,7 @@ impl PluginManager {
   /// Метод очистки всех задач
   pub async fn clear(&self) {
     for (username, _) in PROFILES.get_all() {
-      self.destroy_all_tasks(&username).await;
+      self.kill_all_tasks_for(&username).await;
     }
 
     emit_log("Активные задачи плагинов остановлены", "extended");
