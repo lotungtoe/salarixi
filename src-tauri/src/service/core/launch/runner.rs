@@ -23,19 +23,90 @@ use super::generators::{generate_email, generate_unique_username, generate_usern
 use super::options::{AccountOptions, LaunchOptions};
 use super::state::{active_bots_count, current_options, process_is_active, set_options, ACTIVE};
 
+/// Структура кастомного аккаунта бота
 #[derive(Debug)]
 struct CustomAccount {
   object: Account,
-  options: Option<AccountOptions>,
+  options: AccountOptions,
 }
 
-fn clear_proxy(proxy: &str) -> String {
+/// Вспомогательная функция очистки прокси
+fn clear_proxy(proxy: &str) -> &str {
   proxy
     .trim_start_matches("socks5://")
     .trim_start_matches("socks4://")
     .trim_start_matches("https://")
     .trim_start_matches("http://")
-    .to_string()
+}
+
+/// Функция парсинга и обработки прокси
+fn processs_proxy(username: &str, proxy: &str, join_opts: JoinOpts) -> JoinOpts {
+  let mut profile_proxy = ProfileProxy {
+    ip_address: None,
+    proxy: None,
+    username: None,
+    password: None,
+  };
+
+  let clean_proxy = clear_proxy(proxy);
+  let proxy_parts: Vec<&str> = clean_proxy.split("@").collect();
+
+  if let Some(str_addr) = proxy_parts.get(1) {
+    if let Ok(socket_addr) = str_addr.parse::<SocketAddr>() {
+      profile_proxy.proxy = Some(str_addr.to_string());
+
+      let mut proxy = Proxy::new(socket_addr, None);
+
+      if let Some(auth) = proxy_parts.get(0) {
+        let splited_auth: Vec<&str> = auth.split(":").collect();
+
+        let Some(username) = splited_auth.get(0) else {
+          return join_opts;
+        };
+
+        let Some(password) = splited_auth.get(1) else {
+          return join_opts;
+        };
+
+        profile_proxy.username = Some(username.to_string());
+        profile_proxy.password = Some(password.to_string());
+
+        proxy.auth = Some(UserKey {
+          username: username.to_string(),
+          password: password.to_string(),
+        });
+      }
+
+      let splited_addr: Vec<&str> = str_addr.split(":").collect();
+      let Some(ip_addr) = splited_addr.get(0) else {
+        return join_opts;
+      };
+
+      profile_proxy.ip_address = Some(ip_addr.to_string());
+      PROFILES.set_proxy(&username, profile_proxy);
+
+      return join_opts.proxy(proxy);
+    }
+  } else {
+    if let Some(str_addr) = proxy_parts.get(0) {
+      if let Ok(socket_addr) = str_addr.parse::<SocketAddr>() {
+        profile_proxy.proxy = Some(str_addr.to_string());
+
+        let proxy = Proxy::new(socket_addr, None);
+        let splited_addr: Vec<&str> = str_addr.split(":").collect();
+        let Some(ip_addr) = splited_addr.get(0) else {
+          return join_opts;
+        };
+
+        profile_proxy.ip_address = Some(ip_addr.to_string());
+        PROFILES.set_proxy(&username, profile_proxy);
+
+        return join_opts.proxy(proxy);
+      }
+    }
+  }
+
+  join_opts
 }
 
 /// Функция запуска ботов на сервер
@@ -111,7 +182,7 @@ pub async fn launch_bots_on_server(options: LaunchOptions) -> bool {
           for (username, opts) in &options.accounts {
             accounts.push(CustomAccount {
               object: Account::offline(username),
-              options: Some(opts.clone()),
+              options: opts.clone(),
             });
 
             PROFILES.register(username, opts.password.clone(), opts.email.clone());
@@ -134,7 +205,11 @@ pub async fn launch_bots_on_server(options: LaunchOptions) -> bool {
 
             accounts.push(CustomAccount {
               object: Account::offline(&username),
-              options: None,
+              options: AccountOptions {
+                password: None,
+                email: None,
+                proxy: None,
+              },
             });
 
             PROFILES.register(&username, password, email);
@@ -148,48 +223,9 @@ pub async fn launch_bots_on_server(options: LaunchOptions) -> bool {
             for account in accounts.into_iter() {
               let mut join_opts = JoinOpts::new();
 
-              if let Some(account_opts) = account.options.clone() {
-                if let Some(proxy) = account_opts.proxy {
-                  let mut profile_proxy = ProfileProxy {
-                    ip_address: None,
-                    proxy: None,
-                    username: None,
-                    password: None,
-                  };
-
-                  let clean_proxy = clear_proxy(&proxy);
-
-                  profile_proxy.proxy = Some(clean_proxy.to_string());
-
-                  if let Ok(addr) = clean_proxy.parse::<SocketAddr>() {
-                    let mut proxy = Proxy::new(addr, None);
-
-                    if let Some(username) = account_opts.proxy_username {
-                      if let Some(password) = account_opts.proxy_password {
-                        profile_proxy.username = Some(username.clone());
-                        profile_proxy.password = Some(password.clone());
-
-                        proxy.auth = Some(UserKey {
-                          username: username,
-                          password: password,
-                        });
-                      }
-                    }
-
-                    join_opts = join_opts.proxy(proxy);
-
-                    let split_address: Vec<&str> = clean_proxy.split(":").collect();
-
-                    let Some(ip_address) = split_address.get(0) else {
-                      continue;
-                    };
-
-                    profile_proxy.ip_address = Some(ip_address.to_string());
-
-                    PROFILES.set_proxy(&account.object.username, profile_proxy);
-                  }
-                };
-              };
+              if let Some(proxy) = &account.options.proxy {
+                join_opts = processs_proxy(&account.object.username, proxy, join_opts);
+              }
 
               accounts_with_opts.push((account, join_opts));
             }
@@ -201,59 +237,8 @@ pub async fn launch_bots_on_server(options: LaunchOptions) -> bool {
                 let list: Vec<&str> = proxy_list.split("\n").collect();
 
                 if !list.is_empty() {
-                  let mut profile_proxy = ProfileProxy {
-                    ip_address: None,
-                    proxy: None,
-                    username: None,
-                    password: None,
-                  };
-
                   let proxy = list[i % list.len()];
-                  let clean_proxy = clear_proxy(&proxy);
-
-                  let proxy_address: Vec<&str> = clean_proxy.split("@").collect();
-
-                  let Some(address) = proxy_address.get(1) else {
-                    continue;
-                  };
-
-                  profile_proxy.proxy = Some(address.to_string());
-
-                  if let Ok(addr) = address.parse::<SocketAddr>() {
-                    let mut proxy = Proxy::new(addr, None);
-
-                    if let Some(auth) = proxy_address.get(0) {
-                      let split_auth: Vec<&str> = auth.split(":").collect();
-
-                      let Some(username) = split_auth.get(0) else {
-                        continue;
-                      };
-
-                      let Some(password) = split_auth.get(1) else {
-                        continue;
-                      };
-
-                      profile_proxy.username = Some(username.to_string());
-                      profile_proxy.password = Some(password.to_string());
-
-                      proxy.auth = Some(UserKey {
-                        username: username.to_string(),
-                        password: password.to_string(),
-                      });
-                    }
-
-                    join_opts = join_opts.proxy(proxy);
-
-                    let split_address: Vec<&str> = address.split(":").collect();
-
-                    let Some(ip_address) = split_address.get(0) else {
-                      continue;
-                    };
-
-                    profile_proxy.ip_address = Some(ip_address.to_string());
-
-                    PROFILES.set_proxy(&account.object.username, profile_proxy);
-                  }
+                  join_opts = processs_proxy(&account.object.username, proxy, join_opts);
                 }
               }
 

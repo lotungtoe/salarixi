@@ -12,8 +12,6 @@ interface Account {
   password: string | null;
   email: string | null;
   proxy: string | null;
-  proxy_username: string | null;
-  proxy_password: string | null;
   selected: boolean;
 }
 
@@ -43,8 +41,6 @@ class AccountModule {
     const selectedAccountsPassword = document.getElementById("selected-accounts-password") as HTMLInputElement;
     const selectedAccountsEmail = document.getElementById("selected-accounts-email") as HTMLInputElement;
     const selectedAccountsProxy = document.getElementById("selected-accounts-proxy") as HTMLInputElement;
-    const selectedAccountsProxyUsername = document.getElementById("selected-accounts-proxy-username") as HTMLInputElement;
-    const selectedAccountsProxyPassword = document.getElementById("selected-accounts-proxy-password") as HTMLInputElement;
 
     const addAccountBtn = document.getElementById("add-account") as HTMLButtonElement;
     const openSelectedAccountsEditorBtn = document.getElementById("edit-selected-accounts") as HTMLButtonElement;
@@ -103,8 +99,6 @@ class AccountModule {
         password: null,
         email: null,
         proxy: null,
-        proxy_username: null,
-        proxy_password: null,
         selected: false,
       });
 
@@ -122,8 +116,6 @@ class AccountModule {
     selectedAccountsPassword.addEventListener("input", () => this.setValueForAllSelected("password", selectedAccountsPassword.value));
     selectedAccountsEmail.addEventListener("input", () => this.setValueForAllSelected("email", selectedAccountsEmail.value));
     selectedAccountsProxy.addEventListener("input", () => this.setValueForAllSelected("proxy", selectedAccountsProxy.value));
-    selectedAccountsProxyUsername.addEventListener("input", () => this.setValueForAllSelected("proxy_username", selectedAccountsProxyUsername.value));
-    selectedAccountsProxyPassword.addEventListener("input", () => this.setValueForAllSelected("proxy_password", selectedAccountsProxyPassword.value));
 
     removeSelectedAccountsBtn.addEventListener("click", () => {
       let removedCount = 0;
@@ -176,8 +168,6 @@ class AccountModule {
             password: data["password"],
             email: data["email"],
             proxy: data["proxy"],
-            proxy_username: data["proxy_username"] ?? data["proxy-username"],
-            proxy_password: data["proxy_password"] ?? data["proxy-password"],
             selected: false,
           });
         } 
@@ -209,8 +199,6 @@ class AccountModule {
             password: data.password,
             email: data.email,
             proxy: data.proxy,
-            proxy_username: data.proxy_username,
-            proxy_password: data.proxy_password
           };
         }
 
@@ -249,8 +237,6 @@ class AccountModule {
           password: null,
           email: null,
           proxy: null,
-          proxy_username: null,
-          proxy_password: null,
           selected: false,
         });
 
@@ -278,8 +264,6 @@ class AccountModule {
         password: account.password,
         email: account.email,
         proxy: account.proxy,
-        proxy_username: account.proxy_username,
-        proxy_password: account.proxy_password,
       };
     }
 
@@ -300,8 +284,6 @@ class AccountModule {
           password: account.password,
           email: account.email,
           proxy: account.proxy,
-          proxy_username: account.proxy_username,
-          proxy_password: account.proxy_password,
         };
       }
 
@@ -324,7 +306,7 @@ class AccountModule {
 
   /** Метод измнения значения всех выбранных аккаунтов */
   private setValueForAllSelected(
-    field: "password" | "email" | "proxy" | "proxy_username" | "proxy_password",
+    field: "password" | "email" | "proxy",
     value: string,
   ): void {
     for (const username in this.accounts) {
@@ -549,16 +531,6 @@ class AccountModule {
         name: "Прокси SOCKS5",
         tag: "proxy",
         placeholder: "socks5://35.91.83.91:1111",
-      },
-      {
-        name: "Юзернейм прокси",
-        tag: "proxy-username",
-        placeholder: "user",
-      },
-      {
-        name: "Пароль прокси",
-        tag: "proxy-password",
-        placeholder: "root",
       },
     ];
 

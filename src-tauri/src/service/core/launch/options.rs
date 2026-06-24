@@ -57,8 +57,6 @@ pub struct AccountOptions {
   pub password: Option<String>,
   pub email: Option<String>,
   pub proxy: Option<String>,
-  pub proxy_username: Option<String>,
-  pub proxy_password: Option<String>,
 }
 
 #[derive(Debug, Deserialize, Clone)]
