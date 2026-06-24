@@ -12,7 +12,7 @@ use crate::service::core::controllers::{
 };
 use crate::service::core::extensions::{BotDefaultExt, BotInventoryExt, BotRotationExt};
 use crate::service::core::traits::SalarixiModule;
-use crate::service::generators::*;
+use crate::service::tools::*;
 use crate::take_bot;
 
 struct Tool {
@@ -181,11 +181,11 @@ impl FarmerModule {
 
   fn generate_delay(mode: &String) -> u64 {
     if mode.as_str() == "normal" {
-      return randuint(100, 150);
+      return randnum(100, 150);
     } else if mode.as_str() == "quick" {
       return 50;
     } else {
-      return randuint(20, 30);
+      return randnum(20, 30);
     }
   }
 

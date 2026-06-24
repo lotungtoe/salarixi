@@ -11,7 +11,7 @@ use crate::service::core::controllers::{
 };
 use crate::service::core::extensions::{BotDefaultExt, BotInteractExt, BotInventoryExt, EntityType};
 use crate::service::core::traits::SalarixiModule;
-use crate::service::generators::*;
+use crate::service::tools::*;
 use crate::take_bot;
 
 pub struct BowAimModule;
@@ -92,7 +92,7 @@ impl BowAimModule {
 
         bot.start_use_held_item(InteractionHand::MainHand);
 
-        sleep(Duration::from_millis(randuint(900, 1100))).await;
+        sleep(Duration::from_millis(randnum(900, 1100))).await;
 
         if let Some(entity) = bot.find_nearest_entity(EntityType::from(target), distance) {
           let target_pos = bot.get_entity_position(entity);

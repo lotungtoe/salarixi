@@ -10,7 +10,7 @@ use crate::service::core::controllers::{
 };
 use crate::service::core::extensions::{BotDefaultExt, BotInventoryExt, BotMovementExt, BotRotationExt, EntityType};
 use crate::service::core::traits::SalarixiModule;
-use crate::service::generators::*;
+use crate::service::tools::*;
 use crate::take_bot;
 
 struct Weapon {
@@ -225,11 +225,11 @@ impl KillauraModule {
       loop {
         take_bot!(&username_clone, async |bot| {
           bot.start_crouching();
-          sleep(Duration::from_millis(randuint(100, 800))).await;
+          sleep(Duration::from_millis(randnum(100, 800))).await;
           bot.stop_crouching();
         });
 
-        sleep(Duration::from_millis(randuint(400, 1500))).await;
+        sleep(Duration::from_millis(randnum(400, 1500))).await;
       }
     });
 
@@ -292,7 +292,7 @@ impl KillauraModule {
           }
         });
 
-        sleep(Duration::from_millis(randuint(50, 100))).await;
+        sleep(Duration::from_millis(randnum(50, 100))).await;
 
         set_mutual_states(&username_clone, StateName::Looking, false);
       }
@@ -359,7 +359,7 @@ impl KillauraModule {
           if options.use_critical {
             bot.jump();
 
-            sleep(Duration::from_millis(randuint(500, 600))).await;
+            sleep(Duration::from_millis(randnum(500, 600))).await;
 
             if let Some(e) = Self::find_nearest_entity(
               bot,
@@ -431,7 +431,7 @@ impl KillauraModule {
 
           if options.use_critical {
             bot.jump();
-            sleep(Duration::from_millis(randuint(500, 600))).await;
+            sleep(Duration::from_millis(randnum(500, 600))).await;
 
             if let Some(e) = Self::find_nearest_entity(
               bot,

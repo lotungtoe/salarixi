@@ -14,7 +14,7 @@ use crate::service::core::extensions::{BotDefaultExt, BotInteractExt, BotInvento
 use crate::service::core::plugin_manager::PluginName;
 use crate::service::core::traits::SalarixiPlugin;
 use crate::service::core::{process_is_active, PLUGINS};
-use crate::service::generators::*;
+use crate::service::tools::*;
 use crate::take_bot;
 
 /// Структура информации и зелье
@@ -91,15 +91,15 @@ impl AutoPotionPlugin {
       "splash" => {
         let direction = bot.direction();
 
-        bot.set_direction(direction.0 + randfloat(-5.5, 5.5) as f32, randfloat(87.0, 90.0) as f32);
+        bot.set_direction(direction.0 + randnum(-5.5, 5.5) as f32, randnum(87.0, 90.0) as f32);
 
-        sleep(Duration::from_millis(randuint(400, 600))).await;
+        sleep(Duration::from_millis(randnum(400, 600))).await;
         bot.start_use_held_item(InteractionHand::MainHand);
-        sleep(Duration::from_millis(randuint(300, 500))).await;
+        sleep(Duration::from_millis(randnum(300, 500))).await;
 
         bot.set_direction(
-          direction.0 + randfloat(-2.5, 2.5) as f32,
-          direction.1 + randfloat(-2.5, 2.5) as f32,
+          direction.0 + randnum(-2.5, 2.5) as f32,
+          direction.1 + randnum(-2.5, 2.5) as f32,
         );
       }
       _ => {}

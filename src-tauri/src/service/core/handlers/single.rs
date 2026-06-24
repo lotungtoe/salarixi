@@ -24,8 +24,8 @@ use crate::service::core::utils::MAP_ACCUMULATOR;
 use crate::service::core::utils::MAP_CAPTCHA_BYPASS;
 use crate::service::core::utils::WEB_CAPTCHA_BYPASS;
 use crate::service::core::PLUGINS;
-use crate::service::generators::*;
 use crate::service::script::SCRIPT_EXECUTOR;
+use crate::service::tools::*;
 use crate::service::webhook::*;
 use crate::take_bot;
 

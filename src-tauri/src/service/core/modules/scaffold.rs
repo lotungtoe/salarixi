@@ -13,7 +13,7 @@ use crate::service::core::controllers::{
 };
 use crate::service::core::extensions::{BotDefaultExt, BotInventoryExt, BotMovementExt, BotPhysicsExt};
 use crate::service::core::traits::SalarixiModule;
-use crate::service::generators::*;
+use crate::service::tools::*;
 use crate::take_bot;
 
 pub struct ScaffoldModule;
@@ -74,8 +74,8 @@ impl ScaffoldModule {
 
   fn simulate_inaccuracy(bot: &Client, direction: (f32, f32)) {
     let inaccurate_direction = (
-      direction.0 + randfloat(-0.08, 0.08) as f32,
-      direction.1 + randfloat(-0.08, 0.08) as f32,
+      direction.0 + randnum(-0.08, 0.08) as f32,
+      direction.1 + randnum(-0.08, 0.08) as f32,
     );
 
     bot.set_direction(inaccurate_direction.0, inaccurate_direction.1);
@@ -87,7 +87,7 @@ impl ScaffoldModule {
     let min_x = if let Some(rot) = min_x_rot { rot } else { 80.0 } as f64;
     let max_x = if let Some(rot) = max_x_rot { rot } else { 83.0 } as f64;
 
-    bot.set_direction(direction.0, randfloat(min_x, max_x) as f32);
+    bot.set_direction(direction.0, randnum(min_x, max_x) as f32);
   }
 
   fn go_back(username: String) {
@@ -132,11 +132,11 @@ impl ScaffoldModule {
 
           bot.start_use_item();
 
-          sleep(Duration::from_millis(randuint(100, 200))).await;
+          sleep(Duration::from_millis(randnum(100, 200))).await;
 
           Self::simulate_inaccuracy(bot, bot.direction());
 
-          sleep(Duration::from_millis(randuint(100, 150))).await;
+          sleep(Duration::from_millis(randnum(100, 150))).await;
         }
       }
 
@@ -167,7 +167,7 @@ impl ScaffoldModule {
 
           bot.start_use_item();
 
-          sleep(Duration::from_millis(randuint(50, 100))).await;
+          sleep(Duration::from_millis(randnum(50, 100))).await;
 
           Self::simulate_inaccuracy(bot, bot.direction());
 

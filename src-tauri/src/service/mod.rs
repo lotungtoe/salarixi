@@ -1,6 +1,7 @@
 pub mod core;
-pub mod generators;
+pub mod ping;
 pub mod quick;
+pub mod radar;
 pub mod rpc;
 pub mod script;
 pub mod tools;

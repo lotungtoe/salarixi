@@ -15,7 +15,7 @@ use crate::service::core::controllers::TASKS;
 use crate::service::core::controllers::{get_state, kill_task, set_mutual_states, set_state};
 use crate::service::core::extensions::BotMovementExt;
 use crate::service::core::traits::SalarixiModule;
-use crate::service::generators::*;
+use crate::service::tools::*;
 use crate::take_bot;
 
 pub struct StealerModule;
@@ -122,12 +122,12 @@ impl StealerModule {
 
           bot.look_at(pos.center());
 
-          sleep(Duration::from_millis(randuint(50, 100))).await;
+          sleep(Duration::from_millis(randnum(50, 100))).await;
 
           if let Some(container) = bot.open_container_at(pos).await {
             Self::extract_all_items(bot, &container).await;
             container.close();
-            sleep(Duration::from_millis(randuint(200, 350))).await;
+            sleep(Duration::from_millis(randnum(200, 350))).await;
           }
 
           set_mutual_states(&username, StateName::Looking, false);
@@ -137,8 +137,8 @@ impl StealerModule {
 
       if get_state(&username, State::CanLooking) {
         bot.set_direction(
-          direction.0 + randfloat(-2.5, 2.5) as f32,
-          direction.1 + randfloat(-2.5, 2.5) as f32,
+          direction.0 + randnum(-2.5, 2.5) as f32,
+          direction.1 + randnum(-2.5, 2.5) as f32,
         );
       }
 

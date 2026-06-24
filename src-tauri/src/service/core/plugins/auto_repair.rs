@@ -11,7 +11,7 @@ use crate::service::core::extensions::{BotDefaultExt, BotInteractExt, BotInvento
 use crate::service::core::plugin_manager::PluginName;
 use crate::service::core::traits::SalarixiPlugin;
 use crate::service::core::{process_is_active, PLUGINS};
-use crate::service::generators::*;
+use crate::service::tools::*;
 use crate::take_bot;
 
 /// Структура данных сломанного предмета
@@ -66,7 +66,7 @@ impl AutoRepairPlugin {
           bot.take_item(broken_item.slot, false).await;
           sleep(Duration::from_millis(50)).await;
           bot.move_item_to_offhand(broken_item.kind);
-          sleep(Duration::from_millis(randuint(50, 150))).await;
+          sleep(Duration::from_millis(randnum(50, 150))).await;
         }
 
         let mut slot = 45;
@@ -84,13 +84,13 @@ impl AutoRepairPlugin {
               let direction = bot.direction();
 
               if direction.1 < 84.0 {
-                bot.set_direction(direction.0, randfloat(84.0, 90.0) as f32);
-                sleep(Duration::from_millis(randuint(150, 200))).await;
+                bot.set_direction(direction.0, randnum(84.0, 90.0) as f32);
+                sleep(Duration::from_millis(randnum(150, 200))).await;
               }
 
               bot.start_use_held_item(InteractionHand::MainHand);
 
-              sleep(Duration::from_millis(randuint(200, 250))).await;
+              sleep(Duration::from_millis(randnum(200, 250))).await;
             } else {
               return;
             }

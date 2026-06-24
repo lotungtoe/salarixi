@@ -15,7 +15,7 @@ use tokio::time::sleep;
 use crate::service::core::common::convert_inventory_slot_to_hotbar_slot;
 use crate::service::core::controllers::{get_state, set_mutual_states, set_state, State, StateName};
 use crate::service::core::extensions::BotMovementExt;
-use crate::service::generators::randint;
+use crate::service::tools::randnum;
 
 pub trait BotInventoryExt {
   fn get_selected_slot(&self) -> u8;
@@ -119,13 +119,23 @@ impl BotInventoryExt for Client {
   }
 
   async fn take_item(&self, source_slot: usize, lock: bool) {
+    let username = self.username();
+
+    if lock {
+      if !get_state(&username, State::CanInteracting) {
+        return;
+      }
+
+      self.start_interacting_with_inventory();
+    }
+
     if let Some(hotbar_slot) = convert_inventory_slot_to_hotbar_slot(source_slot) {
       if self.get_selected_slot() != hotbar_slot {
         self.set_selected_hotbar_slot(hotbar_slot);
       }
     } else {
       if let Some(empty_slot) = self.find_empty_slot_in_invenotry() {
-        self.inventory_swap_click(source_slot, empty_slot as usize, lock).await;
+        self.inventory_swap_click(source_slot, empty_slot as usize, false).await;
 
         if let Some(slot) = convert_inventory_slot_to_hotbar_slot(empty_slot as usize) {
           if self.get_selected_slot() != slot {
@@ -134,11 +144,11 @@ impl BotInventoryExt for Client {
           }
         }
       } else {
-        let random_slot = randint(36, 44) as usize;
+        let random_slot = randnum(36, 44) as usize;
 
-        self.inventory_click(random_slot, ClickMode::Shift, lock);
+        self.inventory_click(random_slot, ClickMode::Shift, false);
         sleep(Duration::from_millis(50)).await;
-        self.inventory_swap_click(source_slot, random_slot, lock).await;
+        self.inventory_swap_click(source_slot, random_slot, false).await;
 
         sleep(Duration::from_millis(50)).await;
 
@@ -148,6 +158,10 @@ impl BotInventoryExt for Client {
           self.set_selected_hotbar_slot(hotbar_slot);
         }
       }
+    }
+
+    if lock {
+      self.stop_interacting_with_inventory();
     }
   }
 

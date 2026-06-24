@@ -1,10 +1,5 @@
 use crate::service::core::controllers::PROFILES;
-use crate::service::generators::mutate_text;
-use crate::service::generators::randchance;
-use crate::service::generators::randelem;
-use crate::service::generators::randstr;
-use crate::service::generators::randuint;
-use crate::service::generators::Classes;
+use crate::service::tools::*;
 
 const LEGIT_NICKNAMES: &[&str] = &[
   "Apple",
@@ -179,12 +174,12 @@ pub fn generate_username_or_password(item: &str, class: &str, template: &str) ->
 
       if value.len() <= 13 {
         let suffix_len = if value.len() <= 6 {
-          randuint(4, 6) as usize
+          randnum(4, 6) as usize
         } else {
-          randuint(2, 3) as usize
+          randnum(2, 3) as usize
         };
 
-        let suffix = randstr(Classes::Multi, suffix_len as i32);
+        let suffix = randstr(CharClass::Multi, suffix_len as i32);
         let separator = if randchance(0.5) { "_" } else { "" };
 
         value = format!("{}{}{}", value, separator, suffix);

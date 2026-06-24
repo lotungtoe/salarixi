@@ -15,7 +15,7 @@ use crate::service::core::extensions::{
 };
 use crate::service::core::registry::BOT_REGISTRY;
 use crate::service::core::PLUGINS;
-use crate::service::generators::{randfloat, randint, randuint};
+use crate::service::tools::*;
 use crate::take_bot;
 
 pub static QUICK_TASK_MANAGER: Lazy<Arc<QuickTaskManager>> = Lazy::new(|| Arc::new(QuickTaskManager::new()));
@@ -73,8 +73,8 @@ impl QuickTaskManager {
             bot.set_crouching(false);
           }
           "fly" => {
-            for i in 0..randint(3, 5) {
-              bot.set_velocity("y", randfloat(0.022 * i as f64, 0.031 * i as f64));
+            for i in 0..randnum(3, 5) {
+              bot.set_velocity("y", randnum(0.022 * i as f64, 0.031 * i as f64));
               sleep(Duration::from_millis(50)).await;
             }
           }
@@ -115,24 +115,24 @@ impl QuickTaskManager {
                 let original_direction_1 = bot.direction();
 
                 bot.set_direction(
-                  original_direction_1.0 + randfloat(-5.0, 5.0) as f32,
-                  randfloat(40.0, 58.0) as f32,
+                  original_direction_1.0 + randnum(-5.0, 5.0) as f32,
+                  randnum(40.0, 58.0) as f32,
                 );
-                sleep(Duration::from_millis(randuint(50, 100))).await;
+                sleep(Duration::from_millis(randnum(50, 100))).await;
                 bot.jump();
 
                 let original_direction_2 = bot.direction();
 
                 bot.set_direction(
-                  original_direction_2.0 + randfloat(-5.0, 5.0) as f32,
-                  randfloat(86.0, 90.0) as f32,
+                  original_direction_2.0 + randnum(-5.0, 5.0) as f32,
+                  randnum(86.0, 90.0) as f32,
                 );
-                sleep(Duration::from_millis(randuint(250, 350))).await;
+                sleep(Duration::from_millis(randnum(250, 350))).await;
 
                 bot.swing_arm();
                 bot.start_use_item();
 
-                sleep(Duration::from_millis(randuint(150, 250))).await;
+                sleep(Duration::from_millis(randnum(150, 250))).await;
 
                 bot.set_direction(original_direction_1.0, original_direction_1.1);
 
@@ -223,19 +223,19 @@ impl QuickTaskManager {
                   count = count + 1;
 
                   if count == 10 {
-                    sleep(Duration::from_millis(randuint(150, 200))).await;
+                    sleep(Duration::from_millis(randnum(150, 200))).await;
                   }
 
                   if count == 9 {
                     bot.jump();
                     sleep(Duration::from_millis(50)).await;
                     bot.set_crouching(true);
-                    sleep(Duration::from_millis(randuint(100, 150))).await;
+                    sleep(Duration::from_millis(randnum(100, 150))).await;
                   }
 
                   bot.look_at(Vec3::new(pos.x as f64, pos.y as f64, pos.z as f64));
 
-                  sleep(Duration::from_millis(randuint(50, 100))).await;
+                  sleep(Duration::from_millis(randnum(50, 100))).await;
 
                   bot.swing_arm();
                   bot.start_use_item();
@@ -247,7 +247,7 @@ impl QuickTaskManager {
                   set_mutual_states(&username, StateName::Looking, false);
                   set_mutual_states(&username, StateName::Interacting, false);
 
-                  sleep(Duration::from_millis(randuint(100, 150))).await;
+                  sleep(Duration::from_millis(randnum(100, 150))).await;
                 }
               }
             }

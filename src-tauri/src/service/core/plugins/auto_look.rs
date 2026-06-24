@@ -7,7 +7,7 @@ use crate::service::core::extensions::{BotDefaultExt, BotRotationExt, EntityType
 use crate::service::core::plugin_manager::PluginName;
 use crate::service::core::traits::SalarixiPlugin;
 use crate::service::core::{process_is_active, PLUGINS};
-use crate::service::generators::randuint;
+use crate::service::tools::randnum;
 use crate::take_bot;
 
 pub struct AutoLookPlugin;
@@ -20,7 +20,7 @@ impl AutoLookPlugin {
     if get_state(&username, State::CanLooking) && bot.is_goto_target_reached() {
       if let Some(entity) = bot.find_nearest_entity(EntityType::Any, 14.0) {
         bot.look_at_entity(entity, true);
-        sleep(Duration::from_millis(randuint(50, 100))).await;
+        sleep(Duration::from_millis(randnum(50, 100))).await;
       }
     }
   }

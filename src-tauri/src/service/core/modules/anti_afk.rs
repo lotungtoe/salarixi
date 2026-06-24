@@ -13,7 +13,7 @@ use crate::service::core::controllers::TaskName;
 use crate::service::core::controllers::TASKS;
 use crate::service::core::extensions::{BotDefaultExt, BotMovementExt};
 use crate::service::core::traits::SalarixiModule;
-use crate::service::generators::*;
+use crate::service::tools::*;
 use crate::take_bot;
 
 pub struct AntiAfkModule;
@@ -39,22 +39,22 @@ impl AntiAfkModule {
       let original_direction = bot.direction();
 
       bot.set_direction(
-        original_direction.0 + randfloat(-50.0, 50.0) as f32,
-        original_direction.1 + randfloat(-12.0, 12.0) as f32,
+        original_direction.0 + randnum(-50.0, 50.0) as f32,
+        original_direction.1 + randnum(-12.0, 12.0) as f32,
       );
 
       if randchance(0.4) {
         bot.swing_arm();
       }
 
-      sleep(Duration::from_millis(randuint(400, 800))).await;
+      sleep(Duration::from_millis(randnum(400, 800))).await;
 
       bot.set_direction(
-        original_direction.0 + randfloat(-10.0, 10.0) as f32,
-        original_direction.1 + randfloat(-4.5, 4.5) as f32,
+        original_direction.0 + randnum(-10.0, 10.0) as f32,
+        original_direction.1 + randnum(-4.5, 4.5) as f32,
       );
 
-      sleep(Duration::from_millis(randuint(min_delay, max_delay))).await;
+      sleep(Duration::from_millis(randnum(min_delay, max_delay))).await;
     }
   }
 
@@ -81,15 +81,15 @@ impl AntiAfkModule {
       let direction = bot.direction();
 
       bot.set_direction(
-        direction.0 + randfloat(-35.0, 35.0) as f32,
-        direction.1 + randfloat(-20.0, 20.0) as f32,
+        direction.0 + randnum(-35.0, 35.0) as f32,
+        direction.1 + randnum(-20.0, 20.0) as f32,
       );
 
-      sleep(Duration::from_millis(randuint(150, 400))).await;
+      sleep(Duration::from_millis(randnum(150, 400))).await;
 
       bot.stop_move();
 
-      sleep(Duration::from_millis(randuint(min_delay, max_delay))).await;
+      sleep(Duration::from_millis(randnum(min_delay, max_delay))).await;
     }
   }
 
@@ -106,8 +106,8 @@ impl AntiAfkModule {
           let direction = bot.direction();
 
           bot.set_direction(
-            direction.0 + randfloat(-35.0, 35.0) as f32,
-            direction.1 + randfloat(-10.0, 10.0) as f32,
+            direction.0 + randnum(-35.0, 35.0) as f32,
+            direction.1 + randnum(-10.0, 10.0) as f32,
           );
         });
 
@@ -126,7 +126,7 @@ impl AntiAfkModule {
 
       if randchance(0.4) {
         bot.start_crouching();
-        sleep(Duration::from_millis(randuint(300, 500))).await;
+        sleep(Duration::from_millis(randnum(300, 500))).await;
         bot.stop_crouching();
       }
 
@@ -139,7 +139,7 @@ impl AntiAfkModule {
         break;
       }
 
-      sleep(Duration::from_millis(randuint(min_delay, max_delay))).await;
+      sleep(Duration::from_millis(randnum(min_delay, max_delay))).await;
     }
   }
 

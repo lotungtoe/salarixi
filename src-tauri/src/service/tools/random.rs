@@ -1,8 +1,10 @@
+use rand::distributions::uniform::SampleUniform;
 use rand::prelude::SliceRandom;
 use rand::thread_rng;
 use rand::Rng;
 
-pub enum Classes {
+/// Класс символов
+pub enum CharClass {
   Numeric,
   Letter,
   Multi,
@@ -17,12 +19,12 @@ pub fn randchar(s: &str) -> char {
 }
 
 /// Функция генерации строки
-pub fn randstr(class: Classes, length: i32) -> String {
+pub fn randstr(class: CharClass, length: i32) -> String {
   let chars = match class {
-    Classes::Numeric => "0123456789",
-    Classes::Letter => "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
-    Classes::Multi => "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",
-    Classes::Special => "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_-+=",
+    CharClass::Numeric => "0123456789",
+    CharClass::Letter => "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
+    CharClass::Multi => "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",
+    CharClass::Special => "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_-+=",
   };
 
   let mut result = String::new();
@@ -34,18 +36,11 @@ pub fn randstr(class: Classes, length: i32) -> String {
   result
 }
 
-/// Функция генерации случайного `int`
-pub fn randint(min: i32, max: i32) -> i32 {
-  thread_rng().gen_range(min..=max)
-}
-
-/// Функция генерации случайного `uint`
-pub fn randuint(min: u64, max: u64) -> u64 {
-  thread_rng().gen_range(min..=max)
-}
-
-/// Функция генерации случайного `float`
-pub fn randfloat(min: f64, max: f64) -> f64 {
+/// Функция генерации случайного числа в заданном диапозоне
+pub fn randnum<N>(min: N, max: N) -> N
+where
+  N: SampleUniform + PartialOrd,
+{
   thread_rng().gen_range(min..=max)
 }
 

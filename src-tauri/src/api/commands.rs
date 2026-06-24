@@ -12,10 +12,10 @@ use crate::service::core::{
   active_bots_count, current_options, launch_bots_on_server, process_is_active, stop_bots_and_destroy_data,
   LaunchOptions,
 };
+use crate::service::ping::{ping_server, ServerInformation};
+use crate::service::radar::{RadarInfo, RADAR_MANAGER};
 use crate::service::rpc::DISCORD_RPC_MANAGER;
 use crate::service::script::SCRIPT_EXECUTOR;
-use crate::service::tools::ping::{ping_server, ServerInformation};
-use crate::service::tools::radar::{RadarInfo, RADAR_MANAGER};
 use crate::service::webhook::send_webhook;
 
 /// Функция запуска ботов

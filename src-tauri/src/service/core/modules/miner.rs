@@ -15,7 +15,7 @@ use crate::service::core::controllers::TASKS;
 use crate::service::core::controllers::{kill_task, set_mutual_states};
 use crate::service::core::extensions::{BotDefaultExt, BotInventoryExt, BotMovementExt};
 use crate::service::core::traits::SalarixiModule;
-use crate::service::generators::*;
+use crate::service::tools::*;
 use crate::take_bot;
 
 pub struct MinerModule;
@@ -62,7 +62,7 @@ impl MinerModule {
       let walk_direction = randelem(walk_directions.as_ref());
 
       bot.walk(*walk_direction);
-      sleep(Duration::from_millis(randuint(150, 250))).await;
+      sleep(Duration::from_millis(randnum(150, 250))).await;
       bot.walk(WalkDirection::None);
     }
   }
@@ -72,26 +72,26 @@ impl MinerModule {
 
     if look.as_str() == "smooth" {
       let pre = Vec3::new(
-        (block_pos.x as f64) + randfloat(-0.05, 0.05),
-        (block_pos.y as f64) + randfloat(-0.05, 0.05),
-        (block_pos.z as f64) + randfloat(-0.05, 0.05),
+        (block_pos.x as f64) + randnum(-0.05, 0.05),
+        (block_pos.y as f64) + randnum(-0.05, 0.05),
+        (block_pos.z as f64) + randnum(-0.05, 0.05),
       );
 
       bot.look_at(pre);
 
-      sleep(Duration::from_millis(randuint(50, 150))).await;
+      sleep(Duration::from_millis(randnum(50, 150))).await;
     }
 
     if randchance(0.7) {
-      center.x += randfloat(-0.03, 0.03);
+      center.x += randnum(-0.03, 0.03);
     }
 
     if randchance(0.7) {
-      center.y += randfloat(-0.03, 0.03);
+      center.y += randnum(-0.03, 0.03);
     }
 
     if randchance(0.7) {
-      center.z += randfloat(-0.03, 0.03);
+      center.z += randnum(-0.03, 0.03);
     }
 
     bot.look_at(center);
@@ -107,7 +107,7 @@ impl MinerModule {
     }
 
     bot.walk(WalkDirection::Forward);
-    sleep(Duration::from_millis(randuint(50, 150))).await;
+    sleep(Duration::from_millis(randnum(50, 150))).await;
     bot.walk(WalkDirection::None);
   }
 
@@ -171,7 +171,7 @@ impl MinerModule {
   async fn default_mine(bot: &Client, options: &MinerOptions) {
     bot.left_click_mine(true);
     bot.walk(WalkDirection::Forward);
-    bot.set_direction(options.direction_x.unwrap_or(0.0), 40.0 + randfloat(-3.5, 3.5) as f32);
+    bot.set_direction(options.direction_x.unwrap_or(0.0), 40.0 + randnum(-3.5, 3.5) as f32);
   }
 
   async fn extended_mine(bot: &Client, options: &MinerOptions) {
@@ -203,7 +203,7 @@ impl MinerModule {
 
               Self::look_at_block(bot, block_pos, options.look.clone()).await;
 
-              sleep(Duration::from_millis(randuint(100, 200))).await;
+              sleep(Duration::from_millis(randnum(100, 200))).await;
 
               if let Some(slot) = options.slot {
                 bot.set_selected_hotbar_slot(slot);
@@ -236,12 +236,12 @@ impl MinerModule {
 
               Self::micro_offset(bot).await;
 
-              sleep(Duration::from_millis(randuint(50, 100))).await;
+              sleep(Duration::from_millis(randnum(50, 100))).await;
 
               if let Some(s) = get_block_state(bot, block_pos) {
                 if !s.is_air() || Self::is_breakable_block(s.id()) {
                   bot.walk(WalkDirection::Backward);
-                  sleep(Duration::from_millis(randuint(50, 100))).await;
+                  sleep(Duration::from_millis(randnum(50, 100))).await;
                   bot.walk(WalkDirection::None);
                 }
               }
@@ -254,21 +254,21 @@ impl MinerModule {
 
       if randchance(0.5) {
         bot.set_direction(
-          options.direction_x.unwrap_or(0.0) + randfloat(-2.5, 2.5) as f32,
-          direction.1 + randfloat(-2.5, 2.5) as f32,
+          options.direction_x.unwrap_or(0.0) + randnum(-2.5, 2.5) as f32,
+          direction.1 + randnum(-2.5, 2.5) as f32,
         );
       } else {
         if randchance(0.3) {
           bot.set_direction(
-            options.direction_x.unwrap_or(0.0) + randfloat(-1.3, 1.3) as f32,
-            direction.1 + randfloat(-1.3, 1.3) as f32,
+            options.direction_x.unwrap_or(0.0) + randnum(-1.3, 1.3) as f32,
+            direction.1 + randnum(-1.3, 1.3) as f32,
           );
         } else {
           bot.set_direction(options.direction_x.unwrap_or(0.0), direction.1);
         }
       }
 
-      sleep(Duration::from_millis(randuint(50, 100))).await;
+      sleep(Duration::from_millis(randnum(50, 100))).await;
 
       Self::move_forward(bot, territory).await;
 

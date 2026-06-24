@@ -5,7 +5,7 @@ use tokio::time::sleep;
 use crate::api::emit::emit_log;
 use crate::service::core::controllers::PROFILES;
 use crate::service::core::current_options;
-use crate::service::generators::*;
+use crate::service::tools::*;
 
 const DEFAULT_AUTH_TEMPLATE: &str = "$cmd $pass";
 
@@ -57,7 +57,7 @@ pub async fn default_authorize(bot: &Client) {
   }
 
   if !cmd.is_empty() {
-    sleep(Duration::from_millis(randuint(min_delay, max_delay))).await;
+    sleep(Duration::from_millis(randnum(min_delay, max_delay))).await;
 
     let msg = template
       .replace("$cmd", &cmd)

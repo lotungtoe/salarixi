@@ -17,7 +17,7 @@ use crate::service::core::controllers::TaskName;
 use crate::service::core::controllers::TASKS;
 use crate::service::core::extensions::{BotInventoryExt, BotPhysicsExt};
 use crate::service::core::traits::SalarixiModule;
-use crate::service::generators::*;
+use crate::service::tools::*;
 use crate::take_bot;
 
 pub struct AntiFallModule;
@@ -95,7 +95,7 @@ impl AntiFallModule {
 
       if velocity_y < options.fall_velocity.unwrap_or(-0.5) {
         if Self::exist_blocks_below(bot, options.distance_to_ground.unwrap_or(4)) {
-          let duration = Instant::now() + Duration::from_millis(randuint(300, 450));
+          let duration = Instant::now() + Duration::from_millis(randnum(300, 450));
 
           loop {
             if Instant::now() >= duration {
@@ -124,7 +124,7 @@ impl AntiFallModule {
         if velocity_y < options.fall_velocity.unwrap_or(-0.5) {
           if Self::exist_blocks_below(bot, options.distance_to_ground.unwrap_or(4)) {
             let pos = bot.position();
-            let fake_pos = Vec3::new(pos.x, pos.y + randfloat(0.015, 0.022), pos.z);
+            let fake_pos = Vec3::new(pos.x, pos.y + randnum(0.015, 0.022), pos.z);
 
             bot.write_packet(ServerboundMovePlayerPos {
               pos: fake_pos,
@@ -155,7 +155,7 @@ impl AntiFallModule {
         if Self::exist_blocks_below(bot, distance_to_ground) {
           let y_rot = bot.direction().0;
 
-          bot.set_direction(y_rot, randfloat(85.0, 89.0) as f32);
+          bot.set_direction(y_rot, randnum(85.0, 89.0) as f32);
 
           if Self::take_water_bucket(bot).await {
             if !Self::exist_water_below(bot, distance_to_ground) {

@@ -6,7 +6,7 @@ use tokio::time::sleep;
 use crate::service::core::controllers::{kill_task, push_root_task, TaskName, TASKS};
 use crate::service::core::extensions::BotDefaultExt;
 use crate::service::core::traits::SalarixiModule;
-use crate::service::generators::*;
+use crate::service::tools::*;
 use crate::take_bot;
 
 pub struct ActionModule;
@@ -26,14 +26,14 @@ impl ActionModule {
         if options.use_sync {
           sleep(Duration::from_millis(1000)).await;
         } else {
-          sleep(Duration::from_millis(randuint(900, 1800))).await;
+          sleep(Duration::from_millis(randnum(900, 1800))).await;
         }
 
         bot.jump();
       }
     } else {
       if !options.use_sync {
-        sleep(Duration::from_millis(randuint(200, 2000))).await;
+        sleep(Duration::from_millis(randnum(200, 2000))).await;
       }
 
       bot.set_jumping(true);
@@ -46,7 +46,7 @@ impl ActionModule {
         if options.use_sync {
           sleep(Duration::from_millis(1000)).await;
         } else {
-          sleep(Duration::from_millis(randuint(900, 1800))).await;
+          sleep(Duration::from_millis(randnum(900, 1800))).await;
         }
 
         bot.set_crouching(true);
@@ -55,7 +55,7 @@ impl ActionModule {
       }
     } else {
       if !options.use_sync {
-        sleep(Duration::from_millis(randuint(200, 2000))).await;
+        sleep(Duration::from_millis(randnum(200, 2000))).await;
       }
 
       bot.set_crouching(true);
@@ -68,14 +68,14 @@ impl ActionModule {
         if options.use_sync {
           sleep(Duration::from_millis(300)).await;
         } else {
-          sleep(Duration::from_millis(randuint(300, 800))).await;
+          sleep(Duration::from_millis(randnum(300, 800))).await;
         }
 
         bot.swing_arm();
       }
     } else {
       if !options.use_sync {
-        sleep(Duration::from_millis(randuint(200, 2000))).await;
+        sleep(Duration::from_millis(randnum(200, 2000))).await;
       }
 
       loop {

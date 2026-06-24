@@ -10,7 +10,7 @@ use crate::service::core::extensions::{BotDefaultExt, BotInteractExt, BotInvento
 use crate::service::core::plugin_manager::PluginName;
 use crate::service::core::traits::SalarixiPlugin;
 use crate::service::core::{process_is_active, PLUGINS};
-use crate::service::generators::*;
+use crate::service::tools::*;
 use crate::take_bot;
 
 pub struct AutoShieldPlugin;
@@ -84,14 +84,14 @@ impl AutoShieldPlugin {
 
       bot.look_at(bot.get_entity_position(entity));
 
-      sleep(Duration::from_millis(randuint(50, 100))).await;
+      sleep(Duration::from_millis(randnum(50, 100))).await;
 
-      for _ in 0..=randint(2, 4) {
+      for _ in 0..=randnum(2, 4) {
         if let Some(e) = self.get_nearest_dangerous_entity(bot) {
           bot.look_at(bot.get_entity_position(e));
         }
 
-        sleep(Duration::from_millis(randuint(50, 100))).await;
+        sleep(Duration::from_millis(randnum(50, 100))).await;
       }
 
       bot.release_use_held_item();

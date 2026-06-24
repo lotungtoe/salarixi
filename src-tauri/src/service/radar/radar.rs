@@ -1,7 +1,7 @@
 use azalea::player::GameProfileComponent;
 use chrono::prelude::*;
 use once_cell::sync::Lazy;
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use std::fs::OpenOptions;
 use std::io::Write;
 use std::sync::Arc;
@@ -13,7 +13,7 @@ use crate::take_bot;
 pub static RADAR_MANAGER: Lazy<Arc<RadarManager>> = Lazy::new(|| Arc::new(RadarManager::new()));
 
 // Структура информации радара
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Serialize)]
 pub struct RadarInfo {
   pub status: String,
   pub uuid: String,
@@ -24,7 +24,7 @@ pub struct RadarInfo {
 }
 
 // Структура информации о наблюдателе
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Serialize)]
 pub struct RadarObserver {
   pub x: f64,
   pub z: f64,

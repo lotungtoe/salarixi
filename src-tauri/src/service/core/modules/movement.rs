@@ -10,7 +10,7 @@ use crate::service::core::controllers::TaskName;
 use crate::service::core::controllers::TASKS;
 use crate::service::core::extensions::{go_to, BotMovementExt};
 use crate::service::core::traits::SalarixiModule;
-use crate::service::generators::*;
+use crate::service::tools::*;
 use crate::take_bot;
 
 pub struct MovementModule;
@@ -34,7 +34,7 @@ impl MovementModule {
   async fn default_move(bot: &Client, options: &MovementOptions) {
     if options.use_impulsiveness {
       if !options.use_sync {
-        sleep(Duration::from_millis(randuint(500, 2000))).await;
+        sleep(Duration::from_millis(randnum(500, 2000))).await;
       }
 
       loop {
@@ -55,14 +55,14 @@ impl MovementModule {
         if options.use_sync {
           sleep(Duration::from_millis(1200)).await;
         } else {
-          sleep(Duration::from_millis(randuint(800, 1800))).await;
+          sleep(Duration::from_millis(randnum(800, 1800))).await;
         }
 
         bot.stop_move();
       }
     } else {
       if !options.use_sync {
-        sleep(Duration::from_millis(randuint(500, 2000))).await;
+        sleep(Duration::from_millis(randnum(500, 2000))).await;
       }
 
       let direction = match options.direction.as_str() {
@@ -85,7 +85,7 @@ impl MovementModule {
     if let Some(x) = options.x {
       if let Some(z) = options.z {
         if !options.use_sync {
-          sleep(Duration::from_millis(randuint(500, 2000))).await;
+          sleep(Duration::from_millis(randnum(500, 2000))).await;
         }
 
         go_to(bot.username(), x, z);

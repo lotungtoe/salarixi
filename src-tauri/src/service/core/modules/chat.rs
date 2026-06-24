@@ -13,15 +13,8 @@ use crate::service::core::controllers::TASKS;
 use crate::service::core::extensions::BotDefaultExt;
 use crate::service::core::registry::BOT_REGISTRY;
 use crate::service::core::traits::SalarixiModule;
-use crate::service::generators::mutate_text;
-use crate::service::generators::randchance;
-use crate::service::generators::randelem;
-use crate::service::generators::randfloat;
-use crate::service::generators::randint;
-use crate::service::generators::randstr;
-use crate::service::generators::randuint;
-use crate::service::generators::Classes;
-use crate::service::tools::radar::RADAR_MANAGER;
+use crate::service::radar::RADAR_MANAGER;
+use crate::service::tools::*;
 use crate::take_bot;
 
 pub struct ChatModule;
@@ -57,7 +50,7 @@ impl ChatModule {
         continue;
       }
 
-      let random_chance = randfloat(0.0, 1.0);
+      let random_chance = randnum(0.0, 1.0);
 
       if random_chance >= 0.9 {
         result.push_str(&word.to_lowercase());
@@ -65,7 +58,7 @@ impl ChatModule {
         result.push_str(&word.to_uppercase());
       } else {
         for char in word.chars() {
-          let char_chance = randfloat(0.0, 1.0);
+          let char_chance = randnum(0.0, 1.0);
 
           if char_chance >= 0.70 {
             let mut transformed = char.to_lowercase().to_string();
@@ -113,10 +106,10 @@ impl ChatModule {
     let random_separator = randelem(&separators);
 
     let stray_text = match random_stray {
-      &"numeric" => randstr(Classes::Numeric, randint(3, 7)),
-      &"letter" => randstr(Classes::Letter, randint(3, 7)),
-      &"multi" => randstr(Classes::Multi, randint(3, 7)),
-      &"special" => randstr(Classes::Special, randint(3, 7)),
+      &"numeric" => randstr(CharClass::Numeric, randnum(3, 7)),
+      &"letter" => randstr(CharClass::Letter, randnum(3, 7)),
+      &"multi" => randstr(CharClass::Multi, randnum(3, 7)),
+      &"special" => randstr(CharClass::Special, randnum(3, 7)),
       _ => String::new(),
     };
 
@@ -221,7 +214,7 @@ impl ChatModule {
     }
 
     if !options.use_sync {
-      sleep(Duration::from_millis(randuint(200, 4000))).await;
+      sleep(Duration::from_millis(randnum(200, 4000))).await;
     }
 
     if options.use_magic_text {
@@ -252,7 +245,7 @@ impl ChatModule {
         ))
         .await;
       } else {
-        sleep(Duration::from_millis(randuint(
+        sleep(Duration::from_millis(randnum(
           options.min_delay.unwrap_or(2000),
           options.max_delay.unwrap_or(4000),
         )))

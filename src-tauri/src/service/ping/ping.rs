@@ -1,15 +1,16 @@
-use azalea::ping;
 use dns_lookup::lookup_host;
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use std::net::{IpAddr, Ipv4Addr};
 
-#[derive(Debug, Serialize, Deserialize)]
+/// Информация об игроке
+#[derive(Serialize)]
 pub struct Player {
   username: String,
   uuid: String,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+/// Информация о сервере
+#[derive(Serialize)]
 pub struct ServerInformation {
   pub ip_address: String,
   pub server_icon: Option<String>,
@@ -21,6 +22,7 @@ pub struct ServerInformation {
   pub list_of_players: Vec<Player>,
 }
 
+/// Функция пингования сервера
 pub async fn ping_server(address: String) -> ServerInformation {
   let mut info = ServerInformation {
     ip_address: "?".to_string(),
@@ -50,7 +52,7 @@ pub async fn ping_server(address: String) -> ServerInformation {
     }
   }
 
-  let ping_response = ping::ping_server(address).await;
+  let ping_response = azalea::ping::ping_server(address).await;
 
   match ping_response {
     Ok(resp) => {

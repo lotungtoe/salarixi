@@ -7,8 +7,7 @@ use std::time::Duration;
 use tokio::time::sleep;
 
 use crate::service::core::extensions::BotDefaultExt;
-use crate::service::generators::randchance;
-use crate::service::generators::randfloat;
+use crate::service::tools::{randchance, randnum};
 
 pub trait BotRotationExt {
   fn look_at_entity(&self, entity: Entity, with_eye_height: bool);
@@ -35,9 +34,9 @@ impl BotRotationExt for Client {
 
     if sloppy && randchance(0.4) {
       let sloppy_pos = Vec3::new(
-        center.x as f64 + randfloat(-1.3289, 1.3289),
-        center.y as f64 + randfloat(-1.3289, 1.3289),
-        center.z as f64 + randfloat(-1.3289, 1.3289),
+        center.x as f64 + randnum(-1.3289, 1.3289),
+        center.y as f64 + randnum(-1.3289, 1.3289),
+        center.z as f64 + randnum(-1.3289, 1.3289),
       );
 
       self.look_at(sloppy_pos);

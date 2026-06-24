@@ -10,7 +10,7 @@ use crate::service::core::extensions::{BotDefaultExt, BotInteractExt, BotInvento
 use crate::service::core::plugin_manager::PluginName;
 use crate::service::core::traits::SalarixiPlugin;
 use crate::service::core::{process_is_active, PLUGINS};
-use crate::service::generators::randchance;
+use crate::service::tools::randchance;
 use crate::take_bot;
 
 #[derive(Clone, Copy)]
