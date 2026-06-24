@@ -148,6 +148,45 @@ impl ProfileManager {
     }
   }
 
+  /// Метод получения профиля указанного бота
+  pub fn get(&self, username: &str) -> Option<Profile> {
+    if let Ok(profiles) = self.map.try_read() {
+      if let Some(p) = profiles.get(username) {
+        return Some(p.clone());
+      }
+    }
+
+    None
+  }
+
+  /// Метод получения всех профилей
+  pub fn get_all(&self) -> HashMap<String, Profile> {
+    let mut result = HashMap::new();
+
+    if let Ok(profiles) = self.map.try_read() {
+      profiles.iter().for_each(|(username, profile)| {
+        result.insert(username.to_string(), profile.clone());
+      });
+    }
+
+    result
+  }
+
+  /// Метод получения всех профилей подключенных ботов
+  pub fn get_all_connected(&self) -> HashMap<String, Profile> {
+    let mut result = HashMap::new();
+
+    if let Ok(profiles) = self.map.try_read() {
+      profiles.iter().for_each(|(username, profile)| {
+        if profile.status == BotStatus::Connected {
+          result.insert(username.clone(), profile.clone());
+        }
+      });
+    }
+
+    result
+  }
+
   pub fn set_status(&self, username: &str, status: BotStatus) {
     if let Ok(mut profiles) = self.map.try_write() {
       if let Some(p) = profiles.get_mut(username) {
@@ -200,27 +239,5 @@ impl ProfileManager {
         p.set_proxy(proxy);
       }
     }
-  }
-
-  pub fn get(&self, username: &str) -> Option<Profile> {
-    if let Ok(profiles) = self.map.try_read() {
-      if let Some(p) = profiles.get(username) {
-        return Some(p.clone());
-      }
-    }
-
-    None
-  }
-
-  pub fn get_all(&self) -> HashMap<String, Profile> {
-    let mut result = HashMap::new();
-
-    if let Ok(profiles) = self.map.try_read() {
-      profiles.iter().for_each(|(username, p)| {
-        result.insert(username.to_string(), p.clone());
-      });
-    }
-
-    result
   }
 }

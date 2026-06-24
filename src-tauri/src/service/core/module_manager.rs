@@ -68,7 +68,7 @@ impl ModuleManager {
 
   /// Метод управления определённым менеджером
   pub async fn control(&self, module_name: String, options: serde_json::Value, group: String) -> Option<()> {
-    let profiles = PROFILES.get_all();
+    let profiles = PROFILES.get_all_connected();
     let total_count = profiles.len();
     let mut success_count = 0;
 
