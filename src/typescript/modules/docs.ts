@@ -34,7 +34,8 @@ class DocsModule {
       const result = await getCacheOrNew<string>(this.lcf, this.lnf, this.scf);
       if (!result.data) return;
 
-      docsText.innerHTML = result.data;
+      const html = await marked.parse(result.data);
+      docsText.innerHTML = sanitizeHtml(html);
 
       let navigationOpened = false;
       const headers = document.querySelectorAll<HTMLElement>(".documentation-wrapper .text h1");
@@ -102,8 +103,7 @@ class DocsModule {
         return null;
       }
 
-      const html = await marked.parse(docs);
-      return sanitizeHtml(html);
+      return docs;
     } catch (error) {
       logger.log(`Ошибка загрузки документации (не критично): ${error}`, "non-critical-error");
     }
@@ -116,11 +116,8 @@ class DocsModule {
     const result = await loadCache("user-docs", "user-docs.md", 2, TimeType.Day);
     if (!result.data) return { data: null, expired: false };
 
-    const html = await marked.parse(result.data);
-    const sanitized = sanitizeHtml(html);
-
     return {
-      data: sanitized,
+      data: result.data,
       expired: result.error === "expired",
     };
   }
