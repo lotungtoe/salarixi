@@ -68,6 +68,7 @@ pub struct PluginOptions {
   pub auto_look: bool,
   pub auto_shield: bool,
   pub auto_repair: bool,
+  pub auto_pearl: bool,
 }
 
 #[derive(Debug, Deserialize, Clone)]

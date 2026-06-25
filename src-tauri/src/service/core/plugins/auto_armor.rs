@@ -349,7 +349,6 @@ impl SalarixiPlugin for AutoArmorPlugin {
 
   fn activate(&'static self, username: String) {
     let username_clone = username.clone();
-
     let task = tokio::spawn(async move {
       loop {
         if !process_is_active() {
@@ -368,6 +367,6 @@ impl SalarixiPlugin for AutoArmorPlugin {
       }
     });
 
-    PLUGINS.pushrtsk(&username, PluginName::AutoArmorPlugin, task);
+    PLUGINS.pushrtsk(&username, PluginName::AutoArmor, task);
   }
 }

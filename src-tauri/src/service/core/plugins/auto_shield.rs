@@ -9,15 +9,15 @@ use crate::service::core::extensions::{BotDefaultExt, BotInteractExt, BotInvento
 use crate::service::core::plugin_manager::PluginName;
 use crate::service::core::systems::{getst, setmst, State, StateName};
 use crate::service::core::traits::SalarixiPlugin;
-use crate::service::core::{process_is_active, PLUGINS};
+use crate::service::core::PLUGINS;
 use crate::service::tools::*;
 use crate::take_bot;
 
 pub struct AutoShieldPlugin;
 
 impl AutoShieldPlugin {
-  /// Метод обнаружения опасной сущности и защиты
-  async fn defend(&self, bot: &Client) {
+  /// Метод обработки тика
+  async fn tick(&self, bot: &Client) {
     let Some(entity) = self.get_nearest_dangerous_entity(bot) else {
       return;
     };
@@ -109,25 +109,20 @@ impl SalarixiPlugin for AutoShieldPlugin {
 
   fn activate(&'static self, username: String) {
     let username_clone = username.clone();
-
     let task = tokio::spawn(async move {
       loop {
-        if !process_is_active() {
-          break;
-        }
-
         take_bot!(&username_clone, async |bot| {
           if !bot.workable() {
             return;
           }
 
-          self.defend(bot).await;
+          self.tick(bot).await;
         });
 
         sleep(Duration::from_millis(100)).await;
       }
     });
 
-    PLUGINS.pushrtsk(&username, PluginName::AutoShieldPlugin, task);
+    PLUGINS.pushrtsk(&username, PluginName::AutoShield, task);
   }
 }

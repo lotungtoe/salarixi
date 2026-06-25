@@ -6,14 +6,14 @@ use tokio::time::sleep;
 use crate::service::core::extensions::{BotDefaultExt, BotInventoryExt};
 use crate::service::core::plugin_manager::PluginName;
 use crate::service::core::traits::SalarixiPlugin;
-use crate::service::core::{process_is_active, PLUGINS};
+use crate::service::core::PLUGINS;
 use crate::take_bot;
 
 pub struct AutoTotemPlugin;
 
 impl AutoTotemPlugin {
-  /// Метод использования тотема
-  async fn take_totem(&self, bot: &Client) {
+  /// Метод обработки тика
+  async fn tick(&self, bot: &Client) {
     if let Some(menu) = bot.get_inventory_menu() {
       if let Some(item) = menu.slot(45) {
         if !item.is_empty() && item.kind() != ItemKind::Shield {
@@ -41,25 +41,20 @@ impl SalarixiPlugin for AutoTotemPlugin {
 
   fn activate(&'static self, username: String) {
     let username_clone = username.clone();
-
     let task = tokio::spawn(async move {
       loop {
-        if !process_is_active() {
-          break;
-        }
-
         take_bot!(&username_clone, async |bot| {
           if !bot.workable() {
             return;
           }
 
-          self.take_totem(bot).await;
+          self.tick(bot).await;
         });
 
         sleep(Duration::from_millis(50)).await;
       }
     });
 
-    PLUGINS.pushrtsk(&username, PluginName::AutoTotemPlugin, task);
+    PLUGINS.pushrtsk(&username, PluginName::AutoTotem, task);
   }
 }

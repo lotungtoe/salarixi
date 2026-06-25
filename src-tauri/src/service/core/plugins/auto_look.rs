@@ -6,7 +6,7 @@ use crate::service::core::extensions::{BotDefaultExt, BotRotationExt, EntityType
 use crate::service::core::plugin_manager::PluginName;
 use crate::service::core::systems::{getst, State};
 use crate::service::core::traits::SalarixiPlugin;
-use crate::service::core::{process_is_active, PLUGINS};
+use crate::service::core::PLUGINS;
 use crate::service::tools::randnum;
 use crate::take_bot;
 
@@ -33,13 +33,8 @@ impl SalarixiPlugin for AutoLookPlugin {
 
   fn activate(&'static self, username: String) {
     let username_clone = username.clone();
-
     let task = tokio::spawn(async move {
       loop {
-        if !process_is_active() {
-          break;
-        }
-
         take_bot!(&username_clone, async |bot| {
           if !bot.workable() {
             return;
@@ -52,6 +47,6 @@ impl SalarixiPlugin for AutoLookPlugin {
       }
     });
 
-    PLUGINS.pushrtsk(&username, PluginName::AutoLookPlugin, task);
+    PLUGINS.pushrtsk(&username, PluginName::AutoLook, task);
   }
 }

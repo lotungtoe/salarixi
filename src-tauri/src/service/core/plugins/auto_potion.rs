@@ -13,7 +13,7 @@ use crate::service::core::systems::State;
 use crate::service::core::systems::StateName;
 use crate::service::core::systems::{getst, setmst, setst};
 use crate::service::core::traits::SalarixiPlugin;
-use crate::service::core::{process_is_active, PLUGINS};
+use crate::service::core::PLUGINS;
 use crate::service::tools::*;
 use crate::take_bot;
 
@@ -28,8 +28,8 @@ struct Potion {
 pub struct AutoPotionPlugin;
 
 impl AutoPotionPlugin {
-  /// Метод применения зелья
-  async fn drink(&self, bot: &Client) {
+  /// Метод обработки тика
+  async fn tick(&self, bot: &Client) {
     let health = bot.get_health();
 
     let username = bot.username();
@@ -274,25 +274,20 @@ impl SalarixiPlugin for AutoPotionPlugin {
 
   fn activate(&'static self, username: String) {
     let username_clone = username.clone();
-
     let task = tokio::spawn(async move {
       loop {
-        if !process_is_active() {
-          break;
-        }
-
         take_bot!(&username_clone, async |bot| {
           if !bot.workable() {
             return;
           }
 
-          self.drink(bot).await;
+          self.tick(bot).await;
         });
 
         sleep(Duration::from_millis(100)).await;
       }
     });
 
-    PLUGINS.pushrtsk(&username, PluginName::AutoPotionPlugin, task);
+    PLUGINS.pushrtsk(&username, PluginName::AutoPotion, task);
   }
 }

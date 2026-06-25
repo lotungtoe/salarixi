@@ -17,13 +17,14 @@ pub static PLUGINS: Lazy<Arc<PluginManager>> = Lazy::new(|| Arc::new(PluginManag
 /// Имя плагина
 #[derive(Eq, Hash, PartialEq)]
 pub enum PluginName {
-  AutoArmorPlugin,
-  AutoTotemPlugin,
-  AutoEatPlugin,
-  AutoPotionPlugin,
-  AutoLookPlugin,
-  AutoShieldPlugin,
-  AutoRepairPlugin,
+  AutoArmor,
+  AutoTotem,
+  AutoEat,
+  AutoPotion,
+  AutoLook,
+  AutoShield,
+  AutoRepair,
+  AutoPearl,
 }
 
 /// Менеджер плагинов.
@@ -42,6 +43,7 @@ struct PluginList {
   auto_look: AutoLookPlugin,
   auto_shield: AutoShieldPlugin,
   auto_repair: AutoRepairPlugin,
+  auto_pearl: AutoPearlPlugin,
 }
 
 impl PluginManager {
@@ -57,6 +59,7 @@ impl PluginManager {
         auto_look: AutoLookPlugin::new(),
         auto_shield: AutoShieldPlugin::new(),
         auto_repair: AutoRepairPlugin::new(),
+        auto_pearl: AutoPearlPlugin::new(),
       },
     }
   }
@@ -94,6 +97,10 @@ impl PluginManager {
 
     if plugins.auto_repair {
       self.plugins.auto_repair.activate(username.clone());
+    }
+
+    if plugins.auto_pearl {
+      self.plugins.auto_pearl.activate(username.clone());
     }
 
     success!(());

@@ -91,7 +91,7 @@ impl Tasks {
   }
 }
 
-/// Менеджер управления задачами
+/// Система управления задачами
 pub struct TaskSystem {
   pub map: RwLock<HashMap<String, Tasks>>,
 }
