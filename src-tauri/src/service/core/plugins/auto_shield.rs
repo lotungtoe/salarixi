@@ -124,7 +124,7 @@ impl SalarixiPlugin for AutoShieldPlugin {
           self.defend(bot).await;
         });
 
-        sleep(Duration::from_millis(50)).await;
+        sleep(Duration::from_millis(100)).await;
       }
     });
 

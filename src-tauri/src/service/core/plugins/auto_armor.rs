@@ -364,7 +364,7 @@ impl SalarixiPlugin for AutoArmorPlugin {
           self.equip_armor(bot).await;
         });
 
-        sleep(Duration::from_millis(50)).await;
+        sleep(Duration::from_millis(200)).await;
       }
     });
 

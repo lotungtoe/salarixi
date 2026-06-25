@@ -188,7 +188,7 @@ impl SalarixiPlugin for AutoRepairPlugin {
           self.repair_items(bot).await;
         });
 
-        sleep(Duration::from_millis(50)).await;
+        sleep(Duration::from_millis(300)).await;
       }
     });
 

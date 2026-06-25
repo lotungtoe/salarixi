@@ -328,7 +328,7 @@ impl SalarixiPlugin for AutoEatPlugin {
           self.eat(bot).await;
         });
 
-        sleep(Duration::from_millis(50)).await;
+        sleep(Duration::from_millis(100)).await;
       }
     });
 

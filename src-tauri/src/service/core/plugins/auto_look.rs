@@ -48,7 +48,7 @@ impl SalarixiPlugin for AutoLookPlugin {
           self.look(bot).await;
         });
 
-        sleep(Duration::from_millis(50)).await;
+        sleep(Duration::from_millis(100)).await;
       }
     });
 
