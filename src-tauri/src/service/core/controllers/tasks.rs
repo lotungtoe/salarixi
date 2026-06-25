@@ -49,12 +49,12 @@ impl Tasks {
   }
 
   /// Метод добавления корневой задачи
-  pub fn push_root_task(&mut self, name: TaskName, handle: JoinHandle<()>) {
+  pub fn pushrtsk(&mut self, name: TaskName, handle: JoinHandle<()>) {
     self.root.insert(name.clone(), handle);
   }
 
   /// Метод добавления дополнительной задачи
-  pub fn push_extra_task(&mut self, name: TaskName, handle: JoinHandle<()>) {
+  pub fn pushetsk(&mut self, name: TaskName, handle: JoinHandle<()>) {
     if let Some(tasks) = self.extra.get_mut(&name) {
       tasks.push(handle);
     } else {
@@ -63,7 +63,7 @@ impl Tasks {
   }
 
   /// Метод остановки корневой задачи и её дополнительных задач
-  pub fn kill_task(&mut self, name: TaskName) {
+  pub fn killtsk(&mut self, name: TaskName) {
     if let Some(tasks) = self.extra.get_mut(&name) {
       tasks.iter().for_each(|t| t.abort());
       tasks.clear();
@@ -105,102 +105,71 @@ impl TaskManager {
   }
 
   /// Метод регистрации бота
-  pub fn register(&self, username: &str) {
-    if let Ok(mut tasks) = self.map.try_write() {
-      if let Some(t) = tasks.get_mut(username) {
-        t.kill_all_tasks();
-      }
-
-      tasks.insert(username.to_string(), Tasks::new());
+  pub async fn register(&self, username: &str) {
+    let mut guard = self.map.write().await;
+    if let Some(t) = guard.get_mut(username) {
+      t.kill_all_tasks();
     }
-  }
 
-  /// Метод добавления корневой задачи указанному бота
-  pub fn push_root_task_for(&self, username: &str, task_name: TaskName, root_task: JoinHandle<()>) {
-    if let Ok(mut tasks) = self.map.try_write() {
-      if let Some(t) = tasks.get_mut(username) {
-        t.push_root_task(task_name, root_task);
-      }
-    }
-  }
-
-  /// Метод добавления дополнительной задачи указанному бота
-  pub fn push_extra_task_for(&self, username: &str, task_name: TaskName, extra_task: JoinHandle<()>) {
-    if let Ok(mut tasks) = self.map.try_write() {
-      if let Some(t) = tasks.get_mut(username) {
-        t.push_extra_task(task_name, extra_task);
-      }
-    }
-  }
-
-  /// Метод остановки определённой задачи указанного бота
-  pub fn kill_task_for(&self, username: &str, task_name: TaskName) {
-    if let Ok(mut tasks) = self.map.try_write() {
-      if let Some(t) = tasks.get_mut(username) {
-        t.kill_task(task_name);
-      }
-    }
+    guard.insert(username.to_string(), Tasks::new());
   }
 
   /// Метод остановки всех задач указанного бота
   pub async fn kill_all_tasks_for(&self, username: &str) {
-    let mut tasks = self.map.write().await;
-    if let Some(t) = tasks.get_mut(username) {
+    let mut guard = self.map.write().await;
+    if let Some(t) = guard.get_mut(username) {
       t.kill_all_tasks();
     }
   }
 
   /// Метод удаления бота
-  pub fn remove(&self, username: &str) {
-    if let Ok(mut tasks) = self.map.try_write() {
-      tasks.remove(username);
-    }
+  pub async fn remove(&self, username: &str) {
+    self.map.write().await.remove(username);
   }
 
   /// Метод остановки всех активных задач и очистки хранилища
   pub async fn clear(&self) {
-    let mut tasks = self.map.write().await;
-    tasks.iter_mut().for_each(|(_, t)| t.kill_all_tasks());
-    tasks.clear();
+    let mut guard = self.map.write().await;
+    guard.iter_mut().for_each(|(_, t)| t.kill_all_tasks());
+    guard.clear();
 
     emit_log("Активные задачи ботов остановлены", "extended");
   }
+}
 
-  /// Метод получения активности определённой задачи указанного бота
-  pub fn get_task_activity(&self, username: &str, task_name: TaskName) -> bool {
-    if let Ok(tasks) = self.map.try_read() {
-      for (name, t) in tasks.iter() {
-        if name.as_str() == username {
-          return t.get_root_task_activity(task_name);
-        }
-      }
+/// Вспомогательная функция получения активности определённой задачи указанного бота
+pub async fn gettskact(username: &str, task_name: TaskName) -> bool {
+  let guard = TASKS.map.read().await;
+
+  for (name, t) in guard.iter() {
+    if name.as_str() == username {
+      return t.get_root_task_activity(task_name);
     }
+  }
 
-    false
+  false
+}
+
+/// Вспомогательная функция добавления корневой задачи указанному бота
+pub async fn pushrtsk(username: &str, task_name: TaskName, root_task: JoinHandle<()>) {
+  let mut guard = TASKS.map.write().await;
+  if let Some(t) = guard.get_mut(username) {
+    t.pushrtsk(task_name, root_task);
   }
 }
 
-/// Вспомогательная функция добавления корневой задачи указанному боту
-pub fn push_root_task(username: &str, task_name: TaskName, root_task: JoinHandle<()>) {
-  if username.is_empty() {
-    root_task.abort();
-    return;
+/// Вспомогательная функция добавления дополнительной задачи указанному бота
+pub async fn pushetsk(username: &str, task_name: TaskName, extra_task: JoinHandle<()>) {
+  let mut guard = TASKS.map.write().await;
+  if let Some(t) = guard.get_mut(username) {
+    t.pushetsk(task_name, extra_task);
   }
-
-  TASKS.push_root_task_for(username, task_name, root_task);
-}
-
-/// Вспомогательная функция добавления дополнительной задачи указанному боту
-pub fn push_extra_task(username: &str, task_name: TaskName, extra_task: JoinHandle<()>) {
-  if username.is_empty() {
-    extra_task.abort();
-    return;
-  }
-
-  TASKS.push_extra_task_for(username, task_name, extra_task);
 }
 
 /// Вспомогательная функция остановки определённой задачи указанного бота
-pub fn kill_task(username: &str, task_name: TaskName) {
-  TASKS.kill_task_for(username, task_name);
+pub async fn killtsk(username: &str, task_name: TaskName) {
+  let mut guard = TASKS.map.write().await;
+  if let Some(t) = guard.get_mut(username) {
+    t.killtsk(task_name);
+  }
 }

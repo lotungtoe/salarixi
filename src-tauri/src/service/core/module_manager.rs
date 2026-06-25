@@ -68,14 +68,14 @@ impl ModuleManager {
 
   /// Метод управления определённым менеджером
   pub async fn control(&self, module_name: String, options: serde_json::Value, group: String) -> Option<()> {
-    let profiles = PROFILES.get_all_connected();
+    let profiles = PROFILES.get_all_connected().await;
     let total_count = profiles.len();
     let mut success_count = 0;
 
-    for username in profiles.into_keys() {
+    for (username, _) in profiles {
       let cur_opts = options.clone();
 
-      if let Some(profile) = PROFILES.get(&username) {
+      if let Some(profile) = PROFILES.get(&username).await {
         if profile.group != group {
           continue;
         }

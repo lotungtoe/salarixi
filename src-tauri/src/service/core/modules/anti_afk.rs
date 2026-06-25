@@ -4,13 +4,8 @@ use serde::Deserialize;
 use std::time::Duration;
 use tokio::time::sleep;
 
-use crate::service::core::controllers::kill_task;
-use crate::service::core::controllers::push_extra_task;
-use crate::service::core::controllers::push_root_task;
-use crate::service::core::controllers::set_mutual_states;
-use crate::service::core::controllers::StateName;
-use crate::service::core::controllers::TaskName;
-use crate::service::core::controllers::TASKS;
+use crate::service::core::controllers::gettskact;
+use crate::service::core::controllers::{killtsk, pushetsk, pushrtsk, setmst, StateName, TaskName};
 use crate::service::core::extensions::{BotDefaultExt, BotMovementExt};
 use crate::service::core::traits::SalarixiModule;
 use crate::service::tools::*;
@@ -76,7 +71,7 @@ impl AntiAfkModule {
 
       let walk_direction = randelem(&walk_directions);
 
-      bot.start_walking(*walk_direction);
+      bot.start_walking(*walk_direction).await;
 
       let direction = bot.direction();
 
@@ -87,7 +82,7 @@ impl AntiAfkModule {
 
       sleep(Duration::from_millis(randnum(150, 400))).await;
 
-      bot.stop_move();
+      bot.stop_move().await;
 
       sleep(Duration::from_millis(randnum(min_delay, max_delay))).await;
     }
@@ -111,14 +106,14 @@ impl AntiAfkModule {
           );
         });
 
-        sleep(Duration::from_millis(50)).await;
+        sleep(Duration::from_millis(randnum(100, 400))).await;
       }
     });
 
-    push_extra_task(&username, TaskName::AntiAfk, extra_task);
+    pushetsk(&username, TaskName::AntiAfk, extra_task).await;
 
     loop {
-      bot.start_walking(WalkDirection::Forward);
+      bot.start_walking(WalkDirection::Forward).await;
 
       if randchance(0.4) {
         bot.swing_arm();
@@ -132,11 +127,6 @@ impl AntiAfkModule {
 
       if randchance(0.3) {
         bot.jump();
-      }
-
-      if !TASKS.get_task_activity(&bot.username(), TaskName::AntiAfk) {
-        bot.stop_move();
-        break;
       }
 
       sleep(Duration::from_millis(randnum(min_delay, max_delay))).await;
@@ -159,22 +149,22 @@ impl SalarixiModule<AntiAfkOptions> for AntiAfkModule {
   }
 
   async fn switch(&self, username: String, options: AntiAfkOptions) -> bool {
-    if options.state && !TASKS.get_task_activity(&username, TaskName::AntiAfk) {
+    if options.state && !gettskact(&username, TaskName::AntiAfk).await {
       let username_clone = username.clone();
       let task_handle = tokio::spawn(async move {
         take_bot!(&username_clone, async |bot| Self::start(bot, &options).await);
       });
 
-      push_root_task(&username, TaskName::AntiAfk, task_handle);
-    } else if !options.state && TASKS.get_task_activity(&username, TaskName::AntiAfk) {
-      kill_task(&username, TaskName::AntiAfk);
+      pushrtsk(&username, TaskName::AntiAfk, task_handle).await;
+    } else if !options.state && gettskact(&username, TaskName::AntiAfk).await {
+      killtsk(&username, TaskName::AntiAfk).await;
 
       take_bot!(&username, async |bot| {
-        bot.stop_move();
+        bot.stop_move().await;
         bot.stop_crouching();
       });
 
-      set_mutual_states(&username, StateName::Looking, false);
+      setmst(&username, StateName::Looking, false).await;
     } else {
       return false;
     }

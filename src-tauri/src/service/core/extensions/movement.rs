@@ -5,53 +5,53 @@ use azalea::pathfinder::PathfinderOpts;
 use azalea::{prelude::*, SprintDirection, StartSprintEvent, StartWalkEvent, WalkDirection};
 use std::time::Duration;
 
-use crate::service::core::controllers::{get_state, set_mutual_states, set_state, State, StateName};
+use crate::service::core::controllers::{getst, setmst, setst, State, StateName};
 use crate::take_bot;
 
 pub trait BotMovementExt {
-  fn start_walking(&self, direction: WalkDirection);
-  fn start_sprinting(&self, direction: SprintDirection);
-  fn stop_move(&self);
-  fn freeze_move(&self);
-  fn unfreeze_move(&self);
+  fn start_walking(&self, direction: WalkDirection) -> impl std::future::Future<Output = ()> + Send + Sync;
+  fn start_sprinting(&self, direction: SprintDirection) -> impl std::future::Future<Output = ()> + Send + Sync;
+  fn stop_move(&self) -> impl std::future::Future<Output = ()> + Send + Sync;
+  fn freeze_move(&self) -> impl std::future::Future<Output = ()> + Send + Sync;
+  fn unfreeze_move(&self) -> impl std::future::Future<Output = ()> + Send + Sync;
 }
 
 impl BotMovementExt for Client {
-  fn start_walking(&self, direction: WalkDirection) {
+  async fn start_walking(&self, direction: WalkDirection) {
     let username = self.username();
 
-    if get_state(&username, State::CanWalking)
-      && !get_state(&username, State::IsEating)
-      && !get_state(&username, State::IsDrinking)
-      && !get_state(&username, State::IsInteracting)
+    if getst(&username, State::CanWalking).await
+      && !getst(&username, State::IsEating).await
+      && !getst(&username, State::IsDrinking).await
+      && !getst(&username, State::IsInteracting).await
     {
       self.ecs.lock().write_message(StartWalkEvent {
         entity: self.entity,
         direction: direction,
       });
 
-      set_mutual_states(&username, StateName::Walking, true);
+      setmst(&username, StateName::Walking, true).await;
     }
   }
 
-  fn start_sprinting(&self, direction: SprintDirection) {
+  async fn start_sprinting(&self, direction: SprintDirection) {
     let username = self.username();
 
-    if get_state(&username, State::CanSprinting)
-      && !get_state(&username, State::IsEating)
-      && !get_state(&username, State::IsDrinking)
-      && !get_state(&username, State::IsInteracting)
+    if getst(&username, State::CanSprinting).await
+      && !getst(&username, State::IsEating).await
+      && !getst(&username, State::IsDrinking).await
+      && !getst(&username, State::IsInteracting).await
     {
       self.ecs.lock().write_message(StartSprintEvent {
         entity: self.entity,
         direction: direction,
       });
 
-      set_mutual_states(&username, StateName::Sprinting, true);
+      setmst(&username, StateName::Sprinting, true).await;
     }
   }
 
-  fn stop_move(&self) {
+  async fn stop_move(&self) {
     self.ecs.lock().write_message(StartWalkEvent {
       entity: self.entity,
       direction: WalkDirection::None,
@@ -59,11 +59,11 @@ impl BotMovementExt for Client {
 
     let username = self.username();
 
-    set_mutual_states(&username, StateName::Walking, false);
-    set_mutual_states(&username, StateName::Sprinting, false);
+    setmst(&username, StateName::Walking, false).await;
+    setmst(&username, StateName::Sprinting, false).await;
   }
 
-  fn freeze_move(&self) {
+  async fn freeze_move(&self) {
     self.ecs.lock().write_message(StartWalkEvent {
       entity: self.entity,
       direction: WalkDirection::None,
@@ -71,42 +71,44 @@ impl BotMovementExt for Client {
 
     let username = self.username();
 
-    set_state(&username, State::IsWalking, false);
-    set_state(&username, State::IsSprinting, false);
-    set_state(&username, State::CanWalking, false);
-    set_state(&username, State::CanSprinting, false);
+    setst(&username, State::IsWalking, false).await;
+    setst(&username, State::IsSprinting, false).await;
+    setst(&username, State::CanWalking, false).await;
+    setst(&username, State::CanSprinting, false).await;
   }
 
-  fn unfreeze_move(&self) {
+  async fn unfreeze_move(&self) {
     let username = self.username();
 
-    set_state(&username, State::CanWalking, true);
-    set_state(&username, State::CanSprinting, true);
+    setst(&username, State::CanWalking, true).await;
+    setst(&username, State::CanSprinting, true).await;
   }
 }
 
 /// Функция безопасного задания координат по X и Z для бота
 pub fn go_to(username: String, x: i32, z: i32) {
-  if get_state(&username, State::CanWalking) && get_state(&username, State::CanSprinting) {
-    tokio::spawn(async move {
-      take_bot!(&username, async |bot| {
-        set_mutual_states(&username, StateName::Looking, true);
-        set_mutual_states(&username, StateName::Sprinting, true);
-        set_mutual_states(&username, StateName::Walking, true);
+  tokio::spawn(async move {
+    if !getst(&username, State::CanWalking).await || !getst(&username, State::CanSprinting).await {
+      return;
+    }
 
-        let goal = XZGoal { x: x, z: z };
-        let opts = PathfinderOpts::new()
-          .min_timeout(PathfinderTimeout::Time(Duration::from_millis(500)))
-          .max_timeout(PathfinderTimeout::Time(Duration::from_millis(1000)))
-          .allow_mining(false)
-          .successors_fn(basic_move);
+    take_bot!(&username, async |bot| {
+      setmst(&username, StateName::Looking, true).await;
+      setmst(&username, StateName::Sprinting, true).await;
+      setmst(&username, StateName::Walking, true).await;
 
-        bot.goto_with_opts(goal, opts).await;
+      let goal = XZGoal { x: x, z: z };
+      let opts = PathfinderOpts::new()
+        .min_timeout(PathfinderTimeout::Time(Duration::from_millis(500)))
+        .max_timeout(PathfinderTimeout::Time(Duration::from_millis(1000)))
+        .allow_mining(false)
+        .successors_fn(basic_move);
 
-        set_mutual_states(&username, StateName::Looking, false);
-        set_mutual_states(&username, StateName::Sprinting, false);
-        set_mutual_states(&username, StateName::Walking, false);
-      });
+      bot.goto_with_opts(goal, opts).await;
+
+      setmst(&username, StateName::Looking, false).await;
+      setmst(&username, StateName::Sprinting, false).await;
+      setmst(&username, StateName::Walking, false).await;
     });
-  }
+  });
 }

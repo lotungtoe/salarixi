@@ -21,7 +21,7 @@ use crate::service::webhook::send_webhook;
 
 use super::generators::{generate_email, generate_unique_username, generate_username_or_password};
 use super::options::{AccountOptions, LaunchOptions};
-use super::state::{active_bots_count, current_options, process_is_active, set_options, ACTIVE};
+use super::state::{current_options, process_is_active, set_options, ACTIVE};
 
 /// Структура кастомного аккаунта бота
 #[derive(Debug)]
@@ -185,12 +185,14 @@ pub async fn launch_bots_on_server(options: LaunchOptions) -> bool {
               options: opts.clone(),
             });
 
-            PROFILES.register(username, opts.password.clone(), opts.email.clone());
+            PROFILES
+              .register(username, opts.password.clone(), opts.email.clone())
+              .await;
           }
         } else {
           for _ in 0..options.basic.bots_count {
             let Some(username) =
-              generate_unique_username(&options.basic.nickname_type, &options.basic.nickname_template)
+              generate_unique_username(&options.basic.nickname_type, &options.basic.nickname_template).await
             else {
               continue;
             };
@@ -212,7 +214,7 @@ pub async fn launch_bots_on_server(options: LaunchOptions) -> bool {
               },
             });
 
-            PROFILES.register(&username, password, email);
+            PROFILES.register(&username, password, email).await;
           }
         }
 
@@ -280,7 +282,7 @@ pub async fn stop_bots_and_destroy_data() -> bool {
     return false;
   }
 
-  let active_bots = active_bots_count();
+  let active_bots = PROFILES.get_active_count();
 
   PLUGINS.clear().await;
   TASKS.clear().await;

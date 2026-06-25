@@ -4,10 +4,7 @@ use serde::Deserialize;
 use std::time::Duration;
 use tokio::time::sleep;
 
-use crate::service::core::controllers::push_root_task;
-use crate::service::core::controllers::StateName;
-use crate::service::core::controllers::TASKS;
-use crate::service::core::controllers::{get_state, kill_task, set_mutual_states, State, TaskName};
+use crate::service::core::controllers::{getst, gettskact, killtsk, pushrtsk, setmst, State, StateName, TaskName};
 use crate::service::core::extensions::{go_to, BotDefaultExt, BotMovementExt, EntityType};
 use crate::service::core::traits::SalarixiModule;
 use crate::take_bot;
@@ -46,19 +43,19 @@ impl StalkerModule {
         if bot.feet_pos().distance_to(target_pos) > min_distance {
           bot.look_at(target_pos);
           bot.start_jumping();
-          bot.start_sprinting(SprintDirection::Forward);
+          bot.start_sprinting(SprintDirection::Forward).await;
         } else {
           bot.stop_jumping();
 
-          if get_state(&username, State::IsSprinting) {
-            bot.stop_move();
+          if getst(&username, State::IsSprinting).await {
+            bot.stop_move().await;
           }
         }
       } else {
         bot.stop_jumping();
 
-        if get_state(&username, State::IsSprinting) {
-          bot.stop_move();
+        if getst(&username, State::IsSprinting).await {
+          bot.stop_move().await;
         }
       }
 
@@ -97,7 +94,7 @@ impl StalkerModule {
   async fn start(bot: &Client, options: &StalkerOptions) {
     let username = bot.username();
 
-    set_mutual_states(&username, StateName::Looking, true);
+    setmst(&username, StateName::Looking, true).await;
 
     match options.mode.as_str() {
       "default" => Self::default_stalking(bot, options).await,
@@ -113,22 +110,22 @@ impl SalarixiModule<StalkerOptions> for StalkerModule {
   }
 
   async fn switch(&self, username: String, options: StalkerOptions) -> bool {
-    if options.state && !TASKS.get_task_activity(&username, TaskName::Stalker) {
+    if options.state && !gettskact(&username, TaskName::Stalker).await {
       let username_clone = username.clone();
       let task_handle = tokio::spawn(async move {
         take_bot!(&username_clone, async |bot| Self::start(bot, &options).await);
       });
 
-      push_root_task(&username, TaskName::Stalker, task_handle);
-    } else if !options.state && TASKS.get_task_activity(&username, TaskName::Stalker) {
-      kill_task(&username, TaskName::Stalker);
+      pushrtsk(&username, TaskName::Stalker, task_handle).await;
+    } else if !options.state && gettskact(&username, TaskName::Stalker).await {
+      killtsk(&username, TaskName::Stalker).await;
 
       take_bot!(&username, async |bot| {
-        bot.stop_move();
+        bot.stop_move().await;
         bot.stop_jumping();
       });
 
-      set_mutual_states(&username, StateName::Looking, false);
+      setmst(&username, StateName::Looking, false).await;
     } else {
       return false;
     }

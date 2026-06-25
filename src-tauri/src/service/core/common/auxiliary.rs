@@ -53,7 +53,7 @@ pub fn get_average_coordinates_of_bots(positions: &Vec<Vec3>) -> (f64, f64, f64)
 
 /// Функция получения UUID игрока
 pub async fn get_player_uuid(nickname: String) -> Option<String> {
-  for username in PROFILES.get_all().keys() {
+  for username in PROFILES.get_all_connected().await.keys() {
     let uuid = BOT_REGISTRY
       .async_get_bot(username, async |bot| {
         let Some(tab_list) = bot.get_players() else {

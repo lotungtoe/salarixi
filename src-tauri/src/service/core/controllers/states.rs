@@ -136,12 +136,8 @@ impl StateManager {
   }
 
   /// Метод регистрации бота
-  pub fn register(&self, username: &str) {
-    if let Ok(mut states) = self.map.try_write() {
-      if !states.contains_key(username) {
-        states.insert(username.to_string(), States::new());
-      }
-    }
+  pub async fn register(&self, username: &str) {
+    self.map.write().await.insert(username.to_string(), States::new());
   }
 
   /// Метод очистки хранилища состояний
@@ -151,44 +147,39 @@ impl StateManager {
   }
 
   /// Метод сброса состояний указанного бота
-  pub fn reset(&self, username: &str) {
-    if let Ok(mut guard) = self.map.try_write() {
-      if let Some(s) = guard.get_mut(username) {
-        s.mask.store(0x7F, Ordering::SeqCst);
-      }
+  pub async fn reset(&self, username: &str) {
+    let mut guard = self.map.write().await;
+    if let Some(s) = guard.get_mut(username) {
+      s.mask.store(0x7F, Ordering::SeqCst);
     }
   }
 
   /// Метод удаления всех состояний указанного бота
-  pub fn remove(&self, username: &str) {
-    if let Ok(mut guard) = self.map.try_write() {
-      guard.remove(username);
-    }
+  pub async fn remove(&self, username: &str) {
+    self.map.write().await.remove(username);
   }
 }
 
 /// Вспомогательная функция получения состояния
-pub fn get_state(username: &str, state: State) -> bool {
-  if let Ok(states) = STATES.map.try_read() {
-    if let Some(s) = states.get(username) {
-      return s.get(state);
-    }
+pub async fn getst(username: &str, state: State) -> bool {
+  let guard = STATES.map.read().await;
+  if let Some(s) = guard.get(username) {
+    return s.get(state);
   }
 
   false
 }
 
 /// Вспомогательная функция установки значения для состояния
-pub fn set_state(username: &str, state: State, value: bool) {
-  if let Ok(mut states) = STATES.map.try_write() {
-    if let Some(s) = states.get_mut(username) {
-      s.set(state, value);
-    }
+pub async fn setst(username: &str, state: State, value: bool) {
+  let mut guard = STATES.map.write().await;
+  if let Some(s) = guard.get_mut(username) {
+    s.set(state, value);
   }
 }
 
 /// Вспомогательная функция взаимной установки значений для ```can``` и ```is``` состояний
-pub fn set_mutual_states(username: &str, state_name: StateName, current_value: bool) {
+pub async fn setmst(username: &str, state_name: StateName, current_value: bool) {
   let (is_state, can_state) = match state_name {
     StateName::Walking => (State::IsWalking, State::CanWalking),
     StateName::Sprinting => (State::IsSprinting, State::CanSprinting),
@@ -199,10 +190,29 @@ pub fn set_mutual_states(username: &str, state_name: StateName, current_value: b
     StateName::Interacting => (State::IsInteracting, State::CanInteracting),
   };
 
+  let mut guard = STATES.map.write().await;
+  if let Some(s) = guard.get_mut(username) {
+    s.set(is_state, current_value);
+    s.set(can_state, !current_value);
+  }
+}
+
+/// Вспомогательная функция попытки получения состояния
+pub fn try_getst(username: &str, state: State) -> bool {
+  if let Ok(states) = STATES.map.try_read() {
+    if let Some(s) = states.get(username) {
+      return s.get(state);
+    }
+  }
+
+  false
+}
+
+/// Вспомогательная функция попытки установки значения для состояния
+pub fn try_setst(username: &str, state: State, value: bool) {
   if let Ok(mut states) = STATES.map.try_write() {
     if let Some(s) = states.get_mut(username) {
-      s.set(is_state, current_value);
-      s.set(can_state, !current_value);
+      s.set(state, value);
     }
   }
 }

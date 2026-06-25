@@ -5,11 +5,8 @@ use std::time::Duration;
 use tokio::time::sleep;
 
 use crate::service::core::common::get_player_uuid;
-use crate::service::core::controllers::kill_task;
-use crate::service::core::controllers::push_root_task;
-use crate::service::core::controllers::TaskName;
 use crate::service::core::controllers::PROFILES;
-use crate::service::core::controllers::TASKS;
+use crate::service::core::controllers::{gettskact, killtsk, pushrtsk, TaskName};
 use crate::service::core::extensions::BotDefaultExt;
 use crate::service::core::registry::BOT_REGISTRY;
 use crate::service::core::traits::SalarixiModule;
@@ -166,7 +163,7 @@ impl ChatModule {
 
     for tag in Regex::new(r"#pass").unwrap().find_iter(&text) {
       if !tag.is_empty() {
-        if let Some(profile) = PROFILES.get(username) {
+        if let Some(profile) = PROFILES.get(username).await {
           result = text.replace(tag.as_str(), profile.password.unwrap_or("".to_string()).as_str());
         }
       }
@@ -180,7 +177,7 @@ impl ChatModule {
 
     for tag in Regex::new(r"#health").unwrap().find_iter(&text) {
       if !tag.is_empty() {
-        if let Some(profile) = PROFILES.get(username) {
+        if let Some(profile) = PROFILES.get(username).await {
           result = text.replace(tag.as_str(), profile.health.to_string().as_str());
         }
       }
@@ -303,15 +300,15 @@ impl SalarixiModule<ChatOptions> for ChatModule {
       return true;
     }
 
-    if options.state && !TASKS.get_task_activity(&username, TaskName::Spamming) {
+    if options.state && !gettskact(&username, TaskName::Spamming).await {
       let username_clone = username.clone();
       let task_handle = tokio::spawn(async move {
         take_bot!(&username_clone, async |bot| Self::start(bot, &options).await);
       });
 
-      push_root_task(&username, TaskName::Spamming, task_handle);
-    } else if !options.state && TASKS.get_task_activity(&username, TaskName::Spamming) {
-      kill_task(&username, TaskName::Spamming);
+      pushrtsk(&username, TaskName::Spamming, task_handle).await;
+    } else if !options.state && gettskact(&username, TaskName::Spamming).await {
+      killtsk(&username, TaskName::Spamming).await;
     } else {
       return false;
     }

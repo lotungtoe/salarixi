@@ -7,9 +7,7 @@ use std::time::Duration;
 use tokio::time::sleep;
 
 use crate::service::core::common::get_block_state;
-use crate::service::core::controllers::{
-  get_state, kill_task, push_root_task, set_mutual_states, State, StateName, TaskName, TASKS,
-};
+use crate::service::core::controllers::{getst, gettskact, killtsk, pushrtsk, setmst, State, StateName, TaskName};
 use crate::service::core::extensions::{BotDefaultExt, BotInventoryExt, BotRotationExt};
 use crate::service::core::traits::SalarixiModule;
 use crate::service::tools::*;
@@ -224,12 +222,12 @@ impl FarmerModule {
   async fn interact_with_block(bot: &Client, block_pos: BlockPos, options: &FarmerOptions) {
     let username = bot.username();
 
-    if !get_state(&username, State::IsEating)
-      && !get_state(&username, State::IsDrinking)
-      && get_state(&username, State::CanInteracting)
+    if !getst(&username, State::IsEating).await
+      && !getst(&username, State::IsDrinking).await
+      && getst(&username, State::CanInteracting).await
     {
       if let Some(state) = get_block_state(bot, block_pos) {
-        set_mutual_states(&username, StateName::Interacting, true);
+        setmst(&username, StateName::Interacting, true).await;
 
         let kind = BlockKind::from(state);
 
@@ -282,7 +280,7 @@ impl FarmerModule {
           }
         }
 
-        set_mutual_states(&username, StateName::Interacting, false);
+        setmst(&username, StateName::Interacting, false).await;
       }
     }
   }
@@ -291,7 +289,7 @@ impl FarmerModule {
     let username = bot.username();
 
     loop {
-      set_mutual_states(&username, StateName::Looking, true);
+      setmst(&username, StateName::Looking, true).await;
 
       for y in -1..=1 {
         let pos = bot.feet_pos();
@@ -317,7 +315,7 @@ impl FarmerModule {
 
       sleep(Duration::from_millis(options.delay.unwrap_or(100))).await;
 
-      set_mutual_states(&username, StateName::Looking, false);
+      setmst(&username, StateName::Looking, false).await;
     }
   }
 }
@@ -328,17 +326,17 @@ impl SalarixiModule<FarmerOptions> for FarmerModule {
   }
 
   async fn switch(&self, username: String, options: FarmerOptions) -> bool {
-    if options.state && !TASKS.get_task_activity(&username, TaskName::Farmer) {
+    if options.state && !gettskact(&username, TaskName::Farmer).await {
       let username_clone = username.clone();
       let task_handle = tokio::spawn(async move {
         take_bot!(&username_clone, async |bot| Self::start(bot, &options).await);
       });
 
-      push_root_task(&username, TaskName::Farmer, task_handle);
-    } else if !options.state && TASKS.get_task_activity(&username, TaskName::Farmer) {
-      kill_task(&username, TaskName::Farmer);
-      set_mutual_states(&username, StateName::Looking, false);
-      set_mutual_states(&username, StateName::Interacting, false);
+      pushrtsk(&username, TaskName::Farmer, task_handle).await;
+    } else if !options.state && gettskact(&username, TaskName::Farmer).await {
+      killtsk(&username, TaskName::Farmer).await;
+      setmst(&username, StateName::Looking, false).await;
+      setmst(&username, StateName::Interacting, false).await;
     } else {
       return false;
     }

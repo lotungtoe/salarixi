@@ -8,9 +8,7 @@ use tokio::time::sleep;
 use crate::service::core::common::{
   convert_hotbar_slot_to_inventory_slot, convert_inventory_slot_to_hotbar_slot, get_block_state, this_is_solid_block,
 };
-use crate::service::core::controllers::{
-  kill_task, push_extra_task, push_root_task, set_mutual_states, StateName, TaskName, TASKS,
-};
+use crate::service::core::controllers::{gettskact, killtsk, pushetsk, pushrtsk, setmst, StateName, TaskName};
 use crate::service::core::extensions::{BotDefaultExt, BotInventoryExt, BotMovementExt, BotPhysicsExt};
 use crate::service::core::traits::SalarixiModule;
 use crate::service::tools::*;
@@ -90,19 +88,19 @@ impl ScaffoldModule {
     bot.set_direction(direction.0, randnum(min_x, max_x) as f32);
   }
 
-  fn go_back(username: String) {
+  async fn go_back(username: String) {
     let username_clone = username.clone();
     let extra_task = tokio::spawn(async move {
       loop {
         take_bot!(&username_clone, async |bot| {
-          bot.start_walking(WalkDirection::Backward);
+          bot.start_walking(WalkDirection::Backward).await;
         });
 
         sleep(Duration::from_millis(100)).await;
       }
     });
 
-    push_extra_task(&username, TaskName::Scaffold, extra_task);
+    pushetsk(&username, TaskName::Scaffold, extra_task).await;
   }
 
   async fn noob_bridge_scaffold(bot: &Client, options: &ScaffoldOptions) {
@@ -257,7 +255,7 @@ impl ScaffoldModule {
   }
 
   async fn start(bot: &Client, options: &ScaffoldOptions) {
-    Self::go_back(bot.username());
+    Self::go_back(bot.username()).await;
 
     match options.mode.as_str() {
       "noob-bridge" => Self::noob_bridge_scaffold(bot, &options).await,
@@ -275,23 +273,23 @@ impl SalarixiModule<ScaffoldOptions> for ScaffoldModule {
   }
 
   async fn switch(&self, username: String, options: ScaffoldOptions) -> bool {
-    if options.state && !TASKS.get_task_activity(&username, TaskName::Scaffold) {
+    if options.state && !gettskact(&username, TaskName::Scaffold).await {
       let username_clone = username.clone();
       let task_handle = tokio::spawn(async move {
         take_bot!(&username_clone, async |bot| Self::start(bot, &options).await);
       });
 
-      push_root_task(&username, TaskName::Scaffold, task_handle);
-    } else if !options.state && TASKS.get_task_activity(&username, TaskName::Scaffold) {
-      kill_task(&username, TaskName::Scaffold);
+      pushrtsk(&username, TaskName::Scaffold, task_handle).await;
+    } else if !options.state && gettskact(&username, TaskName::Scaffold).await {
+      killtsk(&username, TaskName::Scaffold).await;
 
       take_bot!(&username, async |bot| {
         bot.set_crouching(false);
-        bot.stop_move();
+        bot.stop_move().await;
       });
 
-      set_mutual_states(&username, StateName::Looking, false);
-      set_mutual_states(&username, StateName::Interacting, false);
+      setmst(&username, StateName::Looking, false).await;
+      setmst(&username, StateName::Interacting, false).await;
     } else {
       return false;
     }

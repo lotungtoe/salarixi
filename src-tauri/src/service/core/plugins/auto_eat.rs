@@ -5,7 +5,7 @@ use azalea::registry::builtin::ItemKind;
 use std::time::Duration;
 use tokio::time::sleep;
 
-use crate::service::core::controllers::{get_state, set_mutual_states, set_state, State, StateName};
+use crate::service::core::controllers::{getst, setmst, setst, State, StateName};
 use crate::service::core::extensions::{BotDefaultExt, BotInteractExt, BotInventoryExt, BotMovementExt};
 use crate::service::core::plugin_manager::PluginName;
 use crate::service::core::traits::SalarixiPlugin;
@@ -31,29 +31,29 @@ impl AutoEatPlugin {
       let food_list = self.find_food_in_inventory(bot);
 
       if let Some(best_food) = self.get_best_food(bot, &food_list) {
-        if get_state(&username, State::CanEating)
-          && !get_state(&username, State::IsDrinking)
-          && !get_state(&username, State::IsInteracting)
+        if getst(&username, State::CanEating).await
+          && !getst(&username, State::IsDrinking).await
+          && !getst(&username, State::IsInteracting).await
         {
           let mut should_eat = true;
 
-          if get_state(&username, State::IsAttacking) {
+          if getst(&username, State::IsAttacking).await {
             should_eat = !(randchance(satiety as f64 / 20.0) && randchance(health as f64 / 20.0));
           }
 
           if should_eat {
-            set_state(&username, State::CanDrinking, false);
-            set_state(&username, State::CanInteracting, false);
-            set_mutual_states(&username, StateName::Eating, true);
+            setst(&username, State::CanDrinking, false).await;
+            setst(&username, State::CanInteracting, false).await;
+            setmst(&username, StateName::Eating, true).await;
 
             bot.take_item(best_food.slot, false).await;
             sleep(Duration::from_millis(50)).await;
             self.start_eating(bot).await;
             sleep(Duration::from_millis(50)).await;
 
-            set_state(&username, State::CanDrinking, true);
-            set_state(&username, State::CanInteracting, true);
-            set_mutual_states(&username, StateName::Eating, false);
+            setst(&username, State::CanDrinking, true).await;
+            setst(&username, State::CanInteracting, true).await;
+            setmst(&username, StateName::Eating, false).await;
           } else {
             sleep(Duration::from_millis(1800)).await;
           }
@@ -64,10 +64,10 @@ impl AutoEatPlugin {
 
   /// Метод отправки пакета о кушание еды
   async fn start_eating(&self, bot: &Client) {
-    bot.freeze_move();
+    bot.freeze_move().await;
     bot.start_use_held_item(InteractionHand::MainHand);
     sleep(Duration::from_millis(1800)).await;
-    bot.unfreeze_move();
+    bot.unfreeze_move().await;
   }
 
   /// Метод получения лучшей еды из списка
@@ -332,6 +332,6 @@ impl SalarixiPlugin for AutoEatPlugin {
       }
     });
 
-    PLUGINS.push_root_task(&username, PluginName::AutoEatPlugin, task);
+    PLUGINS.pushrtsk(&username, PluginName::AutoEatPlugin, task);
   }
 }

@@ -13,7 +13,7 @@ use std::time::Duration;
 use tokio::time::sleep;
 
 use crate::service::core::common::convert_inventory_slot_to_hotbar_slot;
-use crate::service::core::controllers::{get_state, set_mutual_states, set_state, State, StateName};
+use crate::service::core::controllers::{getst, setmst, setst, State, StateName};
 use crate::service::core::extensions::BotMovementExt;
 use crate::service::tools::randnum;
 
@@ -22,14 +22,35 @@ pub trait BotInventoryExt {
   fn get_current_inventory(&self) -> Option<ContainerHandleRef>;
   fn get_inventory_menu(&self) -> Option<Menu>;
   fn find_empty_slot_in_invenotry(&self) -> Option<usize>;
-  fn start_interacting_with_inventory(&self);
-  fn stop_interacting_with_inventory(&self);
-  fn move_item_to_offhand(&self, kind: ItemKind);
-  fn inventory_click(&self, slot: usize, mode: ClickMode, lock: bool);
-  fn inventory_click_on(&self, name: &str, mode: ClickMode, lock: bool);
-  async fn take_item(&self, source_slot: usize, lock: bool);
-  async fn inventory_swap_click(&self, source_slot: usize, target_slot: usize, lock: bool);
-  async fn inventory_move_item(&self, kind: ItemKind, source_slot: usize, target_slot: usize, lock: bool);
+  fn start_interacting_with_inventory(&self) -> impl std::future::Future<Output = ()> + Send + Sync;
+  fn stop_interacting_with_inventory(&self) -> impl std::future::Future<Output = ()> + Send + Sync;
+  fn move_item_to_offhand(&self, kind: ItemKind) -> impl std::future::Future<Output = ()> + Send + Sync;
+  fn inventory_click(
+    &self,
+    slot: usize,
+    mode: ClickMode,
+    lock: bool,
+  ) -> impl std::future::Future<Output = ()> + Send + Sync;
+  fn inventory_click_on(
+    &self,
+    name: &str,
+    mode: ClickMode,
+    lock: bool,
+  ) -> impl std::future::Future<Output = ()> + Send + Sync;
+  fn take_item(&self, source_slot: usize, lock: bool) -> impl std::future::Future<Output = ()> + Send + Sync;
+  fn inventory_swap_click(
+    &self,
+    source_slot: usize,
+    target_slot: usize,
+    lock: bool,
+  ) -> impl std::future::Future<Output = ()> + Send + Sync;
+  fn inventory_move_item(
+    &self,
+    kind: ItemKind,
+    source_slot: usize,
+    target_slot: usize,
+    lock: bool,
+  ) -> impl std::future::Future<Output = ()> + Send + Sync;
 }
 
 /// Режим клика в инвентаре
@@ -94,39 +115,39 @@ impl BotInventoryExt for Client {
     None
   }
 
-  fn start_interacting_with_inventory(&self) {
+  async fn start_interacting_with_inventory(&self) {
     let username = self.username();
 
-    self.freeze_move();
+    self.freeze_move().await;
 
-    set_state(&username, State::CanEating, false);
-    set_state(&username, State::CanDrinking, false);
-    set_state(&username, State::CanAttacking, false);
+    setst(&username, State::CanEating, false).await;
+    setst(&username, State::CanDrinking, false).await;
+    setst(&username, State::CanAttacking, false).await;
 
-    set_mutual_states(&username, StateName::Interacting, true);
+    setmst(&username, StateName::Interacting, true).await;
   }
 
-  fn stop_interacting_with_inventory(&self) {
+  async fn stop_interacting_with_inventory(&self) {
     let username = self.username();
 
-    self.unfreeze_move();
+    self.unfreeze_move().await;
 
-    set_state(&username, State::CanEating, true);
-    set_state(&username, State::CanDrinking, true);
-    set_state(&username, State::CanAttacking, true);
+    setst(&username, State::CanEating, true).await;
+    setst(&username, State::CanDrinking, true).await;
+    setst(&username, State::CanAttacking, true).await;
 
-    set_mutual_states(&username, StateName::Interacting, false);
+    setmst(&username, StateName::Interacting, false).await;
   }
 
   async fn take_item(&self, source_slot: usize, lock: bool) {
     let username = self.username();
 
     if lock {
-      if !get_state(&username, State::CanInteracting) {
+      if !getst(&username, State::CanInteracting).await {
         return;
       }
 
-      self.start_interacting_with_inventory();
+      self.start_interacting_with_inventory().await;
     }
 
     if let Some(hotbar_slot) = convert_inventory_slot_to_hotbar_slot(source_slot) {
@@ -146,7 +167,7 @@ impl BotInventoryExt for Client {
       } else {
         let random_slot = randnum(36, 44) as usize;
 
-        self.inventory_click(random_slot, ClickMode::Shift, false);
+        self.inventory_click(random_slot, ClickMode::Shift, false).await;
         sleep(Duration::from_millis(50)).await;
         self.inventory_swap_click(source_slot, random_slot, false).await;
 
@@ -161,11 +182,11 @@ impl BotInventoryExt for Client {
     }
 
     if lock {
-      self.stop_interacting_with_inventory();
+      self.stop_interacting_with_inventory().await;
     }
   }
 
-  fn move_item_to_offhand(&self, kind: ItemKind) {
+  async fn move_item_to_offhand(&self, kind: ItemKind) {
     if let Some(menu) = self.get_inventory_menu() {
       if let Some(item) = menu.slot(45) {
         if item.kind() == kind {
@@ -187,11 +208,11 @@ impl BotInventoryExt for Client {
 
     if let Some(inventory) = self.get_current_inventory() {
       if lock {
-        if !get_state(&username, State::CanInteracting) {
+        if !getst(&username, State::CanInteracting).await {
           return;
         }
 
-        self.start_interacting_with_inventory();
+        self.start_interacting_with_inventory().await;
       }
 
       if let Some(menu) = self.get_inventory_menu() {
@@ -202,7 +223,7 @@ impl BotInventoryExt for Client {
               sleep(Duration::from_millis(50)).await;
               inventory.left_click(empty_slot);
             } else {
-              self.inventory_click(target_slot, ClickMode::DropAll, false);
+              self.inventory_click(target_slot, ClickMode::DropAll, false).await;
             }
 
             sleep(Duration::from_millis(50)).await;
@@ -217,21 +238,21 @@ impl BotInventoryExt for Client {
       sleep(Duration::from_millis(50)).await;
 
       if lock {
-        self.stop_interacting_with_inventory();
+        self.stop_interacting_with_inventory().await;
       }
     }
   }
 
-  fn inventory_click(&self, slot: usize, mode: ClickMode, lock: bool) {
+  async fn inventory_click(&self, slot: usize, mode: ClickMode, lock: bool) {
     let username = self.username();
 
     if let Some(inventory) = self.get_current_inventory() {
       if lock {
-        if !get_state(&username, State::CanInteracting) {
+        if !getst(&username, State::CanInteracting).await {
           return;
         }
 
-        self.start_interacting_with_inventory();
+        self.start_interacting_with_inventory().await;
       }
 
       match mode {
@@ -253,12 +274,12 @@ impl BotInventoryExt for Client {
       }
 
       if lock {
-        self.stop_interacting_with_inventory();
+        self.stop_interacting_with_inventory().await;
       }
     }
   }
 
-  fn inventory_click_on(&self, name: &str, mode: ClickMode, lock: bool) {
+  async fn inventory_click_on(&self, name: &str, mode: ClickMode, lock: bool) {
     let string_name = name.to_string();
 
     if let Some(menu) = self.get_inventory_menu() {
@@ -268,7 +289,7 @@ impl BotInventoryExt for Client {
         };
 
         if item_name.name.to_string() == string_name {
-          self.inventory_click(slot, mode, lock);
+          self.inventory_click(slot, mode, lock).await;
           break;
         }
       }

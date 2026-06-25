@@ -2,7 +2,7 @@ use azalea::prelude::*;
 use std::time::Duration;
 use tokio::time::sleep;
 
-use crate::service::core::controllers::{get_state, State};
+use crate::service::core::controllers::{getst, State};
 use crate::service::core::extensions::{BotDefaultExt, BotRotationExt, EntityType};
 use crate::service::core::plugin_manager::PluginName;
 use crate::service::core::traits::SalarixiPlugin;
@@ -17,7 +17,7 @@ impl AutoLookPlugin {
   async fn look(&self, bot: &Client) {
     let username = bot.username();
 
-    if get_state(&username, State::CanLooking) && bot.is_goto_target_reached() {
+    if getst(&username, State::CanLooking).await && bot.is_goto_target_reached() {
       if let Some(entity) = bot.find_nearest_entity(EntityType::Any, 14.0) {
         bot.look_at_entity(entity, true);
         sleep(Duration::from_millis(randnum(50, 100))).await;
@@ -52,6 +52,6 @@ impl SalarixiPlugin for AutoLookPlugin {
       }
     });
 
-    PLUGINS.push_root_task(&username, PluginName::AutoLookPlugin, task);
+    PLUGINS.pushrtsk(&username, PluginName::AutoLookPlugin, task);
   }
 }

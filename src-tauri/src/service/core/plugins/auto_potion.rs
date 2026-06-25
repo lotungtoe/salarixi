@@ -9,7 +9,7 @@ use tokio::time::sleep;
 
 use crate::service::core::controllers::State;
 use crate::service::core::controllers::StateName;
-use crate::service::core::controllers::{get_state, set_mutual_states, set_state};
+use crate::service::core::controllers::{getst, setmst, setst};
 use crate::service::core::extensions::{BotDefaultExt, BotInteractExt, BotInventoryExt, BotMovementExt, BotPhysicsExt};
 use crate::service::core::plugin_manager::PluginName;
 use crate::service::core::traits::SalarixiPlugin;
@@ -39,35 +39,35 @@ impl AutoPotionPlugin {
 
       if potions.len() > 0 {
         if let Some(potion) = self.get_best_potion(bot, potions) {
-          if health < 10.0 && !get_state(&username, State::IsEating) {
-            set_state(&username, State::CanEating, false);
+          if health < 10.0 && !getst(&username, State::IsEating).await {
+            setst(&username, State::CanEating, false).await;
           } else {
-            set_state(&username, State::CanEating, true);
+            setst(&username, State::CanEating, true).await;
           }
 
-          if get_state(&username, State::CanDrinking)
-            && !get_state(&username, State::IsEating)
-            && !get_state(&username, State::IsInteracting)
+          if getst(&username, State::CanDrinking).await
+            && !getst(&username, State::IsEating).await
+            && !getst(&username, State::IsInteracting).await
           {
             let mut should_drink = true;
 
-            if get_state(&username, State::IsAttacking) {
+            if getst(&username, State::IsAttacking).await {
               should_drink = !randchance(health as f64 / 20.0);
             }
 
             if should_drink {
-              set_state(&username, State::CanEating, false);
-              set_state(&username, State::CanAttacking, false);
-              set_state(&username, State::CanInteracting, false);
+              setst(&username, State::CanEating, false).await;
+              setst(&username, State::CanAttacking, false).await;
+              setst(&username, State::CanInteracting, false).await;
 
               bot.take_item(potion.slot, false).await;
               sleep(Duration::from_millis(50)).await;
               self.use_potion(bot, potion.kind).await;
               sleep(Duration::from_millis(50)).await;
 
-              set_state(&username, State::CanEating, true);
-              set_state(&username, State::CanInteracting, true);
-              set_state(&username, State::CanAttacking, true);
+              setst(&username, State::CanEating, true).await;
+              setst(&username, State::CanInteracting, true).await;
+              setst(&username, State::CanAttacking, true).await;
             }
           }
         }
@@ -81,12 +81,12 @@ impl AutoPotionPlugin {
 
     match kind.as_str() {
       "default" => {
-        set_mutual_states(&username, StateName::Drinking, true);
-        bot.freeze_move();
+        setmst(&username, StateName::Drinking, true).await;
+        bot.freeze_move().await;
         bot.start_use_held_item(InteractionHand::MainHand);
         sleep(Duration::from_millis(2600)).await;
-        bot.unfreeze_move();
-        set_mutual_states(&username, StateName::Drinking, false);
+        bot.unfreeze_move().await;
+        setmst(&username, StateName::Drinking, false).await;
       }
       "splash" => {
         let direction = bot.direction();
@@ -293,6 +293,6 @@ impl SalarixiPlugin for AutoPotionPlugin {
       }
     });
 
-    PLUGINS.push_root_task(&username, PluginName::AutoPotionPlugin, task);
+    PLUGINS.pushrtsk(&username, PluginName::AutoPotionPlugin, task);
   }
 }

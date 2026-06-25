@@ -34,13 +34,13 @@ impl InventoryModule {
       } else {
         match options.state.as_str() {
           "drop" => {
-            bot.inventory_click(s, ClickMode::DropAll, true);
+            bot.inventory_click(s, ClickMode::DropAll, true).await;
           }
           "left-click" => {
-            bot.inventory_click(s, ClickMode::Left, true);
+            bot.inventory_click(s, ClickMode::Left, true).await;
           }
           "right-click" => {
-            bot.inventory_click(s, ClickMode::Right, true);
+            bot.inventory_click(s, ClickMode::Right, true).await;
           }
           "swap" => {
             bot

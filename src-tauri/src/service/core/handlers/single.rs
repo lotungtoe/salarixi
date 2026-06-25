@@ -36,8 +36,8 @@ pub async fn single_handler(bot: Client, event: Event, _state: NoState) {
     Event::Spawn => process_spawn(bot).await,
     Event::Disconnect(text) => process_disconnect(bot, text).await,
     Event::Chat(packet) => process_chat_message(bot, packet).await,
-    Event::Tick => process_tick(bot),
-    Event::Packet(packet) => process_packet(bot, packet),
+    Event::Tick => process_tick(bot).await,
+    Event::Packet(packet) => process_packet(bot, packet).await,
     _ => {}
   }
 }
@@ -72,8 +72,8 @@ async fn process_spawn(bot: Client) {
   let username = bot.username();
 
   BOT_REGISTRY.register_bot(&username, bot);
-  TASKS.register(&username);
-  STATES.register(&username);
+  TASKS.register(&username).await;
+  STATES.register(&username).await;
 
   BOT_REGISTRY.send_event(RegistryEvent::LoadPlugins {
     username: username.clone(),
@@ -144,8 +144,8 @@ async fn process_disconnect(bot: Client, text: Option<FormattedText>) {
 
   PROFILES.set_bool(&username, "logined", false);
   PROFILES.set_bool(&username, "captcha_caught", false);
-  STATES.reset(&username);
-  TASKS.remove(&username);
+  STATES.reset(&username).await;
+  TASKS.remove(&username).await;
 
   PROFILES.set_status(&username, BotStatus::Disconnected);
 
@@ -183,7 +183,7 @@ async fn process_chat_message(bot: Client, packet: ChatPacket) {
       options.captcha_bypass.regex.as_str(),
       options.captcha_bypass.required_url_part,
     ) {
-      let Some(profile) = PROFILES.get(&username) else {
+      let Some(profile) = PROFILES.get(&username).await else {
         return;
       };
 
@@ -214,10 +214,10 @@ async fn process_chat_message(bot: Client, packet: ChatPacket) {
 }
 
 /// Функция обработки тика
-fn process_tick(bot: Client) {
+async fn process_tick(bot: Client) {
   let username = bot.username();
 
-  let Some(profile) = PROFILES.get(&username) else {
+  let Some(profile) = PROFILES.get(&username).await else {
     return;
   };
 
@@ -232,7 +232,7 @@ fn process_tick(bot: Client) {
 }
 
 /// Функция обработки пакета
-fn process_packet(bot: Client, packet: Arc<ClientboundGamePacket>) {
+async fn process_packet(bot: Client, packet: Arc<ClientboundGamePacket>) {
   let username = bot.username();
 
   match &*packet {
@@ -249,7 +249,7 @@ fn process_packet(bot: Client, packet: Arc<ClientboundGamePacket>) {
             return;
           };
 
-          let Some(profile) = PROFILES.get(&username) else {
+          let Some(profile) = PROFILES.get(&username).await else {
             return;
           };
 

@@ -84,7 +84,7 @@ impl AutoArmorPlugin {
       if let Some(item) = menu.slot(target_slot) {
         if !item.is_empty() {
           if let Some(_) = bot.find_empty_slot_in_invenotry() {
-            bot.inventory_click(target_slot, ClickMode::Shift, true);
+            bot.inventory_click(target_slot, ClickMode::Shift, true).await;
             sleep(Duration::from_millis(50)).await;
           } else {
             return;
@@ -93,7 +93,7 @@ impl AutoArmorPlugin {
       }
     }
 
-    bot.inventory_click(armor_slot, ClickMode::Shift, true);
+    bot.inventory_click(armor_slot, ClickMode::Shift, true).await;
   }
 
   /// Метод проверки предмета, является ли тот бронёй
@@ -368,6 +368,6 @@ impl SalarixiPlugin for AutoArmorPlugin {
       }
     });
 
-    PLUGINS.push_root_task(&username, PluginName::AutoArmorPlugin, task);
+    PLUGINS.pushrtsk(&username, PluginName::AutoArmorPlugin, task);
   }
 }

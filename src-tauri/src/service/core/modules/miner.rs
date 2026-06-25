@@ -8,11 +8,7 @@ use std::time::Duration;
 use tokio::time::sleep;
 
 use crate::service::core::common::get_block_state;
-use crate::service::core::controllers::push_root_task;
-use crate::service::core::controllers::StateName;
-use crate::service::core::controllers::TaskName;
-use crate::service::core::controllers::TASKS;
-use crate::service::core::controllers::{kill_task, set_mutual_states};
+use crate::service::core::controllers::{gettskact, killtsk, pushrtsk, setmst, StateName, TaskName};
 use crate::service::core::extensions::{BotDefaultExt, BotInventoryExt, BotMovementExt};
 use crate::service::core::traits::SalarixiModule;
 use crate::service::tools::*;
@@ -291,24 +287,24 @@ impl SalarixiModule<MinerOptions> for MinerModule {
   }
 
   async fn switch(&self, username: String, options: MinerOptions) -> bool {
-    if options.state && !TASKS.get_task_activity(&username, TaskName::Miner) {
+    if options.state && !gettskact(&username, TaskName::Miner).await {
       let username_clone = username.clone();
       let task_handle = tokio::spawn(async move {
         take_bot!(&username_clone, async |bot| Self::start(bot, &options).await);
       });
 
-      push_root_task(&username, TaskName::Miner, task_handle);
-    } else if !options.state && TASKS.get_task_activity(&username, TaskName::Miner) {
-      kill_task(&username, TaskName::Miner);
+      pushrtsk(&username, TaskName::Miner, task_handle).await;
+    } else if !options.state && gettskact(&username, TaskName::Miner).await {
+      killtsk(&username, TaskName::Miner).await;
 
       take_bot!(&username, async |bot| {
         bot.left_click_mine(false);
         bot.set_crouching(false);
-        bot.stop_move();
+        bot.stop_move().await;
       });
 
-      set_mutual_states(&username, StateName::Interacting, false);
-      set_mutual_states(&username, StateName::Looking, false);
+      setmst(&username, StateName::Interacting, false).await;
+      setmst(&username, StateName::Looking, false).await;
     } else {
       return false;
     }

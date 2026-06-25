@@ -100,7 +100,7 @@ impl PluginManager {
   }
 
   /// Метод добавления задачи плагина указанному боту
-  pub fn push_root_task(&self, username: &str, plugin_name: PluginName, task: JoinHandle<()>) {
+  pub fn pushrtsk(&self, username: &str, plugin_name: PluginName, task: JoinHandle<()>) {
     if let Ok(mut guard) = self.tasks.try_write() {
       if let Some(tasks) = guard.get_mut(username) {
         if let Some(old_task) = tasks.get(&plugin_name) {
@@ -129,8 +129,8 @@ impl PluginManager {
 
   /// Метод очистки всех задач
   pub async fn clear(&self) {
-    for (username, _) in PROFILES.get_all() {
-      self.kill_all_tasks_for(&username).await;
+    for username in PROFILES.get_all().await.keys() {
+      self.kill_all_tasks_for(username).await;
     }
 
     emit_log("Активные задачи плагинов остановлены", "extended");

@@ -6,7 +6,7 @@ use std::time::Duration;
 use tokio::time::sleep;
 
 use crate::service::core::controllers::{
-  get_state, kill_task, push_extra_task, push_root_task, set_mutual_states, State, StateName, TaskName, TASKS,
+  getst, gettskact, killtsk, pushetsk, pushrtsk, setmst, State, StateName, TaskName,
 };
 use crate::service::core::extensions::{BotDefaultExt, BotInventoryExt, BotMovementExt, BotRotationExt, EntityType};
 use crate::service::core::traits::SalarixiModule;
@@ -219,7 +219,7 @@ impl KillauraModule {
   }
 
   /// Метод включения доджинга
-  fn start_dodging(username: String) {
+  async fn start_dodging(username: String) {
     let username_clone = username.clone();
     let extra_task = tokio::spawn(async move {
       loop {
@@ -233,11 +233,11 @@ impl KillauraModule {
       }
     });
 
-    push_extra_task(&username, TaskName::Killaura, extra_task);
+    pushetsk(&username, TaskName::Killaura, extra_task).await;
   }
 
   /// Метод включения преследования
-  fn start_chase(
+  async fn start_chase(
     username: String,
     target: String,
     target_nickname: Option<String>,
@@ -253,21 +253,21 @@ impl KillauraModule {
 
             if eye_pos.distance_to(bot.get_entity_position(entity)) > min_distance_to_target {
               bot.start_jumping();
-              bot.start_sprinting(SprintDirection::Forward);
+              bot.start_sprinting(SprintDirection::Forward).await;
 
               bot.look_at_entity(entity, true);
             } else {
               bot.stop_jumping();
 
-              if get_state(&username_clone, State::IsSprinting) {
-                bot.stop_move();
+              if getst(&username_clone, State::IsSprinting).await {
+                bot.stop_move().await;
               }
             }
           } else {
             bot.stop_jumping();
 
-            if get_state(&username_clone, State::IsSprinting) {
-              bot.stop_move();
+            if getst(&username_clone, State::IsSprinting).await {
+              bot.stop_move().await;
             }
           }
         });
@@ -276,15 +276,15 @@ impl KillauraModule {
       }
     });
 
-    push_extra_task(&username, TaskName::Killaura, extra_task);
+    pushetsk(&username, TaskName::Killaura, extra_task).await;
   }
 
   /// Метод включения автоматической наводки
-  fn start_aiming(username: String, target: String, target_nickname: Option<String>, distance: f64) {
+  async fn start_aiming(username: String, target: String, target_nickname: Option<String>, distance: f64) {
     let username_clone = username.clone();
     let extra_task = tokio::spawn(async move {
       loop {
-        set_mutual_states(&username_clone, StateName::Looking, true);
+        setmst(&username_clone, StateName::Looking, true).await;
 
         take_bot!(&username_clone, async |bot| {
           if let Some(entity) = Self::find_nearest_entity(&bot, target.clone(), target_nickname.clone(), distance) {
@@ -294,11 +294,11 @@ impl KillauraModule {
 
         sleep(Duration::from_millis(randnum(50, 100))).await;
 
-        set_mutual_states(&username_clone, StateName::Looking, false);
+        setmst(&username_clone, StateName::Looking, false).await;
       }
     });
 
-    push_extra_task(&username, TaskName::Killaura, extra_task);
+    pushetsk(&username, TaskName::Killaura, extra_task).await;
   }
 
   /// Метод запуска умеренной киллауры
@@ -310,7 +310,8 @@ impl KillauraModule {
       config.target.clone(),
       options.target_nickname.clone(),
       config.attack_distance,
-    );
+    )
+    .await;
 
     if options.use_chase {
       Self::start_chase(
@@ -319,20 +320,21 @@ impl KillauraModule {
         options.target_nickname.clone(),
         config.chase_distance,
         config.min_distance_to_target,
-      );
+      )
+      .await;
     }
 
     if options.use_dodging {
-      Self::start_dodging(bot.username());
+      Self::start_dodging(bot.username()).await;
     }
 
     let username = bot.username();
 
     loop {
-      if get_state(&username, State::CanAttacking)
-        && !get_state(&username, State::IsInteracting)
-        && !get_state(&username, State::IsEating)
-        && !get_state(&username, State::IsDrinking)
+      if getst(&username, State::CanAttacking).await
+        && !getst(&username, State::IsInteracting).await
+        && !getst(&username, State::IsEating).await
+        && !getst(&username, State::IsDrinking).await
       {
         if let Some(entity) = Self::find_nearest_entity(
           bot,
@@ -340,7 +342,7 @@ impl KillauraModule {
           options.target_nickname.clone(),
           config.attack_distance,
         ) {
-          set_mutual_states(&username, StateName::Attacking, true);
+          setmst(&username, StateName::Attacking, true).await;
 
           if options.use_auto_weapon {
             Self::take_weapon(bot, &options.weapon).await;
@@ -373,7 +375,7 @@ impl KillauraModule {
             bot.attack(entity);
           }
 
-          set_mutual_states(&username, StateName::Attacking, false);
+          setmst(&username, StateName::Attacking, false).await;
         }
       }
 
@@ -392,20 +394,21 @@ impl KillauraModule {
         options.target_nickname.clone(),
         config.chase_distance,
         config.min_distance_to_target,
-      );
+      )
+      .await;
     }
 
     if options.use_dodging {
-      Self::start_dodging(bot.username());
+      Self::start_dodging(bot.username()).await;
     }
 
     let username = bot.username();
 
     loop {
-      if get_state(&username, State::CanAttacking)
-        && !get_state(&username, State::IsInteracting)
-        && !get_state(&username, State::IsEating)
-        && !get_state(&username, State::IsDrinking)
+      if getst(&username, State::CanAttacking).await
+        && !getst(&username, State::IsInteracting).await
+        && !getst(&username, State::IsEating).await
+        && !getst(&username, State::IsDrinking).await
       {
         if let Some(entity) = Self::find_nearest_entity(
           bot,
@@ -413,7 +416,7 @@ impl KillauraModule {
           options.target_nickname.clone(),
           config.attack_distance,
         ) {
-          set_mutual_states(&username, StateName::Attacking, true);
+          setmst(&username, StateName::Attacking, true).await;
 
           if options.use_auto_weapon {
             Self::take_weapon(bot, &options.weapon).await;
@@ -445,7 +448,7 @@ impl KillauraModule {
             bot.attack(entity);
           }
 
-          set_mutual_states(&username, StateName::Attacking, false);
+          setmst(&username, StateName::Attacking, false).await;
         }
       }
 
@@ -469,24 +472,24 @@ impl SalarixiModule<KillauraOptions> for KillauraModule {
   }
 
   async fn switch(&self, username: String, options: KillauraOptions) -> bool {
-    if options.state && !TASKS.get_task_activity(&username, TaskName::Killaura) {
+    if options.state && !gettskact(&username, TaskName::Killaura).await {
       let username_clone = username.clone();
       let task_handle = tokio::spawn(async move {
         take_bot!(&username_clone, async |bot| Self::start(bot, &options).await);
       });
 
-      push_root_task(&username, TaskName::Killaura, task_handle);
-    } else if !options.state && TASKS.get_task_activity(&username, TaskName::Killaura) {
-      kill_task(&username, TaskName::Killaura);
+      pushrtsk(&username, TaskName::Killaura, task_handle).await;
+    } else if !options.state && gettskact(&username, TaskName::Killaura).await {
+      killtsk(&username, TaskName::Killaura).await;
 
       take_bot!(&username, async |bot| {
-        bot.stop_move();
+        bot.stop_move().await;
         bot.stop_crouching();
         bot.stop_jumping();
       });
 
-      set_mutual_states(&username, StateName::Looking, false);
-      set_mutual_states(&username, StateName::Attacking, false);
+      setmst(&username, StateName::Looking, false).await;
+      setmst(&username, StateName::Attacking, false).await;
     } else {
       return false;
     }

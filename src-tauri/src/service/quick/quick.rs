@@ -9,7 +9,7 @@ use std::sync::Arc;
 use tokio::time::sleep;
 
 use crate::service::core::common::{get_average_coordinates_of_bots, this_is_solid_block};
-use crate::service::core::controllers::{get_state, set_mutual_states, State, StateName, PROFILES, STATES, TASKS};
+use crate::service::core::controllers::{getst, setmst, State, StateName, PROFILES, STATES, TASKS};
 use crate::service::core::extensions::{
   go_to, BotDefaultExt, BotInventoryExt, BotMovementExt, BotPhysicsExt, ClickMode,
 };
@@ -31,8 +31,8 @@ impl QuickTaskManager {
   }
 
   /// Метод выполненя быстрой задачи
-  pub fn execute(&self, name: String) {
-    for (number, username) in PROFILES.get_all().into_keys().enumerate() {
+  pub async fn execute(&self, name: String) {
+    for (number, username) in PROFILES.get_all().await.into_keys().enumerate() {
       let name = name.clone();
 
       tokio::spawn(async move {
@@ -40,29 +40,29 @@ impl QuickTaskManager {
           "clear-inventory" => {
             if let Some(menu) = bot.get_inventory_menu() {
               for (slot, _) in menu.slots().iter().enumerate() {
-                bot.inventory_click(slot, ClickMode::DropAll, true);
+                bot.inventory_click(slot, ClickMode::DropAll, true).await;
               }
             }
           }
           "move-forward" => {
-            bot.start_walking(WalkDirection::Forward);
+            bot.start_walking(WalkDirection::Forward).await;
             sleep(Duration::from_millis(200)).await;
-            bot.stop_move();
+            bot.stop_move().await;
           }
           "move-backward" => {
-            bot.start_walking(WalkDirection::Backward);
+            bot.start_walking(WalkDirection::Backward).await;
             sleep(Duration::from_millis(200)).await;
-            bot.stop_move();
+            bot.stop_move().await;
           }
           "move-left" => {
-            bot.start_walking(WalkDirection::Right);
+            bot.start_walking(WalkDirection::Right).await;
             sleep(Duration::from_millis(200)).await;
-            bot.stop_move();
+            bot.stop_move().await;
           }
           "move-right" => {
-            bot.start_walking(WalkDirection::Left);
+            bot.start_walking(WalkDirection::Left).await;
             sleep(Duration::from_millis(200)).await;
-            bot.stop_move();
+            bot.stop_move().await;
           }
           "jump" => {
             bot.jump();
@@ -86,13 +86,13 @@ impl QuickTaskManager {
 
             bot.disconnect();
 
-            STATES.remove(&username);
-            TASKS.remove(&username);
+            STATES.remove(&username).await;
+            TASKS.remove(&username).await;
 
             PROFILES.set_str(&username, "status", "Оффлайн");
           }
           "rise" => {
-            if get_state(&username, State::CanLooking) && get_state(&username, State::CanInteracting) {
+            if getst(&username, State::CanLooking).await && getst(&username, State::CanInteracting).await {
               let mut block_slot = None;
 
               if let Some(menu) = bot.get_inventory_menu() {
@@ -107,8 +107,8 @@ impl QuickTaskManager {
               }
 
               if let Some(slot) = block_slot {
-                set_mutual_states(&username, StateName::Looking, true);
-                set_mutual_states(&username, StateName::Interacting, true);
+                setmst(&username, StateName::Looking, true).await;
+                setmst(&username, StateName::Interacting, true).await;
 
                 bot.take_item(slot, true).await;
 
@@ -136,8 +136,8 @@ impl QuickTaskManager {
 
                 bot.set_direction(original_direction_1.0, original_direction_1.1);
 
-                set_mutual_states(&username, StateName::Looking, false);
-                set_mutual_states(&username, StateName::Interacting, false);
+                setmst(&username, StateName::Looking, false).await;
+                setmst(&username, StateName::Interacting, false).await;
               }
             }
           }
@@ -214,9 +214,9 @@ impl QuickTaskManager {
               }
 
               if let Some(slot) = block_slot {
-                if get_state(&username, State::CanLooking) && get_state(&username, State::CanInteracting) {
-                  set_mutual_states(&username, StateName::Looking, true);
-                  set_mutual_states(&username, StateName::Interacting, true);
+                if getst(&username, State::CanLooking).await && getst(&username, State::CanInteracting).await {
+                  setmst(&username, StateName::Looking, true).await;
+                  setmst(&username, StateName::Interacting, true).await;
 
                   bot.take_item(slot, true).await;
 
@@ -244,8 +244,8 @@ impl QuickTaskManager {
                     bot.set_crouching(false);
                   }
 
-                  set_mutual_states(&username, StateName::Looking, false);
-                  set_mutual_states(&username, StateName::Interacting, false);
+                  setmst(&username, StateName::Looking, false).await;
+                  setmst(&username, StateName::Interacting, false).await;
 
                   sleep(Duration::from_millis(randnum(100, 150))).await;
                 }
@@ -255,7 +255,7 @@ impl QuickTaskManager {
           "unite" => {
             let mut positions = vec![];
 
-            for username in PROFILES.get_all().keys() {
+            for username in PROFILES.get_all_connected().await.keys() {
               let Some(b) = BOT_REGISTRY.get_bot(username) else {
                 continue;
               };
@@ -277,7 +277,7 @@ impl QuickTaskManager {
           "form-circle" => {
             let mut positions = vec![];
 
-            for username in PROFILES.get_all().keys() {
+            for username in PROFILES.get_all_connected().await.keys() {
               let Some(b) = BOT_REGISTRY.get_bot(username) else {
                 continue;
               };
@@ -296,7 +296,7 @@ impl QuickTaskManager {
           "form-line" => {
             let mut positions = vec![];
 
-            for username in PROFILES.get_all().keys() {
+            for username in PROFILES.get_all_connected().await.keys() {
               let Some(b) = BOT_REGISTRY.get_bot(username) else {
                 continue;
               };

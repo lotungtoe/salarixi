@@ -9,8 +9,7 @@ use crate::service::core::controllers::{Profile, PROFILES};
 use crate::service::core::functions::{disconnect_bot, reset_bot, send_message_from_bot};
 use crate::service::core::registry::{RegistryEvent, BOT_REGISTRY};
 use crate::service::core::{
-  active_bots_count, current_options, launch_bots_on_server, process_is_active, stop_bots_and_destroy_data,
-  LaunchOptions,
+  current_options, launch_bots_on_server, process_is_active, stop_bots_and_destroy_data, LaunchOptions,
 };
 use crate::service::ping::{ping_server, ServerInformation};
 use crate::service::radar::{RadarInfo, RADAR_MANAGER};
@@ -38,7 +37,7 @@ pub async fn stop_bots() -> bool {
 /// Функция получения профилей ботов
 #[tauri::command]
 pub async fn get_bot_profiles() -> HashMap<String, Profile> {
-  PROFILES.get_all()
+  PROFILES.get_all().await
 }
 
 #[derive(Deserialize)]
@@ -110,13 +109,13 @@ pub async fn save_radar_data(target: String, path: String, filename: String, x: 
 /// Функция преследования radar-цели
 #[tauri::command]
 pub async fn follow_radar_target(x: i32, z: i32) {
-  RADAR_MANAGER.follow(x, z);
+  RADAR_MANAGER.follow(x, z).await;
 }
 
 /// Функция получения количества активных ботов
 #[tauri::command]
 pub async fn get_active_bots_count() -> i32 {
-  active_bots_count()
+  PROFILES.get_active_count()
 }
 
 /// Функция получения используемой памяти

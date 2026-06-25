@@ -11,10 +11,7 @@ use std::time::{Duration, Instant};
 use tokio::time::sleep;
 
 use crate::service::core::common::get_block_state;
-use crate::service::core::controllers::kill_task;
-use crate::service::core::controllers::push_root_task;
-use crate::service::core::controllers::TaskName;
-use crate::service::core::controllers::TASKS;
+use crate::service::core::controllers::{gettskact, killtsk, pushrtsk, TaskName};
 use crate::service::core::extensions::{BotInventoryExt, BotPhysicsExt};
 use crate::service::core::traits::SalarixiModule;
 use crate::service::tools::*;
@@ -207,15 +204,15 @@ impl SalarixiModule<AntiFallOptions> for AntiFallModule {
   }
 
   async fn switch(&self, username: String, options: AntiFallOptions) -> bool {
-    if options.state && !TASKS.get_task_activity(&username, TaskName::AntiFall) {
+    if options.state && !gettskact(&username, TaskName::AntiFall).await {
       let username_clone = username.clone();
       let task_handle = tokio::spawn(async move {
         take_bot!(&username_clone, async |bot| Self::start(bot, &options).await);
       });
 
-      push_root_task(&username, TaskName::AntiFall, task_handle);
-    } else if !options.state && TASKS.get_task_activity(&username, TaskName::AntiFall) {
-      kill_task(&username, TaskName::AntiFall);
+      pushrtsk(&username, TaskName::AntiFall, task_handle).await;
+    } else if !options.state && gettskact(&username, TaskName::AntiFall).await {
+      killtsk(&username, TaskName::AntiFall).await;
     } else {
       return false;
     }

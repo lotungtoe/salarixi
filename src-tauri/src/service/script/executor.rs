@@ -11,14 +11,14 @@ use tokio::sync::RwLock;
 
 use crate::api::emit::{emit_log, emit_msg};
 use crate::service::core::common::convert_hotbar_slot_to_inventory_slot;
-use crate::service::core::controllers::{get_state, set_state, State, PROFILES};
+use crate::service::core::controllers::{try_getst, try_setst, State, PROFILES};
+use crate::service::core::current_options;
 use crate::service::core::extensions::{
   go_to, BotDefaultExt, BotInteractExt, BotInventoryExt, BotMovementExt, BotPhysicsExt, BotRotationExt, ClickMode,
   EntityType,
 };
 use crate::service::core::launch::state::ACTIVE;
 use crate::service::core::registry::BOT_REGISTRY;
-use crate::service::core::{active_bots_count, current_options};
 use crate::service::webhook::*;
 
 pub static SCRIPT_EXECUTOR: Lazy<ScriptExecutor> = Lazy::new(|| ScriptExecutor::new());
@@ -48,7 +48,7 @@ fn create_dynamic_vec(x: f64, y: f64, z: f64) -> Dynamic {
 fn create_dynamic_profile(username: &str) -> Dynamic {
   let mut map = Map::new();
 
-  if let Some(profile) = PROFILES.get(username) {
+  if let Some(profile) = PROFILES.try_get(username) {
     map.insert("ping".into(), Dynamic::from_int(profile.ping as i64));
     map.insert("captcha_caught".into(), Dynamic::from_bool(profile.captcha_caught));
     map.insert("registered".into(), Dynamic::from_bool(profile.registered));
@@ -77,7 +77,7 @@ impl ScriptExecutor {
 
   fn chat(username: &str, message: String) {
     if username == "*" {
-      PROFILES.get_all().keys().for_each(|name| {
+      PROFILES.try_get_all_connected().keys().for_each(|name| {
         if let Some(bot) = BOT_REGISTRY.get_bot(name) {
           bot.chat(&message);
         }
@@ -91,7 +91,7 @@ impl ScriptExecutor {
 
   fn jump(username: &str) {
     if username == "*" {
-      PROFILES.get_all().keys().for_each(|name| {
+      PROFILES.try_get_all_connected().keys().for_each(|name| {
         if let Some(bot) = BOT_REGISTRY.get_bot(name) {
           bot.jump();
         }
@@ -105,7 +105,7 @@ impl ScriptExecutor {
 
   fn swing_arm(username: &str) {
     if username == "*" {
-      PROFILES.get_all().keys().for_each(|name| {
+      PROFILES.try_get_all_connected().keys().for_each(|name| {
         if let Some(bot) = BOT_REGISTRY.get_bot(name) {
           bot.swing_arm();
         }
@@ -119,7 +119,7 @@ impl ScriptExecutor {
 
   fn set_jumping(username: &str, state: bool) {
     if username == "*" {
-      PROFILES.get_all().keys().for_each(|name| {
+      PROFILES.try_get_all_connected().keys().for_each(|name| {
         if let Some(bot) = BOT_REGISTRY.get_bot(name) {
           bot.set_jumping(state);
         }
@@ -133,7 +133,7 @@ impl ScriptExecutor {
 
   fn set_crouching(username: &str, state: bool) {
     if username == "*" {
-      PROFILES.get_all().keys().for_each(|name| {
+      PROFILES.try_get_all_connected().keys().for_each(|name| {
         if let Some(bot) = BOT_REGISTRY.get_bot(name) {
           bot.set_crouching(state);
         }
@@ -147,7 +147,7 @@ impl ScriptExecutor {
 
   fn set_velocity(username: &str, axis: &str, velocity: f64) {
     if username == "*" {
-      PROFILES.get_all().keys().for_each(|name| {
+      PROFILES.try_get_all_connected().keys().for_each(|name| {
         if let Some(bot) = BOT_REGISTRY.get_bot(name) {
           bot.set_velocity(axis, velocity);
         }
@@ -161,7 +161,7 @@ impl ScriptExecutor {
 
   fn set_on_ground(username: &str, on_ground: bool) {
     if username == "*" {
-      PROFILES.get_all().keys().for_each(|name| {
+      PROFILES.try_get_all_connected().keys().for_each(|name| {
         if let Some(bot) = BOT_REGISTRY.get_bot(name) {
           bot.set_on_ground(on_ground);
         }
@@ -175,7 +175,7 @@ impl ScriptExecutor {
 
   fn set_old_position(username: &str, x: f64, y: f64, z: f64) {
     if username == "*" {
-      PROFILES.get_all().keys().for_each(|name| {
+      PROFILES.try_get_all_connected().keys().for_each(|name| {
         if let Some(bot) = BOT_REGISTRY.get_bot(name) {
           bot.set_old_position(x, y, z);
         }
@@ -189,7 +189,7 @@ impl ScriptExecutor {
 
   fn set_no_jump_delay(username: &str, delay: u32) {
     if username == "*" {
-      PROFILES.get_all().keys().for_each(|name| {
+      PROFILES.try_get_all_connected().keys().for_each(|name| {
         if let Some(bot) = BOT_REGISTRY.get_bot(name) {
           bot.set_no_jump_delay(delay);
         }
@@ -203,7 +203,7 @@ impl ScriptExecutor {
 
   fn set_was_touching_water(username: &str, state: bool) {
     if username == "*" {
-      PROFILES.get_all().keys().for_each(|name| {
+      PROFILES.try_get_all_connected().keys().for_each(|name| {
         if let Some(bot) = BOT_REGISTRY.get_bot(name) {
           bot.set_was_touching_water(state);
         }
@@ -217,7 +217,7 @@ impl ScriptExecutor {
 
   fn set_has_impulse(username: &str, state: bool) {
     if username == "*" {
-      PROFILES.get_all().keys().for_each(|name| {
+      PROFILES.try_get_all_connected().keys().for_each(|name| {
         if let Some(bot) = BOT_REGISTRY.get_bot(name) {
           bot.set_has_impulse(state);
         }
@@ -229,8 +229,9 @@ impl ScriptExecutor {
     }
   }
 
-  fn start_walking(username: &str, direction_name: String) {
-    let direction = match direction_name.as_str() {
+  fn start_walking(username: &str, direction_name: &str) {
+    let username_string = username.to_string();
+    let direction = match direction_name {
       "forward" => WalkDirection::Forward,
       "backward" => WalkDirection::Backward,
       "left" => WalkDirection::Left,
@@ -242,20 +243,23 @@ impl ScriptExecutor {
       _ => return,
     };
 
-    if username == "*" {
-      PROFILES.get_all().keys().for_each(|name| {
-        if let Some(bot) = BOT_REGISTRY.get_bot(name) {
-          bot.start_walking(direction);
+    tokio::spawn(async move {
+      if username_string == "*" {
+        for name in PROFILES.get_all_connected().await.keys() {
+          if let Some(bot) = BOT_REGISTRY.get_bot(name) {
+            bot.start_walking(direction).await;
+          }
         }
-      });
-    } else {
-      if let Some(bot) = BOT_REGISTRY.get_bot(username) {
-        bot.start_walking(direction);
+      } else {
+        if let Some(bot) = BOT_REGISTRY.get_bot(&username_string) {
+          bot.start_walking(direction).await;
+        }
       }
-    }
+    });
   }
 
   fn start_sprinting(username: &str, direction_name: &str) {
+    let username_string = username.to_string();
     let direction = match direction_name {
       "forward" => SprintDirection::Forward,
       "forward-left" => SprintDirection::ForwardLeft,
@@ -263,22 +267,24 @@ impl ScriptExecutor {
       _ => return,
     };
 
-    if username == "*" {
-      PROFILES.get_all().keys().for_each(|name| {
-        if let Some(bot) = BOT_REGISTRY.get_bot(name) {
-          bot.start_sprinting(direction);
+    tokio::spawn(async move {
+      if username_string == "*" {
+        for name in PROFILES.get_all_connected().await.keys() {
+          if let Some(bot) = BOT_REGISTRY.get_bot(name) {
+            bot.start_sprinting(direction).await;
+          }
         }
-      });
-    } else {
-      if let Some(bot) = BOT_REGISTRY.get_bot(username) {
-        bot.start_sprinting(direction);
+      } else {
+        if let Some(bot) = BOT_REGISTRY.get_bot(&username_string) {
+          bot.start_sprinting(direction).await;
+        }
       }
-    }
+    });
   }
 
   fn start_pathfinder(username: &str, x: i32, z: i32) {
     if username == "*" {
-      PROFILES.get_all().keys().for_each(|name| {
+      PROFILES.try_get_all_connected().keys().for_each(|name| {
         go_to(name.to_string(), x, z);
       });
     } else {
@@ -287,22 +293,26 @@ impl ScriptExecutor {
   }
 
   fn stop_move(username: &str) {
-    if username == "*" {
-      PROFILES.get_all().keys().for_each(|name| {
-        if let Some(bot) = BOT_REGISTRY.get_bot(name) {
-          bot.stop_move();
+    let username_string = username.to_string();
+
+    tokio::spawn(async move {
+      if username_string == "*" {
+        for name in PROFILES.get_all_connected().await.keys() {
+          if let Some(bot) = BOT_REGISTRY.get_bot(name) {
+            bot.stop_move().await;
+          }
         }
-      });
-    } else {
-      if let Some(bot) = BOT_REGISTRY.get_bot(username) {
-        bot.stop_move();
+      } else {
+        if let Some(bot) = BOT_REGISTRY.get_bot(&username_string) {
+          bot.stop_move().await;
+        }
       }
-    }
+    });
   }
 
   fn stop_pathfinder(username: &str) {
     if username == "*" {
-      PROFILES.get_all().keys().for_each(|name| {
+      PROFILES.try_get_all_connected().keys().for_each(|name| {
         if let Some(bot) = BOT_REGISTRY.get_bot(name) {
           bot.stop_pathfinding();
         }
@@ -316,7 +326,7 @@ impl ScriptExecutor {
 
   fn look_at(username: &str, x: f64, y: f64, z: f64) {
     if username == "*" {
-      PROFILES.get_all().keys().for_each(|name| {
+      PROFILES.try_get_all_connected().keys().for_each(|name| {
         if let Some(bot) = BOT_REGISTRY.get_bot(name) {
           bot.look_at(Vec3 { x, y, z });
         }
@@ -330,7 +340,7 @@ impl ScriptExecutor {
 
   fn look_at_block(username: &str, x: i32, y: i32, z: i32) {
     if username == "*" {
-      PROFILES.get_all().keys().for_each(|name| {
+      PROFILES.try_get_all_connected().keys().for_each(|name| {
         if let Some(bot) = BOT_REGISTRY.get_bot(name) {
           bot.look_at(BlockPos::new(x, y, z).center());
         }
@@ -344,7 +354,7 @@ impl ScriptExecutor {
 
   fn place_block(username: &str, x: i32, y: i32, z: i32) {
     if username == "*" {
-      PROFILES.get_all().keys().for_each(|name| {
+      PROFILES.try_get_all_connected().keys().for_each(|name| {
         if let Some(bot) = BOT_REGISTRY.get_bot(name) {
           bot.block_interact(BlockPos::new(x, y, z));
         }
@@ -357,74 +367,101 @@ impl ScriptExecutor {
   }
 
   fn drop_selected_item(username: &str, lock: bool) {
-    if username == "*" {
-      PROFILES.get_all().keys().for_each(|name| {
-        if let Some(bot) = BOT_REGISTRY.get_bot(name) {
-          let selected_slot = convert_hotbar_slot_to_inventory_slot(bot.get_selected_slot());
-          bot.inventory_click(selected_slot, ClickMode::DropAll, lock);
+    let username_string = username.to_string();
+
+    tokio::spawn(async move {
+      if username_string == "*" {
+        for name in PROFILES.get_all_connected().await.keys() {
+          if let Some(bot) = BOT_REGISTRY.get_bot(name) {
+            let selected_slot = convert_hotbar_slot_to_inventory_slot(bot.get_selected_slot());
+            bot.inventory_click(selected_slot, ClickMode::DropAll, lock).await;
+          }
         }
-      });
-    } else {
-      if let Some(bot) = BOT_REGISTRY.get_bot(username) {
-        let selected_slot = convert_hotbar_slot_to_inventory_slot(bot.get_selected_slot());
-        bot.inventory_click(selected_slot, ClickMode::DropAll, lock);
+      } else {
+        if let Some(bot) = BOT_REGISTRY.get_bot(&username_string) {
+          let selected_slot = convert_hotbar_slot_to_inventory_slot(bot.get_selected_slot());
+          bot.inventory_click(selected_slot, ClickMode::DropAll, lock).await;
+        }
       }
-    }
+    });
   }
 
   fn drop_all_items(username: &str, lock: bool) {
-    if username == "*" {
-      PROFILES.get_all().keys().for_each(|name| {
-        if let Some(bot) = BOT_REGISTRY.get_bot(name) {
-          if let Some(menu) = bot.get_inventory_menu() {
-            for (slot, _) in menu.slots().iter().enumerate() {
-              bot.inventory_click(slot, ClickMode::DropAll, lock);
+    let username_string = username.to_string();
+
+    tokio::spawn(async move {
+      if username_string == "*" {
+        for name in PROFILES.get_all_connected().await.keys() {
+          if let Some(bot) = BOT_REGISTRY.get_bot(name) {
+            if let Some(menu) = bot.get_inventory_menu() {
+              for (slot, _) in menu.slots().iter().enumerate() {
+                bot.inventory_click(slot, ClickMode::DropAll, lock).await;
+              }
             }
           }
         }
-      });
-    } else {
-      if let Some(bot) = BOT_REGISTRY.get_bot(username) {
-        if let Some(menu) = bot.get_inventory_menu() {
-          for (slot, _) in menu.slots().iter().enumerate() {
-            bot.inventory_click(slot, ClickMode::DropAll, lock);
+      } else {
+        if let Some(bot) = BOT_REGISTRY.get_bot(&username_string) {
+          if let Some(menu) = bot.get_inventory_menu() {
+            for (slot, _) in menu.slots().iter().enumerate() {
+              bot.inventory_click(slot, ClickMode::DropAll, lock).await;
+            }
           }
         }
       }
-    }
+    });
   }
 
   fn inv_click(username: &str, slot: usize, mode: &str, lock: bool) {
-    if username == "*" {
-      PROFILES.get_all().keys().for_each(|name| {
-        if let Some(bot) = BOT_REGISTRY.get_bot(name) {
-          bot.inventory_click(slot, ClickMode::from(mode), lock);
+    let username_string = username.to_string();
+    let mode_string = mode.to_string();
+
+    tokio::spawn(async move {
+      if username_string == "*" {
+        for name in PROFILES.get_all_connected().await.keys() {
+          if let Some(bot) = BOT_REGISTRY.get_bot(name) {
+            bot
+              .inventory_click(slot, ClickMode::from(mode_string.as_str()), lock)
+              .await;
+          }
         }
-      });
-    } else {
-      if let Some(bot) = BOT_REGISTRY.get_bot(username) {
-        bot.inventory_click(slot, ClickMode::from(mode), lock);
+      } else {
+        if let Some(bot) = BOT_REGISTRY.get_bot(&username_string) {
+          bot
+            .inventory_click(slot, ClickMode::from(mode_string.as_str()), lock)
+            .await;
+        }
       }
-    }
+    });
   }
 
   fn inv_click_on(username: &str, name: &str, mode: &str, lock: bool) {
-    if username == "*" {
-      PROFILES.get_all().keys().for_each(|name| {
-        if let Some(bot) = BOT_REGISTRY.get_bot(name) {
-          bot.inventory_click_on(name, ClickMode::from(mode), lock);
+    let username_string = username.to_string();
+    let name_string = name.to_string();
+    let mode_string = mode.to_string();
+
+    tokio::spawn(async move {
+      if username_string == "*" {
+        for name in PROFILES.get_all_connected().await.keys() {
+          if let Some(bot) = BOT_REGISTRY.get_bot(name) {
+            bot
+              .inventory_click_on(&name_string, ClickMode::from(mode_string.as_str()), lock)
+              .await;
+          }
         }
-      });
-    } else {
-      if let Some(bot) = BOT_REGISTRY.get_bot(username) {
-        bot.inventory_click_on(name, ClickMode::from(mode), lock);
+      } else {
+        if let Some(bot) = BOT_REGISTRY.get_bot(&username_string) {
+          bot
+            .inventory_click_on(&name_string, ClickMode::from(mode_string.as_str()), lock)
+            .await;
+        }
       }
-    }
+    });
   }
 
   fn set_selected_slot(username: &str, slot: u8) {
     if username == "*" {
-      PROFILES.get_all().keys().for_each(|name| {
+      PROFILES.try_get_all_connected().keys().for_each(|name| {
         if let Some(bot) = BOT_REGISTRY.get_bot(name) {
           bot.set_selected_hotbar_slot(slot);
         }
@@ -438,7 +475,7 @@ impl ScriptExecutor {
 
   fn attack(username: &str, target: String, distance: f64, look_at_target: bool) {
     if username == "*" {
-      PROFILES.get_all().keys().for_each(|name| {
+      PROFILES.try_get_all_connected().keys().for_each(|name| {
         if let Some(bot) = BOT_REGISTRY.get_bot(name) {
           if let Some(entity) = bot.find_nearest_entity(EntityType::from(target.clone()), distance) {
             if look_at_target {
@@ -470,7 +507,7 @@ impl ScriptExecutor {
     };
 
     if username == "*" {
-      PROFILES.get_all().keys().for_each(|name| {
+      PROFILES.try_get_all_connected().keys().for_each(|name| {
         BOT_REGISTRY.get_bot(name).map(|bot| {
           bot.start_use_held_item(interaction_hand);
         });
@@ -484,7 +521,7 @@ impl ScriptExecutor {
 
   fn release_use_item(username: &str) {
     if username == "*" {
-      PROFILES.get_all().keys().for_each(|name| {
+      PROFILES.try_get_all_connected().keys().for_each(|name| {
         BOT_REGISTRY.get_bot(name).map(|bot| {
           bot.release_use_held_item();
         });
@@ -586,7 +623,7 @@ impl ScriptExecutor {
         }
       });
 
-    engine.register_fn("active_bots_count", || active_bots_count() as i64);
+    engine.register_fn("active_bots_count", || PROFILES.get_active_count() as i64);
 
     engine
       .register_fn("get_bot_id", {
@@ -758,7 +795,7 @@ impl ScriptExecutor {
       })
       .register_fn("start_walking", {
         let su = su.clone();
-        move |mu: &str, direction: &str| Self::start_walking(select_username(&su, mu), direction.to_string())
+        move |mu: &str, direction: &str| Self::start_walking(select_username(&su, mu), direction)
       })
       .register_fn("start_sprinting", {
         let su = su.clone();
@@ -842,7 +879,7 @@ impl ScriptExecutor {
         let su = su.clone();
         move |mu: &str, state_str: &str, value: bool| {
           if let Some(state) = State::from_str(state_str) {
-            set_state(select_username(&su, mu), state, value);
+            try_setst(select_username(&su, mu), state, value);
           }
         }
       })
@@ -850,7 +887,7 @@ impl ScriptExecutor {
         let su = su.clone();
         move |mu: &str, state_str: &str| {
           if let Some(state) = State::from_str(state_str) {
-            get_state(select_username(&su, mu), state)
+            try_getst(select_username(&su, mu), state)
           } else {
             false
           }

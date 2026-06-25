@@ -5,7 +5,7 @@ use azalea::registry::builtin::ItemKind;
 use std::time::Duration;
 use tokio::time::sleep;
 
-use crate::service::core::controllers::{get_state, set_mutual_states, State, StateName};
+use crate::service::core::controllers::{getst, setmst, State, StateName};
 use crate::service::core::extensions::{BotDefaultExt, BotInteractExt, BotInventoryExt, EntityType};
 use crate::service::core::plugin_manager::PluginName;
 use crate::service::core::traits::SalarixiPlugin;
@@ -27,7 +27,7 @@ impl AutoShieldPlugin {
     if let Some(menu) = bot.get_inventory_menu() {
       if let Some(item) = menu.slot(45) {
         if item.is_empty() || item.kind() == ItemKind::Shield {
-          if get_state(&username, State::IsEating) || get_state(&username, State::IsDrinking) {
+          if getst(&username, State::IsEating).await || getst(&username, State::IsDrinking).await {
             return;
           }
 
@@ -74,9 +74,9 @@ impl AutoShieldPlugin {
   async fn start_defending(&self, bot: &Client, entity: Entity) {
     let username = bot.username();
 
-    if get_state(&username, State::CanLooking) && get_state(&username, State::CanInteracting) {
-      set_mutual_states(&username, StateName::Looking, true);
-      set_mutual_states(&username, StateName::Interacting, true);
+    if getst(&username, State::CanLooking).await && getst(&username, State::CanInteracting).await {
+      setmst(&username, StateName::Looking, true).await;
+      setmst(&username, StateName::Interacting, true).await;
 
       bot.start_use_held_item(InteractionHand::OffHand);
 
@@ -96,8 +96,8 @@ impl AutoShieldPlugin {
 
       bot.release_use_held_item();
 
-      set_mutual_states(&username, StateName::Looking, false);
-      set_mutual_states(&username, StateName::Interacting, false);
+      setmst(&username, StateName::Looking, false).await;
+      setmst(&username, StateName::Interacting, false).await;
     }
   }
 }
@@ -128,6 +128,6 @@ impl SalarixiPlugin for AutoShieldPlugin {
       }
     });
 
-    PLUGINS.push_root_task(&username, PluginName::AutoShieldPlugin, task);
+    PLUGINS.pushrtsk(&username, PluginName::AutoShieldPlugin, task);
   }
 }

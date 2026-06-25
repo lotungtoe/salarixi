@@ -7,12 +7,9 @@ use std::time::Duration;
 use tokio::time::sleep;
 
 use crate::service::core::common::get_block_state;
-use crate::service::core::controllers::push_root_task;
-use crate::service::core::controllers::State;
-use crate::service::core::controllers::StateName;
-use crate::service::core::controllers::TaskName;
-use crate::service::core::controllers::TASKS;
-use crate::service::core::controllers::{get_state, kill_task, set_mutual_states, set_state};
+use crate::service::core::controllers::{
+  getst, gettskact, killtsk, pushrtsk, setmst, setst, State, StateName, TaskName,
+};
 use crate::service::core::extensions::BotMovementExt;
 use crate::service::core::traits::SalarixiModule;
 use crate::service::tools::*;
@@ -80,14 +77,14 @@ impl StealerModule {
 
   async fn extract_all_items(bot: &Client, container: &ContainerHandle) {
     if let Some(menu) = container.menu() {
-      bot.freeze_move();
+      bot.freeze_move().await;
 
       let username = bot.username();
 
-      set_state(&username, State::CanAttacking, false);
-      set_state(&username, State::CanInteracting, false);
-      set_state(&username, State::CanEating, false);
-      set_state(&username, State::CanDrinking, false);
+      setst(&username, State::CanAttacking, false).await;
+      setst(&username, State::CanInteracting, false).await;
+      setst(&username, State::CanEating, false).await;
+      setst(&username, State::CanDrinking, false).await;
 
       for slot in 0..=26 {
         if let Some(item) = menu.slot(slot) {
@@ -97,12 +94,12 @@ impl StealerModule {
         }
       }
 
-      bot.unfreeze_move();
+      bot.unfreeze_move().await;
 
-      set_state(&username, State::CanAttacking, true);
-      set_state(&username, State::CanInteracting, true);
-      set_state(&username, State::CanEating, true);
-      set_state(&username, State::CanDrinking, true);
+      setst(&username, State::CanAttacking, true).await;
+      setst(&username, State::CanInteracting, true).await;
+      setst(&username, State::CanEating, true).await;
+      setst(&username, State::CanDrinking, true).await;
     }
   }
 
@@ -116,9 +113,9 @@ impl StealerModule {
       let target_positions = Self::find_nearest_targets(bot, position, &options.target, options.radius.unwrap_or(5));
 
       for pos in target_positions {
-        if get_state(&username, State::CanLooking) && get_state(&username, State::CanInteracting) {
-          set_mutual_states(&username, StateName::Looking, true);
-          set_mutual_states(&username, StateName::Interacting, true);
+        if getst(&username, State::CanLooking).await && getst(&username, State::CanInteracting).await {
+          setmst(&username, StateName::Looking, true).await;
+          setmst(&username, StateName::Interacting, true).await;
 
           bot.look_at(pos.center());
 
@@ -130,12 +127,12 @@ impl StealerModule {
             sleep(Duration::from_millis(randnum(200, 350))).await;
           }
 
-          set_mutual_states(&username, StateName::Looking, false);
-          set_mutual_states(&username, StateName::Interacting, false);
+          setmst(&username, StateName::Looking, false).await;
+          setmst(&username, StateName::Interacting, false).await;
         }
       }
 
-      if get_state(&username, State::CanLooking) {
+      if getst(&username, State::CanLooking).await {
         bot.set_direction(
           direction.0 + randnum(-2.5, 2.5) as f32,
           direction.1 + randnum(-2.5, 2.5) as f32,
@@ -153,15 +150,15 @@ impl SalarixiModule<StealerOptions> for StealerModule {
   }
 
   async fn switch(&self, username: String, options: StealerOptions) -> bool {
-    if options.state && !TASKS.get_task_activity(&username, TaskName::Stealer) {
+    if options.state && !gettskact(&username, TaskName::Stealer).await {
       let username_clone = username.clone();
       let task_handle = tokio::spawn(async move {
         take_bot!(&username_clone, async |bot| Self::start(bot, &options).await);
       });
 
-      push_root_task(&username, TaskName::Stealer, task_handle);
-    } else if !options.state && TASKS.get_task_activity(&username, TaskName::Stealer) {
-      kill_task(&username, TaskName::Stealer);
+      pushrtsk(&username, TaskName::Stealer, task_handle).await;
+    } else if !options.state && gettskact(&username, TaskName::Stealer).await {
+      killtsk(&username, TaskName::Stealer).await;
     } else {
       return false;
     }

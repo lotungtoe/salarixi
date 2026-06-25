@@ -17,7 +17,7 @@ pub async fn default_authorize(bot: &Client) {
     return;
   };
 
-  let Some(profile) = PROFILES.get(&username) else {
+  let Some(profile) = PROFILES.get(&username).await else {
     return;
   };
 
@@ -78,7 +78,7 @@ pub async fn trigger_authorize(bot: &Client, message: String) {
     return;
   };
 
-  let Some(profile) = PROFILES.get(&username) else {
+  let Some(profile) = PROFILES.get(&username).await else {
     return;
   };
 

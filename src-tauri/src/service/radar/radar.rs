@@ -43,7 +43,7 @@ impl RadarManager {
   pub async fn find_target(&self, target: String) -> Option<RadarInfo> {
     let mut info = None;
 
-    for username in PROFILES.get_all().keys() {
+    for username in PROFILES.get_all_connected().await.keys() {
       take_bot!(username, async |bot| {
         let Some(tab_list) = bot.get_players() else {
           return;
@@ -95,8 +95,8 @@ impl RadarManager {
   }
 
   /// Метод преследования цели
-  pub fn follow(&self, x: i32, z: i32) {
-    for username in PROFILES.get_all().into_keys() {
+  pub async fn follow(&self, x: i32, z: i32) {
+    for username in PROFILES.get_all_connected().await.into_keys() {
       go_to(username, x, z);
     }
   }

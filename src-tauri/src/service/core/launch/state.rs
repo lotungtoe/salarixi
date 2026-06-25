@@ -2,25 +2,10 @@ use once_cell::sync::Lazy;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, RwLock};
 
-use crate::service::core::controllers::{BotStatus, PROFILES};
-
 use super::options::LaunchOptions;
 
 pub static ACTIVE: AtomicBool = AtomicBool::new(false);
 pub static CURRENT_OPTIONS: Lazy<Arc<RwLock<Option<LaunchOptions>>>> = Lazy::new(|| Arc::new(RwLock::new(None)));
-
-/// Функция получения количества активных ботов
-pub fn active_bots_count() -> i32 {
-  let mut count = 0;
-
-  for (_, profile) in PROFILES.get_all() {
-    if profile.status == BotStatus::Connected {
-      count += 1;
-    }
-  }
-
-  count
-}
 
 /// Функция установки опций
 pub fn set_options(options: LaunchOptions) {

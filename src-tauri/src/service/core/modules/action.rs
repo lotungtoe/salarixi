@@ -3,7 +3,7 @@ use serde::Deserialize;
 use std::time::Duration;
 use tokio::time::sleep;
 
-use crate::service::core::controllers::{kill_task, push_root_task, TaskName, TASKS};
+use crate::service::core::controllers::{gettskact, killtsk, pushrtsk, TaskName};
 use crate::service::core::extensions::BotDefaultExt;
 use crate::service::core::traits::SalarixiModule;
 use crate::service::tools::*;
@@ -108,15 +108,15 @@ impl SalarixiModule<ActionOptions> for ActionModule {
       _ => return false,
     };
 
-    if options.state && !TASKS.get_task_activity(&username, task_name.clone()) {
+    if options.state && !gettskact(&username, task_name.clone()).await {
       let username_clone = username.clone();
       let root_task = tokio::spawn(async move {
         take_bot!(&username_clone, async |bot| Self::start(bot, &options).await);
       });
 
-      push_root_task(&username, task_name, root_task);
-    } else if !options.state && TASKS.get_task_activity(&username, task_name.clone()) {
-      kill_task(&username, task_name);
+      pushrtsk(&username, task_name, root_task).await;
+    } else if !options.state && gettskact(&username, task_name.clone()).await {
+      killtsk(&username, task_name).await;
 
       take_bot!(&username, async |bot| match options.action.as_str() {
         "jumping" => bot.set_jumping(false),

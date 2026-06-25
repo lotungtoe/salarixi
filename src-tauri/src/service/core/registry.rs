@@ -122,7 +122,7 @@ pub async fn registry_event_loop() {
         MODULE_MANAGER.control(name, options, group).await;
       }
       RegistryEvent::QuickTask { name } => {
-        QUICK_TASK_MANAGER.execute(name);
+        QUICK_TASK_MANAGER.execute(name).await;
       }
       RegistryEvent::DestroySwarm => {
         BOT_REGISTRY.destroy_swarm().await;

@@ -7,7 +7,7 @@ use serde::Deserialize;
 use std::time::{Duration, Instant};
 use tokio::time::sleep;
 
-use crate::service::core::controllers::{kill_task, push_root_task, TaskName, TASKS};
+use crate::service::core::controllers::{gettskact, killtsk, pushrtsk, TaskName};
 use crate::service::core::extensions::{BotDefaultExt, BotPhysicsExt};
 use crate::service::core::traits::SalarixiModule;
 use crate::service::tools::*;
@@ -357,15 +357,15 @@ impl SalarixiModule<FlightOptions> for FlightModule {
   }
 
   async fn switch(&self, username: String, options: FlightOptions) -> bool {
-    if options.state && !TASKS.get_task_activity(&username, TaskName::Flight) {
+    if options.state && !gettskact(&username, TaskName::Flight).await {
       let username_clone = username.clone();
       let task_handle = tokio::spawn(async move {
         take_bot!(&username_clone, async |bot| Self::start(bot, &options).await);
       });
 
-      push_root_task(&username, TaskName::Flight, task_handle);
-    } else if !options.state && TASKS.get_task_activity(&username, TaskName::Flight) {
-      kill_task(&username, TaskName::Flight);
+      pushrtsk(&username, TaskName::Flight, task_handle).await;
+    } else if !options.state && gettskact(&username, TaskName::Flight).await {
+      killtsk(&username, TaskName::Flight).await;
     } else {
       return false;
     }

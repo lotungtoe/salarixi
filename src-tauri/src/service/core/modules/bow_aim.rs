@@ -7,7 +7,7 @@ use std::time::Duration;
 use tokio::time::sleep;
 
 use crate::service::core::controllers::{
-  get_state, kill_task, push_extra_task, push_root_task, set_mutual_states, State, StateName, TaskName, TASKS,
+  getst, gettskact, killtsk, pushetsk, pushrtsk, setmst, State, StateName, TaskName,
 };
 use crate::service::core::extensions::{BotDefaultExt, BotInteractExt, BotInventoryExt, EntityType};
 use crate::service::core::traits::SalarixiModule;
@@ -42,18 +42,18 @@ impl BowAimModule {
     None
   }
 
-  fn aiming(username: String, target: String, distance: f64) {
+  async fn aiming(username: String, target: String, distance: f64) {
     let username_clone = username.clone();
     let extra_task = tokio::spawn(async move {
       take_bot!(&username_clone, async |bot| {
-        if !get_state(&username_clone, State::CanLooking) {
+        if !getst(&username_clone, State::CanLooking).await {
           return;
         }
 
-        set_mutual_states(&username_clone, StateName::Looking, true);
+        setmst(&username_clone, StateName::Looking, true).await;
 
         loop {
-          if !TASKS.get_task_activity(&username_clone, TaskName::BowAim) {
+          if !gettskact(&username_clone, TaskName::BowAim).await {
             break;
           }
 
@@ -72,19 +72,19 @@ impl BowAimModule {
       });
     });
 
-    push_extra_task(&username, TaskName::BowAim, extra_task);
+    pushetsk(&username, TaskName::BowAim, extra_task).await;
   }
 
   async fn shoot(bot: &Client, target: String, distance: f64) {
     let username = bot.username();
 
-    if get_state(&username, State::CanInteracting)
-      && !get_state(&username, State::IsEating)
-      && !get_state(&username, State::IsDrinking)
-      && !get_state(&username, State::IsAttacking)
+    if getst(&username, State::CanInteracting).await
+      && !getst(&username, State::IsEating).await
+      && !getst(&username, State::IsDrinking).await
+      && !getst(&username, State::IsAttacking).await
     {
       if let Some(slot) = Self::find_bow_in_inventory(bot) {
-        set_mutual_states(&username, StateName::Interacting, true);
+        setmst(&username, StateName::Interacting, true).await;
 
         bot.take_item(slot, true).await;
 
@@ -118,7 +118,7 @@ impl BowAimModule {
 
         bot.release_use_held_item();
 
-        set_mutual_states(&username, StateName::Interacting, false);
+        setmst(&username, StateName::Interacting, false).await;
       }
     }
   }
@@ -134,7 +134,7 @@ impl BowAimModule {
       return;
     };
 
-    Self::aiming(bot.username(), target.clone(), options.max_distance.unwrap_or(70.0));
+    Self::aiming(bot.username(), target.clone(), options.max_distance.unwrap_or(70.0)).await;
 
     loop {
       Self::shoot(bot, target.clone(), options.max_distance.unwrap_or(70.0)).await;
@@ -149,22 +149,22 @@ impl SalarixiModule<BowAimOptions> for BowAimModule {
   }
 
   async fn switch(&self, username: String, options: BowAimOptions) -> bool {
-    if options.state && !TASKS.get_task_activity(&username, TaskName::BowAim) {
+    if options.state && !gettskact(&username, TaskName::BowAim).await {
       let username_clone = username.clone();
       let task_handle = tokio::spawn(async move {
         take_bot!(&username_clone, async |bot| Self::start(bot, &options).await);
       });
 
-      push_root_task(&username, TaskName::BowAim, task_handle);
-    } else if !options.state && TASKS.get_task_activity(&username, TaskName::BowAim) {
-      kill_task(&username, TaskName::BowAim);
+      pushrtsk(&username, TaskName::BowAim, task_handle).await;
+    } else if !options.state && gettskact(&username, TaskName::BowAim).await {
+      killtsk(&username, TaskName::BowAim).await;
 
       take_bot!(&username, async |bot| {
         bot.release_use_held_item();
       });
 
-      set_mutual_states(&username, StateName::Looking, false);
-      set_mutual_states(&username, StateName::Interacting, false);
+      setmst(&username, StateName::Looking, false).await;
+      setmst(&username, StateName::Interacting, false).await;
     } else {
       return false;
     }

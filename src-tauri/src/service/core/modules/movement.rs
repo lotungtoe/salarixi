@@ -4,10 +4,7 @@ use serde::Deserialize;
 use std::time::Duration;
 use tokio::time::sleep;
 
-use crate::service::core::controllers::kill_task;
-use crate::service::core::controllers::push_root_task;
-use crate::service::core::controllers::TaskName;
-use crate::service::core::controllers::TASKS;
+use crate::service::core::controllers::{gettskact, killtsk, pushrtsk, TaskName};
 use crate::service::core::extensions::{go_to, BotMovementExt};
 use crate::service::core::traits::SalarixiModule;
 use crate::service::tools::*;
@@ -50,7 +47,7 @@ impl MovementModule {
           _ => return,
         };
 
-        bot.start_walking(direction);
+        bot.start_walking(direction).await;
 
         if options.use_sync {
           sleep(Duration::from_millis(1200)).await;
@@ -58,7 +55,7 @@ impl MovementModule {
           sleep(Duration::from_millis(randnum(800, 1800))).await;
         }
 
-        bot.stop_move();
+        bot.stop_move().await;
       }
     } else {
       if !options.use_sync {
@@ -77,7 +74,7 @@ impl MovementModule {
         _ => return,
       };
 
-      bot.start_walking(direction);
+      bot.start_walking(direction).await;
     }
   }
 
@@ -108,19 +105,19 @@ impl SalarixiModule<MovementOptions> for MovementModule {
   }
 
   async fn switch(&self, username: String, options: MovementOptions) -> bool {
-    if options.state && !TASKS.get_task_activity(&username, TaskName::Movement) {
+    if options.state && !gettskact(&username, TaskName::Movement).await {
       let username_clone = username.clone();
       let task_handle = tokio::spawn(async move {
         take_bot!(&username_clone, async |bot| Self::start(bot, &options).await);
       });
 
-      push_root_task(&username, TaskName::Movement, task_handle);
-    } else if !options.state && TASKS.get_task_activity(&username, TaskName::Movement) {
-      kill_task(&username, TaskName::Movement);
+      pushrtsk(&username, TaskName::Movement, task_handle).await;
+    } else if !options.state && gettskact(&username, TaskName::Movement).await {
+      killtsk(&username, TaskName::Movement).await;
 
       take_bot!(&username, async |bot| {
         bot.stop_pathfinding();
-        bot.stop_move();
+        bot.stop_move().await;
       });
     } else {
       return false;

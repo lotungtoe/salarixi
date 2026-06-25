@@ -6,7 +6,7 @@ use azalea::registry::builtin::ItemKind;
 use std::time::Duration;
 use tokio::time::sleep;
 
-use crate::service::core::controllers::{get_state, set_mutual_states, State, StateName};
+use crate::service::core::controllers::{getst, setmst, State, StateName};
 use crate::service::core::extensions::{BotDefaultExt, BotInteractExt, BotInventoryExt};
 use crate::service::core::plugin_manager::PluginName;
 use crate::service::core::traits::SalarixiPlugin;
@@ -29,7 +29,7 @@ impl AutoRepairPlugin {
     let nickname = bot.username();
 
     for broken_item in broken_items {
-      if !get_state(&nickname, State::IsEating) && !get_state(&nickname, State::IsDrinking) {
+      if !getst(&nickname, State::IsEating).await && !getst(&nickname, State::IsDrinking).await {
         self.repair_item(bot, broken_item).await;
       }
     }
@@ -55,17 +55,17 @@ impl AutoRepairPlugin {
       let nickname = bot.username();
 
       for _ in 0..=count {
-        if !get_state(&nickname, State::CanInteracting) || !get_state(&nickname, State::CanLooking) {
+        if !getst(&nickname, State::CanInteracting).await || !getst(&nickname, State::CanLooking).await {
           continue;
         }
 
-        set_mutual_states(&nickname, StateName::Interacting, true);
-        set_mutual_states(&nickname, StateName::Looking, true);
+        setmst(&nickname, StateName::Interacting, true).await;
+        setmst(&nickname, StateName::Looking, true).await;
 
         if broken_item.slot != 45 && broken_item.slot > 8 {
           bot.take_item(broken_item.slot, false).await;
           sleep(Duration::from_millis(50)).await;
-          bot.move_item_to_offhand(broken_item.kind);
+          bot.move_item_to_offhand(broken_item.kind).await;
           sleep(Duration::from_millis(randnum(50, 150))).await;
         }
 
@@ -97,8 +97,8 @@ impl AutoRepairPlugin {
           }
         }
 
-        set_mutual_states(&nickname, StateName::Interacting, false);
-        set_mutual_states(&nickname, StateName::Looking, false);
+        setmst(&nickname, StateName::Interacting, false).await;
+        setmst(&nickname, StateName::Looking, false).await;
       }
 
       sleep(Duration::from_millis(50)).await;
@@ -192,6 +192,6 @@ impl SalarixiPlugin for AutoRepairPlugin {
       }
     });
 
-    PLUGINS.push_root_task(&username, PluginName::AutoRepairPlugin, task);
+    PLUGINS.pushrtsk(&username, PluginName::AutoRepairPlugin, task);
   }
 }

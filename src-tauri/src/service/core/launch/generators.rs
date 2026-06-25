@@ -234,7 +234,7 @@ pub fn generate_email(class: &str) -> Option<String> {
 }
 
 /// Функция генерации уникального юзернейма
-pub fn generate_unique_username(class: &str, template: &str) -> Option<String> {
+pub async fn generate_unique_username(class: &str, template: &str) -> Option<String> {
   for _ in 0..5 {
     let Some(username) = generate_username_or_password("username", class, template) else {
       continue;
@@ -242,7 +242,7 @@ pub fn generate_unique_username(class: &str, template: &str) -> Option<String> {
 
     let mut is_unique = true;
 
-    for name in PROFILES.get_all().keys() {
+    for name in PROFILES.get_all().await.keys() {
       if username == *name {
         is_unique = false;
         break;

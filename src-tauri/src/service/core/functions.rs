@@ -18,16 +18,16 @@ pub async fn send_message_from_bot(username: String, message: String) {
 pub async fn reset_bot(username: String) {
   TASKS.kill_all_tasks_for(&username).await;
 
-  tokio::time::sleep(Duration::from_secs(2)).await;
+  tokio::time::sleep(Duration::from_secs(1)).await;
 
   take_bot!(&username, async |bot| {
-    bot.stop_move();
+    bot.stop_move().await;
     bot.stop_crouching();
     bot.stop_jumping();
     bot.stop_pathfinding();
   });
 
-  STATES.reset(&username);
+  STATES.reset(&username).await;
 
   emit_log(format!("Все задачи и состояния бота {} сброшены", username), "info");
 
@@ -48,8 +48,8 @@ pub async fn disconnect_bot(username: String) {
     bot.disconnect();
   }
 
-  STATES.remove(&username);
-  TASKS.remove(&username);
+  STATES.remove(&username).await;
+  TASKS.remove(&username).await;
 
   PROFILES.set_bool(&username, "captcha_caught", false);
   PROFILES.set_str(&username, "status", "Оффлайн");
