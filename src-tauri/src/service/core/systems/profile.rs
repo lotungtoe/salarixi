@@ -6,7 +6,7 @@ use tokio::sync::RwLock;
 
 use crate::api::emit::emit_log;
 
-pub static PROFILES: Lazy<Arc<ProfileManager>> = Lazy::new(|| Arc::new(ProfileManager::new()));
+pub static PROFILE_SYSTEM: Lazy<Arc<ProfileSystem>> = Lazy::new(|| Arc::new(ProfileSystem::new()));
 
 /// Структура профиля бота
 #[derive(Clone, Serialize)]
@@ -105,12 +105,12 @@ impl Profile {
   }
 }
 
-/// Менеджер управления профилями
-pub struct ProfileManager {
+/// Система управления профилями
+pub struct ProfileSystem {
   pub map: RwLock<HashMap<String, Profile>>,
 }
 
-impl ProfileManager {
+impl ProfileSystem {
   /// Метод создания нового менеджера профилей
   pub fn new() -> Self {
     Self {

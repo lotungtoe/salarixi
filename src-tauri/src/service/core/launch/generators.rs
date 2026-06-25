@@ -1,4 +1,4 @@
-use crate::service::core::controllers::PROFILES;
+use crate::service::core::systems::PROFILE_SYSTEM;
 use crate::service::tools::*;
 
 const LEGIT_NICKNAMES: &[&str] = &[
@@ -242,7 +242,7 @@ pub async fn generate_unique_username(class: &str, template: &str) -> Option<Str
 
     let mut is_unique = true;
 
-    for name in PROFILES.get_all().await.keys() {
+    for name in PROFILE_SYSTEM.get_all().await.keys() {
       if username == *name {
         is_unique = false;
         break;

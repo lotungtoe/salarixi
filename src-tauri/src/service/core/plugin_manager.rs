@@ -6,9 +6,9 @@ use tokio::task::JoinHandle;
 
 use crate::api::emit::emit_log;
 use crate::result::CommandResult;
-use crate::service::core::controllers::PROFILES;
 use crate::service::core::launch::options::PluginOptions;
 use crate::service::core::plugins::*;
+use crate::service::core::systems::PROFILE_SYSTEM;
 use crate::service::core::traits::SalarixiPlugin;
 use crate::{failed, success};
 
@@ -129,7 +129,7 @@ impl PluginManager {
 
   /// Метод очистки всех задач
   pub async fn clear(&self) {
-    for username in PROFILES.get_all().await.keys() {
+    for username in PROFILE_SYSTEM.get_all().await.keys() {
       self.kill_all_tasks_for(username).await;
     }
 

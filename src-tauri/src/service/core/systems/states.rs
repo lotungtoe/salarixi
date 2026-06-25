@@ -6,7 +6,7 @@ use tokio::sync::RwLock;
 
 use crate::api::emit::emit_log;
 
-pub static STATES: Lazy<Arc<StateManager>> = Lazy::new(|| Arc::new(StateManager::new()));
+pub static STATE_SYSTEM: Lazy<Arc<StateSystem>> = Lazy::new(|| Arc::new(StateSystem::new()));
 
 /// Состояние бота
 pub enum State {
@@ -122,12 +122,12 @@ impl States {
   }
 }
 
-/// Менеджер управления состояниями ботов
-pub struct StateManager {
+/// Система управления состояниями ботов
+pub struct StateSystem {
   pub map: RwLock<HashMap<String, States>>,
 }
 
-impl StateManager {
+impl StateSystem {
   /// Метод создания менеджера состояний
   pub fn new() -> Self {
     Self {
@@ -162,7 +162,7 @@ impl StateManager {
 
 /// Вспомогательная функция получения состояния
 pub async fn getst(username: &str, state: State) -> bool {
-  let guard = STATES.map.read().await;
+  let guard = STATE_SYSTEM.map.read().await;
   if let Some(s) = guard.get(username) {
     return s.get(state);
   }
@@ -172,7 +172,7 @@ pub async fn getst(username: &str, state: State) -> bool {
 
 /// Вспомогательная функция установки значения для состояния
 pub async fn setst(username: &str, state: State, value: bool) {
-  let mut guard = STATES.map.write().await;
+  let mut guard = STATE_SYSTEM.map.write().await;
   if let Some(s) = guard.get_mut(username) {
     s.set(state, value);
   }
@@ -190,7 +190,7 @@ pub async fn setmst(username: &str, state_name: StateName, current_value: bool) 
     StateName::Interacting => (State::IsInteracting, State::CanInteracting),
   };
 
-  let mut guard = STATES.map.write().await;
+  let mut guard = STATE_SYSTEM.map.write().await;
   if let Some(s) = guard.get_mut(username) {
     s.set(is_state, current_value);
     s.set(can_state, !current_value);
@@ -199,7 +199,7 @@ pub async fn setmst(username: &str, state_name: StateName, current_value: bool) 
 
 /// Вспомогательная функция попытки получения состояния
 pub fn try_getst(username: &str, state: State) -> bool {
-  if let Ok(states) = STATES.map.try_read() {
+  if let Ok(states) = STATE_SYSTEM.map.try_read() {
     if let Some(s) = states.get(username) {
       return s.get(state);
     }
@@ -210,7 +210,7 @@ pub fn try_getst(username: &str, state: State) -> bool {
 
 /// Вспомогательная функция попытки установки значения для состояния
 pub fn try_setst(username: &str, state: State, value: bool) {
-  if let Ok(mut states) = STATES.map.try_write() {
+  if let Ok(mut states) = STATE_SYSTEM.map.try_write() {
     if let Some(s) = states.get_mut(username) {
       s.set(state, value);
     }

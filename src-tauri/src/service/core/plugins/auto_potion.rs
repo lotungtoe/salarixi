@@ -7,11 +7,11 @@ use azalea::registry::builtin::Potion as PotionKind;
 use std::time::Duration;
 use tokio::time::sleep;
 
-use crate::service::core::controllers::State;
-use crate::service::core::controllers::StateName;
-use crate::service::core::controllers::{getst, setmst, setst};
 use crate::service::core::extensions::{BotDefaultExt, BotInteractExt, BotInventoryExt, BotMovementExt, BotPhysicsExt};
 use crate::service::core::plugin_manager::PluginName;
+use crate::service::core::systems::State;
+use crate::service::core::systems::StateName;
+use crate::service::core::systems::{getst, setmst, setst};
 use crate::service::core::traits::SalarixiPlugin;
 use crate::service::core::{process_is_active, PLUGINS};
 use crate::service::tools::*;

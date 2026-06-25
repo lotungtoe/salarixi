@@ -4,8 +4,8 @@ use serde::Deserialize;
 use std::time::Duration;
 use tokio::time::sleep;
 
-use crate::service::core::controllers::{gettskact, killtsk, pushrtsk, TaskName};
 use crate::service::core::extensions::{go_to, BotMovementExt};
+use crate::service::core::systems::{gettskact, killtsk, pushrtsk, TaskName};
 use crate::service::core::traits::SalarixiModule;
 use crate::service::tools::*;
 use crate::take_bot;

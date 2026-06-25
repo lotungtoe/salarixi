@@ -5,10 +5,10 @@ use std::time::Duration;
 use tokio::time::sleep;
 
 use crate::service::core::common::get_player_uuid;
-use crate::service::core::controllers::PROFILES;
-use crate::service::core::controllers::{gettskact, killtsk, pushrtsk, TaskName};
 use crate::service::core::extensions::BotDefaultExt;
 use crate::service::core::registry::BOT_REGISTRY;
+use crate::service::core::systems::PROFILE_SYSTEM;
+use crate::service::core::systems::{gettskact, killtsk, pushrtsk, TaskName};
 use crate::service::core::traits::SalarixiModule;
 use crate::service::radar::RADAR_MANAGER;
 use crate::service::tools::*;
@@ -163,7 +163,7 @@ impl ChatModule {
 
     for tag in Regex::new(r"#pass").unwrap().find_iter(&text) {
       if !tag.is_empty() {
-        if let Some(profile) = PROFILES.get(username).await {
+        if let Some(profile) = PROFILE_SYSTEM.get(username).await {
           result = text.replace(tag.as_str(), profile.password.unwrap_or("".to_string()).as_str());
         }
       }
@@ -177,7 +177,7 @@ impl ChatModule {
 
     for tag in Regex::new(r"#health").unwrap().find_iter(&text) {
       if !tag.is_empty() {
-        if let Some(profile) = PROFILES.get(username).await {
+        if let Some(profile) = PROFILE_SYSTEM.get(username).await {
           result = text.replace(tag.as_str(), profile.health.to_string().as_str());
         }
       }

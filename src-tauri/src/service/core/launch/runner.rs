@@ -11,11 +11,11 @@ use std::thread;
 use std::time::Duration;
 
 use crate::api::emit::{emit_log, emit_msg};
-use crate::service::core::controllers::{ProfileProxy, PROFILES, STATES, TASKS};
 use crate::service::core::handlers::single::single_handler;
 use crate::service::core::handlers::swarm::swarm_handler;
 use crate::service::core::plugin_manager::PLUGINS;
 use crate::service::core::registry::{registry_event_loop, BOT_REGISTRY};
+use crate::service::core::systems::{ProfileProxy, PROFILE_SYSTEM, STATE_SYSTEM, TASK_SYSTEM};
 use crate::service::core::utils::MAP_ACCUMULATOR;
 use crate::service::webhook::send_webhook;
 
@@ -83,7 +83,7 @@ fn processs_proxy(username: &str, proxy: &str, join_opts: JoinOpts) -> JoinOpts 
       };
 
       profile_proxy.ip_address = Some(ip_addr.to_string());
-      PROFILES.set_proxy(&username, profile_proxy);
+      PROFILE_SYSTEM.set_proxy(&username, profile_proxy);
 
       return join_opts.proxy(proxy);
     }
@@ -99,7 +99,7 @@ fn processs_proxy(username: &str, proxy: &str, join_opts: JoinOpts) -> JoinOpts 
         };
 
         profile_proxy.ip_address = Some(ip_addr.to_string());
-        PROFILES.set_proxy(&username, profile_proxy);
+        PROFILE_SYSTEM.set_proxy(&username, profile_proxy);
 
         return join_opts.proxy(proxy);
       }
@@ -185,7 +185,7 @@ pub async fn launch_bots_on_server(options: LaunchOptions) -> bool {
               options: opts.clone(),
             });
 
-            PROFILES
+            PROFILE_SYSTEM
               .register(username, opts.password.clone(), opts.email.clone())
               .await;
           }
@@ -214,7 +214,7 @@ pub async fn launch_bots_on_server(options: LaunchOptions) -> bool {
               },
             });
 
-            PROFILES.register(&username, password, email).await;
+            PROFILE_SYSTEM.register(&username, password, email).await;
           }
         }
 
@@ -282,15 +282,15 @@ pub async fn stop_bots_and_destroy_data() -> bool {
     return false;
   }
 
-  let active_bots = PROFILES.get_active_count();
+  let active_bots = PROFILE_SYSTEM.get_active_count();
 
   PLUGINS.clear().await;
-  TASKS.clear().await;
+  TASK_SYSTEM.clear().await;
 
   tokio::time::sleep(Duration::from_secs(2)).await;
 
-  STATES.clear().await;
-  PROFILES.clear().await;
+  STATE_SYSTEM.clear().await;
+  PROFILE_SYSTEM.clear().await;
   MAP_ACCUMULATOR.clear_all();
   BOT_REGISTRY.clear();
 

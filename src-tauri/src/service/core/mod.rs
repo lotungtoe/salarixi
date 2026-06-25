@@ -1,6 +1,5 @@
 pub mod auth;
 pub mod common;
-pub mod controllers;
 pub mod extensions;
 pub mod functions;
 pub mod handlers;
@@ -10,6 +9,7 @@ pub mod modules;
 pub mod plugin_manager;
 pub mod plugins;
 pub mod registry;
+pub mod systems;
 pub mod traits;
 pub mod utils;
 

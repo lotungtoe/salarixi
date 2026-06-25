@@ -7,8 +7,8 @@ use std::time::Duration;
 use tokio::time::sleep;
 
 use crate::service::core::common::get_block_state;
-use crate::service::core::controllers::{getst, gettskact, killtsk, pushrtsk, setmst, State, StateName, TaskName};
 use crate::service::core::extensions::{BotDefaultExt, BotInventoryExt, BotRotationExt};
+use crate::service::core::systems::{getst, gettskact, killtsk, pushrtsk, setmst, State, StateName, TaskName};
 use crate::service::core::traits::SalarixiModule;
 use crate::service::tools::*;
 use crate::take_bot;

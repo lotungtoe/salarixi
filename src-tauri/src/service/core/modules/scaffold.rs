@@ -8,8 +8,8 @@ use tokio::time::sleep;
 use crate::service::core::common::{
   convert_hotbar_slot_to_inventory_slot, convert_inventory_slot_to_hotbar_slot, get_block_state, this_is_solid_block,
 };
-use crate::service::core::controllers::{gettskact, killtsk, pushetsk, pushrtsk, setmst, StateName, TaskName};
 use crate::service::core::extensions::{BotDefaultExt, BotInventoryExt, BotMovementExt, BotPhysicsExt};
+use crate::service::core::systems::{gettskact, killtsk, pushetsk, pushrtsk, setmst, StateName, TaskName};
 use crate::service::core::traits::SalarixiModule;
 use crate::service::tools::*;
 use crate::take_bot;

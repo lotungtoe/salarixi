@@ -11,7 +11,6 @@ use tokio::sync::RwLock;
 
 use crate::api::emit::{emit_log, emit_msg};
 use crate::service::core::common::convert_hotbar_slot_to_inventory_slot;
-use crate::service::core::controllers::{try_getst, try_setst, State, PROFILES};
 use crate::service::core::current_options;
 use crate::service::core::extensions::{
   go_to, BotDefaultExt, BotInteractExt, BotInventoryExt, BotMovementExt, BotPhysicsExt, BotRotationExt, ClickMode,
@@ -19,11 +18,12 @@ use crate::service::core::extensions::{
 };
 use crate::service::core::launch::state::ACTIVE;
 use crate::service::core::registry::BOT_REGISTRY;
+use crate::service::core::systems::{try_getst, try_setst, State, PROFILE_SYSTEM};
 use crate::service::webhook::*;
 
 pub static SCRIPT_EXECUTOR: Lazy<ScriptExecutor> = Lazy::new(|| ScriptExecutor::new());
 
-static EXECUTOR_STATES: Lazy<RwLock<HashMap<String, ()>>> = Lazy::new(|| RwLock::new(HashMap::new()));
+static EXECUTOR_STATE_SYSTEM: Lazy<RwLock<HashMap<String, ()>>> = Lazy::new(|| RwLock::new(HashMap::new()));
 static EXECUTOR_GLOBAL_STATE: Lazy<AtomicBool> = Lazy::new(|| AtomicBool::new(false));
 
 /// Функция выбора юзернейма
@@ -48,7 +48,7 @@ fn create_dynamic_vec(x: f64, y: f64, z: f64) -> Dynamic {
 fn create_dynamic_profile(username: &str) -> Dynamic {
   let mut map = Map::new();
 
-  if let Some(profile) = PROFILES.try_get(username) {
+  if let Some(profile) = PROFILE_SYSTEM.try_get(username) {
     map.insert("ping".into(), Dynamic::from_int(profile.ping as i64));
     map.insert("captcha_caught".into(), Dynamic::from_bool(profile.captcha_caught));
     map.insert("registered".into(), Dynamic::from_bool(profile.registered));
@@ -77,7 +77,7 @@ impl ScriptExecutor {
 
   fn chat(username: &str, message: String) {
     if username == "*" {
-      PROFILES.try_get_all_connected().keys().for_each(|name| {
+      PROFILE_SYSTEM.try_get_all_connected().keys().for_each(|name| {
         if let Some(bot) = BOT_REGISTRY.get_bot(name) {
           bot.chat(&message);
         }
@@ -91,7 +91,7 @@ impl ScriptExecutor {
 
   fn jump(username: &str) {
     if username == "*" {
-      PROFILES.try_get_all_connected().keys().for_each(|name| {
+      PROFILE_SYSTEM.try_get_all_connected().keys().for_each(|name| {
         if let Some(bot) = BOT_REGISTRY.get_bot(name) {
           bot.jump();
         }
@@ -105,7 +105,7 @@ impl ScriptExecutor {
 
   fn swing_arm(username: &str) {
     if username == "*" {
-      PROFILES.try_get_all_connected().keys().for_each(|name| {
+      PROFILE_SYSTEM.try_get_all_connected().keys().for_each(|name| {
         if let Some(bot) = BOT_REGISTRY.get_bot(name) {
           bot.swing_arm();
         }
@@ -119,7 +119,7 @@ impl ScriptExecutor {
 
   fn set_jumping(username: &str, state: bool) {
     if username == "*" {
-      PROFILES.try_get_all_connected().keys().for_each(|name| {
+      PROFILE_SYSTEM.try_get_all_connected().keys().for_each(|name| {
         if let Some(bot) = BOT_REGISTRY.get_bot(name) {
           bot.set_jumping(state);
         }
@@ -133,7 +133,7 @@ impl ScriptExecutor {
 
   fn set_crouching(username: &str, state: bool) {
     if username == "*" {
-      PROFILES.try_get_all_connected().keys().for_each(|name| {
+      PROFILE_SYSTEM.try_get_all_connected().keys().for_each(|name| {
         if let Some(bot) = BOT_REGISTRY.get_bot(name) {
           bot.set_crouching(state);
         }
@@ -147,7 +147,7 @@ impl ScriptExecutor {
 
   fn set_velocity(username: &str, axis: &str, velocity: f64) {
     if username == "*" {
-      PROFILES.try_get_all_connected().keys().for_each(|name| {
+      PROFILE_SYSTEM.try_get_all_connected().keys().for_each(|name| {
         if let Some(bot) = BOT_REGISTRY.get_bot(name) {
           bot.set_velocity(axis, velocity);
         }
@@ -161,7 +161,7 @@ impl ScriptExecutor {
 
   fn set_on_ground(username: &str, on_ground: bool) {
     if username == "*" {
-      PROFILES.try_get_all_connected().keys().for_each(|name| {
+      PROFILE_SYSTEM.try_get_all_connected().keys().for_each(|name| {
         if let Some(bot) = BOT_REGISTRY.get_bot(name) {
           bot.set_on_ground(on_ground);
         }
@@ -175,7 +175,7 @@ impl ScriptExecutor {
 
   fn set_old_position(username: &str, x: f64, y: f64, z: f64) {
     if username == "*" {
-      PROFILES.try_get_all_connected().keys().for_each(|name| {
+      PROFILE_SYSTEM.try_get_all_connected().keys().for_each(|name| {
         if let Some(bot) = BOT_REGISTRY.get_bot(name) {
           bot.set_old_position(x, y, z);
         }
@@ -189,7 +189,7 @@ impl ScriptExecutor {
 
   fn set_no_jump_delay(username: &str, delay: u32) {
     if username == "*" {
-      PROFILES.try_get_all_connected().keys().for_each(|name| {
+      PROFILE_SYSTEM.try_get_all_connected().keys().for_each(|name| {
         if let Some(bot) = BOT_REGISTRY.get_bot(name) {
           bot.set_no_jump_delay(delay);
         }
@@ -203,7 +203,7 @@ impl ScriptExecutor {
 
   fn set_was_touching_water(username: &str, state: bool) {
     if username == "*" {
-      PROFILES.try_get_all_connected().keys().for_each(|name| {
+      PROFILE_SYSTEM.try_get_all_connected().keys().for_each(|name| {
         if let Some(bot) = BOT_REGISTRY.get_bot(name) {
           bot.set_was_touching_water(state);
         }
@@ -217,7 +217,7 @@ impl ScriptExecutor {
 
   fn set_has_impulse(username: &str, state: bool) {
     if username == "*" {
-      PROFILES.try_get_all_connected().keys().for_each(|name| {
+      PROFILE_SYSTEM.try_get_all_connected().keys().for_each(|name| {
         if let Some(bot) = BOT_REGISTRY.get_bot(name) {
           bot.set_has_impulse(state);
         }
@@ -245,7 +245,7 @@ impl ScriptExecutor {
 
     tokio::spawn(async move {
       if username_string == "*" {
-        for name in PROFILES.get_all_connected().await.keys() {
+        for name in PROFILE_SYSTEM.get_all_connected().await.keys() {
           if let Some(bot) = BOT_REGISTRY.get_bot(name) {
             bot.start_walking(direction).await;
           }
@@ -269,7 +269,7 @@ impl ScriptExecutor {
 
     tokio::spawn(async move {
       if username_string == "*" {
-        for name in PROFILES.get_all_connected().await.keys() {
+        for name in PROFILE_SYSTEM.get_all_connected().await.keys() {
           if let Some(bot) = BOT_REGISTRY.get_bot(name) {
             bot.start_sprinting(direction).await;
           }
@@ -284,7 +284,7 @@ impl ScriptExecutor {
 
   fn start_pathfinder(username: &str, x: i32, z: i32) {
     if username == "*" {
-      PROFILES.try_get_all_connected().keys().for_each(|name| {
+      PROFILE_SYSTEM.try_get_all_connected().keys().for_each(|name| {
         go_to(name.to_string(), x, z);
       });
     } else {
@@ -297,7 +297,7 @@ impl ScriptExecutor {
 
     tokio::spawn(async move {
       if username_string == "*" {
-        for name in PROFILES.get_all_connected().await.keys() {
+        for name in PROFILE_SYSTEM.get_all_connected().await.keys() {
           if let Some(bot) = BOT_REGISTRY.get_bot(name) {
             bot.stop_move().await;
           }
@@ -312,7 +312,7 @@ impl ScriptExecutor {
 
   fn stop_pathfinder(username: &str) {
     if username == "*" {
-      PROFILES.try_get_all_connected().keys().for_each(|name| {
+      PROFILE_SYSTEM.try_get_all_connected().keys().for_each(|name| {
         if let Some(bot) = BOT_REGISTRY.get_bot(name) {
           bot.stop_pathfinding();
         }
@@ -326,7 +326,7 @@ impl ScriptExecutor {
 
   fn look_at(username: &str, x: f64, y: f64, z: f64) {
     if username == "*" {
-      PROFILES.try_get_all_connected().keys().for_each(|name| {
+      PROFILE_SYSTEM.try_get_all_connected().keys().for_each(|name| {
         if let Some(bot) = BOT_REGISTRY.get_bot(name) {
           bot.look_at(Vec3 { x, y, z });
         }
@@ -340,7 +340,7 @@ impl ScriptExecutor {
 
   fn look_at_block(username: &str, x: i32, y: i32, z: i32) {
     if username == "*" {
-      PROFILES.try_get_all_connected().keys().for_each(|name| {
+      PROFILE_SYSTEM.try_get_all_connected().keys().for_each(|name| {
         if let Some(bot) = BOT_REGISTRY.get_bot(name) {
           bot.look_at(BlockPos::new(x, y, z).center());
         }
@@ -354,7 +354,7 @@ impl ScriptExecutor {
 
   fn place_block(username: &str, x: i32, y: i32, z: i32) {
     if username == "*" {
-      PROFILES.try_get_all_connected().keys().for_each(|name| {
+      PROFILE_SYSTEM.try_get_all_connected().keys().for_each(|name| {
         if let Some(bot) = BOT_REGISTRY.get_bot(name) {
           bot.block_interact(BlockPos::new(x, y, z));
         }
@@ -371,7 +371,7 @@ impl ScriptExecutor {
 
     tokio::spawn(async move {
       if username_string == "*" {
-        for name in PROFILES.get_all_connected().await.keys() {
+        for name in PROFILE_SYSTEM.get_all_connected().await.keys() {
           if let Some(bot) = BOT_REGISTRY.get_bot(name) {
             let selected_slot = convert_hotbar_slot_to_inventory_slot(bot.get_selected_slot());
             bot.inventory_click(selected_slot, ClickMode::DropAll, lock).await;
@@ -391,7 +391,7 @@ impl ScriptExecutor {
 
     tokio::spawn(async move {
       if username_string == "*" {
-        for name in PROFILES.get_all_connected().await.keys() {
+        for name in PROFILE_SYSTEM.get_all_connected().await.keys() {
           if let Some(bot) = BOT_REGISTRY.get_bot(name) {
             if let Some(menu) = bot.get_inventory_menu() {
               for (slot, _) in menu.slots().iter().enumerate() {
@@ -418,7 +418,7 @@ impl ScriptExecutor {
 
     tokio::spawn(async move {
       if username_string == "*" {
-        for name in PROFILES.get_all_connected().await.keys() {
+        for name in PROFILE_SYSTEM.get_all_connected().await.keys() {
           if let Some(bot) = BOT_REGISTRY.get_bot(name) {
             bot
               .inventory_click(slot, ClickMode::from(mode_string.as_str()), lock)
@@ -442,7 +442,7 @@ impl ScriptExecutor {
 
     tokio::spawn(async move {
       if username_string == "*" {
-        for name in PROFILES.get_all_connected().await.keys() {
+        for name in PROFILE_SYSTEM.get_all_connected().await.keys() {
           if let Some(bot) = BOT_REGISTRY.get_bot(name) {
             bot
               .inventory_click_on(&name_string, ClickMode::from(mode_string.as_str()), lock)
@@ -461,7 +461,7 @@ impl ScriptExecutor {
 
   fn set_selected_slot(username: &str, slot: u8) {
     if username == "*" {
-      PROFILES.try_get_all_connected().keys().for_each(|name| {
+      PROFILE_SYSTEM.try_get_all_connected().keys().for_each(|name| {
         if let Some(bot) = BOT_REGISTRY.get_bot(name) {
           bot.set_selected_hotbar_slot(slot);
         }
@@ -475,7 +475,7 @@ impl ScriptExecutor {
 
   fn attack(username: &str, target: String, distance: f64, look_at_target: bool) {
     if username == "*" {
-      PROFILES.try_get_all_connected().keys().for_each(|name| {
+      PROFILE_SYSTEM.try_get_all_connected().keys().for_each(|name| {
         if let Some(bot) = BOT_REGISTRY.get_bot(name) {
           if let Some(entity) = bot.find_nearest_entity(EntityType::from(target.clone()), distance) {
             if look_at_target {
@@ -507,7 +507,7 @@ impl ScriptExecutor {
     };
 
     if username == "*" {
-      PROFILES.try_get_all_connected().keys().for_each(|name| {
+      PROFILE_SYSTEM.try_get_all_connected().keys().for_each(|name| {
         BOT_REGISTRY.get_bot(name).map(|bot| {
           bot.start_use_held_item(interaction_hand);
         });
@@ -521,7 +521,7 @@ impl ScriptExecutor {
 
   fn release_use_item(username: &str) {
     if username == "*" {
-      PROFILES.try_get_all_connected().keys().for_each(|name| {
+      PROFILE_SYSTEM.try_get_all_connected().keys().for_each(|name| {
         BOT_REGISTRY.get_bot(name).map(|bot| {
           bot.release_use_held_item();
         });
@@ -535,7 +535,7 @@ impl ScriptExecutor {
 
   /// Метод исполнения пользовательского сценария
   pub fn execute(&self, su: String, script: String) {
-    let mut states = match EXECUTOR_STATES.try_write() {
+    let mut states = match EXECUTOR_STATE_SYSTEM.try_write() {
       Ok(g) => g,
       Err(_) => {
         if su.is_empty() {
@@ -597,7 +597,7 @@ impl ScriptExecutor {
           return Some(Dynamic::UNIT);
         }
       } else {
-        if let Ok(states) = EXECUTOR_STATES.try_read() {
+        if let Ok(states) = EXECUTOR_STATE_SYSTEM.try_read() {
           if !states.contains_key(&su_clone) {
             return Some(Dynamic::UNIT);
           }
@@ -623,7 +623,7 @@ impl ScriptExecutor {
         }
       });
 
-    engine.register_fn("active_bots_count", || PROFILES.get_active_count() as i64);
+    engine.register_fn("active_bots_count", || PROFILE_SYSTEM.get_active_count() as i64);
 
     engine
       .register_fn("get_bot_id", {
@@ -922,7 +922,7 @@ impl ScriptExecutor {
     if su.is_empty() {
       EXECUTOR_GLOBAL_STATE.store(false, Ordering::SeqCst);
     } else {
-      if let Ok(mut states) = EXECUTOR_STATES.try_write() {
+      if let Ok(mut states) = EXECUTOR_STATE_SYSTEM.try_write() {
         states.remove(&su);
       }
     }
@@ -932,7 +932,7 @@ impl ScriptExecutor {
   pub fn stop(&self) {
     EXECUTOR_GLOBAL_STATE.store(false, Ordering::SeqCst);
 
-    if let Ok(mut states) = EXECUTOR_STATES.try_write() {
+    if let Ok(mut states) = EXECUTOR_STATE_SYSTEM.try_write() {
       states.clear();
     }
   }

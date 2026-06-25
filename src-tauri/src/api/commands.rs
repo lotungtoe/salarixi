@@ -5,9 +5,9 @@ use hashbrown::HashMap;
 use serde::Deserialize;
 
 use crate::api::emit::{emit_log, emit_msg};
-use crate::service::core::controllers::{Profile, PROFILES};
 use crate::service::core::functions::{disconnect_bot, reset_bot, send_message_from_bot};
 use crate::service::core::registry::{RegistryEvent, BOT_REGISTRY};
+use crate::service::core::systems::{Profile, PROFILE_SYSTEM};
 use crate::service::core::{
   current_options, launch_bots_on_server, process_is_active, stop_bots_and_destroy_data, LaunchOptions,
 };
@@ -37,7 +37,7 @@ pub async fn stop_bots() -> bool {
 /// Функция получения профилей ботов
 #[tauri::command]
 pub async fn get_bot_profiles() -> HashMap<String, Profile> {
-  PROFILES.get_all().await
+  PROFILE_SYSTEM.get_all().await
 }
 
 #[derive(Deserialize)]
@@ -91,7 +91,7 @@ pub async fn send_command(command: String, options: serde_json::Value) {
 /// Функция изменения группы бота
 #[tauri::command]
 pub async fn set_group(nickname: String, group: String) {
-  PROFILES.set_str(&nickname, "group", &group);
+  PROFILE_SYSTEM.set_str(&nickname, "group", &group);
 }
 
 /// Функция получения radar-данных
@@ -115,7 +115,7 @@ pub async fn follow_radar_target(x: i32, z: i32) {
 /// Функция получения количества активных ботов
 #[tauri::command]
 pub async fn get_active_bots_count() -> i32 {
-  PROFILES.get_active_count()
+  PROFILE_SYSTEM.get_active_count()
 }
 
 /// Функция получения используемой памяти

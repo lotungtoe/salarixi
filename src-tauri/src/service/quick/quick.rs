@@ -9,11 +9,11 @@ use std::sync::Arc;
 use tokio::time::sleep;
 
 use crate::service::core::common::{get_average_coordinates_of_bots, this_is_solid_block};
-use crate::service::core::controllers::{getst, setmst, State, StateName, PROFILES, STATES, TASKS};
 use crate::service::core::extensions::{
   go_to, BotDefaultExt, BotInventoryExt, BotMovementExt, BotPhysicsExt, ClickMode,
 };
 use crate::service::core::registry::BOT_REGISTRY;
+use crate::service::core::systems::{getst, setmst, State, StateName, PROFILE_SYSTEM, STATE_SYSTEM, TASK_SYSTEM};
 use crate::service::core::PLUGINS;
 use crate::service::tools::*;
 use crate::take_bot;
@@ -32,7 +32,7 @@ impl QuickTaskManager {
 
   /// Метод выполненя быстрой задачи
   pub async fn execute(&self, name: String) {
-    for (number, username) in PROFILES.get_all().await.into_keys().enumerate() {
+    for (number, username) in PROFILE_SYSTEM.get_all().await.into_keys().enumerate() {
       let name = name.clone();
 
       tokio::spawn(async move {
@@ -80,16 +80,16 @@ impl QuickTaskManager {
           }
           "quit" => {
             PLUGINS.kill_all_tasks_for(&username).await;
-            TASKS.kill_all_tasks_for(&username).await;
+            TASK_SYSTEM.kill_all_tasks_for(&username).await;
 
             tokio::time::sleep(Duration::from_secs(2)).await;
 
             bot.disconnect();
 
-            STATES.remove(&username).await;
-            TASKS.remove(&username).await;
+            STATE_SYSTEM.remove(&username).await;
+            TASK_SYSTEM.remove(&username).await;
 
-            PROFILES.set_str(&username, "status", "Оффлайн");
+            PROFILE_SYSTEM.set_str(&username, "status", "Оффлайн");
           }
           "rise" => {
             if getst(&username, State::CanLooking).await && getst(&username, State::CanInteracting).await {
@@ -255,7 +255,7 @@ impl QuickTaskManager {
           "unite" => {
             let mut positions = vec![];
 
-            for username in PROFILES.get_all_connected().await.keys() {
+            for username in PROFILE_SYSTEM.get_all_connected().await.keys() {
               let Some(b) = BOT_REGISTRY.get_bot(username) else {
                 continue;
               };
@@ -277,7 +277,7 @@ impl QuickTaskManager {
           "form-circle" => {
             let mut positions = vec![];
 
-            for username in PROFILES.get_all_connected().await.keys() {
+            for username in PROFILE_SYSTEM.get_all_connected().await.keys() {
               let Some(b) = BOT_REGISTRY.get_bot(username) else {
                 continue;
               };
@@ -287,7 +287,7 @@ impl QuickTaskManager {
 
             let average_cords = get_average_coordinates_of_bots(&positions);
 
-            let angle = 2.0 * PI * (number as f32) / (PROFILES.get_active_count() as f32);
+            let angle = 2.0 * PI * (number as f32) / (PROFILE_SYSTEM.get_active_count() as f32);
             let x = average_cords.0 + positions.len() as f64 * 0.5 * angle.cos() as f64;
             let z = average_cords.2 + positions.len() as f64 * 0.5 * angle.sin() as f64;
 
@@ -296,7 +296,7 @@ impl QuickTaskManager {
           "form-line" => {
             let mut positions = vec![];
 
-            for username in PROFILES.get_all_connected().await.keys() {
+            for username in PROFILE_SYSTEM.get_all_connected().await.keys() {
               let Some(b) = BOT_REGISTRY.get_bot(username) else {
                 continue;
               };

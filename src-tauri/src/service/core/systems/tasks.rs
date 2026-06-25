@@ -6,7 +6,7 @@ use tokio::task::JoinHandle;
 
 use crate::api::emit::emit_log;
 
-pub static TASKS: Lazy<Arc<TaskManager>> = Lazy::new(|| Arc::new(TaskManager::new()));
+pub static TASK_SYSTEM: Lazy<Arc<TaskSystem>> = Lazy::new(|| Arc::new(TaskSystem::new()));
 
 /// Название задачи бота
 #[derive(Clone, PartialEq, Eq, Hash)]
@@ -92,11 +92,11 @@ impl Tasks {
 }
 
 /// Менеджер управления задачами
-pub struct TaskManager {
+pub struct TaskSystem {
   pub map: RwLock<HashMap<String, Tasks>>,
 }
 
-impl TaskManager {
+impl TaskSystem {
   /// Метод создания менеджера задач
   pub fn new() -> Self {
     Self {
@@ -139,7 +139,7 @@ impl TaskManager {
 
 /// Вспомогательная функция получения активности определённой задачи указанного бота
 pub async fn gettskact(username: &str, task_name: TaskName) -> bool {
-  let guard = TASKS.map.read().await;
+  let guard = TASK_SYSTEM.map.read().await;
 
   for (name, t) in guard.iter() {
     if name.as_str() == username {
@@ -152,7 +152,7 @@ pub async fn gettskact(username: &str, task_name: TaskName) -> bool {
 
 /// Вспомогательная функция добавления корневой задачи указанному бота
 pub async fn pushrtsk(username: &str, task_name: TaskName, root_task: JoinHandle<()>) {
-  let mut guard = TASKS.map.write().await;
+  let mut guard = TASK_SYSTEM.map.write().await;
   if let Some(t) = guard.get_mut(username) {
     t.pushrtsk(task_name, root_task);
   }
@@ -160,7 +160,7 @@ pub async fn pushrtsk(username: &str, task_name: TaskName, root_task: JoinHandle
 
 /// Вспомогательная функция добавления дополнительной задачи указанному бота
 pub async fn pushetsk(username: &str, task_name: TaskName, extra_task: JoinHandle<()>) {
-  let mut guard = TASKS.map.write().await;
+  let mut guard = TASK_SYSTEM.map.write().await;
   if let Some(t) = guard.get_mut(username) {
     t.pushetsk(task_name, extra_task);
   }
@@ -168,7 +168,7 @@ pub async fn pushetsk(username: &str, task_name: TaskName, extra_task: JoinHandl
 
 /// Вспомогательная функция остановки определённой задачи указанного бота
 pub async fn killtsk(username: &str, task_name: TaskName) {
-  let mut guard = TASKS.map.write().await;
+  let mut guard = TASK_SYSTEM.map.write().await;
   if let Some(t) = guard.get_mut(username) {
     t.killtsk(task_name);
   }

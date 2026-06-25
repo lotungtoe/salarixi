@@ -3,9 +3,9 @@ use serde::de::DeserializeOwned;
 use std::sync::Arc;
 
 use crate::api::emit::{emit_log, emit_msg};
-use crate::service::core::controllers::PROFILES;
 use crate::service::core::current_options;
 use crate::service::core::modules::*;
+use crate::service::core::systems::PROFILE_SYSTEM;
 use crate::service::core::traits::SalarixiModule;
 use crate::service::webhook::send_webhook;
 
@@ -68,14 +68,14 @@ impl ModuleManager {
 
   /// Метод управления определённым менеджером
   pub async fn control(&self, module_name: String, options: serde_json::Value, group: String) -> Option<()> {
-    let profiles = PROFILES.get_all_connected().await;
+    let profiles = PROFILE_SYSTEM.get_all_connected().await;
     let total_count = profiles.len();
     let mut success_count = 0;
 
     for (username, _) in profiles {
       let cur_opts = options.clone();
 
-      if let Some(profile) = PROFILES.get(&username).await {
+      if let Some(profile) = PROFILE_SYSTEM.get(&username).await {
         if profile.group != group {
           continue;
         }

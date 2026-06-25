@@ -13,8 +13,8 @@ use std::time::Duration;
 use tokio::time::sleep;
 
 use crate::service::core::common::convert_inventory_slot_to_hotbar_slot;
-use crate::service::core::controllers::{getst, setmst, setst, State, StateName};
 use crate::service::core::extensions::BotMovementExt;
+use crate::service::core::systems::{getst, setmst, setst, State, StateName};
 use crate::service::tools::randnum;
 
 pub trait BotInventoryExt {

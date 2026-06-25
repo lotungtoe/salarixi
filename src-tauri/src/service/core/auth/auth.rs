@@ -3,8 +3,8 @@ use std::time::Duration;
 use tokio::time::sleep;
 
 use crate::api::emit::emit_log;
-use crate::service::core::controllers::PROFILES;
 use crate::service::core::current_options;
+use crate::service::core::systems::PROFILE_SYSTEM;
 use crate::service::tools::*;
 
 const DEFAULT_AUTH_TEMPLATE: &str = "$cmd $pass";
@@ -17,7 +17,7 @@ pub async fn default_authorize(bot: &Client) {
     return;
   };
 
-  let Some(profile) = PROFILES.get(&username).await else {
+  let Some(profile) = PROFILE_SYSTEM.get(&username).await else {
     return;
   };
 
@@ -35,12 +35,12 @@ pub async fn default_authorize(bot: &Client) {
       min_delay = opts.basic.register_min_delay;
       max_delay = opts.basic.register_max_delay;
 
-      PROFILES.set_bool(&username, "registered", true);
+      PROFILE_SYSTEM.set_bool(&username, "registered", true);
 
       action = "зарегистрировался";
 
       if !opts.basic.use_double_auth {
-        PROFILES.set_bool(&username, "logined", true);
+        PROFILE_SYSTEM.set_bool(&username, "logined", true);
       }
     }
   } else if !profile.logined {
@@ -52,7 +52,7 @@ pub async fn default_authorize(bot: &Client) {
 
       action = "залогинился";
 
-      PROFILES.set_bool(&username, "logined", true);
+      PROFILE_SYSTEM.set_bool(&username, "logined", true);
     }
   }
 
@@ -78,7 +78,7 @@ pub async fn trigger_authorize(bot: &Client, message: String) {
     return;
   };
 
-  let Some(profile) = PROFILES.get(&username).await else {
+  let Some(profile) = PROFILE_SYSTEM.get(&username).await else {
     return;
   };
 
@@ -103,10 +103,10 @@ pub async fn trigger_authorize(bot: &Client, message: String) {
 
       action = "зарегистрировался";
 
-      PROFILES.set_bool(&username, "registered", true);
+      PROFILE_SYSTEM.set_bool(&username, "registered", true);
 
       if !opts.basic.use_double_auth {
-        PROFILES.set_bool(&username, "logined", true);
+        PROFILE_SYSTEM.set_bool(&username, "logined", true);
       }
     }
   } else if !profile.logined && opts.basic.login_mode == "trigger" {
@@ -116,7 +116,7 @@ pub async fn trigger_authorize(bot: &Client, message: String) {
 
       action = "залогинился";
 
-      PROFILES.set_bool(&username, "logined", true);
+      PROFILE_SYSTEM.set_bool(&username, "logined", true);
     }
   }
 

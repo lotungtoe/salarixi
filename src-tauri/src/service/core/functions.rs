@@ -3,9 +3,9 @@ use std::time::Duration;
 use azalea::pathfinder::PathfinderClientExt;
 
 use crate::api::emit::*;
-use crate::service::core::controllers::*;
 use crate::service::core::extensions::{BotDefaultExt, BotMovementExt};
 use crate::service::core::registry::BOT_REGISTRY;
+use crate::service::core::systems::*;
 use crate::service::core::PLUGINS;
 use crate::take_bot;
 
@@ -16,7 +16,7 @@ pub async fn send_message_from_bot(username: String, message: String) {
 
 /// Вспомогательная функция, позволяющая сбросить все задачи и состояния бота
 pub async fn reset_bot(username: String) {
-  TASKS.kill_all_tasks_for(&username).await;
+  TASK_SYSTEM.kill_all_tasks_for(&username).await;
 
   tokio::time::sleep(Duration::from_secs(1)).await;
 
@@ -27,7 +27,7 @@ pub async fn reset_bot(username: String) {
     bot.stop_pathfinding();
   });
 
-  STATES.reset(&username).await;
+  STATE_SYSTEM.reset(&username).await;
 
   emit_log(format!("Все задачи и состояния бота {} сброшены", username), "info");
 
@@ -40,7 +40,7 @@ pub async fn reset_bot(username: String) {
 /// Вспомогательная функция отключения бота
 pub async fn disconnect_bot(username: String) {
   PLUGINS.kill_all_tasks_for(&username).await;
-  TASKS.kill_all_tasks_for(&username).await;
+  TASK_SYSTEM.kill_all_tasks_for(&username).await;
 
   tokio::time::sleep(Duration::from_secs(2)).await;
 
@@ -48,11 +48,11 @@ pub async fn disconnect_bot(username: String) {
     bot.disconnect();
   }
 
-  STATES.remove(&username).await;
-  TASKS.remove(&username).await;
+  STATE_SYSTEM.remove(&username).await;
+  TASK_SYSTEM.remove(&username).await;
 
-  PROFILES.set_bool(&username, "captcha_caught", false);
-  PROFILES.set_str(&username, "status", "Оффлайн");
+  PROFILE_SYSTEM.set_bool(&username, "captcha_caught", false);
+  PROFILE_SYSTEM.set_str(&username, "status", "Оффлайн");
 
   emit_log(format!("Бот {} отключился", username), "info");
   emit_msg("Управление", format!("Бот {} отключился", username));

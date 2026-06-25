@@ -12,14 +12,14 @@ use std::sync::Arc;
 use crate::api::emit::*;
 use crate::service::core::auth::default_authorize;
 use crate::service::core::auth::trigger_authorize;
-use crate::service::core::controllers::BotStatus;
-use crate::service::core::controllers::PROFILES;
-use crate::service::core::controllers::STATES;
-use crate::service::core::controllers::TASKS;
 use crate::service::core::current_options;
 use crate::service::core::extensions::BotDefaultExt;
 use crate::service::core::registry::RegistryEvent;
 use crate::service::core::registry::BOT_REGISTRY;
+use crate::service::core::systems::BotStatus;
+use crate::service::core::systems::PROFILE_SYSTEM;
+use crate::service::core::systems::STATE_SYSTEM;
+use crate::service::core::systems::TASK_SYSTEM;
 use crate::service::core::utils::MAP_ACCUMULATOR;
 use crate::service::core::utils::MAP_CAPTCHA_BYPASS;
 use crate::service::core::utils::WEB_CAPTCHA_BYPASS;
@@ -72,14 +72,14 @@ async fn process_spawn(bot: Client) {
   let username = bot.username();
 
   BOT_REGISTRY.register_bot(&username, bot);
-  TASKS.register(&username).await;
-  STATES.register(&username).await;
+  TASK_SYSTEM.register(&username).await;
+  STATE_SYSTEM.register(&username).await;
 
   BOT_REGISTRY.send_event(RegistryEvent::LoadPlugins {
     username: username.clone(),
   });
 
-  PROFILES.set_status(&username, BotStatus::Connected);
+  PROFILE_SYSTEM.set_status(&username, BotStatus::Connected);
 
   let Some(opts) = current_options() else {
     return;
@@ -137,17 +137,17 @@ async fn process_spawn(bot: Client) {
 async fn process_disconnect(bot: Client, text: Option<FormattedText>) {
   let username = bot.username();
 
-  TASKS.kill_all_tasks_for(&username).await;
+  TASK_SYSTEM.kill_all_tasks_for(&username).await;
   PLUGINS.kill_all_tasks_for(&username).await;
 
   BOT_REGISTRY.remove_bot(&username).await;
 
-  PROFILES.set_bool(&username, "logined", false);
-  PROFILES.set_bool(&username, "captcha_caught", false);
-  STATES.reset(&username).await;
-  TASKS.remove(&username).await;
+  PROFILE_SYSTEM.set_bool(&username, "logined", false);
+  PROFILE_SYSTEM.set_bool(&username, "captcha_caught", false);
+  STATE_SYSTEM.reset(&username).await;
+  TASK_SYSTEM.remove(&username).await;
 
-  PROFILES.set_status(&username, BotStatus::Disconnected);
+  PROFILE_SYSTEM.set_status(&username, BotStatus::Disconnected);
 
   if let Some(t) = text {
     if let Some(options) = current_options() {
@@ -183,12 +183,12 @@ async fn process_chat_message(bot: Client, packet: ChatPacket) {
       options.captcha_bypass.regex.as_str(),
       options.captcha_bypass.required_url_part,
     ) {
-      let Some(profile) = PROFILES.get(&username).await else {
+      let Some(profile) = PROFILE_SYSTEM.get(&username).await else {
         return;
       };
 
       if !profile.captcha_caught {
-        PROFILES.set_bool(&username, "captcha_caught", true);
+        PROFILE_SYSTEM.set_bool(&username, "captcha_caught", true);
 
         if options.basic.use_webhook && options.webhook.send_information {
           send_webhook(
@@ -217,7 +217,7 @@ async fn process_chat_message(bot: Client, packet: ChatPacket) {
 async fn process_tick(bot: Client) {
   let username = bot.username();
 
-  let Some(profile) = PROFILES.get(&username).await else {
+  let Some(profile) = PROFILE_SYSTEM.get(&username).await else {
     return;
   };
 
@@ -226,8 +226,8 @@ async fn process_tick(bot: Client) {
       return;
     }
 
-    PROFILES.set_num(&username, "ping", bot.ping());
-    PROFILES.set_num(&username, "health", bot.get_health() as u32);
+    PROFILE_SYSTEM.set_num(&username, "ping", bot.ping());
+    PROFILE_SYSTEM.set_num(&username, "health", bot.get_health() as u32);
   }
 }
 
@@ -249,7 +249,7 @@ async fn process_packet(bot: Client, packet: Arc<ClientboundGamePacket>) {
             return;
           };
 
-          let Some(profile) = PROFILES.get(&username).await else {
+          let Some(profile) = PROFILE_SYSTEM.get(&username).await else {
             return;
           };
 
@@ -289,7 +289,7 @@ async fn process_packet(bot: Client, packet: Arc<ClientboundGamePacket>) {
               MAP_ACCUMULATOR.set_processing(&username, true);
 
               if let Some(combined_base64) = MAP_ACCUMULATOR.combine_all(&username) {
-                PROFILES.set_bool(&username, "captcha_caught", true);
+                PROFILE_SYSTEM.set_bool(&username, "captcha_caught", true);
                 MAP_ACCUMULATOR.update_captcha_time(&username);
 
                 if options.basic.use_webhook && options.webhook.send_information {
@@ -321,7 +321,7 @@ async fn process_packet(bot: Client, packet: Arc<ClientboundGamePacket>) {
                 &map_patch.map_colors,
               );
 
-              PROFILES.set_bool(&username, "captcha_caught", true);
+              PROFILE_SYSTEM.set_bool(&username, "captcha_caught", true);
               MAP_ACCUMULATOR.update_captcha_time(&username);
 
               if options.basic.use_webhook && options.webhook.send_information {
