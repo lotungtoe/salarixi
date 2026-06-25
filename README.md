@@ -22,7 +22,7 @@ Uses [azalea](https://github.com/azalea-rs/azalea) library as a base.
 
 - [Telegram](https://t.me/+sXNq1tAwOsFmMGMy) - Our official Telegram channel, where we publish client news and upcoming plans
 - [YouTube](https://www.youtube.com/@salarixi) - Our official YouTube channel, where we publish video reviews of the client
-- [Discord](https://discord.gg/ekcC8QX7bH) - Our official Discord server, where we communicate and share ideas
+- [Discord](https://discord.gg/untdUsS9W) - Our official Discord server, where we communicate and share ideas
 
 ## System requirements
 
