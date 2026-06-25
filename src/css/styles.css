@@ -1989,9 +1989,8 @@ button svg {
 .chat-content .line .time {
   display: flex;
   justify-content: center;
-  align-items: center;
-  min-width: 75px;
-  padding: 0 10px;
+  align-items: start;
+  min-width: 85px;
   text-align: center;
   font-family: var(--script-font-family);
   color: var(--muted-color);
@@ -2011,7 +2010,6 @@ button svg {
   font-family: var(--global-font-family);
   font-size: 14px;
   word-break: break-all;
-  letter-spacing: 0.4px;
   -webkit-user-select: text; 
   -moz-user-select: text;
   -ms-user-select: text;
