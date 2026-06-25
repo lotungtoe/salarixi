@@ -123,7 +123,7 @@ pub async fn get_active_bots_count() -> i32 {
 #[tauri::command]
 pub async fn get_memory_usage() -> f64 {
   if let Some(usage) = memory_stats::memory_stats() {
-    return usage.physical_mem as f64 / 1_000_000.0;
+    return (usage.physical_mem as f64 / 1024.0) / 1024.0;
   }
 
   0.0
