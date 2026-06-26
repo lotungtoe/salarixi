@@ -204,7 +204,7 @@ class PluginModule {
 
   /** Метод загрузки кэшированной информации о плагинах */
   private async lcf(): Promise<LcfResult> {
-    const result = await loadCache("plugins-info", "plugins-info.json", 3, TimeType.Day);
+    const result = await loadCache("plugins-info", "plugins-info.json", 4, TimeType.Day);
     if (!result.data) return { data: null, expired: false };
 
     return {

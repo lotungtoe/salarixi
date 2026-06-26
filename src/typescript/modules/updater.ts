@@ -65,7 +65,7 @@ class UpdaterModule {
 
   /** Метод загрузки кэшированной информации о последней версии клиента */
   private async lcf(): Promise<LcfResult> {
-    const result = await loadCache("latest-version", "latest-version.json", 10, TimeType.Hours);
+    const result = await loadCache("latest-version", "latest-version.json", 14, TimeType.Hours);
     if (!result.data) return { data: null, expired: false };
 
     return {

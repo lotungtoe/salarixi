@@ -98,7 +98,7 @@ class InfoModule {
 
   /** Метод загрузки кэшированной информации о клиенте */
   private async lcf(): Promise<LcfResult> {
-    const result = await loadCache("client-info", "client-info.json", 2, TimeType.Day);
+    const result = await loadCache("client-info", "client-info.json", 3, TimeType.Day);
     if (!result.data) return { data: null, expired: false };
 
     return {
