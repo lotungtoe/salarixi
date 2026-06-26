@@ -367,6 +367,6 @@ impl SalarixiPlugin for AutoArmorPlugin {
       }
     });
 
-    PLUGINS.pushrtsk(&username, PluginName::AutoArmor, task);
+    PLUGINS.push_task(&username, PluginName::AutoArmor, task);
   }
 }

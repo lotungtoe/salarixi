@@ -123,6 +123,6 @@ impl SalarixiPlugin for AutoShieldPlugin {
       }
     });
 
-    PLUGINS.pushrtsk(&username, PluginName::AutoShield, task);
+    PLUGINS.push_task(&username, PluginName::AutoShield, task);
   }
 }

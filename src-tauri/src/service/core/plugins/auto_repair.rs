@@ -187,6 +187,6 @@ impl SalarixiPlugin for AutoRepairPlugin {
       }
     });
 
-    PLUGINS.pushrtsk(&username, PluginName::AutoRepair, task);
+    PLUGINS.push_task(&username, PluginName::AutoRepair, task);
   }
 }

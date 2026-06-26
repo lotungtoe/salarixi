@@ -328,6 +328,6 @@ impl SalarixiPlugin for AutoEatPlugin {
       }
     });
 
-    PLUGINS.pushrtsk(&username, PluginName::AutoEat, task);
+    PLUGINS.push_task(&username, PluginName::AutoEat, task);
   }
 }

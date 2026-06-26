@@ -55,6 +55,6 @@ impl SalarixiPlugin for AutoTotemPlugin {
       }
     });
 
-    PLUGINS.pushrtsk(&username, PluginName::AutoTotem, task);
+    PLUGINS.push_task(&username, PluginName::AutoTotem, task);
   }
 }

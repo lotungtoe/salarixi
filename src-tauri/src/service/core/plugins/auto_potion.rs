@@ -288,6 +288,6 @@ impl SalarixiPlugin for AutoPotionPlugin {
       }
     });
 
-    PLUGINS.pushrtsk(&username, PluginName::AutoPotion, task);
+    PLUGINS.push_task(&username, PluginName::AutoPotion, task);
   }
 }

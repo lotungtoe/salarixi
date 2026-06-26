@@ -47,6 +47,6 @@ impl SalarixiPlugin for AutoLookPlugin {
       }
     });
 
-    PLUGINS.pushrtsk(&username, PluginName::AutoLook, task);
+    PLUGINS.push_task(&username, PluginName::AutoLook, task);
   }
 }

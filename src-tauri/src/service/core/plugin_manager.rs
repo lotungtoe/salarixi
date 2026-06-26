@@ -107,7 +107,7 @@ impl PluginManager {
   }
 
   /// Метод добавления задачи плагина указанному боту
-  pub fn pushrtsk(&self, username: &str, plugin_name: PluginName, task: JoinHandle<()>) {
+  pub fn push_task(&self, username: &str, plugin_name: PluginName, task: JoinHandle<()>) {
     if let Ok(mut guard) = self.tasks.try_write() {
       if let Some(tasks) = guard.get_mut(username) {
         if let Some(old_task) = tasks.get(&plugin_name) {

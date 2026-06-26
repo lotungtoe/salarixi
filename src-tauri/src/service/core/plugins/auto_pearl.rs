@@ -102,6 +102,6 @@ impl SalarixiPlugin for AutoPearlPlugin {
       }
     });
 
-    PLUGINS.pushrtsk(&username, PluginName::AutoPearl, task);
+    PLUGINS.push_task(&username, PluginName::AutoPearl, task);
   }
 }
