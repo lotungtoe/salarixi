@@ -1,10 +1,13 @@
 mod api;
+mod bot;
+mod launch;
 mod modules;
+mod other;
 mod result;
-mod service;
 
-use api::commands::*;
+use api::cmd::*;
 use api::emit::emit_event_loop;
+use bot::ping::get_server_info;
 use modules::cache::{get_cache_date, load_cache, save_cache};
 use modules::config::{create_public_config, load_config, save_config};
 use modules::proxy::{check_proxies, collect_proxies};
@@ -30,7 +33,7 @@ pub fn run() {
       launch_bots,
       stop_bots,
       get_bot_profiles,
-      send_command,
+      quick_operation,
       get_radar_data,
       save_radar_data,
       follow_radar_target,

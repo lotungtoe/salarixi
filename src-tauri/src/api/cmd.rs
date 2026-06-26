@@ -1,0 +1,242 @@
+use hashbrown::HashMap;
+use serde::Deserialize;
+
+use std::fs;
+use std::time::Duration;
+
+use crate::api::emit::{emit_log, emit_msg};
+use crate::bot::functions::{disconnect_bot, reset_bot, send_message_from_bot};
+use crate::bot::radar::{RadarInfo, RADAR};
+use crate::bot::registry::{RegistryEvent, BOT_REGISTRY};
+use crate::bot::script::SCRIPT_EXECUTOR;
+use crate::bot::systems::{Profile, PROFILE_SYSTEM};
+use crate::launch::options::LaunchOptions;
+use crate::launch::process::{current_options, process_is_active};
+use crate::launch::runner::{launch_bots_on_server, stop_bots_and_destroy_data};
+use crate::other::discord_rpc::DISCORD_RPC;
+use crate::other::webhook::send_webhook;
+
+/// Команда запуска ботов
+#[tauri::command]
+pub async fn launch_bots(options: Vec<u8>) -> bool {
+  let parsed_options: LaunchOptions = match serde_json::from_slice(&options) {
+    Ok(p) => p,
+    Err(_) => return false,
+  };
+
+  launch_bots_on_server(parsed_options).await
+}
+
+/// Команда остановки ботов
+#[tauri::command]
+pub async fn stop_bots() -> bool {
+  stop_bots_and_destroy_data().await
+}
+
+/// Команда получения профилей ботов
+#[tauri::command]
+pub async fn get_bot_profiles() -> HashMap<String, Profile> {
+  PROFILE_SYSTEM.get_all().await
+}
+
+#[derive(Deserialize)]
+struct SendMessageCommand {
+  username: String,
+  message: String,
+}
+
+#[derive(Deserialize)]
+struct ResetBotCommand {
+  username: String,
+}
+
+#[derive(Deserialize)]
+struct DisconnectBotCommand {
+  username: String,
+}
+
+/// Команда выполнения быстрой операции
+#[tauri::command]
+pub async fn quick_operation(operation: String, options: serde_json::Value) {
+  match operation.as_str() {
+    "send-message" => {
+      let opts: SendMessageCommand = match serde_json::from_value(options) {
+        Ok(o) => o,
+        Err(_) => return,
+      };
+
+      send_message_from_bot(opts.username, opts.message).await;
+    }
+    "reset-bot" => {
+      let opts: ResetBotCommand = match serde_json::from_value(options) {
+        Ok(o) => o,
+        Err(_) => return,
+      };
+
+      reset_bot(opts.username).await;
+    }
+    "disconnect-bot" => {
+      let opts: DisconnectBotCommand = match serde_json::from_value(options) {
+        Ok(o) => o,
+        Err(_) => return,
+      };
+
+      disconnect_bot(opts.username).await;
+    }
+    _ => {}
+  }
+}
+
+/// Команда установки группы указанному боту
+#[tauri::command]
+pub async fn set_group(username: String, group: String) {
+  PROFILE_SYSTEM.set_str(&username, "group", &group);
+}
+
+/// Команда получения количества активных ботов
+#[tauri::command]
+pub async fn get_active_bots_count() -> i32 {
+  PROFILE_SYSTEM.get_connected_count().await as i32
+}
+
+/// Команда управления ботами
+#[tauri::command]
+pub async fn control_bots(name: String, options: serde_json::Value, group: String) {
+  if process_is_active() {
+    BOT_REGISTRY.send_event(RegistryEvent::ControlModules { name, options, group });
+  }
+}
+
+/// Команда получения данных радара
+#[tauri::command]
+pub async fn get_radar_data(target: String) -> Option<RadarInfo> {
+  RADAR.find_target(target).await
+}
+
+/// Команда сохранения данных радара
+#[tauri::command]
+pub async fn save_radar_data(target: String, path: String, filename: String, x: f64, y: f64, z: f64) {
+  RADAR.save_data(target, path, filename, x, y, z);
+}
+
+/// Команда преследования цели радара
+#[tauri::command]
+pub async fn follow_radar_target(x: i32, z: i32) {
+  RADAR.follow(x, z).await;
+}
+
+/// Команда получения используемой памяти
+#[tauri::command]
+pub async fn get_memory_usage() -> f64 {
+  if let Some(usage) = memory_stats::memory_stats() {
+    return (usage.physical_mem as f64 / 1024.0) / 1024.0;
+  }
+
+  0.0
+}
+
+/// Команда выполнения быстрой задачи
+#[tauri::command]
+pub async fn quick_task(name: String) {
+  if let Some(opts) = current_options() {
+    if opts.basic.use_webhook && opts.webhook.send_actions {
+      send_webhook(opts.webhook.url, format!("Быстрая задача '{}'", name));
+    }
+  }
+
+  emit_log(format!("Быстрая задача '{}'", name), "extended");
+
+  emit_msg(
+    "Быстрая задача",
+    format!(
+      "{} ботов получили быструю задачу '{}'",
+      PROFILE_SYSTEM.get_connected_count().await,
+      name
+    ),
+  );
+
+  BOT_REGISTRY.send_event(RegistryEvent::QuickTask { name });
+}
+
+/// Команда выполнения пользовательского скрипта
+#[tauri::command]
+pub async fn execute_script(script: String) {
+  if process_is_active() {
+    // Здесь не нужен определённый юзернейм бота, ибо
+    // пользователь сам в своём сценарии их указывает в функциях
+    SCRIPT_EXECUTOR.execute(String::new(), script);
+  }
+}
+
+/// Команда остановки пользовательского скрипта
+#[tauri::command]
+pub async fn stop_script() {
+  SCRIPT_EXECUTOR.stop();
+}
+
+/// Команда открытия URL в браузере
+#[tauri::command]
+pub async fn open_url(url: String) {
+  let _ = open::that(url);
+}
+
+/// Команда скачивания JSON-контента
+#[tauri::command]
+pub async fn download_json(url: String) -> Option<serde_json::Value> {
+  let client = reqwest::Client::new();
+
+  let resp = client
+    .get(url)
+    .timeout(Duration::from_secs(10))
+    .header("Content-Type", "application/json")
+    .send()
+    .await
+    .ok()?;
+
+  if resp.status() != reqwest::StatusCode::OK {
+    return None;
+  }
+
+  resp.json().await.ok()
+}
+
+/// Команда скачивания TEXT-контента
+#[tauri::command]
+pub async fn download_text(url: String) -> Option<String> {
+  let client = reqwest::Client::new();
+
+  let resp = client.get(url).timeout(Duration::from_secs(10)).send().await.ok()?;
+
+  if resp.status() != reqwest::StatusCode::OK {
+    return None;
+  }
+
+  resp.text().await.ok()
+}
+
+/// Команда чтения небольшого текстового файла
+#[tauri::command]
+pub fn read_text_file(path: String) -> Vec<u8> {
+  match fs::read(&path) {
+    Ok(b) => b,
+    Err(_) => Vec::new(),
+  }
+}
+
+/// Команда остановки главного процесса
+#[tauri::command]
+pub fn exit() {
+  std::process::exit(0x0);
+}
+
+/// Команда задания статуса Discord RPC
+#[tauri::command]
+pub async fn set_discord_rpc(version: String, state: bool) {
+  tokio::spawn(async move {
+    if state {
+      DISCORD_RPC.write().unwrap().enable(version);
+    } else {
+      DISCORD_RPC.write().unwrap().disable();
+    }
+  });
+}

@@ -11,4 +11,5 @@ This section contains all the logic of the interface - styles, dynamic and stati
 | `./typescript/common`       | Common data structures                 |
 | `./typescript/effects`      | Logic of various interface effects     |
 | `./typescript/modules`      | Various modules                        |
+| `./typescript/trigger`      | Trigger registry functionality         |
 | `./typescript/utils`        | Utilities, auxiliary functions         |

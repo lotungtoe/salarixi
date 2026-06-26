@@ -168,8 +168,8 @@ class CaptchaModule {
         if ((e as KeyboardEvent).key === "Enter") {
           const input = document.getElementById(`captcha-code-${username}`) as HTMLInputElement;
 
-          await invoke("send_command", { 
-            command: "send_message",
+          await invoke("quick_operation", { 
+            operation: "send-message",
             options: {
               username: username,
               message: input.value

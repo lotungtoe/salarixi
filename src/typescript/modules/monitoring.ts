@@ -300,7 +300,7 @@ class MonitoringModule {
         const group = (document.getElementById(`bot-group-${username}`) as HTMLInputElement).value.replace(" ", "");
 
         await invoke("set_group", {
-          nickname: username,
+          username: username,
           group: group !== "" ? group : "global"
         });
       } catch (error) {
@@ -313,8 +313,8 @@ class MonitoringModule {
 
     document.getElementById(`disconnect-${username}`)?.addEventListener("click", async () => {
       try {
-        await invoke("send_command", {
-          command: "disconnect_bot",
+        await invoke("quick_operation", {
+          operation: "disconnect-bot",
           options: {
             username: username
           }
@@ -326,8 +326,8 @@ class MonitoringModule {
 
     document.getElementById(`reset-${username}`)?.addEventListener("click", async () => {
       try {
-        await invoke("send_command", {
-          command: "reset_bot",
+        await invoke("quick_operation", {
+          operation: "reset-bot",
           options: {
             username: username
           }
@@ -362,8 +362,8 @@ class MonitoringModule {
       if ((e as KeyboardEvent).key === "Enter") {
         const input = document.getElementById(`chat-message-${username}`) as HTMLInputElement;
 
-        await invoke("send_command", { 
-          command: "send_message",
+        await invoke("quick_operation", { 
+          operation: "send-message",
           options: {
             username: username,
             message: input.value
