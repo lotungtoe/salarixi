@@ -1289,7 +1289,7 @@ button svg {
 .pretty-textarea .label {
   position: absolute;
   top: 0; 
-  left: 33%;
+  left: 32%;
   transform: translateY(-50%);
   background: var(--secondary-bg);
   color: var(--muted-color);
@@ -1297,6 +1297,7 @@ button svg {
   font-size: 14px;
   padding: 6px 14px;
   border-radius: 16px;
+  min-width: 150px;
   border: 1px solid var(--secondary-border);
   pointer-events: none;
   white-space: nowrap;
