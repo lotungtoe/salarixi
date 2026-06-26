@@ -38,17 +38,24 @@ Uses [azalea](https://github.com/azalea-rs/azalea) library as a base.
 
 ## Features
 
-- **Easy to use:** Quick adaptation to the tool. Intuitive interface.
-- **Fast and smart:** All transactions in the tool are fast. The tool contains several smart managers for any tasks.
-- **Absolutely free:** All functionality in the tool is free.
-- **Beautiful design:** The tool has a clear and beautiful dark design.
-- **Open source:** The tool is completely open source.
-- **Great functionality:** The tool offers a lot of functionality that is very flexible in settings and well optimized.
-- **Data visualization:** For convenience, the tool visualizes the data in the form of graphs.
-- **Real-time monitoring:** The tool has real-time bot monitoring. It is highly optimized and has customizations.
-- **Event logging:** The tool has a log in which any information is logged.
-- **Cheat functions:** The tool contains unique functionality in the form of real cheats for bots.
-- **Proxy support:** The tool supports SOCKS5 proxy.
+- **Easy to use:** Quick adaptation, intuitive interface.
+- **Fast and efficient:** All transactions in tool are fast, convenient hot keys are provided for efficient control.
+- **Language support:** English, Turkish, Japanese, and Chinese are partially supported. Russian is 100% supported.
+- **Absolutely free:** All functionality is free.
+- **Open-source:** Tool is completely open-source.
+- **Beautiful design:** Tool has a clear and beautiful dark design.
+- **Customization:** You can customize any interface color using a style kit.
+- **Event logging:** Tool has a log in which any information is logged.
+- **Feature-rich:** Tool has many features for working with bots.
+- **Visualization:** For convenience, tool visualizes the data in form of charts.
+- **Monitoring:** Tool has real-time bot monitoring (health, food, chat...).
+- **Cheat functions:** Tool contains unique functionality in form of real cheats for bots.
+- **Proxy support:** Tool supports SOCKS5 proxy.
+- **Proxy finder:** Tool has a proxy collector that can find up to 50,000 at a time.
+- **Script writing:** You can write your own scripts for bots.
+- **Utilities:** Anti-captcha, radar, ping.
+- **Plugins:** Tool has many built-in plugins for bots.
+- **Multi-task:** Tool allows bots to perform dozens of actions simultaneously and avoid conflicts.
 
 ## Screenshots
 
