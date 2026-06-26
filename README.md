@@ -50,13 +50,10 @@ Uses [azalea](https://github.com/azalea-rs/azalea) library as a base.
 - **Cheat functions:** The tool contains unique functionality in the form of real cheats for bots.
 - **Proxy support:** The tool supports SOCKS5 proxy.
 
-## Gallery
+## Screenshots
 
 ![](./assets/main.avif)
-![](./assets/settings.avif)
 ![](./assets/accounts.avif)
-![](./assets/plugins.avif)
-![](./assets/anti_captcha.avif)
 ![](./assets/control.avif)
 
 ## Installation
