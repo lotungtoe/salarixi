@@ -95,9 +95,6 @@
   --plugin-deprecated-tag-color: #d3c017;
   --plugin-deprecated-tag-bg: #f7e22013;
   --plugin-deprecated-tag-border: #f7e1207a;
-  --plugin-unavailable-tag-color: #df4d4d;
-  --plugin-unavailable-tag-bg: #d4555513;
-  --plugin-unavailable-tag-border: #d455557a;
 
   --docs-header-color: #dfdfdf;
   --docs-code-bg: #3a393952;
@@ -1732,7 +1729,7 @@ button svg {
   border: 1px solid var(--secondary-border);
   border-radius: 12px;
   color: var(--dim-color);
-  transition: color 0.2s ease, border-color 0.2s ease;
+  transition: color 0.2s ease;
 }
 
 .feature-card svg {
@@ -1748,7 +1745,6 @@ button svg {
 
 .feature-card:hover {
   color: var(--highlight-color);
-  border-color: var(--bright-border);
 }
 
 .highlight {
@@ -2443,6 +2439,8 @@ button svg {
   align-items: center;
   width: 100%;
   overflow-y: auto;
+  background: var(--secondary-bg);
+  border: 1px solid var(--secondary-border);
   border-radius: 12px;
 }
 
@@ -2450,52 +2448,17 @@ button svg {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  height: auto;
-  min-height: 95px;
+  min-height: 70px;
   width: 100%;
   border-bottom: 1px solid var(--secondary-border);
-  padding: 8px;
+  padding: 0 16px;
 }
 
 .plugin-list .plugin-card:last-child {
   border-bottom: none;
 }
 
-.plugin-list .plugin-card .head {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  margin-left: 8px;
-}
-
-.plugin-list .plugin-card .head .image {
-  width: 48px;
-  height: 48px;
-  color: var(--dim-color);
-  flex-shrink: 0;
-  transition: color 0.12s ease, transform 0.12s ease;
-}
-
-.plugin-list .plugin-card .head .image:hover {
-  color: var(--highlight-color);
-}
-
-.plugin-list .plugin-card .head .image:active {
-  transform: scale(0.94);
-}
-
-.plugin-list .plugin-card .head .text {
-  display: flex;
-  flex-direction: column;
-  text-align: left;
-  justify-content: center;
-  align-items: start;
-  gap: 4px;
-  padding: 6px 0;
-  padding-left: 2px;
-}
-
-.plugin-list .plugin-card .head .text .header {
+.plugin-list .plugin-card .name {
   color: var(--default-color);
   font-family: var(--global-font-family);
   font-size: 17px;
@@ -2503,56 +2466,24 @@ button svg {
   margin-bottom: 4px;
 }
 
-.plugin-list .plugin-card .head .text .meta {
-  color: var(--dim-color);
-  font-family: var(--global-font-family);
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.plugin-list .plugin-card.unavailable .head .image:hover {
-  color: var(--plugin-unavailable-tag-color);
-}
-
-.plugin-list .plugin-card.deprecated .head .image:hover {
-  color: var(--plugin-deprecated-tag-color);
-}
-
-.plugin-list .plugin-card.unavailable .head .text .header .tag,
-.plugin-list .plugin-card.deprecated .head .text .header .tag {
+.plugin-list .plugin-card.deprecated .name .tag {
   padding: 3px 6px;
-  border-radius: var(--plugin-tag-border-radius);
   font-family: var(--global-font-family);
   font-size: 14px;
   font-weight: 500;
   margin-left: 8px;
-}
-
-.plugin-list .plugin-card.unavailable .head .text .header .tag {
-  color: var(--plugin-unavailable-tag-color);
-  background: var(--plugin-unavailable-tag-bg);
-  border: 1px solid var(--plugin-unavailable-tag-border);
-}
-
-.plugin-list .plugin-card.deprecated .head .text .header .tag {
   color: var(--plugin-deprecated-tag-color);
   background: var(--plugin-deprecated-tag-bg);
   border: 1px solid var(--plugin-deprecated-tag-border);
+  border-radius: var(--plugin-tag-border-radius);
 }
 
 .plugin-list .plugin-card .controls {
   display: flex;
-  flex-direction: column;
   gap: 8px;
   align-items: end;
   justify-content: center;
   margin-left: 16px;
-}
-
-.plugin-list .plugin-card .controls button {
-  padding: 6px 6px;
-  font-weight: 600;
-  border-radius: 6px;
 }
 
 .plugin-description {
@@ -2686,12 +2617,11 @@ button svg {
   justify-content: center;
   align-items: center;
   gap: 40px;
-  transition: transform 0.12s ease, border-color 0.12s ease;
+  transition: transform 0.12s ease;
 }
 
 .config-wrapper .card:hover {
   transform: translateY(-10px);
-  border-color: var(--bright-border);
 }
 
 .config-wrapper .card:hover .icon {

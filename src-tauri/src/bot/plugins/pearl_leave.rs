@@ -12,9 +12,9 @@ use crate::bot::PLUGINS;
 use crate::other::tools::randnum;
 use crate::take_bot;
 
-pub struct AutoPearlPlugin;
+pub struct PearlLeavePlugin;
 
-impl AutoPearlPlugin {
+impl PearlLeavePlugin {
   /// Метод обработки тика
   async fn tick(&self, bot: &Client) {
     let health = bot.get_health();
@@ -81,7 +81,7 @@ impl AutoPearlPlugin {
   }
 }
 
-impl SalarixiPlugin for AutoPearlPlugin {
+impl SalarixiPlugin for PearlLeavePlugin {
   fn new() -> Self {
     Self
   }
@@ -102,6 +102,6 @@ impl SalarixiPlugin for AutoPearlPlugin {
       }
     });
 
-    PLUGINS.push_task(&username, PluginName::AutoPearl, task);
+    PLUGINS.push_task(&username, PluginName::PearlLeave, task);
   }
 }

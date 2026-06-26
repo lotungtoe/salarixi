@@ -25,9 +25,9 @@ struct Potion {
   name: PotionKind,
 }
 
-pub struct AutoPotionPlugin;
+pub struct PotionConsumerPlugin;
 
-impl AutoPotionPlugin {
+impl PotionConsumerPlugin {
   /// Метод обработки тика
   async fn tick(&self, bot: &Client) {
     let health = bot.get_health();
@@ -267,7 +267,7 @@ impl AutoPotionPlugin {
   }
 }
 
-impl SalarixiPlugin for AutoPotionPlugin {
+impl SalarixiPlugin for PotionConsumerPlugin {
   fn new() -> Self {
     Self
   }
@@ -288,6 +288,6 @@ impl SalarixiPlugin for AutoPotionPlugin {
       }
     });
 
-    PLUGINS.push_task(&username, PluginName::AutoPotion, task);
+    PLUGINS.push_task(&username, PluginName::PotionConsumer, task);
   }
 }

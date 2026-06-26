@@ -61,14 +61,14 @@ pub struct AccountOptions {
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct PluginOptions {
-  pub auto_armor: bool,
+  pub instant_armor_equip: bool,
   pub auto_totem: bool,
   pub auto_eat: bool,
-  pub auto_potion: bool,
+  pub potion_consumer: bool,
   pub auto_look: bool,
   pub auto_shield: bool,
-  pub auto_repair: bool,
-  pub auto_pearl: bool,
+  pub auto_mending: bool,
+  pub pearl_leave: bool,
 }
 
 #[derive(Debug, Deserialize, Clone)]

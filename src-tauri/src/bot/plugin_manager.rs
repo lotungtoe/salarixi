@@ -17,14 +17,14 @@ pub static PLUGINS: Lazy<Arc<PluginManager>> = Lazy::new(|| Arc::new(PluginManag
 /// Имя плагина
 #[derive(Eq, Hash, PartialEq)]
 pub enum PluginName {
-  AutoArmor,
+  InstantArmorEquip,
   AutoTotem,
   AutoEat,
-  AutoPotion,
+  PotionConsumer,
   AutoLook,
   AutoShield,
-  AutoRepair,
-  AutoPearl,
+  AutoMending,
+  PearlLeave,
 }
 
 /// Менеджер плагинов.
@@ -36,14 +36,14 @@ pub struct PluginManager {
 }
 
 struct PluginList {
-  auto_armor: AutoArmorPlugin,
+  instant_armor_equip: InstantArmorEquipPlugin,
   auto_totem: AutoTotemPlugin,
   auto_eat: AutoEatPlugin,
-  auto_potion: AutoPotionPlugin,
+  potion_consumer: PotionConsumerPlugin,
   auto_look: AutoLookPlugin,
   auto_shield: AutoShieldPlugin,
-  auto_repair: AutoRepairPlugin,
-  auto_pearl: AutoPearlPlugin,
+  auto_mending: AutoMendingPlugin,
+  pearl_leave: PearlLeavePlugin,
 }
 
 impl PluginManager {
@@ -52,14 +52,14 @@ impl PluginManager {
     Self {
       tasks: RwLock::new(HashMap::new()),
       plugins: PluginList {
-        auto_armor: AutoArmorPlugin::new(),
+        instant_armor_equip: InstantArmorEquipPlugin::new(),
         auto_totem: AutoTotemPlugin::new(),
         auto_eat: AutoEatPlugin::new(),
-        auto_potion: AutoPotionPlugin::new(),
+        potion_consumer: PotionConsumerPlugin::new(),
         auto_look: AutoLookPlugin::new(),
         auto_shield: AutoShieldPlugin::new(),
-        auto_repair: AutoRepairPlugin::new(),
-        auto_pearl: AutoPearlPlugin::new(),
+        auto_mending: AutoMendingPlugin::new(),
+        pearl_leave: PearlLeavePlugin::new(),
       },
     }
   }
@@ -71,8 +71,8 @@ impl PluginManager {
       Err(_) => failed!("plugin task list is already in use"),
     };
 
-    if plugins.auto_armor {
-      self.plugins.auto_armor.activate(username.clone());
+    if plugins.instant_armor_equip {
+      self.plugins.instant_armor_equip.activate(username.clone());
     }
 
     if plugins.auto_totem {
@@ -83,8 +83,8 @@ impl PluginManager {
       self.plugins.auto_eat.activate(username.clone());
     }
 
-    if plugins.auto_potion {
-      self.plugins.auto_potion.activate(username.clone());
+    if plugins.potion_consumer {
+      self.plugins.potion_consumer.activate(username.clone());
     }
 
     if plugins.auto_look {
@@ -95,12 +95,12 @@ impl PluginManager {
       self.plugins.auto_shield.activate(username.clone());
     }
 
-    if plugins.auto_repair {
-      self.plugins.auto_repair.activate(username.clone());
+    if plugins.auto_mending {
+      self.plugins.auto_mending.activate(username.clone());
     }
 
-    if plugins.auto_pearl {
-      self.plugins.auto_pearl.activate(username.clone());
+    if plugins.pearl_leave {
+      self.plugins.pearl_leave.activate(username.clone());
     }
 
     success!(());

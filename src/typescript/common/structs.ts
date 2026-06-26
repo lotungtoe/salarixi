@@ -1,43 +1,43 @@
 /** Локальная структура, содержащая информацию о плагинах текущей версии программы */
-export const plugins: Record<string, { header: string; enable: boolean; date: string }> = {
-  "auto-armor": {
-    header: "Авто Доспехи",
+export const plugins: Record<string, { name: string; enable: boolean; date: string }> = {
+  "instant-armor-equip": {
+    name: "Instant Armor Equip",
     enable: false,
-    date: "25.06.2026"
+    date: "26.06.2026"
   },
   "auto-totem": {
-    header: "Авто Тотем",
+    name: "Auto Totem",
     enable: false,
-    date: "25.06.2026"
+    date: "26.06.2026"
   },
   "auto-eat": {
-    header: "Авто Еда",
+    name: "Auto Eat",
     enable: false,
-    date: "25.06.2026"
+    date: "26.06.2026"
   },
-  "auto-potion": {
-    header: "Авто Зелье",
+  "potion-consumer": {
+    name: "Potion Consumer",
     enable: false,
-    date: "25.06.2026"
+    date: "26.06.2026"
   },
   "auto-look": {
-    header: "Авто Взгляд",
+    name: "Auto Look",
     enable: false,
-    date: "25.06.2026"
+    date: "26.06.2026"
   },
   "auto-shield": {
-    header: "Авто Щит",
+    name: "Auto Shield",
     enable: false,
-    date: "25.06.2026"
+    date: "26.06.2026"
   },
-  "auto-repair": {
-    header: "Авто Починка",
+  "auto-mending": {
+    name: "Auto Mending",
     enable: false,
-    date: "25.06.2026"
+    date: "26.06.2026"
   },
-  "auto-pearl": {
-    header: "Авто Жемчуг",
+  "pearl-leave": {
+    name: "Pearl Leave",
     enable: false,
-    date: "25.06.2026"
+    date: "26.06.2026"
   },
 };

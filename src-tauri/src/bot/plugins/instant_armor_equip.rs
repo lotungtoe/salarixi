@@ -34,9 +34,9 @@ struct ArmorSet {
   boots: Option<Armor>,
 }
 
-pub struct AutoArmorPlugin;
+pub struct InstantArmorEquipPlugin;
 
-impl AutoArmorPlugin {
+impl InstantArmorEquipPlugin {
   /// Метод экипировки брони
   async fn equip_armor(&self, bot: &Client) {
     let mut armors = vec![];
@@ -342,7 +342,7 @@ impl AutoArmorPlugin {
   }
 }
 
-impl SalarixiPlugin for AutoArmorPlugin {
+impl SalarixiPlugin for InstantArmorEquipPlugin {
   fn new() -> Self {
     Self
   }
@@ -363,6 +363,6 @@ impl SalarixiPlugin for AutoArmorPlugin {
       }
     });
 
-    PLUGINS.push_task(&username, PluginName::AutoArmor, task);
+    PLUGINS.push_task(&username, PluginName::InstantArmorEquip, task);
   }
 }

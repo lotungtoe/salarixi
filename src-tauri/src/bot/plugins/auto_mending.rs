@@ -20,9 +20,9 @@ struct BrokenItem {
   kind: ItemKind,
 }
 
-pub struct AutoRepairPlugin;
+pub struct AutoMendingPlugin;
 
-impl AutoRepairPlugin {
+impl AutoMendingPlugin {
   /// Метод обработки тика
   async fn tick(&self, bot: &Client) {
     let broken_items = self.find_broken_items(bot);
@@ -166,7 +166,7 @@ impl AutoRepairPlugin {
   }
 }
 
-impl SalarixiPlugin for AutoRepairPlugin {
+impl SalarixiPlugin for AutoMendingPlugin {
   fn new() -> Self {
     Self
   }
@@ -187,6 +187,6 @@ impl SalarixiPlugin for AutoRepairPlugin {
       }
     });
 
-    PLUGINS.push_task(&username, PluginName::AutoRepair, task);
+    PLUGINS.push_task(&username, PluginName::AutoMending, task);
   }
 }
