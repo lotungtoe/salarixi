@@ -1,4 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
+
+import { getStringSize } from "./size";
 import { date } from "./date";
 
 /** Тип времени */
@@ -73,4 +75,57 @@ export async function loadCache(name: string, filename: string, maxStorageValue:
     data: cacheStr,
     error: isDataExpired(result1.data, maxStorageValue, timeType) ? "expired" : null,
   };
+}
+
+/** Структура данных результата функции `getCacheOrNew` */
+interface CacheOrNewResult<T> {
+  data: T | null;
+  size: string;
+}
+
+/** Структура данных результата функции загрузки кэша */
+export interface LcfResult {
+  data: any;
+  expired: boolean;
+}
+
+/** Структура данных результата функции загрузки актуальной информации */
+export interface LnfResult {
+  data: any;
+  error: string | null;
+}
+
+/** Вспомогательная функция конвертации данных в строку */
+const stringify = (data: any): string => typeof data === "object" ? JSON.stringify(data) : typeof data === "number" ? data.toString() : data as string;
+
+/** Функция получения кэшированной или новой информации */
+export async function getCacheOrNew<T>(lcf: Function, lnf: Function, scf: Function, onerr: Function): Promise<CacheOrNewResult<T>> {
+  const cache = await lcf() as LcfResult;
+  let data = null;
+  let dataSize = 0;
+
+  if (cache.data && !cache.expired) {
+    data = cache.data;
+    dataSize = getStringSize(stringify(cache.data));
+  } else {
+    const actual = await lnf() as LnfResult;
+
+    if (actual.data && !actual.error) {
+      data = actual.data;
+      dataSize = getStringSize(stringify(data));
+      await scf(data);
+    } else {
+      if (cache.data) {
+        data = cache.data;
+        dataSize = getStringSize(stringify(data));
+      } else {
+        onerr(actual.error);
+        return { data: null, size: "0KB" };
+      }
+    }
+  }
+
+  const prettySize = (dataSize / 1024).toFixed(1);
+
+  return { data: data, size: `${prettySize}KB` };
 }

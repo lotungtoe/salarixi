@@ -4,8 +4,7 @@ import { marked } from "marked";
 import DOMPurify from "dompurify";
 
 import { logger } from "../utils/logger";
-import { loadCache, saveCache, TimeType } from "../utils/cache";
-import { getCacheOrNew, LcfResult } from "../utils/cache_or_new";
+import { getCacheOrNew, LcfResult, LnfResult, loadCache, saveCache, TimeType } from "../utils/cache";
 
 /** Функция очистки HTML */
 const sanitizeHtml = (html: string): string => DOMPurify.sanitize(html, {
@@ -30,8 +29,9 @@ class DocsModule {
 
       const docsText = document.querySelector(".documentation-wrapper .text") as HTMLDivElement;
       const docsNavigation = document.querySelector(".documentation-wrapper .navigation") as HTMLDivElement;
-     
-      const result = await getCacheOrNew<string>(this.lcf, this.lnf, this.scf);
+
+      const onerr = (err: string) => logger.log(`Ошибка загрузки документации (не критично): ${err}`, "non-critical-error");
+      const result = await getCacheOrNew<string>(this.lcf, this.lnf, this.scf, onerr);
       if (!result.data) return;
 
       const html = await marked.parse(result.data);
@@ -92,23 +92,16 @@ class DocsModule {
   }
 
   /** Метод загрузки актуальной пользовательской документации */
-  private async lnf(): Promise<string | null> {
+  private async lnf(): Promise<LnfResult> {
     try {
       const docs = await invoke("download_text", {
         url: "https://codeberg.org/nullclyze/salarixi/raw/branch/main/docs/user.md"
       }) as string | null;
 
-      if (!docs) {
-        logger.log("Ошибка загрузки документации (не критично): Resource moved or is unavailable", "non-critical-error");
-        return null;
-      }
-
-      return docs;
-    } catch (error) {
-      logger.log(`Ошибка загрузки документации (не критично): ${error}`, "non-critical-error");
+      return { data: docs, error: docs ? null : "resource moved or unavailable" };
+    } catch (err) {
+      return { data: null, error: String(err) };
     }
-
-    return null;
   }
 
   /** Метод загрузки кэшированной пользовательской документации */
@@ -128,7 +121,6 @@ class DocsModule {
 
     if (!result.data && result.error) {
       logger.log(`Ошибка кэширования документации (не критично): ${result.error}`, "non-critical-error");
-      return;
     }
   }
 }

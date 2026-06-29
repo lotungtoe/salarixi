@@ -1,11 +1,10 @@
 import { invoke } from "@tauri-apps/api/core";
 import { logger } from "../utils/logger";
 
-import { loadCache, saveCache, TimeType } from "../utils/cache";
 import { getStringSize } from "../utils/size";
 import { currentClientVersion } from "../main";
 import { isVersionNewer } from "../utils/semver";
-import { getCacheOrNew, LcfResult } from "../utils/cache_or_new";
+import { getCacheOrNew, LcfResult, LnfResult, loadCache, saveCache, TimeType } from "../utils/cache";
 
 /** Модуль переподчика */
 class TranslatorModule {
@@ -16,21 +15,16 @@ class TranslatorModule {
       
       const langSelect = document.getElementById("interface_select_language") as HTMLSelectElement;
 
-      const result = await getCacheOrNew<any>(this.lcf, this.lnf, this.scf);
+      const onerr = (err: string) => logger.log(`Ошибка загрузки перевода: ${err}`, "error");
+      const result = await getCacheOrNew<any>(this.lcf, this.lnf, this.scf, onerr);
       if (!result.data) return;
 
       const data = result.data;
       const langs = data["languages"] ?? data["langs"] ?? data["translations"];
-
-      if (!langs) {
-        logger.log("Ошибка загрузки перевода: Information is corrupted or missing", "error");
-        return;
-      }
-
       const translation = data["data"] ?? data["translation"] ?? data["list"] ?? data["map"] ?? data["array"];
 
-      if (!translation) {
-        logger.log("Ошибка загрузки перевода: Information is corrupted or missing", "error");
+      if (!langs || !translation) {
+        logger.log("Ошибка загрузки перевода: information is corrupted or missing", "error");
         return;
       }
 
@@ -122,23 +116,16 @@ class TranslatorModule {
   }
 
   /** Метод загрузки актуального перевода */
-  private async lnf(): Promise<any> {
+  private async lnf(): Promise<LnfResult> {
     try {
       const translation = await invoke("download_json", {
         url: "https://codeberg.org/nullclyze/salarixi/raw/branch/main/salarixi.lang.json"
       }) as any;
 
-      if (!translation) {
-        logger.log("Ошибка загрузки перевода: Resource moved or is unavailable", "error");
-        return null;
-      }
-
-      return translation;
-    } catch (error) {
-      logger.log(`Ошибка загрузки перевода: ${error}`, "error");
+      return { data: translation, error: translation ? null : "resource moved or unavailable" };
+    } catch (err) {
+      return { data: null, error: String(err) };
     }
-
-    return null;
   }
 
   /** Метод загрузки кэшированного перевода */
@@ -158,7 +145,6 @@ class TranslatorModule {
 
     if (!result.data && result.error) {
       logger.log(`Ошибка кэширования перевода: ${result.error}`, "error");
-      return;
     }
   }
 }

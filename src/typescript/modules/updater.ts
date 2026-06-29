@@ -1,10 +1,9 @@
 import { invoke } from "@tauri-apps/api/core";
 
 import { logger } from "../utils/logger";
-import { loadCache, saveCache, TimeType } from "../utils/cache";
 import { addOpeningUrlTo } from "../main";
 import { isVersionNewer } from "../utils/semver";
-import { getCacheOrNew, LcfResult } from "../utils/cache_or_new";
+import { getCacheOrNew, LcfResult, LnfResult, loadCache, saveCache, TimeType } from "../utils/cache";
 
 /** Небольшой модуль управления обновлениями клиента */
 class UpdaterModule {
@@ -16,7 +15,11 @@ class UpdaterModule {
 
         document.getElementById("close-notice-btn")?.addEventListener("click", () => notice.remove());
 
-        const onerr = () => notice.remove();
+        const onerr = (err: string) => {
+          notice.remove();
+          logger.log(`Ошибка проверки обновлений (не критично): ${err}`, "non-critical-error");
+        };
+
         const result = await getCacheOrNew<any>(this.lcf, this.lnf, this.scf, onerr);
         if (!result.data) return;
 
@@ -44,23 +47,16 @@ class UpdaterModule {
   }
 
   /** Метод загрузки актуальной информации о последней версии клиента */
-  private async lnf(): Promise<any> {
+  private async lnf(): Promise<LnfResult> {
     try {
-      const latestVersion = await invoke("download_json", {
+      const version = await invoke("download_json", {
         url: "https://codeberg.org/nullclyze/salarixi/raw/branch/main/salarixi.version.json",
       }) as any;
 
-      if (!latestVersion) {
-        logger.log(`Ошибка проверки обновлений (не критично): Resource moved or is unavailable`, "non-critical-error");
-        return;
-      }
-
-      return latestVersion;
-    } catch (error) {
-      logger.log(`Ошибка проверки обновлений (не критично): ${error}`, "non-critical-error");
+      return { data: version, error: version ? null : "resource moved or unavailable" };
+    } catch (err) {
+      return { data: null, error: String(err) };
     }
-
-    return null;
   }
 
   /** Метод загрузки кэшированной информации о последней версии клиента */
@@ -80,7 +76,6 @@ class UpdaterModule {
 
     if (!result.data && result.error) {
       logger.log(`Ошибка кэширования информации о последней версии клиента (не критично): ${result.error}`, "non-critical-error");
-      return;
     }
   }
 }

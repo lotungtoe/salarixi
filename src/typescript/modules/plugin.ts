@@ -1,9 +1,9 @@
+import { invoke } from "@tauri-apps/api/core";
+
 import { logger } from "../utils/logger";
 import { plugins } from "../common/structs";
 import { process } from "../main";
-import { invoke } from "@tauri-apps/api/core";
-import { loadCache, saveCache, TimeType } from "../utils/cache";
-import { getCacheOrNew, LcfResult } from "../utils/cache_or_new";
+import { getCacheOrNew, LcfResult, LnfResult, loadCache, saveCache, TimeType } from "../utils/cache";
 
 /** Модуль загрузки и управления плагинами */
 class PluginModule {
@@ -129,7 +129,8 @@ class PluginModule {
     try {
       logger.log("Загрузка информации о плагинах...", "system");
 
-      const result = await getCacheOrNew<any>(this.lcf, this.lnf, this.scf);
+      const onerr = (err: string) => logger.log(`Ошибка загрузки информации о плагинах (не критично): ${err}`, "non-critical-error");
+      const result = await getCacheOrNew<any>(this.lcf, this.lnf, this.scf, onerr);
       if (!result.data) return;
 
       const data = result.data;
@@ -138,7 +139,7 @@ class PluginModule {
       // Может быть такое что названия полей изменились, или вовсе вся структура
       // данных обновлена, поэтому здесь стоит делать ещё одну проверку
       if (!pluginList) {
-        logger.log("Ошибка загрузки информации о плагинах (не критично): Information is corrupted or missing", "non-critical-error");
+        logger.log("Ошибка загрузки информации о плагинах (не критично): information is corrupted or missing", "non-critical-error");
         return;
       }
 
@@ -183,23 +184,16 @@ class PluginModule {
   }
 
   /** Метод загрузки актуальной информации о плагинах */
-  private async lnf(): Promise<any> {
+  private async lnf(): Promise<LnfResult> {
     try {
       const plugins = await invoke("download_json", {
         url: "https://codeberg.org/nullclyze/salarixi/raw/branch/main/salarixi.plugins.json"
       }) as any;
-      
-      if (!plugins) {
-        logger.log("Ошибка загрузки информации о плагинах (не критично): Resource moved or is unavailable", "non-critical-error");
-        return;
-      }
 
-      return plugins;
-    } catch (error) {
-      logger.log(`Ошибка загрузки информации о плагинах (не критично): ${error}`, "non-critical-error");
+      return { data: plugins, error: plugins ? null : "resource moved or unavailable" };
+    } catch (err) {
+      return { data: null, error: String(err) };
     }
-
-    return null;
   }
 
   /** Метод загрузки кэшированной информации о плагинах */
@@ -219,7 +213,6 @@ class PluginModule {
 
     if (!result.data && result.error) {
       logger.log(`Ошибка кэширования информации о плагинах (не критично): ${result.error}`, "non-critical-error");
-      return;
     }
   }
 }

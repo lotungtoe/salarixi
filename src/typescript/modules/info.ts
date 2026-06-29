@@ -1,9 +1,8 @@
 import { invoke } from "@tauri-apps/api/core";
 
 import { logger } from "../utils/logger";
-import { loadCache, saveCache, TimeType } from "../utils/cache";
 import { addOpeningUrlTo } from "../main";
-import { getCacheOrNew, LcfResult } from "../utils/cache_or_new";
+import { getCacheOrNew, LcfResult, LnfResult, loadCache, saveCache, TimeType } from "../utils/cache";
 
 /** Структура информации клиента */
 interface ClientInfo {
@@ -26,7 +25,11 @@ class InfoModule {
       const downloadCountEl = document.getElementById("download-count") as HTMLSpanElement;
       const releaseCountEl = document.getElementById("release-count") as HTMLSpanElement;
 
-      const onerr = () => ["telegram", "discord", "youtube"].forEach(id => document.getElementById(id)?.remove());
+      const onerr = (err: string) => {
+        ["telegram", "discord", "youtube"].forEach(id => document.getElementById(id)?.remove());
+        logger.log(`Ошибка загрузки информации о клиенте (не критично): ${err}`, "non-critical-error");
+      };
+
       const result = await getCacheOrNew<ClientInfo>(this.lcf, this.lnf, this.scf, onerr);
       if (!result.data) return;
 
@@ -56,25 +59,19 @@ class InfoModule {
   }
 
   /** Метод загрузки актуальной информации о клиенте */
-  private async lnf(): Promise<ClientInfo | null> {
+  private async lnf(): Promise<LnfResult> {
     try {
       const releases = await invoke("download_json", {
         url: "https://codeberg.org/api/v1/repos/nullclyze/salarixi/releases"
       }) as any;
 
-      if (!releases) {
-        logger.log("Ошибка загрузки информации о клиенте (не критично): Resource moved or is unavailable", "non-critical-error");
-        return null;
-      }
+      if (!releases) return { data: null, error: "resource moved or unavailable" };
     
       const social = await invoke("download_json", {
         url: "https://codeberg.org/nullclyze/salarixi/raw/branch/main/salarixi.social.json"
       }) as any;
 
-      if (!social) {
-        logger.log("Ошибка загрузки информации о клиенте (не критично): Resource moved or is unavailable", "non-critical-error");
-        return null;
-      }
+      if (!social) return { data: null, error: "resource moved or unavailable" };
 
       let totalDownloadCount = 0;
       let totalReleaseCount = 0;
@@ -85,15 +82,16 @@ class InfoModule {
       }
 
       return {
-        downloads: totalDownloadCount,
-        releases: totalReleaseCount,
-        social: social,
+        data: {
+          downloads: totalDownloadCount,
+          releases: totalReleaseCount,
+          social: social,
+        },
+        error: null,
       };
-    } catch (error) {
-      logger.log(`Ошибка загрузки информации о клиенте (не критично): ${error}`, "non-critical-error");
+    } catch (err) {
+      return { data: null, error: String(err) };
     }
-
-    return null;
   }
 
   /** Метод загрузки кэшированной информации о клиенте */
@@ -113,7 +111,6 @@ class InfoModule {
 
     if (!result.data && result.error) {
       logger.log(`Ошибка кэширования информации о клиенте (не критично): ${result.error}`, "non-critical-error");
-      return;
     }
   }
 }
