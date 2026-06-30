@@ -435,13 +435,4 @@ export function replenishTriggerRegistry(): void {
       logger.log(`Ошибка изменения внутреннего отступа кнопок панели: ${error}`, "error");
     }
   });
-
-  triggerRegistry.register("interface_select_panel-internal-gap", "select", (current: HTMLSelectElement) => {
-    try {
-      const root = document.documentElement;
-      root.style.setProperty("--panel-btn-gap", current.value);
-    } catch (error) {
-      logger.log(`Ошибка изменения внутреннего отступа кнопок панели: ${error}`, "error");
-    }
-  });
 }
