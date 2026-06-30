@@ -1585,6 +1585,17 @@
       }
     },
     {
+      "versions": "0.0.0",
+      "tag": "interface-separators",
+      "lang": {
+        "ru": "Разделители",
+        "en": "Separators",
+        "tr": "Ayırıcılar",
+        "ja": "分離器",
+        "zh": "分離器"
+      }
+    },
+    {
       "versions": "1.1.0",
       "tag": "interface-language",
       "lang": {

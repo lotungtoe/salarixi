@@ -43,21 +43,19 @@ class TranslatorModule {
       const selectedLang = localStorage.getItem("language");
       if (selectedLang) langSelect.selectedIndex = parseInt(selectedLang);
 
-      langSelect.addEventListener("change", () => this.translate(langSelect.value, langSelect.selectedIndex, translation));
-      if (langSelect.value !== "ru") this.translate(langSelect.value, langSelect.selectedIndex, translation);
+      langSelect.addEventListener("change", async () => await this.translate(langSelect.value, langSelect.selectedIndex, translation));
+      if (langSelect.value !== "ru") await this.translate(langSelect.value, langSelect.selectedIndex, translation);
 
-      const dataSize = getStringSize(JSON.stringify(data, null, 2));
-      const prettyDataSize = (dataSize / 1024).toFixed(1);
-
-      logger.log(`Перевод загружен (размер ${prettyDataSize}KB)`, "system");
+      logger.log(`Перевод загружен (размер ${result.size})`, "system");
     } catch (error) {
       logger.log(`Ошибка загрузки перевода: ${error}`, "error");
     }
   }
 
   /** Метод перевода текста на другой язык */
-  private translate(targetLanguage: string, selectedIndex: number, translation: any): void {
+  private async translate(targetLanguage: string, selectedIndex: number, translation: any): Promise<void> {
     try {
+      const isDevMode = await invoke("is_dev_mode") as bool;
       let filteredTranslation = [];
 
       // Для начала нужно пройтись по всем элементам перевода и отфильтровать
@@ -70,7 +68,9 @@ class TranslatorModule {
         // 1. 1.0.0 (только 1.0.0)
         // 2. 1.0.0:1.8.5 (с 1.0.0 по 1.8.5 включительно)
         // 3. 1.0.0:1.8.5+1.9.1:2.4.3 (с 1.0.0 по 1.8.5 включительно и с 1.9.1 по 2.4.3 включительно)
-        // 3. 1.0.0:1.8.5+1.9.1 (с 1.0.0 по 1.8.5 включительно и 1.9.1)
+        // 4. 1.0.0:1.8.5+1.9.1 (с 1.0.0 по 1.8.5 включительно и 1.9.1)
+        // 5. 0.0.0 (текущая dev-версия без явного идентификатора)
+        // 6. 1.0.0:0.0.0 (с 1.0.0 по текущую dev-версию включительно)
 
         const fragments = String(versions).split("+");
 
@@ -79,10 +79,21 @@ class TranslatorModule {
           const minimum = split[0];
           const maximum = split[1];
 
-          if (!maximum && minimum === currentClientVersion) {
+          if (isDevMode && (minimum === "0.0.0" || maximum === "0.0.0")) {
             filteredTranslation.push(piece);
             break;
-          } else if ((minimum === currentClientVersion || !isVersionNewer(minimum)) && (maximum === currentClientVersion || isVersionNewer(maximum))) {
+          }
+
+          if (!maximum && minimum && minimum === currentClientVersion) {
+            filteredTranslation.push(piece);
+            break;
+          }
+
+          if (
+            minimum && (minimum === currentClientVersion || !isVersionNewer(minimum))
+            &&
+            maximum && (maximum === currentClientVersion || isVersionNewer(maximum))
+          ) {
             filteredTranslation.push(piece);
             break;
           }

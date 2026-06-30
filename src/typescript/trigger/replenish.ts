@@ -435,4 +435,13 @@ export function replenishTriggerRegistry(): void {
       logger.log(`Ошибка изменения внутреннего отступа кнопок панели: ${error}`, "error");
     }
   });
+
+  triggerRegistry.register("interface_select_panel-separators", "select", (current: HTMLSelectElement) => {
+    try {
+      const display = current.value === "hide" ? "none" : "flex";
+      document.querySelectorAll(".dashboard .split").forEach(s => s.style.display = display);
+    } catch (error) {
+      logger.log(`Ошибка изменения видимости разделителей панели: ${error}`, "error");
+    }
+  });
 }

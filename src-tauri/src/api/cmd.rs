@@ -229,14 +229,19 @@ pub fn exit() {
   std::process::exit(0x0);
 }
 
+/// Команда проверки, запущен ли клиент в режиме разработки
+#[tauri::command]
+pub fn is_dev_mode() -> bool {
+  let dev_flag = "dev".to_string();
+  std::env::args().collect::<Vec<String>>().contains(&dev_flag)
+}
+
 /// Команда задания статуса Discord RPC
 #[tauri::command]
 pub async fn set_discord_rpc(version: String, state: bool) {
-  tokio::spawn(async move {
-    if state {
-      DISCORD_RPC.write().unwrap().enable(version);
-    } else {
-      DISCORD_RPC.write().unwrap().disable();
-    }
-  });
+  if state {
+    DISCORD_RPC.write().await.enable(version);
+  } else {
+    DISCORD_RPC.write().await.disable();
+  }
 }

@@ -1,5 +1,5 @@
 use once_cell::sync::Lazy;
-use std::sync::RwLock;
+use tokio::sync::RwLock;
 
 use crate::api::emit::emit_log;
 

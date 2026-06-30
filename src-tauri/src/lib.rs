@@ -30,6 +30,7 @@ pub fn run() {
     })
     .invoke_handler(tauri::generate_handler![
       exit,
+      is_dev_mode,
       launch_bots,
       stop_bots,
       get_bot_profiles,

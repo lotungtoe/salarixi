@@ -176,20 +176,7 @@ body {
   padding-left: 10px;
 }
 
-.title-bar .right .play-time-wrapper {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 6px;
-}
-
-.title-bar .right .play-time-wrapper svg {
-  color: var(--muted-color);
-  width: 17px;
-  height: 17px;
-}
-
-.title-bar .right .play-time-wrapper label {
+.title-bar .right #play-time {
   color: var(--muted-color);
   font-family: var(--global-font-family);
   font-size: 14px;
@@ -305,7 +292,7 @@ body {
   overflow-y: auto;
 }
 
-.dashboard .spliter {
+.dashboard .split {
   display: flex;
   width: 100%;
   margin-top: 6px;
