@@ -79,7 +79,7 @@ class TranslatorModule {
           const minimum = split[0];
           const maximum = split[1];
 
-          if (isDevMode && (minimum === "0.0.0" || maximum === "0.0.0")) {
+          if (isDevMode && ((minimum === "0.0.0" || minimum === "dev") || (maximum === "0.0.0" || maximum === "dev"))) {
             filteredTranslation.push(piece);
             break;
           }
@@ -103,20 +103,25 @@ class TranslatorModule {
       document.querySelectorAll<HTMLElement>("[tt]").forEach(e => {
         let [tag, isColon] = [e.getAttribute("tt"), false];
         if (!tag) return;
-        if (tag[tag.length - 1] === ":") [tag, isColon] = [tag.slice(0, tag.length - 1), true];
 
-        for (const piece of filteredTranslation) {
-          const pieceTag = piece["tag"] ?? piece["id"] ?? piece["name"] ?? piece["mark"];
-          const pieceLang = piece["lang"] ?? piece["langs"] ?? piece["options"];
-          if (pieceTag !== tag || !pieceLang[targetLanguage]) continue;
+        try {
+          if (tag[tag.length - 1] === ":") [tag, isColon] = [tag.slice(0, tag.length - 1), true];
 
-          if (isColon) {
-            e.innerText = `${pieceLang[targetLanguage]}:`;
-          } else {
-            e.innerText = pieceLang[targetLanguage];
+          for (const piece of filteredTranslation) {
+            const pieceTag = piece["tag"] ?? piece["id"] ?? piece["name"] ?? piece["mark"];
+            const pieceLang = piece["lang"] ?? piece["langs"] ?? piece["options"];
+            if (pieceTag !== tag || !pieceLang[targetLanguage]) continue;
+
+            if (isColon) {
+              e.innerText = `${pieceLang[targetLanguage]}:`;
+            } else {
+              e.innerText = pieceLang[targetLanguage];
+            }
+
+            break;
           }
-
-          break;
+        } catch (err) {
+          logger.log(`Ошибка перевода элемента "${tag}": ${err}`, "error");
         }
       });
 
