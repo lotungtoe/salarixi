@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use azalea::chat::ChatPacket;
 use azalea::entity::HumanoidArm;
 use azalea::entity::LookDirection;
@@ -7,7 +9,7 @@ use azalea::protocol::packets::game::ClientboundGamePacket;
 use azalea::registry::builtin::EntityKind;
 use azalea::FormattedText;
 use azalea::{ClientInformation, NoState};
-use std::sync::Arc;
+use tokio::time::Duration;
 
 use crate::api::emit::*;
 use crate::bot::auth::{default_authorize, trigger_authorize};
@@ -72,7 +74,7 @@ async fn process_spawn(bot: Client) {
     username: username.clone(),
   });
 
-  PROFILE_SYSTEM.set_status(&username, BotStatus::Connected);
+  PROFILE_SYSTEM.set_status(&username, BotStatus::Connected).await;
 
   let Some(opts) = current_options() else {
     return;
@@ -111,8 +113,8 @@ async fn process_spawn(bot: Client) {
     // случае может возникнуть конфликт между ними. Наверное логичнее будет поставить
     // в приоретет авторизацию, ведь часто пользователь может использовать авто-скрипт
     // с включенной авторизацией, и если сценарий пользователя не будет выполнять процесс
-    // авторизации и при этом на сервере она явно стоит - бот просто будет ожидать
-    // некоторое время в лобби и его кикнет. Кароче, легче вперёд поставить авторизацию,
+    // авторизации, но при этом на сервере авторизация обязательна - бот просто будет ожидать
+    // некоторое время в лобби, после его кикнет. Легче вперёд поставить авторизацию,
     // так как в большинстве случаев выполнения сценария предпологается после авторизации,
     // если что это всегда можно сделать иначе - просто отключить опции рода авто-регистр.
     default_authorize(&bot).await;
@@ -133,14 +135,16 @@ async fn process_disconnect(bot: Client, text: Option<FormattedText>) {
   TASK_SYSTEM.kill_all_tasks_for(&username).await;
   PLUGINS.kill_all_tasks_for(&username).await;
 
+  tokio::time::sleep(Duration::from_secs(2)).await;
+
   BOT_REGISTRY.remove_bot(&username).await;
 
-  PROFILE_SYSTEM.set_bool(&username, "logined", false);
-  PROFILE_SYSTEM.set_bool(&username, "captcha_caught", false);
+  PROFILE_SYSTEM.set_bool(&username, "logined", false).await;
+  PROFILE_SYSTEM.set_bool(&username, "captcha_caught", false).await;
   STATE_SYSTEM.reset(&username).await;
   TASK_SYSTEM.remove(&username).await;
 
-  PROFILE_SYSTEM.set_status(&username, BotStatus::Disconnected);
+  PROFILE_SYSTEM.set_status(&username, BotStatus::Disconnected).await;
 
   if let Some(t) = text {
     if let Some(options) = current_options() {
@@ -181,7 +185,7 @@ async fn process_chat_message(bot: Client, packet: ChatPacket) {
       };
 
       if !profile.captcha_caught {
-        PROFILE_SYSTEM.set_bool(&username, "captcha_caught", true);
+        PROFILE_SYSTEM.set_bool(&username, "captcha_caught", true).await;
 
         if options.basic.use_webhook && options.webhook.send_information {
           send_webhook(
@@ -210,7 +214,7 @@ async fn process_chat_message(bot: Client, packet: ChatPacket) {
 async fn process_tick(bot: Client) {
   let username = bot.username();
 
-  let Some(profile) = PROFILE_SYSTEM.get(&username).await else {
+  let Some(mut profile) = PROFILE_SYSTEM.get(&username).await else {
     return;
   };
 
@@ -219,8 +223,8 @@ async fn process_tick(bot: Client) {
       return;
     }
 
-    PROFILE_SYSTEM.set_num(&username, "ping", bot.ping());
-    PROFILE_SYSTEM.set_num(&username, "health", bot.get_health() as u32);
+    profile.ping = bot.ping();
+    profile.health = bot.get_health() as u32;
   }
 }
 
@@ -282,7 +286,7 @@ async fn process_packet(bot: Client, packet: Arc<ClientboundGamePacket>) {
               MAP_ACCUMULATOR.set_processing(&username, true);
 
               if let Some(combined_base64) = MAP_ACCUMULATOR.combine_all(&username) {
-                PROFILE_SYSTEM.set_bool(&username, "captcha_caught", true);
+                PROFILE_SYSTEM.set_bool(&username, "captcha_caught", true).await;
                 MAP_ACCUMULATOR.update_captcha_time(&username);
 
                 if options.basic.use_webhook && options.webhook.send_information {
@@ -314,7 +318,7 @@ async fn process_packet(bot: Client, packet: Arc<ClientboundGamePacket>) {
                 &map_patch.map_colors,
               );
 
-              PROFILE_SYSTEM.set_bool(&username, "captcha_caught", true);
+              PROFILE_SYSTEM.set_bool(&username, "captcha_caught", true).await;
               MAP_ACCUMULATOR.update_captcha_time(&username);
 
               if options.basic.use_webhook && options.webhook.send_information {

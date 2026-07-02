@@ -1,12 +1,11 @@
 use hashbrown::HashMap;
 use once_cell::sync::Lazy;
 use serde::Serialize;
-use std::sync::Arc;
 use tokio::sync::RwLock;
 
 use crate::api::emit::emit_log;
 
-pub static PROFILE_SYSTEM: Lazy<Arc<ProfileSystem>> = Lazy::new(|| Arc::new(ProfileSystem::new()));
+pub static PROFILE_SYSTEM: Lazy<ProfileSystem> = Lazy::new(|| ProfileSystem::new());
 
 /// Структура профиля бота
 #[derive(Clone, Serialize)]
@@ -62,46 +61,6 @@ impl Profile {
       captcha_caught: false,
       group: "global".to_string(),
     }
-  }
-
-  pub fn set_status(&mut self, status: BotStatus) {
-    self.status = status;
-  }
-
-  pub fn set_password(&mut self, password: &str) {
-    self.password = Some(password.to_string());
-  }
-
-  pub fn set_email(&mut self, email: &str) {
-    self.email = Some(email.to_string());
-  }
-
-  pub fn set_proxy(&mut self, proxy: ProfileProxy) {
-    self.proxy = proxy;
-  }
-
-  pub fn set_ping(&mut self, ping: u32) {
-    self.ping = ping;
-  }
-
-  pub fn set_health(&mut self, health: u32) {
-    self.health = health;
-  }
-
-  pub fn set_registered(&mut self, state: bool) {
-    self.registered = state;
-  }
-
-  pub fn set_logined(&mut self, state: bool) {
-    self.logined = state;
-  }
-
-  pub fn set_captcha_caught(&mut self, state: bool) {
-    self.captcha_caught = state;
-  }
-
-  pub fn set_group(&mut self, group: &str) {
-    self.group = group.to_string();
   }
 }
 
@@ -231,57 +190,41 @@ impl ProfileSystem {
     result
   }
 
-  pub fn set_status(&self, username: &str, status: BotStatus) {
-    if let Ok(mut profiles) = self.map.try_write() {
-      if let Some(p) = profiles.get_mut(username) {
-        p.set_status(status);
+  pub async fn set_status(&self, username: &str, status: BotStatus) {
+    let mut profiles = self.map.write().await;
+    if let Some(profile) = profiles.get_mut(username) {
+      profile.status = status;
+    }
+  }
+
+  pub async fn set_str(&self, username: &str, field: &str, value: &str) {
+    let mut profiles = self.map.write().await;
+    if let Some(profile) = profiles.get_mut(username) {
+      match field {
+        "password" => profile.password = Some(value.to_string()),
+        "email" => profile.email = Some(value.to_string()),
+        "group" => profile.group = value.to_string(),
+        _ => {}
       }
     }
   }
 
-  pub fn set_str(&self, username: &str, field: &str, value: &str) {
-    if let Ok(mut profiles) = self.map.try_write() {
-      if let Some(p) = profiles.get_mut(username) {
-        match field {
-          "password" => p.set_password(value),
-          "email" => p.set_email(value),
-          "group" => p.set_group(value),
-          _ => {}
-        }
+  pub async fn set_bool(&self, username: &str, field: &str, value: bool) {
+    let mut profiles = self.map.write().await;
+    if let Some(profile) = profiles.get_mut(username) {
+      match field {
+        "registered" => profile.registered = value,
+        "logined" => profile.logined = value,
+        "captcha_caught" => profile.captcha_caught = value,
+        _ => {}
       }
     }
   }
 
-  pub fn set_num(&self, username: &str, field: &str, value: u32) {
-    if let Ok(mut profiles) = self.map.try_write() {
-      if let Some(p) = profiles.get_mut(username) {
-        match field {
-          "ping" => p.set_ping(value),
-          "health" => p.set_health(value),
-          _ => {}
-        }
-      }
-    }
-  }
-
-  pub fn set_bool(&self, username: &str, field: &str, value: bool) {
-    if let Ok(mut profiles) = self.map.try_write() {
-      if let Some(p) = profiles.get_mut(username) {
-        match field {
-          "registered" => p.set_registered(value),
-          "logined" => p.set_logined(value),
-          "captcha_caught" => p.set_captcha_caught(value),
-          _ => {}
-        }
-      }
-    }
-  }
-
-  pub fn set_proxy(&self, username: &str, proxy: ProfileProxy) {
-    if let Ok(mut profiles) = self.map.try_write() {
-      if let Some(p) = profiles.get_mut(username) {
-        p.set_proxy(proxy);
-      }
+  pub async fn set_proxy(&self, username: &str, proxy: ProfileProxy) {
+    let mut profiles = self.map.write().await;
+    if let Some(profile) = profiles.get_mut(username) {
+      profile.proxy = proxy;
     }
   }
 }

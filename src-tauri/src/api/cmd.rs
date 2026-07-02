@@ -90,7 +90,7 @@ pub async fn quick_operation(operation: String, options: serde_json::Value) {
 /// Команда установки группы указанному боту
 #[tauri::command]
 pub async fn set_group(username: String, group: String) {
-  PROFILE_SYSTEM.set_str(&username, "group", &group);
+  PROFILE_SYSTEM.set_str(&username, "group", &group).await;
 }
 
 /// Команда получения количества активных ботов

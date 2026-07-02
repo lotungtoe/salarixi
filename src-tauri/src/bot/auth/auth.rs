@@ -35,12 +35,12 @@ pub async fn default_authorize(bot: &Client) {
       min_delay = opts.basic.register_min_delay;
       max_delay = opts.basic.register_max_delay;
 
-      PROFILE_SYSTEM.set_bool(&username, "registered", true);
+      PROFILE_SYSTEM.set_bool(&username, "registered", true).await;
 
       action = "зарегистрировался";
 
       if !opts.basic.use_double_auth {
-        PROFILE_SYSTEM.set_bool(&username, "logined", true);
+        PROFILE_SYSTEM.set_bool(&username, "logined", true).await;
       }
     }
   } else if !profile.logined {
@@ -52,7 +52,7 @@ pub async fn default_authorize(bot: &Client) {
 
       action = "залогинился";
 
-      PROFILE_SYSTEM.set_bool(&username, "logined", true);
+      PROFILE_SYSTEM.set_bool(&username, "logined", true).await;
     }
   }
 
@@ -103,10 +103,10 @@ pub async fn trigger_authorize(bot: &Client, message: String) {
 
       action = "зарегистрировался";
 
-      PROFILE_SYSTEM.set_bool(&username, "registered", true);
+      PROFILE_SYSTEM.set_bool(&username, "registered", true).await;
 
       if !opts.basic.use_double_auth {
-        PROFILE_SYSTEM.set_bool(&username, "logined", true);
+        PROFILE_SYSTEM.set_bool(&username, "logined", true).await;
       }
     }
   } else if !profile.logined && opts.basic.login_mode == "trigger" {
@@ -116,7 +116,7 @@ pub async fn trigger_authorize(bot: &Client, message: String) {
 
       action = "залогинился";
 
-      PROFILE_SYSTEM.set_bool(&username, "logined", true);
+      PROFILE_SYSTEM.set_bool(&username, "logined", true).await;
     }
   }
 

@@ -51,8 +51,8 @@ pub async fn disconnect_bot(username: String) {
   STATE_SYSTEM.remove(&username).await;
   TASK_SYSTEM.remove(&username).await;
 
-  PROFILE_SYSTEM.set_bool(&username, "captcha_caught", false);
-  PROFILE_SYSTEM.set_str(&username, "status", "Оффлайн");
+  PROFILE_SYSTEM.set_bool(&username, "captcha_caught", false).await;
+  PROFILE_SYSTEM.set_str(&username, "status", "Оффлайн").await;
 
   emit_log(format!("Бот {} отключился", username), "info");
   emit_msg("Управление", format!("Бот {} отключился", username));

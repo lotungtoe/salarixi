@@ -40,7 +40,7 @@ fn clear_proxy(proxy: &str) -> &str {
 }
 
 /// Функция парсинга и обработки прокси
-fn processs_proxy(username: &str, proxy: &str, join_opts: JoinOpts) -> JoinOpts {
+async fn processs_proxy(username: &str, proxy: &str, join_opts: JoinOpts) -> JoinOpts {
   let mut profile_proxy = ProfileProxy {
     ip_address: None,
     proxy: None,
@@ -83,7 +83,7 @@ fn processs_proxy(username: &str, proxy: &str, join_opts: JoinOpts) -> JoinOpts 
       };
 
       profile_proxy.ip_address = Some(ip_addr.to_string());
-      PROFILE_SYSTEM.set_proxy(&username, profile_proxy);
+      PROFILE_SYSTEM.set_proxy(&username, profile_proxy).await;
 
       return join_opts.proxy(proxy);
     }
@@ -99,7 +99,7 @@ fn processs_proxy(username: &str, proxy: &str, join_opts: JoinOpts) -> JoinOpts 
         };
 
         profile_proxy.ip_address = Some(ip_addr.to_string());
-        PROFILE_SYSTEM.set_proxy(&username, profile_proxy);
+        PROFILE_SYSTEM.set_proxy(&username, profile_proxy).await;
 
         return join_opts.proxy(proxy);
       }
@@ -226,7 +226,7 @@ pub async fn launch_bots_on_server(options: LaunchOptions) -> bool {
               let mut join_opts = JoinOpts::new();
 
               if let Some(proxy) = &account.options.proxy {
-                join_opts = processs_proxy(&account.object.username, proxy, join_opts);
+                join_opts = processs_proxy(&account.object.username, proxy, join_opts).await;
               }
 
               accounts_with_opts.push((account, join_opts));
@@ -240,7 +240,7 @@ pub async fn launch_bots_on_server(options: LaunchOptions) -> bool {
 
                 if !list.is_empty() {
                   let proxy = list[i % list.len()];
-                  join_opts = processs_proxy(&account.object.username, proxy, join_opts);
+                  join_opts = processs_proxy(&account.object.username, proxy, join_opts).await;
                 }
               }
 

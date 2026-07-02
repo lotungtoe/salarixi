@@ -87,7 +87,7 @@ impl QuickTaskManager {
             STATE_SYSTEM.remove(&username).await;
             TASK_SYSTEM.remove(&username).await;
 
-            PROFILE_SYSTEM.set_str(&username, "status", "Оффлайн");
+            PROFILE_SYSTEM.set_str(&username, "status", "Оффлайн").await;
           }
           "rise" => {
             if getst(&username, State::CanLooking).await && getst(&username, State::CanInteracting).await {
