@@ -1585,7 +1585,7 @@
       }
     },
     {
-      "versions": "0.0.0",
+      "versions": "1.1.0",
       "tag": "interface-separators",
       "lang": {
         "ru": "Разделители",
