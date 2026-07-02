@@ -1,16 +1,17 @@
+use std::time::Duration;
+
 use azalea::prelude::*;
 use regex::Regex;
 use serde::Deserialize;
-use std::time::Duration;
 use tokio::time::sleep;
 
 use crate::bot::common::get_player_uuid;
 use crate::bot::extensions::BotDefaultExt;
-use crate::bot::radar::RADAR;
 use crate::bot::registry::BOT_REGISTRY;
 use crate::bot::systems::PROFILE_SYSTEM;
 use crate::bot::systems::{gettskact, killtsk, pushrtsk, TaskName};
 use crate::bot::traits::SalarixiModule;
+use crate::bot::utils::radar::RADAR;
 use crate::other::tools::*;
 use crate::take_bot;
 

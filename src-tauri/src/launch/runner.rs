@@ -15,7 +15,7 @@ use crate::bot::handlers::single::single_handler;
 use crate::bot::handlers::swarm::swarm_handler;
 use crate::bot::registry::{registry_event_loop, BOT_REGISTRY};
 use crate::bot::systems::{ProfileProxy, PROFILE_SYSTEM, STATE_SYSTEM, TASK_SYSTEM};
-use crate::bot::utils::MAP_ACCUMULATOR;
+use crate::bot::utils::acaptcha::MAP_ACCUMULATOR;
 use crate::bot::PLUGINS;
 use crate::other::webhook::send_webhook;
 

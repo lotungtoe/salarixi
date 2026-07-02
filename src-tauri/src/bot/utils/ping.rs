@@ -1,6 +1,7 @@
+use std::net::{IpAddr, Ipv4Addr};
+
 use dns_lookup::lookup_host;
 use serde::Serialize;
-use std::net::{IpAddr, Ipv4Addr};
 
 /// Информация об игроке
 #[derive(Serialize)]

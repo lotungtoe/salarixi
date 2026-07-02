@@ -1,16 +1,16 @@
+use std::fs::OpenOptions;
+use std::io::Write;
+
 use azalea::player::GameProfileComponent;
 use chrono::prelude::*;
 use once_cell::sync::Lazy;
 use serde::Serialize;
-use std::fs::OpenOptions;
-use std::io::Write;
-use std::sync::Arc;
 
 use crate::bot::extensions::{go_to, BotDefaultExt};
 use crate::bot::systems::PROFILE_SYSTEM;
 use crate::take_bot;
 
-pub static RADAR: Lazy<Arc<Radar>> = Lazy::new(|| Arc::new(Radar::new()));
+pub static RADAR: Lazy<Radar> = Lazy::new(|| Radar::new());
 
 // Структура информации радара
 #[derive(Serialize)]

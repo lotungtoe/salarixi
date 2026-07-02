@@ -17,7 +17,7 @@ use crate::bot::extensions::BotDefaultExt;
 use crate::bot::registry::{RegistryEvent, BOT_REGISTRY};
 use crate::bot::script::SCRIPT_EXECUTOR;
 use crate::bot::systems::{BotStatus, PROFILE_SYSTEM, STATE_SYSTEM, TASK_SYSTEM};
-use crate::bot::utils::{MAP_ACCUMULATOR, MAP_CAPTCHA_BYPASS, WEB_CAPTCHA_BYPASS};
+use crate::bot::utils::acaptcha::{MAP_ACCUMULATOR, MAP_CAPTCHA_BYPASS, WEB_CAPTCHA_BYPASS};
 use crate::bot::PLUGINS;
 use crate::launch::process::current_options;
 use crate::other::tools::*;

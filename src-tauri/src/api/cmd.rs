@@ -6,10 +6,11 @@ use std::time::Duration;
 
 use crate::api::emit::{emit_log, emit_msg};
 use crate::bot::functions::{disconnect_bot, reset_bot, send_message_from_bot};
-use crate::bot::radar::{RadarInfo, RADAR};
 use crate::bot::registry::{RegistryEvent, BOT_REGISTRY};
 use crate::bot::script::SCRIPT_EXECUTOR;
 use crate::bot::systems::{Profile, PROFILE_SYSTEM};
+use crate::bot::utils::ping::{ping_server, ServerInformation};
+use crate::bot::utils::radar::{RadarInfo, RADAR};
 use crate::launch::options::LaunchOptions;
 use crate::launch::process::{current_options, process_is_active};
 use crate::launch::runner::{launch_bots_on_server, stop_bots_and_destroy_data};
@@ -105,6 +106,12 @@ pub async fn control_bots(name: String, options: serde_json::Value, group: Strin
   if process_is_active() {
     BOT_REGISTRY.send_event(RegistryEvent::ControlModules { name, options, group });
   }
+}
+
+/// Команда пингования сервера
+#[tauri::command]
+pub async fn get_server_info(address: String) -> ServerInformation {
+  ping_server(address).await
 }
 
 /// Команда получения данных радара

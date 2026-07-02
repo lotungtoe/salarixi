@@ -1,23 +1,24 @@
+use std::cmp::Ordering;
+use std::collections::HashMap;
+use std::f64::consts::PI;
+use std::sync::RwLock;
+use std::time::{Duration, Instant};
+
 use base64::prelude::BASE64_STANDARD;
 use base64::Engine;
 use image::{ImageBuffer, ImageFormat, Rgb};
 use once_cell::sync::Lazy;
 use regex::Regex;
 use serde_json::json;
-use std::cmp::Ordering;
-use std::collections::HashMap;
-use std::f64::consts::PI;
-use std::sync::{Arc, RwLock};
-use std::time::{Duration, Instant};
 
 use crate::api::emit::emit_log;
 use crate::bot::registry::BOT_REGISTRY;
 use crate::launch::options::CaptchaBypassOptions;
 use crate::launch::process::current_options;
 
-pub static WEB_CAPTCHA_BYPASS: Lazy<Arc<WebCaptchaBypass>> = Lazy::new(|| Arc::new(WebCaptchaBypass::new()));
-pub static MAP_CAPTCHA_BYPASS: Lazy<Arc<MapCaptchaBypass>> = Lazy::new(|| Arc::new(MapCaptchaBypass::new()));
-pub static MAP_ACCUMULATOR: Lazy<Arc<MapAccumulator>> = Lazy::new(|| Arc::new(MapAccumulator::new()));
+pub static WEB_CAPTCHA_BYPASS: Lazy<WebCaptchaBypass> = Lazy::new(|| WebCaptchaBypass::new());
+pub static MAP_CAPTCHA_BYPASS: Lazy<MapCaptchaBypass> = Lazy::new(|| MapCaptchaBypass::new());
+pub static MAP_ACCUMULATOR: Lazy<MapAccumulator> = Lazy::new(|| MapAccumulator::new());
 
 /// Обход web-капчи
 pub struct WebCaptchaBypass;

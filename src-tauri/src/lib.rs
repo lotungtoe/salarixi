@@ -7,7 +7,6 @@ mod result;
 
 use api::cmd::*;
 use api::emit::emit_event_loop;
-use bot::ping::get_server_info;
 use modules::cache::{get_cache_date, load_cache, save_cache};
 use modules::config::{create_public_config, load_config, save_config};
 use modules::proxy::{check_proxies, collect_proxies};
