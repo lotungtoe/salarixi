@@ -27,7 +27,7 @@ use crate::take_bot;
 /// Обработчик для одного бота
 pub async fn single_handler(bot: Client, event: Event, _state: NoState) {
   match event {
-    Event::Init => process_init(bot),
+    Event::Init => process_init(bot).await,
     Event::Spawn => process_spawn(bot).await,
     Event::Disconnect(text) => process_disconnect(bot, text).await,
     Event::Chat(packet) => process_chat_message(bot, packet).await,
@@ -38,28 +38,30 @@ pub async fn single_handler(bot: Client, event: Event, _state: NoState) {
 }
 
 /// Функция обработки инициализации
-fn process_init(bot: Client) {
-  if let Some(opts) = current_options() {
-    bot.set_client_information(ClientInformation {
-      view_distance: opts.basic.view_distance,
-      chat_colors: true,
-      main_hand: if let Some(arm) = opts.basic.humanoid_arm {
-        if arm.as_str() == "left" {
-          HumanoidArm::Left
-        } else {
-          HumanoidArm::Right
-        }
+async fn process_init(bot: Client) {
+  let Some(opts) = current_options().await else {
+    return;
+  };
+
+  bot.set_client_information(ClientInformation {
+    view_distance: opts.basic.view_distance,
+    chat_colors: true,
+    main_hand: if let Some(arm) = opts.basic.humanoid_arm {
+      if arm.as_str() == "left" {
+        HumanoidArm::Left
       } else {
-        if randchance(0.5) {
-          HumanoidArm::Left
-        } else {
-          HumanoidArm::Right
-        }
-      },
-      particle_status: ParticleStatus::Minimal,
-      ..Default::default()
-    });
-  }
+        HumanoidArm::Right
+      }
+    } else {
+      if randchance(0.5) {
+        HumanoidArm::Left
+      } else {
+        HumanoidArm::Right
+      }
+    },
+    particle_status: ParticleStatus::Minimal,
+    ..Default::default()
+  });
 }
 
 /// Функция обработки спавна
@@ -76,7 +78,7 @@ async fn process_spawn(bot: Client) {
 
   PROFILE_SYSTEM.set_status(&username, BotStatus::Connected).await;
 
-  let Some(opts) = current_options() else {
+  let Some(opts) = current_options().await else {
     return;
   };
 
@@ -147,7 +149,7 @@ async fn process_disconnect(bot: Client, text: Option<FormattedText>) {
   PROFILE_SYSTEM.set_status(&username, BotStatus::Disconnected).await;
 
   if let Some(t) = text {
-    if let Some(options) = current_options() {
+    if let Some(options) = current_options().await {
       if options.basic.use_webhook {
         send_webhook(
           options.webhook.url,
@@ -165,7 +167,7 @@ async fn process_disconnect(bot: Client, text: Option<FormattedText>) {
 async fn process_chat_message(bot: Client, packet: ChatPacket) {
   let username = bot.username();
 
-  let Some(options) = current_options() else {
+  let Some(options) = current_options().await else {
     return;
   };
 
@@ -236,32 +238,38 @@ async fn process_packet(bot: Client, packet: Arc<ClientboundGamePacket>) {
     ClientboundGamePacket::AddEntity(entity_packet) => {
       if entity_packet.entity_type == EntityKind::ItemFrame || entity_packet.entity_type == EntityKind::GlowItemFrame {
         let pos = entity_packet.position;
-        MAP_ACCUMULATOR.add_frame_position(&username, entity_packet.id.0 as i32, pos.x, pos.y, pos.z);
+        MAP_ACCUMULATOR
+          .add_frame_position(&username, entity_packet.id.0 as i32, pos.x, pos.y, pos.z)
+          .await;
       }
     }
     ClientboundGamePacket::MapItemData(data) => {
-      if let Some(options) = current_options() {
-        if options.basic.use_anti_captcha && options.captcha_bypass.captcha_type.as_str() == "map" {
-          let Some(map_patch) = &data.color_patch.0 else {
-            return;
-          };
+      let Some(options) = current_options().await else {
+        return;
+      };
 
-          let Some(profile) = PROFILE_SYSTEM.get(&username).await else {
-            return;
-          };
+      if options.basic.use_anti_captcha && options.captcha_bypass.captcha_type.as_str() == "map" {
+        let Some(map_patch) = &data.color_patch.0 else {
+          return;
+        };
 
-          if !profile.captcha_caught {
-            let is_frame = options.captcha_bypass.captcha_subtype.as_str() == "frame";
+        let Some(profile) = PROFILE_SYSTEM.get(&username).await else {
+          return;
+        };
 
-            if is_frame {
-              let pos = bot.feet_pos();
-              let yaw = if let Some(look_dir) = bot.get_component::<LookDirection>() {
-                look_dir.y_rot()
-              } else {
-                0.0
-              };
+        if !profile.captcha_caught {
+          let is_frame = options.captcha_bypass.captcha_subtype.as_str() == "frame";
 
-              MAP_ACCUMULATOR.add_map_data(
+          if is_frame {
+            let pos = bot.feet_pos();
+            let yaw = if let Some(look_dir) = bot.get_component::<LookDirection>() {
+              look_dir.y_rot()
+            } else {
+              0.0
+            };
+
+            MAP_ACCUMULATOR
+              .add_map_data(
                 &username,
                 map_patch.width as u32,
                 map_patch.height as u32,
@@ -269,57 +277,25 @@ async fn process_packet(bot: Client, packet: Arc<ClientboundGamePacket>) {
                 pos.x,
                 pos.z,
                 yaw,
-              );
+              )
+              .await;
 
-              if MAP_ACCUMULATOR.is_processing(&username) {
-                return;
-              }
+            if MAP_ACCUMULATOR.is_processing(&username).await {
+              return;
+            }
 
-              let maps = MAP_ACCUMULATOR.get_maps(&username).unwrap_or_default();
+            let maps = MAP_ACCUMULATOR.get_maps(&username).await.unwrap_or_default();
 
-              if maps.len()
-                < (options.captcha_bypass.number_of_columns * options.captcha_bypass.number_of_rows) as usize
-              {
-                return;
-              }
+            if maps.len() < (options.captcha_bypass.number_of_columns * options.captcha_bypass.number_of_rows) as usize
+            {
+              return;
+            }
 
-              MAP_ACCUMULATOR.set_processing(&username, true);
+            MAP_ACCUMULATOR.set_processing(&username, true).await;
 
-              if let Some(combined_base64) = MAP_ACCUMULATOR.combine_all(&username) {
-                PROFILE_SYSTEM.set_bool(&username, "captcha_caught", true).await;
-                MAP_ACCUMULATOR.update_captcha_time(&username);
-
-                if options.basic.use_webhook && options.webhook.send_information {
-                  send_webhook(options.webhook.url, format!("Бот {} получил капчу с карты", username));
-                }
-
-                emit_log(
-                  format!("[ Анти-Капча ]: Бот {} получил капчу с карты", username),
-                  "info",
-                );
-
-                if options.captcha_bypass.solve_mode == "auto" {
-                  MAP_CAPTCHA_BYPASS.solve_captcha(username.clone(), combined_base64, options.captcha_bypass);
-                } else {
-                  send_optional_event(OptionalEmitEvent::AntiMapCaptcha(AntiMapCaptchaEventPayload {
-                    base64_code: combined_base64,
-                    username: username.to_string(),
-                  }));
-                }
-
-                MAP_ACCUMULATOR.clear_maps(&username);
-              } else {
-                MAP_ACCUMULATOR.clear_maps(&username);
-              }
-            } else {
-              let base64_code = MAP_CAPTCHA_BYPASS.create_png_image(
-                map_patch.width as u32,
-                map_patch.height as u32,
-                &map_patch.map_colors,
-              );
-
+            if let Some(combined_base64) = MAP_ACCUMULATOR.combine_all(&username).await {
               PROFILE_SYSTEM.set_bool(&username, "captcha_caught", true).await;
-              MAP_ACCUMULATOR.update_captcha_time(&username);
+              MAP_ACCUMULATOR.update_captcha_time(&username).await;
 
               if options.basic.use_webhook && options.webhook.send_information {
                 send_webhook(options.webhook.url, format!("Бот {} получил капчу с карты", username));
@@ -331,13 +307,44 @@ async fn process_packet(bot: Client, packet: Arc<ClientboundGamePacket>) {
               );
 
               if options.captcha_bypass.solve_mode == "auto" {
-                MAP_CAPTCHA_BYPASS.solve_captcha(username, base64_code, options.captcha_bypass);
+                MAP_CAPTCHA_BYPASS.solve_captcha(username.clone(), combined_base64, options.captcha_bypass);
               } else {
                 send_optional_event(OptionalEmitEvent::AntiMapCaptcha(AntiMapCaptchaEventPayload {
-                  base64_code,
+                  base64_code: combined_base64,
                   username: username.to_string(),
                 }));
               }
+
+              MAP_ACCUMULATOR.clear_maps(&username).await;
+            } else {
+              MAP_ACCUMULATOR.clear_maps(&username).await;
+            }
+          } else {
+            let base64_code = MAP_CAPTCHA_BYPASS.create_png_image(
+              map_patch.width as u32,
+              map_patch.height as u32,
+              &map_patch.map_colors,
+            );
+
+            PROFILE_SYSTEM.set_bool(&username, "captcha_caught", true).await;
+            MAP_ACCUMULATOR.update_captcha_time(&username).await;
+
+            if options.basic.use_webhook && options.webhook.send_information {
+              send_webhook(options.webhook.url, format!("Бот {} получил капчу с карты", username));
+            }
+
+            emit_log(
+              format!("[ Анти-Капча ]: Бот {} получил капчу с карты", username),
+              "info",
+            );
+
+            if options.captcha_bypass.solve_mode == "auto" {
+              MAP_CAPTCHA_BYPASS.solve_captcha(username, base64_code, options.captcha_bypass);
+            } else {
+              send_optional_event(OptionalEmitEvent::AntiMapCaptcha(AntiMapCaptchaEventPayload {
+                base64_code,
+                username: username.to_string(),
+              }));
             }
           }
         }

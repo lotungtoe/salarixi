@@ -1,8 +1,8 @@
-use hashbrown::HashMap;
-use serde::Deserialize;
-
 use std::fs;
 use std::time::Duration;
+
+use hashbrown::HashMap;
+use serde::Deserialize;
 
 use crate::api::emit::{emit_log, emit_msg};
 use crate::bot::functions::{disconnect_bot, reset_bot, send_message_from_bot};
@@ -145,7 +145,7 @@ pub async fn get_memory_usage() -> f64 {
 /// Команда выполнения быстрой задачи
 #[tauri::command]
 pub async fn quick_task(name: String) {
-  if let Some(opts) = current_options() {
+  if let Some(opts) = current_options().await {
     if opts.basic.use_webhook && opts.webhook.send_actions {
       send_webhook(opts.webhook.url, format!("Быстрая задача '{}'", name));
     }

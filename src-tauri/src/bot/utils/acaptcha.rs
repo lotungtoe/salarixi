@@ -1,15 +1,15 @@
 use std::cmp::Ordering;
-use std::collections::HashMap;
 use std::f64::consts::PI;
-use std::sync::RwLock;
 use std::time::{Duration, Instant};
 
 use base64::prelude::BASE64_STANDARD;
 use base64::Engine;
+use hashbrown::HashMap;
 use image::{ImageBuffer, ImageFormat, Rgb};
 use once_cell::sync::Lazy;
 use regex::Regex;
 use serde_json::json;
+use tokio::sync::RwLock;
 
 use crate::api::emit::emit_log;
 use crate::bot::registry::BOT_REGISTRY;
@@ -491,14 +491,14 @@ impl MapAccumulator {
   }
 
   /// Метод добавления позиции рамки
-  pub fn add_frame_position(&self, username: &str, entity_id: i32, x: f64, y: f64, z: f64) {
-    let mut positions = self.frame_positions.write().unwrap();
+  pub async fn add_frame_position(&self, username: &str, entity_id: i32, x: f64, y: f64, z: f64) {
+    let mut positions = self.frame_positions.write().await;
     let user_positions = positions.entry(username.to_string()).or_insert_with(Vec::new);
     user_positions.push((entity_id, x, y, z));
   }
 
   /// Метод добавления данных карты
-  pub fn add_map_data(
+  pub async fn add_map_data(
     &self,
     username: &str,
     width: u32,
@@ -508,7 +508,7 @@ impl MapAccumulator {
     pos_z: f64,
     yaw: f32,
   ) {
-    let mut maps = self.maps.write().unwrap();
+    let mut maps = self.maps.write().await;
     let user_maps = maps.entry(username.to_string()).or_insert_with(Vec::new);
 
     user_maps.push(MapData {
@@ -524,35 +524,35 @@ impl MapAccumulator {
   }
 
   /// Метод получения карт указанного бота
-  pub fn get_maps(&self, username: &str) -> Option<Vec<MapData>> {
-    let maps = self.maps.read().unwrap();
+  pub async fn get_maps(&self, username: &str) -> Option<Vec<MapData>> {
+    let maps = self.maps.read().await;
     maps.get(username).cloned()
   }
 
   /// Метод проверки статуса сборки капчи указанного бота
-  pub fn is_processing(&self, username: &str) -> bool {
-    let processing = self.processing.read().unwrap();
+  pub async fn is_processing(&self, username: &str) -> bool {
+    let processing = self.processing.read().await;
     processing.get(username).copied().unwrap_or(false)
   }
 
   /// Метод установки статуса сборки капчи указанного бота
-  pub fn set_processing(&self, username: &str, value: bool) {
-    let mut processing = self.processing.write().unwrap();
+  pub async fn set_processing(&self, username: &str, value: bool) {
+    let mut processing = self.processing.write().await;
     processing.insert(username.to_string(), value);
   }
 
   /// Метод обновления времени капчи указанного бота
-  pub fn update_captcha_time(&self, username: &str) {
-    let mut last_time = self.last_captcha_time.write().unwrap();
+  pub async fn update_captcha_time(&self, username: &str) {
+    let mut last_time = self.last_captcha_time.write().await;
     last_time.insert(username.to_string(), Instant::now());
   }
 
   /// Метод комбинации всех карт и созданий Base64-изображения
-  pub fn combine_all(&self, username: &str) -> Option<String> {
-    let mut map_data = self.get_maps(username)?;
-    let positions = self.frame_positions.read().unwrap();
+  pub async fn combine_all(&self, username: &str) -> Option<String> {
+    let mut map_data = self.get_maps(username).await?;
+    let positions = self.frame_positions.read().await;
 
-    let Some(opts) = current_options() else {
+    let Some(opts) = current_options().await else {
       return None;
     };
 
@@ -589,7 +589,7 @@ impl MapAccumulator {
     }
 
     if map_data.len() < num_frames {
-      let all_maps = self.get_maps(username)?;
+      let all_maps = self.get_maps(username).await?;
       map_data = all_maps;
     }
 
@@ -659,10 +659,10 @@ impl MapAccumulator {
   }
 
   /// Метод очистки карт указанного бота
-  pub fn clear_maps(&self, username: &str) {
-    let mut maps = self.maps.write().unwrap();
-    let mut positions = self.frame_positions.write().unwrap();
-    let mut processing = self.processing.write().unwrap();
+  pub async fn clear_maps(&self, username: &str) {
+    let mut maps = self.maps.write().await;
+    let mut positions = self.frame_positions.write().await;
+    let mut processing = self.processing.write().await;
 
     maps.remove(username);
     positions.remove(username);
@@ -670,11 +670,11 @@ impl MapAccumulator {
   }
 
   /// Метод очистки всего хранилища
-  pub fn clear_all(&self) {
-    let mut maps = self.maps.write().unwrap();
-    let mut positions = self.frame_positions.write().unwrap();
-    let mut processing = self.processing.write().unwrap();
-    let mut last_captcha_time = self.last_captcha_time.write().unwrap();
+  pub async fn clear_all(&self) {
+    let mut maps = self.maps.write().await;
+    let mut positions = self.frame_positions.write().await;
+    let mut processing = self.processing.write().await;
+    let mut last_captcha_time = self.last_captcha_time.write().await;
 
     maps.clear();
     positions.clear();

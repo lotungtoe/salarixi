@@ -13,7 +13,7 @@ const DEFAULT_AUTH_TEMPLATE: &str = "$cmd $pass";
 pub async fn default_authorize(bot: &Client) {
   let username = bot.username();
 
-  let Some(opts) = current_options() else {
+  let Some(opts) = current_options().await else {
     return;
   };
 
@@ -88,7 +88,7 @@ pub async fn default_authorize(bot: &Client) {
 pub async fn trigger_authorize(bot: &Client, message: String) {
   let username = bot.username();
 
-  let Some(opts) = current_options() else {
+  let Some(opts) = current_options().await else {
     return;
   };
 

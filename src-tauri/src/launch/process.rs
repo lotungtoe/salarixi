@@ -1,24 +1,29 @@
-use once_cell::sync::Lazy;
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::{Arc, RwLock};
+
+use once_cell::sync::Lazy;
+use tokio::sync::RwLock;
 
 use super::options::LaunchOptions;
 
-pub static ACTIVE: AtomicBool = AtomicBool::new(false);
-pub static CURRENT_OPTIONS: Lazy<Arc<RwLock<Option<LaunchOptions>>>> = Lazy::new(|| Arc::new(RwLock::new(None)));
+pub static PROCESS_ACTIVITY: AtomicBool = AtomicBool::new(false);
+pub static CURRENT_OPTIONS: Lazy<RwLock<Option<LaunchOptions>>> = Lazy::new(|| RwLock::new(None));
 
 /// Функция установки опций
-pub fn set_options(options: LaunchOptions) {
-  let mut guard = CURRENT_OPTIONS.write().unwrap();
-  *guard = Some(options);
+pub async fn set_options(options: LaunchOptions) {
+  *CURRENT_OPTIONS.write().await = Some(options);
 }
 
 /// Функция получения текущих опций
-pub fn current_options() -> Option<LaunchOptions> {
-  CURRENT_OPTIONS.read().unwrap().clone()
+pub async fn current_options() -> Option<LaunchOptions> {
+  CURRENT_OPTIONS.read().await.clone()
+}
+
+/// Функция установки значения активности процесса
+pub fn set_process_activity(value: bool) {
+  PROCESS_ACTIVITY.store(value, Ordering::SeqCst);
 }
 
 /// Функция проверки активности основного процесса
 pub fn process_is_active() -> bool {
-  ACTIVE.load(Ordering::SeqCst)
+  PROCESS_ACTIVITY.load(Ordering::SeqCst)
 }

@@ -1,3 +1,7 @@
+use std::net::SocketAddr;
+use std::thread;
+use std::time::Duration;
+
 use azalea::app::PluginGroup;
 use azalea::auto_reconnect::AutoReconnectDelay;
 use azalea::prelude::*;
@@ -5,10 +9,6 @@ use azalea::protocol::connect::Proxy;
 use azalea::swarm::*;
 use azalea::JoinOpts;
 use socks5_impl::protocol::UserKey;
-use std::net::SocketAddr;
-use std::sync::atomic::Ordering;
-use std::thread;
-use std::time::Duration;
 
 use crate::api::emit::{emit_log, emit_msg};
 use crate::bot::handlers::single::single_handler;
@@ -21,7 +21,7 @@ use crate::other::webhook::send_webhook;
 
 use super::generators::{generate_email, generate_unique_username, generate_username_or_password};
 use super::options::{AccountOptions, LaunchOptions};
-use super::process::{current_options, process_is_active, set_options, ACTIVE};
+use super::process::{current_options, process_is_active, set_options, set_process_activity};
 
 /// Структура кастомного аккаунта бота
 #[derive(Debug)]
@@ -120,11 +120,10 @@ pub async fn launch_bots_on_server(options: LaunchOptions) -> bool {
     return false;
   }
 
-  emit_log("Подготовка...".to_string(), "extended");
+  emit_log("Подготовка...", "extended");
 
-  set_options(options.clone());
-
-  ACTIVE.store(true, Ordering::Relaxed);
+  set_options(options.clone()).await;
+  set_process_activity(true);
 
   tokio::spawn(registry_event_loop());
 
@@ -257,7 +256,7 @@ pub async fn launch_bots_on_server(options: LaunchOptions) -> bool {
           }
         }
 
-        emit_log("Подготовка окончена".to_string(), "extended");
+        emit_log("Подготовка окончена", "extended");
 
         let _ = flow.start(options.basic.address).await;
       });
@@ -271,7 +270,7 @@ pub async fn launch_bots_on_server(options: LaunchOptions) -> bool {
 
 /// Функция остановки ботов
 pub async fn stop_bots_and_destroy_data() -> bool {
-  emit_msg("Система", "Остановка ботов...".to_string());
+  emit_msg("Система", "Остановка ботов...");
 
   if !process_is_active() {
     emit_log(
@@ -291,12 +290,12 @@ pub async fn stop_bots_and_destroy_data() -> bool {
 
   STATE_SYSTEM.clear().await;
   PROFILE_SYSTEM.clear().await;
-  MAP_ACCUMULATOR.clear_all();
+  MAP_ACCUMULATOR.clear_all().await;
   BOT_REGISTRY.clear();
 
-  ACTIVE.store(false, Ordering::SeqCst);
+  set_process_activity(false);
 
-  if let Some(options) = current_options() {
+  if let Some(options) = current_options().await {
     if options.basic.use_webhook {
       send_webhook(
         options.webhook.url.clone(),
@@ -306,7 +305,7 @@ pub async fn stop_bots_and_destroy_data() -> bool {
   }
 
   emit_msg("Система", "Остановка ботов завершена");
-  emit_log(format!("Остановка ботов завершена"), "info");
+  emit_log("Остановка ботов завершена", "info");
 
   true
 }

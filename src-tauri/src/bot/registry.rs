@@ -113,7 +113,7 @@ pub async fn registry_event_loop() {
   while let Ok(event) = rx.recv().await {
     match event {
       RegistryEvent::LoadPlugins { username } => {
-        if let Some(opts) = current_options() {
+        if let Some(opts) = current_options().await {
           let result = PLUGINS.activate_for(username.clone(), opts.plugins);
           if let Some(err) = result.error {
             emit_log(format!("Ошибка активации плагинов для {}: {}", username, err), "error");
@@ -136,7 +136,7 @@ pub async fn registry_event_loop() {
   }
 }
 
-/// Вспомогательный макрос захвата
+/// Вспомогательный макрос захвата указанного бота
 #[macro_export]
 macro_rules! take_bot {
   ($username:expr, $func:expr) => {

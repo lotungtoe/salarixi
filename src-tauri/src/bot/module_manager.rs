@@ -148,7 +148,7 @@ impl ModuleManager {
       }
     }
 
-    if let Some(opts) = current_options() {
+    if let Some(opts) = current_options().await {
       if opts.basic.use_webhook && opts.webhook.send_actions {
         send_webhook(
           opts.webhook.url,

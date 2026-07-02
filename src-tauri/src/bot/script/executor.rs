@@ -17,7 +17,7 @@ use crate::bot::extensions::{
 };
 use crate::bot::registry::BOT_REGISTRY;
 use crate::bot::systems::{try_getst, try_setst, State, PROFILE_SYSTEM};
-use crate::launch::process::{current_options, ACTIVE};
+use crate::launch::process::{current_options, process_is_active};
 use crate::other::webhook::*;
 
 pub static SCRIPT_EXECUTOR: Lazy<ScriptExecutor> = Lazy::new(|| ScriptExecutor::new());
@@ -587,7 +587,7 @@ impl ScriptExecutor {
 
     let su_clone = su.clone();
     engine.on_progress(move |_| {
-      if !ACTIVE.load(Ordering::SeqCst) {
+      if !process_is_active() {
         return Some(Dynamic::UNIT);
       }
 
@@ -617,9 +617,12 @@ impl ScriptExecutor {
         emit_msg(name, content.to_string());
       })
       .register_fn("webhook", |content: &str| {
-        if let Some(opts) = current_options() {
-          send_webhook(opts.webhook.url, content.to_string());
-        }
+        let content_string = content.to_string();
+        tokio::spawn(async move {
+          if let Some(opts) = current_options().await {
+            send_webhook(opts.webhook.url, content_string);
+          }
+        });
       });
 
     engine.register_fn("active_bots_count", || PROFILE_SYSTEM.try_get_connected_count() as i64);
