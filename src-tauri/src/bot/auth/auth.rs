@@ -23,10 +23,11 @@ pub async fn default_authorize(bot: &Client) {
 
   let mut min_delay = 2000;
   let mut max_delay = 4000;
-
   let mut cmd = "";
   let mut action = "";
   let mut template = DEFAULT_AUTH_TEMPLATE;
+  let mut registered = false;
+  let mut logined = false;
 
   if !profile.registered {
     if opts.basic.use_auto_register && opts.basic.register_mode == "default" {
@@ -34,13 +35,11 @@ pub async fn default_authorize(bot: &Client) {
       template = opts.basic.register_template.trim();
       min_delay = opts.basic.register_min_delay;
       max_delay = opts.basic.register_max_delay;
-
-      PROFILE_SYSTEM.set_bool(&username, "registered", true).await;
-
       action = "зарегистрировался";
+      registered = true;
 
       if !opts.basic.use_double_auth {
-        PROFILE_SYSTEM.set_bool(&username, "logined", true).await;
+        logined = true;
       }
     }
   } else if !profile.logined {
@@ -49,22 +48,37 @@ pub async fn default_authorize(bot: &Client) {
       template = opts.basic.login_template.trim();
       min_delay = opts.basic.login_min_delay;
       max_delay = opts.basic.login_max_delay;
-
       action = "залогинился";
-
-      PROFILE_SYSTEM.set_bool(&username, "logined", true).await;
+      logined = true;
     }
   }
+
+  let password = profile.password.clone();
+  let email = profile.email.clone();
+
+  drop(profile);
 
   if !cmd.is_empty() {
     sleep(Duration::from_millis(randnum(min_delay, max_delay))).await;
 
     let msg = template
       .replace("$cmd", &cmd)
-      .replace("$pass", &profile.password.unwrap_or(String::new()))
-      .replace("$email", &profile.email.unwrap_or(String::new()));
+      .replace("$pass", &password.unwrap_or(String::new()))
+      .replace("$email", &email.unwrap_or(String::new()));
 
     bot.chat(&msg);
+
+    // Нельзя просто поставить значение registered напрямую, так как
+    // текущее значения может быть true (то есть бот уже зарегистрирован),
+    // и при этом оно сбросится на false, что будет некорректно
+    if registered {
+      PROFILE_SYSTEM.set_bool(&username, "registered", true).await;
+    }
+
+    // Аналогично registered
+    if logined {
+      PROFILE_SYSTEM.set_bool(&username, "logined", true).await;
+    }
 
     emit_log(format!("Бот {} {}: {}", &username, action, &msg), "info");
   }
@@ -95,39 +109,50 @@ pub async fn trigger_authorize(bot: &Client, message: String) {
   let mut cmd = "";
   let mut action = "";
   let mut template = DEFAULT_AUTH_TEMPLATE;
+  let mut registered = false;
+  let mut logined = false;
 
   if !profile.registered {
     if opts.basic.use_auto_register && opts.basic.register_mode == "trigger" {
       cmd = opts.basic.register_command.trim();
       template = opts.basic.register_template.trim();
-
       action = "зарегистрировался";
-
-      PROFILE_SYSTEM.set_bool(&username, "registered", true).await;
+      registered = true;
 
       if !opts.basic.use_double_auth {
-        PROFILE_SYSTEM.set_bool(&username, "logined", true).await;
+        logined = true;
       }
     }
   } else if !profile.logined && opts.basic.login_mode == "trigger" {
     if opts.basic.use_auto_login {
       cmd = opts.basic.login_command.trim();
       template = opts.basic.login_template.trim();
-
       action = "залогинился";
-
-      PROFILE_SYSTEM.set_bool(&username, "logined", true).await;
+      logined = true;
     }
   }
 
+  let password = profile.password.clone();
+  let email = profile.email.clone();
+
+  drop(profile);
+
   if !cmd.is_empty() {
-    let cmd = template
+    let msg = template
       .replace("$cmd", &cmd)
-      .replace("$pass", &profile.password.unwrap_or(String::new()))
-      .replace("$email", &profile.email.unwrap_or(String::new()));
+      .replace("$pass", &password.unwrap_or(String::new()))
+      .replace("$email", &email.unwrap_or(String::new()));
 
-    bot.chat(&cmd);
+    bot.chat(&msg);
 
-    emit_log(format!("Бот {} {}: {}", &username, action, &cmd), "info");
+    if registered {
+      PROFILE_SYSTEM.set_bool(&username, "registered", true).await;
+    }
+
+    if logined {
+      PROFILE_SYSTEM.set_bool(&username, "logined", true).await;
+    }
+
+    emit_log(format!("Бот {} {}: {}", &username, action, &msg), "info");
   }
 }
