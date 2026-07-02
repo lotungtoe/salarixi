@@ -1249,10 +1249,10 @@ button svg {
 }
 
 .proxy-counter {
+  color: var(--muted-color);
   text-align: left;
   font-family: var(--global-font-family);
   font-size: 15px;
-  margin-top: 2px;
 }
 
 .pretty-textarea {
