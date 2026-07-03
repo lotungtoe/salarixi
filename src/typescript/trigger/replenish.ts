@@ -375,13 +375,8 @@ export function replenishTriggerRegistry(): void {
 
   triggerRegistry.register("interface_select_show-panel-icons", "select", (current: HTMLSelectElement) => {
     try {
-      document.querySelectorAll<SVGElement>('[panel-btn-icon="true"]').forEach(i => {
-        if (current.value === "hide") {
-          i.style.display = "none";
-        } else {
-          i.style.display = "flex";
-        }
-      });
+      const display = current.value === "hide" ? "none" : "flex";
+      document.querySelectorAll<SVGElement>(".dashboard button svg").forEach(i => i.style.display = display);
     } catch (error) {
       logger.log(`Ошибка изменения состояния иконок на панели: ${error}`, "error");
     }
