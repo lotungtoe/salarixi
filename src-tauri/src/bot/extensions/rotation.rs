@@ -1,9 +1,10 @@
+use std::time::Duration;
+
 use azalea::prelude::*;
 use azalea::BlockPos;
 use azalea::Client;
 use azalea::Vec3;
 use bevy_ecs::entity::Entity;
-use std::time::Duration;
 use tokio::time::sleep;
 
 use crate::bot::extensions::BotDefaultExt;

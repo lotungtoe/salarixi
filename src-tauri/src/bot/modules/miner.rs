@@ -1,10 +1,11 @@
+use std::time::Duration;
+
 use azalea::auto_tool::best_tool_in_hotbar_for_block;
 use azalea::core::position::BlockPos;
 use azalea::prelude::*;
 use azalea::Vec3;
 use azalea::WalkDirection;
 use serde::Deserialize;
-use std::time::Duration;
 use tokio::time::sleep;
 
 use crate::bot::common::get_block_state;

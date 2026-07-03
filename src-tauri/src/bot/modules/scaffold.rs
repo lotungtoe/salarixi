@@ -1,8 +1,9 @@
+use std::time::Duration;
+
 use azalea::core::position::BlockPos;
 use azalea::prelude::*;
 use azalea::{Vec3, WalkDirection};
 use serde::Deserialize;
-use std::time::Duration;
 use tokio::time::sleep;
 
 use crate::bot::common::{

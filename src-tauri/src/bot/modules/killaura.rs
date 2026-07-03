@@ -1,8 +1,9 @@
+use std::time::Duration;
+
 use azalea::ecs::entity::Entity;
 use azalea::registry::builtin::ItemKind;
 use azalea::{prelude::*, SprintDirection};
 use serde::Deserialize;
-use std::time::Duration;
 use tokio::time::sleep;
 
 use crate::bot::extensions::{BotDefaultExt, BotInventoryExt, BotMovementExt, BotRotationExt, EntityType};

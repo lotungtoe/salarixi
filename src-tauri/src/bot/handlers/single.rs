@@ -22,7 +22,7 @@ use crate::bot::PLUGINS;
 use crate::launch::process::current_options;
 use crate::other::tools::*;
 use crate::other::webhook::*;
-use crate::take_bot;
+use crate::{take_bot, take_profile};
 
 /// Обработчик для одного бота
 pub async fn single_handler(bot: Client, event: Event, _state: NoState) {
@@ -216,18 +216,16 @@ async fn process_chat_message(bot: Client, packet: ChatPacket) {
 async fn process_tick(bot: Client) {
   let username = bot.username();
 
-  let Some(mut profile) = PROFILE_SYSTEM.get(&username).await else {
-    return;
-  };
+  take_profile!(&username, async |profile| {
+    if profile.status == BotStatus::Connected {
+      if !bot.workable() {
+        return;
+      }
 
-  if profile.status == BotStatus::Connected {
-    if !bot.workable() {
-      return;
+      profile.ping = bot.ping();
+      profile.health = bot.get_health() as u32;
     }
-
-    profile.ping = bot.ping();
-    profile.health = bot.get_health() as u32;
-  }
+  });
 }
 
 /// Функция обработки пакета

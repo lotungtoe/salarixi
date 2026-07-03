@@ -1,6 +1,5 @@
 use hashbrown::HashMap;
 use once_cell::sync::Lazy;
-use std::sync::Arc;
 use tokio::sync::RwLock;
 use tokio::task::JoinHandle;
 
@@ -9,10 +8,8 @@ use crate::bot::plugins::*;
 use crate::bot::systems::PROFILE_SYSTEM;
 use crate::bot::traits::SalarixiPlugin;
 use crate::launch::options::PluginOptions;
-use crate::result::CommandResult;
-use crate::{failed, success};
 
-pub static PLUGINS: Lazy<Arc<PluginManager>> = Lazy::new(|| Arc::new(PluginManager::new()));
+pub static PLUGINS: Lazy<PluginManager> = Lazy::new(|| PluginManager::new());
 
 /// Имя плагина
 #[derive(Eq, Hash, PartialEq)]
@@ -65,11 +62,8 @@ impl PluginManager {
   }
 
   /// Метод активации плагинов для указанного бота
-  pub fn activate_for(&'static self, username: String, plugins: PluginOptions) -> CommandResult<()> {
-    match self.tasks.try_write() {
-      Ok(mut guard) => guard.insert(username.clone(), HashMap::new()),
-      Err(_) => failed!("plugin task list is already in use"),
-    };
+  pub async fn activate_for(&'static self, username: String, plugins: PluginOptions) {
+    self.tasks.write().await.insert(username.clone(), HashMap::new());
 
     if plugins.instant_armor_equip {
       self.plugins.instant_armor_equip.activate(username.clone());
@@ -102,8 +96,6 @@ impl PluginManager {
     if plugins.pearl_leave {
       self.plugins.pearl_leave.activate(username.clone());
     }
-
-    success!(());
   }
 
   /// Метод добавления задачи плагина указанному боту

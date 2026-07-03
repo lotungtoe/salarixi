@@ -1,5 +1,6 @@
-use azalea::prelude::*;
 use std::time::Duration;
+
+use azalea::prelude::*;
 use tokio::time::sleep;
 
 use crate::api::emit::emit_log;

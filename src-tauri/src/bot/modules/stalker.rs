@@ -1,7 +1,8 @@
+use std::time::Duration;
+
 use azalea::prelude::*;
 use azalea::SprintDirection;
 use serde::Deserialize;
-use std::time::Duration;
 use tokio::time::sleep;
 
 use crate::bot::extensions::{go_to, BotDefaultExt, BotMovementExt, EntityType};

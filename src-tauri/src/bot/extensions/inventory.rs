@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use azalea::container::ContainerHandleRef;
 use azalea::core::direction::Direction;
 use azalea::core::position::BlockPos;
@@ -9,7 +11,6 @@ use azalea::prelude::*;
 use azalea::protocol::packets::game::s_player_action::Action;
 use azalea::protocol::packets::game::ServerboundPlayerAction;
 use azalea::registry::builtin::ItemKind;
-use std::time::Duration;
 use tokio::time::sleep;
 
 use crate::bot::common::convert_inventory_slot_to_hotbar_slot;

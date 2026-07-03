@@ -1,9 +1,10 @@
+use std::time::Duration;
+
 use azalea::pathfinder::astar::PathfinderTimeout;
 use azalea::pathfinder::goals::XZGoal;
 use azalea::pathfinder::moves::basic::basic_move;
 use azalea::pathfinder::PathfinderOpts;
 use azalea::{prelude::*, SprintDirection, StartSprintEvent, StartWalkEvent, WalkDirection};
-use std::time::Duration;
 
 use crate::bot::systems::{getst, setmst, setst, State, StateName};
 use crate::take_bot;

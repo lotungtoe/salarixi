@@ -1,3 +1,5 @@
+use std::time::{Duration, Instant};
+
 use azalea::core::position::BlockPos;
 use azalea::prelude::*;
 use azalea::protocol::common::movements::MoveFlags;
@@ -7,7 +9,6 @@ use azalea::protocol::packets::game::ServerboundUseItem;
 use azalea::registry::builtin::ItemKind;
 use azalea::Vec3;
 use serde::Deserialize;
-use std::time::{Duration, Instant};
 use tokio::time::sleep;
 
 use crate::bot::common::get_block_state;

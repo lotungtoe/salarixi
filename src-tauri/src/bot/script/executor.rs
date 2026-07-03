@@ -1,3 +1,6 @@
+use std::str::FromStr;
+use std::sync::atomic::{AtomicBool, Ordering};
+
 use azalea::bot::BotClientExt;
 use azalea::prelude::PathfinderClientExt;
 use azalea::protocol::packets::game::s_interact::InteractionHand;
@@ -5,8 +8,6 @@ use azalea::{BlockPos, SprintDirection, Vec3, WalkDirection};
 use hashbrown::HashMap;
 use once_cell::sync::Lazy;
 use rhai::{Dynamic, Engine, EvalAltResult, Map};
-use std::str::FromStr;
-use std::sync::atomic::{AtomicBool, Ordering};
 use tokio::sync::RwLock;
 
 use crate::api::emit::{emit_log, emit_msg};

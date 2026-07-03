@@ -128,14 +128,21 @@ impl ProfileSystem {
     -1
   }
 
-  /// Метод получения профиля указанного бота
+  /// Метод получения клонированного профиля указанного бота
   pub async fn get(&self, username: &str) -> Option<Profile> {
     let guard = self.map.read().await;
-    if let Some(p) = guard.get(username) {
-      return Some(p.clone());
-    }
+    guard.get(username).cloned()
+  }
 
-    None
+  /// Метод захвата мутабельного профиля указанного бота
+  pub async fn lock_mut<F>(&self, username: &str, func: F)
+  where
+    F: AsyncFnOnce(&mut Profile),
+  {
+    let mut guard = self.map.write().await;
+    if let Some(profile) = guard.get_mut(username) {
+      func(profile).await;
+    }
   }
 
   /// Метод получения всех профилей
@@ -227,4 +234,12 @@ impl ProfileSystem {
       profile.proxy = proxy;
     }
   }
+}
+
+/// Вспомогательный макрос захвата профиля указанного бота
+#[macro_export]
+macro_rules! take_profile {
+  ($username:expr, $func:expr) => {
+    crate::bot::systems::PROFILE_SYSTEM.lock_mut($username, $func).await;
+  };
 }

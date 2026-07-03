@@ -1,16 +1,17 @@
+use std::sync::Arc;
+
 use azalea::prelude::*;
 use azalea::swarm::Swarm;
 use dashmap::DashMap;
 use once_cell::sync::Lazy;
-use std::sync::Arc;
 use tokio::sync::{broadcast, RwLock};
 
 use crate::api::emit::emit_log;
-use crate::bot::quick::QUICK_TASK_MANAGER;
+use crate::bot::quick::QUICK_TASKS;
 use crate::bot::{MODULES, PLUGINS};
 use crate::launch::process::current_options;
 
-pub static BOT_REGISTRY: Lazy<Arc<BotRegistry>> = Lazy::new(|| Arc::new(BotRegistry::new()));
+pub static BOT_REGISTRY: Lazy<BotRegistry> = Lazy::new(|| BotRegistry::new());
 
 /// Реестр роя, всех ботов и событий.
 /// Он выполняет роль основного хранилища всех ботов.
@@ -114,17 +115,14 @@ pub async fn registry_event_loop() {
     match event {
       RegistryEvent::LoadPlugins { username } => {
         if let Some(opts) = current_options().await {
-          let result = PLUGINS.activate_for(username.clone(), opts.plugins);
-          if let Some(err) = result.error {
-            emit_log(format!("Ошибка активации плагинов для {}: {}", username, err), "error");
-          }
+          PLUGINS.activate_for(username.clone(), opts.plugins).await;
         }
       }
       RegistryEvent::ControlModules { name, options, group } => {
         MODULES.control(name, options, group).await;
       }
       RegistryEvent::QuickTask { name } => {
-        QUICK_TASK_MANAGER.execute(name).await;
+        QUICK_TASKS.execute(name).await;
       }
       RegistryEvent::DestroySwarm => {
         BOT_REGISTRY.destroy_swarm().await;

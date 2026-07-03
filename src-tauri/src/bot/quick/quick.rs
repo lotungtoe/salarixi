@@ -1,11 +1,11 @@
+use std::f32::consts::PI;
+
 use azalea::bot::BotClientExt;
 use azalea::core::position::BlockPos;
 use azalea::prelude::PathfinderClientExt;
 use azalea::{Vec3, WalkDirection};
 use core::time::Duration;
 use once_cell::sync::Lazy;
-use std::f32::consts::PI;
-use std::sync::Arc;
 use tokio::time::sleep;
 
 use crate::bot::common::{get_average_coordinates_of_bots, this_is_solid_block};
@@ -16,7 +16,7 @@ use crate::bot::PLUGINS;
 use crate::other::tools::*;
 use crate::take_bot;
 
-pub static QUICK_TASK_MANAGER: Lazy<Arc<QuickTaskManager>> = Lazy::new(|| Arc::new(QuickTaskManager::new()));
+pub static QUICK_TASKS: Lazy<QuickTaskManager> = Lazy::new(|| QuickTaskManager::new());
 
 /// Менеджер быстрых задач.
 /// Позволяет распределять быстрые задачи ботов.

@@ -1,10 +1,11 @@
+use std::time::{Duration, Instant};
+
 use azalea::core::position::BlockPos;
 use azalea::prelude::*;
 use azalea::protocol::common::movements::MoveFlags;
 use azalea::protocol::packets::game::ServerboundMovePlayerPos;
 use azalea::Vec3;
 use serde::Deserialize;
-use std::time::{Duration, Instant};
 use tokio::time::sleep;
 
 use crate::bot::extensions::{BotDefaultExt, BotPhysicsExt};

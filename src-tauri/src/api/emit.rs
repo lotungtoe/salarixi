@@ -1,10 +1,9 @@
 use once_cell::sync::Lazy;
 use serde::Serialize;
-use std::sync::Arc;
 use tauri::{AppHandle, Emitter};
 use tokio::sync::broadcast;
 
-pub static EMIT_MANAGER: Lazy<Arc<EmitManager>> = Lazy::new(|| Arc::new(EmitManager::new()));
+pub static EMIT_MANAGER: Lazy<EmitManager> = Lazy::new(|| EmitManager::new());
 
 #[derive(Serialize, Clone)]
 pub struct LogPayload {

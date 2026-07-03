@@ -1,6 +1,5 @@
 use once_cell::sync::Lazy;
 use serde::de::DeserializeOwned;
-use std::sync::Arc;
 
 use crate::api::emit::{emit_log, emit_msg};
 use crate::bot::modules::*;
@@ -9,7 +8,7 @@ use crate::bot::traits::SalarixiModule;
 use crate::launch::process::current_options;
 use crate::other::webhook::send_webhook;
 
-pub static MODULES: Lazy<Arc<ModuleManager>> = Lazy::new(|| Arc::new(ModuleManager::new()));
+pub static MODULES: Lazy<ModuleManager> = Lazy::new(|| ModuleManager::new());
 
 /// Вспомогательный метод парсинга опций
 fn try_parse_options<T>(value: serde_json::Value) -> Option<T>
