@@ -34,7 +34,7 @@ Uses [azalea](https://github.com/azalea-rs/azalea) library as a base.
 
 ## Documentation
 
-[**Русская документация**](https://codeberg.org/nullclyze/salarixi/src/branch/main/docs/user.md)
+You can read usage documentation on our [website](https://salarixi.freedev.app/pages/documentation.html).
 
 ## Features
 
@@ -65,36 +65,30 @@ Uses [azalea](https://github.com/azalea-rs/azalea) library as a base.
 
 ## Installation
 
-### Windows (MSI)
+### Windows MSI
 
-1. Download **setup .msi** file from GitHub
+1. Download `...-windows.msi` file from releases page
 2. Run downloaded file
 3. Go through installation process
 4. Ready
 
-### Windows (NSIS)
+### Windows NSIS
 
-1. Download **setup .exe** file from GitHub
+1. Download `...-windows.exe` file from releases page
 2. Run downloaded file
 3. Go through installation process
 4. Ready
-
-### Windows (EXE)
-
-1. Download **.exe** file from GitHub
-2. Run downloaded file
-3. Ready
 
 ### Debian-based Linux
 
-1. Download **.deb** file from GitHub
+1. Download `...-linux.deb` file from releases page
 2. Open directory with downloaded file in terminal
-3. Write ```sudo dpkg -i FILENAME.deb```
+3. Write ```sudo dpkg -i FILENAME.rpm```
 4. Ready
 
 ### RedHat-based Linux
 
-1. Download **.rpm** file from GitHub
+1. Download `...-linux.rpm` file from releases page
 2. Open directory with downloaded file in terminal
 3. Write ```sudo dnf install FILENAME.rpm```
 4. Ready
