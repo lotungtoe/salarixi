@@ -39,11 +39,14 @@ You can read usage documentation on our [website](https://salarixi.freedev.app/p
 ## Features
 
 - **Easy to use:** Quick adaptation, intuitive interface.
+- **No dependencies:** You only need to install one file for a fully functioning client.
 - **Fast and efficient:** All transactions in tool are fast, convenient hot keys are provided for efficient control.
 - **Language support:** English, Turkish, Japanese, and Chinese are partially supported. Russian is 100% supported.
 - **Absolutely free:** All functionality is free.
 - **Open-source:** Tool is completely open-source.
+- **Lightweight:** This is the lightest tool among all similar alternatives. Installation file is ~14MB, and total size on disk after installation is ~60MB.
 - **Beautiful design:** Tool has a clear and beautiful dark design.
+- **RAM friendly:** At launch, app requires only ~5MB of RAM for the main process. There's also a webview for rendering the interface, which requires an average of ~118 MB of RAM. Total RAM usage is ~125MB. When running 50 bots, the main application process consumes ~72MB of RAM.
 - **Customization:** You can customize any interface color using a style kit.
 - **Event logging:** Tool has a log in which any information is logged.
 - **Feature-rich:** Tool has many features for working with bots.
@@ -56,6 +59,8 @@ You can read usage documentation on our [website](https://salarixi.freedev.app/p
 - **Utilities:** Anti-captcha, radar, ping.
 - **Plugins:** Tool has many built-in plugins for bots.
 - **Multi-task:** Tool allows bots to perform dozens of actions simultaneously and avoid conflicts.
+
+In short: The client is suitable for you if you don't want to bother with installation, need minimal resource consumption, need advanced customization, and need a lot of built-in features.
 
 ## Screenshots
 
