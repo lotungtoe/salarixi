@@ -1964,6 +1964,7 @@ button svg {
   display: flex;
   width: 100%;
   min-height: 28px;
+  background: var(--secondary-bg);
 }
 
 .chat-content .line:hover {
@@ -1973,7 +1974,7 @@ button svg {
 .chat-content .line .time {
   display: flex;
   justify-content: center;
-  align-items: start;
+  align-items: center;
   min-width: 85px;
   text-align: center;
   font-family: var(--script-font-family);
