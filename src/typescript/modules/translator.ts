@@ -1,7 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import { logger } from "../utils/logger";
 
-import { getStringSize } from "../utils/size";
 import { currentClientVersion } from "../main";
 import { isVersionNewer } from "../utils/semver";
 import { getCacheOrNew, LcfResult, LnfResult, loadCache, saveCache, TimeType } from "../utils/cache";
@@ -55,7 +54,7 @@ class TranslatorModule {
   /** Метод перевода текста на другой язык */
   private async translate(targetLanguage: string, selectedIndex: number, translation: any): Promise<void> {
     try {
-      const isDevMode = await invoke("is_dev_mode") as bool;
+      const isDevMode = await invoke("is_dev_mode") as boolean;
       let filteredTranslation = [];
 
       // Для начала нужно пройтись по всем элементам перевода и отфильтровать
