@@ -1,10 +1,9 @@
 use std::time::Duration;
 
-use azalea::prelude::*;
 use azalea::registry::builtin::ItemKind;
 use tokio::time::sleep;
 
-use crate::bot::extensions::{BotDefaultExt, BotInventoryExt};
+use crate::bot::extensions::BotInventoryExt;
 use crate::bot::plugin_manager::PluginName;
 use crate::bot::traits::SalarixiPlugin;
 use crate::bot::PLUGINS;
