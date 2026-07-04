@@ -1,14 +1,12 @@
-use std::time::Duration;
-
 use azalea::prelude::*;
 use azalea::BlockPos;
 use azalea::Client;
 use azalea::Vec3;
 use bevy_ecs::entity::Entity;
-use tokio::time::sleep;
 
 use crate::bot::extensions::BotDefaultExt;
 use crate::other::tools::{randchance, randnum};
+use crate::sleep;
 
 pub trait BotRotationExt {
   fn look_at_entity(&self, entity: Entity, with_eye_height: bool);
@@ -42,7 +40,7 @@ impl BotRotationExt for Client {
 
       self.look_at(sloppy_pos);
 
-      sleep(Duration::from_millis(100)).await;
+      sleep!(100);
     }
 
     self.look_at(Vec3 {

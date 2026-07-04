@@ -1,17 +1,14 @@
-use std::time::Duration;
-
 use azalea::ecs::entity::Entity;
 use azalea::prelude::*;
 use azalea::protocol::packets::game::s_interact::InteractionHand;
 use azalea::registry::builtin::ItemKind;
-use tokio::time::sleep;
 
 use crate::bot::extensions::{BotDefaultExt, BotInteractExt, BotInventoryExt, BotRotationExt, EntityType};
 use crate::bot::plugin_manager::PluginName;
 use crate::bot::systems::{getst, setmst, setst, State, StateName};
 use crate::bot::traits::SalarixiPlugin;
 use crate::bot::PLUGINS;
-use crate::take_bot;
+use crate::{sleep, take_bot};
 
 pub struct AutoShieldPlugin;
 
@@ -117,7 +114,7 @@ impl AutoShieldPlugin {
         }
       });
 
-      sleep(Duration::from_millis(50)).await;
+      sleep!(50);
     }
 
     take_bot!(username, async |bot| {
@@ -142,7 +139,7 @@ impl SalarixiPlugin for AutoShieldPlugin {
     let task = tokio::spawn(async move {
       loop {
         self.tick(&username_clone).await;
-        sleep(Duration::from_millis(100)).await;
+        sleep!(100);
       }
     });
 

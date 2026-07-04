@@ -1,13 +1,10 @@
-use std::time::Duration;
-
 use azalea::registry::builtin::ItemKind;
-use tokio::time::sleep;
 
 use crate::bot::extensions::BotInventoryExt;
 use crate::bot::plugin_manager::PluginName;
 use crate::bot::traits::SalarixiPlugin;
 use crate::bot::PLUGINS;
-use crate::take_bot;
+use crate::{sleep, take_bot};
 
 pub struct AutoTotemPlugin;
 
@@ -48,7 +45,7 @@ impl SalarixiPlugin for AutoTotemPlugin {
     let task = tokio::spawn(async move {
       loop {
         self.tick(&username_clone).await;
-        sleep(Duration::from_millis(150)).await;
+        sleep!(150);
       }
     });
 

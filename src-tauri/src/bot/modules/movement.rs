@@ -1,14 +1,12 @@
-use std::time::Duration;
-
 use azalea::prelude::*;
 use azalea::WalkDirection;
 use serde::Deserialize;
-use tokio::time::sleep;
 
 use crate::bot::extensions::{go_to, BotMovementExt};
 use crate::bot::systems::{gettskact, killtsk, pushrtsk, TaskName};
 use crate::bot::traits::SalarixiModule;
 use crate::other::tools::*;
+use crate::sleep;
 use crate::take_bot;
 
 pub struct MovementModule;
@@ -32,7 +30,7 @@ impl MovementModule {
   async fn default_move(bot: &Client, options: &MovementOptions) {
     if options.use_impulsiveness {
       if !options.use_sync {
-        sleep(Duration::from_millis(randnum(500, 2000))).await;
+        sleep!(randnum(500, 2000));
       }
 
       loop {
@@ -51,16 +49,16 @@ impl MovementModule {
         bot.start_walking(direction).await;
 
         if options.use_sync {
-          sleep(Duration::from_millis(1200)).await;
+          sleep!(1200);
         } else {
-          sleep(Duration::from_millis(randnum(800, 1800))).await;
+          sleep!(randnum(800, 1800));
         }
 
         bot.stop_move().await;
       }
     } else {
       if !options.use_sync {
-        sleep(Duration::from_millis(randnum(500, 2000))).await;
+        sleep!(randnum(500, 2000));
       }
 
       let direction = match options.direction.as_str() {
@@ -83,7 +81,7 @@ impl MovementModule {
     if let Some(x) = options.x {
       if let Some(z) = options.z {
         if !options.use_sync {
-          sleep(Duration::from_millis(randnum(500, 2000))).await;
+          sleep!(randnum(500, 2000));
         }
 
         go_to(bot.username(), x, z);

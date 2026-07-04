@@ -1,5 +1,3 @@
-use std::time::Duration;
-
 use azalea::container::ContainerHandleRef;
 use azalea::core::direction::Direction;
 use azalea::core::position::BlockPos;
@@ -11,12 +9,12 @@ use azalea::prelude::*;
 use azalea::protocol::packets::game::s_player_action::Action;
 use azalea::protocol::packets::game::ServerboundPlayerAction;
 use azalea::registry::builtin::ItemKind;
-use tokio::time::sleep;
 
 use crate::bot::common::convert_inventory_slot_to_hotbar_slot;
 use crate::bot::extensions::BotMovementExt;
 use crate::bot::systems::{getst, setmst, setst, State, StateName};
 use crate::other::tools::randnum;
+use crate::sleep;
 
 pub trait BotInventoryExt {
   fn get_selected_slot(&self) -> u8;
@@ -161,7 +159,7 @@ impl BotInventoryExt for Client {
 
         if let Some(slot) = convert_inventory_slot_to_hotbar_slot(empty_slot as usize) {
           if self.get_selected_slot() != slot {
-            sleep(Duration::from_millis(50)).await;
+            sleep!(50);
             self.set_selected_hotbar_slot(slot);
           }
         }
@@ -169,10 +167,10 @@ impl BotInventoryExt for Client {
         let random_slot = randnum(36, 44) as usize;
 
         self.inventory_click(random_slot, ClickMode::Shift, false).await;
-        sleep(Duration::from_millis(50)).await;
+        sleep!(50);
         self.inventory_swap_click(source_slot, random_slot, false).await;
 
-        sleep(Duration::from_millis(50)).await;
+        sleep!(50);
 
         let hotbar_slot = convert_inventory_slot_to_hotbar_slot(random_slot).unwrap_or(0);
 
@@ -221,22 +219,22 @@ impl BotInventoryExt for Client {
           if !item.is_empty() {
             if let Some(empty_slot) = self.find_empty_slot_in_invenotry() {
               inventory.left_click(target_slot);
-              sleep(Duration::from_millis(50)).await;
+              sleep!(50);
               inventory.left_click(empty_slot);
             } else {
               self.inventory_click(target_slot, ClickMode::DropAll, false).await;
             }
 
-            sleep(Duration::from_millis(50)).await;
+            sleep!(50);
           }
         }
       }
 
       inventory.left_click(source_slot);
-      sleep(Duration::from_millis(50)).await;
+      sleep!(50);
       inventory.left_click(target_slot);
 
-      sleep(Duration::from_millis(50)).await;
+      sleep!(50);
 
       if lock {
         self.stop_interacting_with_inventory().await;

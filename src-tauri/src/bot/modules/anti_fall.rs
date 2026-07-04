@@ -9,13 +9,13 @@ use azalea::protocol::packets::game::ServerboundUseItem;
 use azalea::registry::builtin::ItemKind;
 use azalea::Vec3;
 use serde::Deserialize;
-use tokio::time::sleep;
 
 use crate::bot::common::get_block_state;
 use crate::bot::extensions::{BotInventoryExt, BotPhysicsExt};
 use crate::bot::systems::{gettskact, killtsk, pushrtsk, TaskName};
 use crate::bot::traits::SalarixiModule;
 use crate::other::tools::*;
+use crate::sleep;
 use crate::take_bot;
 
 pub struct AntiFallModule;
@@ -103,14 +103,14 @@ impl AntiFallModule {
             bot.set_velocity("y", 0.0);
             bot.set_on_ground(true);
 
-            sleep(Duration::from_millis(50)).await;
+            sleep!(50);
 
             bot.set_on_ground(false);
           }
         }
       }
 
-      sleep(Duration::from_millis(options.delay.unwrap_or(50))).await;
+      sleep!(options.delay.unwrap_or(50));
     }
   }
 
@@ -135,7 +135,7 @@ impl AntiFallModule {
         }
       }
 
-      sleep(Duration::from_millis(options.delay.unwrap_or(50))).await;
+      sleep!(options.delay.unwrap_or(50));
     }
   }
 
@@ -157,7 +157,7 @@ impl AntiFallModule {
 
           if Self::take_water_bucket(bot).await {
             if !Self::exist_water_below(bot, distance_to_ground) {
-              sleep(Duration::from_millis(50)).await;
+              sleep!(50);
 
               let direction = bot.direction();
 
@@ -170,7 +170,7 @@ impl AntiFallModule {
             }
           }
 
-          sleep(Duration::from_millis(50)).await;
+          sleep!(50);
 
           if Self::exist_water_below(bot, distance_to_ground) {
             let direction = bot.direction();
@@ -185,7 +185,7 @@ impl AntiFallModule {
         }
       }
 
-      sleep(Duration::from_millis(options.delay.unwrap_or(50))).await;
+      sleep!(options.delay.unwrap_or(50));
     }
   }
 

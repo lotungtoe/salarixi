@@ -1,7 +1,4 @@
-use std::time::Duration;
-
 use azalea::prelude::*;
-use tokio::time::sleep;
 
 use crate::bot::extensions::{BotDefaultExt, BotRotationExt, EntityType};
 use crate::bot::plugin_manager::PluginName;
@@ -9,7 +6,7 @@ use crate::bot::systems::{getst, State};
 use crate::bot::traits::SalarixiPlugin;
 use crate::bot::PLUGINS;
 use crate::other::tools::randnum;
-use crate::take_bot;
+use crate::{sleep, take_bot};
 
 pub struct AutoLookPlugin;
 
@@ -27,7 +24,7 @@ impl AutoLookPlugin {
         }
       });
 
-      sleep(Duration::from_millis(randnum(50, 100))).await;
+      sleep!(randnum(50, 100));
     }
   }
 }
@@ -42,7 +39,7 @@ impl SalarixiPlugin for AutoLookPlugin {
     let task = tokio::spawn(async move {
       loop {
         self.tick(&username_clone).await;
-        sleep(Duration::from_millis(100)).await;
+        sleep!(100);
       }
     });
 

@@ -1,16 +1,13 @@
-use std::time::Duration;
-
 use azalea::ecs::entity::Entity;
 use azalea::registry::builtin::ItemKind;
 use azalea::{prelude::*, SprintDirection};
 use serde::Deserialize;
-use tokio::time::sleep;
 
 use crate::bot::extensions::{BotDefaultExt, BotInventoryExt, BotMovementExt, BotRotationExt, EntityType};
 use crate::bot::systems::{getst, gettskact, killtsk, pushetsk, pushrtsk, setmst, State, StateName, TaskName};
 use crate::bot::traits::SalarixiModule;
 use crate::other::tools::*;
-use crate::take_bot;
+use crate::{sleep, take_bot};
 
 struct Weapon {
   slot: Option<usize>,
@@ -224,11 +221,11 @@ impl KillauraModule {
       loop {
         take_bot!(&username_clone, async |bot| {
           bot.start_crouching();
-          sleep(Duration::from_millis(randnum(100, 800))).await;
+          sleep!(randnum(100, 800));
           bot.stop_crouching();
         });
 
-        sleep(Duration::from_millis(randnum(400, 1500))).await;
+        sleep!(randnum(400, 1500));
       }
     });
 
@@ -271,7 +268,7 @@ impl KillauraModule {
           }
         });
 
-        sleep(Duration::from_millis(50)).await;
+        sleep!(50);
       }
     });
 
@@ -291,7 +288,7 @@ impl KillauraModule {
           }
         });
 
-        sleep(Duration::from_millis(randnum(50, 100))).await;
+        sleep!(randnum(50, 100));
 
         setmst(&username_clone, StateName::Looking, false).await;
       }
@@ -360,7 +357,7 @@ impl KillauraModule {
           if options.use_critical {
             bot.jump();
 
-            sleep(Duration::from_millis(randnum(500, 600))).await;
+            sleep!(randnum(500, 600));
 
             if let Some(e) = Self::find_nearest_entity(
               bot,
@@ -378,7 +375,7 @@ impl KillauraModule {
         }
       }
 
-      sleep(Duration::from_millis(config.delay)).await;
+      sleep!(config.delay);
     }
   }
 
@@ -433,7 +430,7 @@ impl KillauraModule {
 
           if options.use_critical {
             bot.jump();
-            sleep(Duration::from_millis(randnum(500, 600))).await;
+            sleep!(randnum(500, 600));
 
             if let Some(e) = Self::find_nearest_entity(
               bot,
@@ -451,7 +448,7 @@ impl KillauraModule {
         }
       }
 
-      sleep(Duration::from_millis(config.delay)).await;
+      sleep!(config.delay);
     }
   }
 

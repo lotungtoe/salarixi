@@ -18,6 +18,7 @@ use crate::bot::systems::{ProfileProxy, PROFILE_SYSTEM, STATE_SYSTEM, TASK_SYSTE
 use crate::bot::utils::acaptcha::MAP_ACCUMULATOR;
 use crate::bot::PLUGINS;
 use crate::other::webhook::send_webhook;
+use crate::sleep;
 
 use super::generators::{generate_email, generate_unique_username, generate_username_or_password};
 use super::options::{AccountOptions, LaunchOptions};
@@ -286,7 +287,7 @@ pub async fn stop_bots_and_destroy_data() -> bool {
   PLUGINS.clear().await;
   TASK_SYSTEM.clear().await;
 
-  tokio::time::sleep(Duration::from_secs(2)).await;
+  sleep!(2000);
 
   STATE_SYSTEM.clear().await;
   PROFILE_SYSTEM.clear().await;

@@ -1,17 +1,14 @@
-use std::time::Duration;
-
 use azalea::prelude::*;
 use azalea::protocol::packets::game::s_interact::InteractionHand;
 use azalea::registry::builtin::ItemKind;
 use azalea::Vec3;
 use serde::Deserialize;
-use tokio::time::sleep;
 
 use crate::bot::extensions::{BotDefaultExt, BotInteractExt, BotInventoryExt, EntityType};
 use crate::bot::systems::{getst, gettskact, killtsk, pushetsk, pushrtsk, setmst, State, StateName, TaskName};
 use crate::bot::traits::SalarixiModule;
 use crate::other::tools::*;
-use crate::take_bot;
+use crate::{sleep, take_bot};
 
 pub struct BowAimModule;
 
@@ -66,7 +63,7 @@ impl BowAimModule {
             ));
           }
 
-          sleep(Duration::from_millis(50)).await;
+          sleep!(50);
         }
       });
     });
@@ -87,11 +84,11 @@ impl BowAimModule {
 
         bot.take_item(slot, true).await;
 
-        sleep(Duration::from_millis(50)).await;
+        sleep!(50);
 
         bot.start_use_held_item(InteractionHand::MainHand);
 
-        sleep(Duration::from_millis(randnum(900, 1100))).await;
+        sleep!(randnum(900, 1100));
 
         if let Some(entity) = bot.find_nearest_entity(EntityType::from(target), distance) {
           let target_pos = bot.get_entity_position(entity);
@@ -103,7 +100,7 @@ impl BowAimModule {
           if distance > 50.0 {
             bot.jump();
 
-            sleep(Duration::from_millis(100)).await;
+            sleep!(100);
 
             let target_pos = bot.get_entity_position(entity);
 
@@ -112,7 +109,7 @@ impl BowAimModule {
             bot.look_at(Vec3::new(target_pos.x, target_pos.y + distance * 0.12, target_pos.z));
           }
 
-          sleep(Duration::from_millis(50)).await;
+          sleep!(50);
         }
 
         bot.release_use_held_item();
@@ -137,7 +134,7 @@ impl BowAimModule {
 
     loop {
       Self::shoot(bot, target.clone(), options.max_distance.unwrap_or(70.0)).await;
-      sleep(Duration::from_millis(options.delay.unwrap_or(50))).await;
+      sleep!(options.delay.unwrap_or(50));
     }
   }
 }

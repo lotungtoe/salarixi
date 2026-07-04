@@ -1,15 +1,13 @@
-use std::time::Duration;
-
 use azalea::prelude::*;
 use azalea::WalkDirection;
 use serde::Deserialize;
-use tokio::time::sleep;
 
 use crate::bot::extensions::{BotDefaultExt, BotMovementExt};
 use crate::bot::systems::gettskact;
 use crate::bot::systems::{killtsk, pushetsk, pushrtsk, setmst, StateName, TaskName};
 use crate::bot::traits::SalarixiModule;
 use crate::other::tools::*;
+use crate::sleep;
 use crate::take_bot;
 
 pub struct AntiAfkModule;
@@ -43,14 +41,14 @@ impl AntiAfkModule {
         bot.swing_arm();
       }
 
-      sleep(Duration::from_millis(randnum(400, 800))).await;
+      sleep!(randnum(400, 800));
 
       bot.set_direction(
         original_direction.0 + randnum(-10.0, 10.0) as f32,
         original_direction.1 + randnum(-4.5, 4.5) as f32,
       );
 
-      sleep(Duration::from_millis(randnum(min_delay, max_delay))).await;
+      sleep!(randnum(min_delay, max_delay));
     }
   }
 
@@ -81,11 +79,11 @@ impl AntiAfkModule {
         direction.1 + randnum(-20.0, 20.0) as f32,
       );
 
-      sleep(Duration::from_millis(randnum(150, 400))).await;
+      sleep!(randnum(150, 400));
 
       bot.stop_move().await;
 
-      sleep(Duration::from_millis(randnum(min_delay, max_delay))).await;
+      sleep!(randnum(min_delay, max_delay));
     }
   }
 
@@ -107,7 +105,7 @@ impl AntiAfkModule {
           );
         });
 
-        sleep(Duration::from_millis(randnum(100, 400))).await;
+        sleep!(randnum(100, 400));
       }
     });
 
@@ -122,7 +120,7 @@ impl AntiAfkModule {
 
       if randchance(0.4) {
         bot.start_crouching();
-        sleep(Duration::from_millis(randnum(300, 500))).await;
+        sleep!(randnum(300, 500));
         bot.stop_crouching();
       }
 
@@ -130,7 +128,7 @@ impl AntiAfkModule {
         bot.jump();
       }
 
-      sleep(Duration::from_millis(randnum(min_delay, max_delay))).await;
+      sleep!(randnum(min_delay, max_delay));
     }
   }
 

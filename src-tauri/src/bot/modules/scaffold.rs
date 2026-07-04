@@ -1,10 +1,7 @@
-use std::time::Duration;
-
 use azalea::core::position::BlockPos;
 use azalea::prelude::*;
 use azalea::{Vec3, WalkDirection};
 use serde::Deserialize;
-use tokio::time::sleep;
 
 use crate::bot::common::{
   convert_hotbar_slot_to_inventory_slot, convert_inventory_slot_to_hotbar_slot, get_block_state, this_is_solid_block,
@@ -13,7 +10,7 @@ use crate::bot::extensions::{BotDefaultExt, BotInventoryExt, BotMovementExt, Bot
 use crate::bot::systems::{gettskact, killtsk, pushetsk, pushrtsk, setmst, StateName, TaskName};
 use crate::bot::traits::SalarixiModule;
 use crate::other::tools::*;
-use crate::take_bot;
+use crate::{sleep, take_bot};
 
 pub struct ScaffoldModule;
 
@@ -97,7 +94,7 @@ impl ScaffoldModule {
           bot.start_walking(WalkDirection::Backward).await;
         });
 
-        sleep(Duration::from_millis(100)).await;
+        sleep!(100);
       }
     });
 
@@ -131,15 +128,15 @@ impl ScaffoldModule {
 
           bot.start_use_item();
 
-          sleep(Duration::from_millis(randnum(100, 200))).await;
+          sleep!(randnum(100, 200));
 
           Self::simulate_inaccuracy(bot, bot.direction());
 
-          sleep(Duration::from_millis(randnum(100, 150))).await;
+          sleep!(randnum(100, 150));
         }
       }
 
-      sleep(Duration::from_millis(options.delay.unwrap_or(25))).await;
+      sleep!(options.delay.unwrap_or(25));
     }
   }
 
@@ -160,23 +157,23 @@ impl ScaffoldModule {
         if is_air {
           bot.set_crouching(true);
 
-          sleep(Duration::from_millis(50)).await;
+          sleep!(50);
 
           bot.swing_arm();
 
           bot.start_use_item();
 
-          sleep(Duration::from_millis(randnum(50, 100))).await;
+          sleep!(randnum(50, 100));
 
           Self::simulate_inaccuracy(bot, bot.direction());
 
-          sleep(Duration::from_millis(50)).await;
+          sleep!(50);
 
           bot.set_crouching(false);
         }
       }
 
-      sleep(Duration::from_millis(options.delay.unwrap_or(25))).await;
+      sleep!(options.delay.unwrap_or(25));
     }
   }
 
@@ -207,7 +204,7 @@ impl ScaffoldModule {
         }
       }
 
-      sleep(Duration::from_millis(options.delay.unwrap_or(25))).await;
+      sleep!(options.delay.unwrap_or(25));
     }
   }
 
@@ -251,7 +248,7 @@ impl ScaffoldModule {
         }
       }
 
-      sleep(Duration::from_millis(options.delay.unwrap_or(25))).await;
+      sleep!(options.delay.unwrap_or(25));
     }
   }
 

@@ -1,15 +1,12 @@
-use std::time::Duration;
-
 use azalea::inventory::ItemStack;
 use azalea::prelude::*;
 use azalea::registry::builtin::ItemKind;
-use tokio::time::sleep;
 
 use crate::bot::extensions::{BotInventoryExt, ClickMode};
 use crate::bot::plugin_manager::PluginName;
 use crate::bot::traits::SalarixiPlugin;
 use crate::bot::PLUGINS;
-use crate::take_bot;
+use crate::{sleep, take_bot};
 
 /// Часть брони
 #[derive(PartialEq)]
@@ -94,7 +91,7 @@ impl InstantArmorEquipPlugin {
         if !item.is_empty() {
           if let Some(_) = bot.find_empty_slot_in_invenotry() {
             bot.inventory_click(target_slot, ClickMode::Shift, true).await;
-            sleep(Duration::from_millis(50)).await;
+            sleep!(50);
           } else {
             return;
           }
@@ -363,7 +360,7 @@ impl SalarixiPlugin for InstantArmorEquipPlugin {
     let task = tokio::spawn(async move {
       loop {
         self.tick(&username_clone).await;
-        sleep(Duration::from_millis(200)).await;
+        sleep!(200);
       }
     });
 

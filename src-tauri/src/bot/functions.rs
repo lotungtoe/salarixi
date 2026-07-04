@@ -1,5 +1,3 @@
-use std::time::Duration;
-
 use azalea::pathfinder::PathfinderClientExt;
 
 use crate::api::emit::*;
@@ -7,7 +5,7 @@ use crate::bot::extensions::{BotDefaultExt, BotMovementExt};
 use crate::bot::registry::BOT_REGISTRY;
 use crate::bot::systems::*;
 use crate::bot::PLUGINS;
-use crate::take_bot;
+use crate::{sleep, take_bot};
 
 /// Вспомогательная функция отправки сообщения в чат от бота
 pub async fn send_message_from_bot(username: String, message: String) {
@@ -18,7 +16,7 @@ pub async fn send_message_from_bot(username: String, message: String) {
 pub async fn reset_bot(username: String) {
   TASK_SYSTEM.kill_all_tasks_for(&username).await;
 
-  tokio::time::sleep(Duration::from_secs(1)).await;
+  sleep!(1000);
 
   take_bot!(&username, async |bot| {
     bot.stop_move().await;
@@ -42,7 +40,7 @@ pub async fn disconnect_bot(username: String) {
   PLUGINS.kill_all_tasks_for(&username).await;
   TASK_SYSTEM.kill_all_tasks_for(&username).await;
 
-  tokio::time::sleep(Duration::from_secs(2)).await;
+  sleep!(2000);
 
   if let Some(bot) = BOT_REGISTRY.remove_bot(&username).await {
     bot.disconnect();

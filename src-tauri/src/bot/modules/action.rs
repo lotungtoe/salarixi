@@ -8,7 +8,7 @@ use crate::bot::extensions::BotDefaultExt;
 use crate::bot::systems::{gettskact, killtsk, pushrtsk, TaskName};
 use crate::bot::traits::SalarixiModule;
 use crate::other::tools::*;
-use crate::take_bot;
+use crate::{sleep, take_bot};
 
 pub struct ActionModule;
 
@@ -45,18 +45,18 @@ impl ActionModule {
     if options.use_impulsiveness {
       loop {
         if options.use_sync {
-          sleep(Duration::from_millis(1000)).await;
+          sleep!(1000);
         } else {
-          sleep(Duration::from_millis(randnum(900, 1800))).await;
+          sleep!(randnum(900, 1800));
         }
 
         bot.set_crouching(true);
-        sleep(Duration::from_millis(350)).await;
+        sleep!(350);
         bot.set_crouching(false);
       }
     } else {
       if !options.use_sync {
-        sleep(Duration::from_millis(randnum(200, 2000))).await;
+        sleep!(randnum(200, 2000));
       }
 
       bot.set_crouching(true);
@@ -67,21 +67,21 @@ impl ActionModule {
     if options.use_impulsiveness {
       loop {
         if options.use_sync {
-          sleep(Duration::from_millis(300)).await;
+          sleep!(300);
         } else {
-          sleep(Duration::from_millis(randnum(300, 800))).await;
+          sleep!(randnum(300, 800));
         }
 
         bot.swing_arm();
       }
     } else {
       if !options.use_sync {
-        sleep(Duration::from_millis(randnum(200, 2000))).await;
+        sleep!(randnum(200, 2000));
       }
 
       loop {
         bot.swing_arm();
-        sleep(Duration::from_millis(300)).await;
+        sleep!(300);
       }
     }
   }

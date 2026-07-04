@@ -4,9 +4,7 @@ use azalea::bot::BotClientExt;
 use azalea::core::position::BlockPos;
 use azalea::prelude::PathfinderClientExt;
 use azalea::{Vec3, WalkDirection};
-use core::time::Duration;
 use once_cell::sync::Lazy;
-use tokio::time::sleep;
 
 use crate::bot::common::{get_average_coordinates_of_bots, this_is_solid_block};
 use crate::bot::extensions::{go_to, BotDefaultExt, BotInventoryExt, BotMovementExt, BotPhysicsExt, ClickMode};
@@ -14,7 +12,7 @@ use crate::bot::registry::BOT_REGISTRY;
 use crate::bot::systems::{getst, setmst, State, StateName, PROFILE_SYSTEM, STATE_SYSTEM, TASK_SYSTEM};
 use crate::bot::PLUGINS;
 use crate::other::tools::*;
-use crate::take_bot;
+use crate::{sleep, take_bot};
 
 pub static QUICK_TASKS: Lazy<QuickTaskManager> = Lazy::new(|| QuickTaskManager::new());
 
@@ -44,22 +42,22 @@ impl QuickTaskManager {
           }
           "move-forward" => {
             bot.start_walking(WalkDirection::Forward).await;
-            sleep(Duration::from_millis(200)).await;
+            sleep!(200);
             bot.stop_move().await;
           }
           "move-backward" => {
             bot.start_walking(WalkDirection::Backward).await;
-            sleep(Duration::from_millis(200)).await;
+            sleep!(200);
             bot.stop_move().await;
           }
           "move-left" => {
             bot.start_walking(WalkDirection::Right).await;
-            sleep(Duration::from_millis(200)).await;
+            sleep!(200);
             bot.stop_move().await;
           }
           "move-right" => {
             bot.start_walking(WalkDirection::Left).await;
-            sleep(Duration::from_millis(200)).await;
+            sleep!(200);
             bot.stop_move().await;
           }
           "jump" => {
@@ -67,20 +65,20 @@ impl QuickTaskManager {
           }
           "shift" => {
             bot.set_crouching(true);
-            sleep(Duration::from_millis(200)).await;
+            sleep!(200);
             bot.set_crouching(false);
           }
           "fly" => {
             for i in 0..randnum(3, 5) {
               bot.set_velocity("y", randnum(0.022 * i as f64, 0.031 * i as f64));
-              sleep(Duration::from_millis(50)).await;
+              sleep!(50);
             }
           }
           "quit" => {
             PLUGINS.kill_all_tasks_for(&username).await;
             TASK_SYSTEM.kill_all_tasks_for(&username).await;
 
-            tokio::time::sleep(Duration::from_secs(2)).await;
+            sleep!(2000);
 
             bot.disconnect();
 
@@ -116,7 +114,9 @@ impl QuickTaskManager {
                   original_direction_1.0 + randnum(-5.0, 5.0) as f32,
                   randnum(40.0, 58.0) as f32,
                 );
-                sleep(Duration::from_millis(randnum(50, 100))).await;
+
+                sleep!(randnum(50, 100));
+
                 bot.jump();
 
                 let original_direction_2 = bot.direction();
@@ -125,12 +125,13 @@ impl QuickTaskManager {
                   original_direction_2.0 + randnum(-5.0, 5.0) as f32,
                   randnum(86.0, 90.0) as f32,
                 );
-                sleep(Duration::from_millis(randnum(250, 350))).await;
+
+                sleep!(randnum(250, 350));
 
                 bot.swing_arm();
                 bot.start_use_item();
 
-                sleep(Duration::from_millis(randnum(150, 250))).await;
+                sleep!(randnum(150, 250));
 
                 bot.set_direction(original_direction_1.0, original_direction_1.1);
 
@@ -221,19 +222,19 @@ impl QuickTaskManager {
                   count = count + 1;
 
                   if count == 10 {
-                    sleep(Duration::from_millis(randnum(150, 200))).await;
+                    sleep!(randnum(150, 200));
                   }
 
                   if count == 9 {
                     bot.jump();
-                    sleep(Duration::from_millis(50)).await;
+                    sleep!(50);
                     bot.set_crouching(true);
-                    sleep(Duration::from_millis(randnum(100, 150))).await;
+                    sleep!(randnum(100, 150));
                   }
 
                   bot.look_at(Vec3::new(pos.x as f64, pos.y as f64, pos.z as f64));
 
-                  sleep(Duration::from_millis(randnum(50, 100))).await;
+                  sleep!(randnum(50, 100));
 
                   bot.swing_arm();
                   bot.start_use_item();
@@ -245,7 +246,7 @@ impl QuickTaskManager {
                   setmst(&username, StateName::Looking, false).await;
                   setmst(&username, StateName::Interacting, false).await;
 
-                  sleep(Duration::from_millis(randnum(100, 150))).await;
+                  sleep!(randnum(100, 150));
                 }
               }
             }

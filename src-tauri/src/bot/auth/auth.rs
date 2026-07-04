@@ -1,12 +1,8 @@
-use std::time::Duration;
-
-use tokio::time::sleep;
-
 use crate::api::emit::emit_log;
 use crate::bot::systems::PROFILE_SYSTEM;
 use crate::launch::process::current_options;
 use crate::other::tools::*;
-use crate::take_bot;
+use crate::{sleep, take_bot};
 
 const DEFAULT_AUTH_TEMPLATE: &str = "$cmd $pass";
 
@@ -58,7 +54,7 @@ pub async fn default_authorize(username: &str) {
   drop(profile);
 
   if !cmd.is_empty() {
-    sleep(Duration::from_millis(randnum(min_delay, max_delay))).await;
+    sleep!(randnum(min_delay, max_delay));
 
     let msg = template
       .replace("$cmd", &cmd)

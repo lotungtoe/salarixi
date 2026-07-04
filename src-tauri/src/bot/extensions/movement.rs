@@ -4,7 +4,8 @@ use azalea::pathfinder::astar::PathfinderTimeout;
 use azalea::pathfinder::goals::XZGoal;
 use azalea::pathfinder::moves::basic::basic_move;
 use azalea::pathfinder::PathfinderOpts;
-use azalea::{prelude::*, SprintDirection, StartSprintEvent, StartWalkEvent, WalkDirection};
+use azalea::prelude::*;
+use azalea::{SprintDirection, StartSprintEvent, StartWalkEvent, WalkDirection};
 
 use crate::bot::systems::{getst, setmst, setst, State, StateName};
 use crate::take_bot;

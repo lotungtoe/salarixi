@@ -9,7 +9,6 @@ use azalea::protocol::packets::game::ClientboundGamePacket;
 use azalea::registry::builtin::EntityKind;
 use azalea::FormattedText;
 use azalea::{ClientInformation, NoState};
-use tokio::time::Duration;
 
 use crate::api::emit::*;
 use crate::bot::auth::{default_authorize, trigger_authorize};
@@ -22,6 +21,7 @@ use crate::bot::PLUGINS;
 use crate::launch::process::current_options;
 use crate::other::tools::*;
 use crate::other::webhook::*;
+use crate::sleep;
 use crate::{take_bot, take_profile};
 
 /// Обработчик для одного бота
@@ -137,7 +137,7 @@ async fn process_disconnect(bot: Client, text: Option<FormattedText>) {
   TASK_SYSTEM.kill_all_tasks_for(&username).await;
   PLUGINS.kill_all_tasks_for(&username).await;
 
-  tokio::time::sleep(Duration::from_secs(2)).await;
+  sleep!(2000);
 
   BOT_REGISTRY.remove_bot(&username).await;
 

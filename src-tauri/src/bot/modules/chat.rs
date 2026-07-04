@@ -1,9 +1,6 @@
-use std::time::Duration;
-
 use azalea::prelude::*;
 use regex::Regex;
 use serde::Deserialize;
-use tokio::time::sleep;
 
 use crate::bot::common::get_player_uuid;
 use crate::bot::extensions::BotDefaultExt;
@@ -13,7 +10,7 @@ use crate::bot::systems::{gettskact, killtsk, pushrtsk, TaskName};
 use crate::bot::traits::SalarixiModule;
 use crate::bot::utils::radar::RADAR;
 use crate::other::tools::*;
-use crate::take_bot;
+use crate::{sleep, take_bot};
 
 pub struct ChatModule;
 
@@ -212,7 +209,7 @@ impl ChatModule {
     }
 
     if !options.use_sync {
-      sleep(Duration::from_millis(randnum(200, 4000))).await;
+      sleep!(randnum(200, 4000));
     }
 
     if options.use_magic_text {
@@ -238,16 +235,12 @@ impl ChatModule {
       }
 
       if options.use_sync {
-        sleep(Duration::from_millis(
-          options.min_delay.unwrap_or(2000) + options.min_delay.unwrap_or(4000) / 2,
-        ))
-        .await;
+        sleep!(options.min_delay.unwrap_or(2000) + options.min_delay.unwrap_or(4000) / 2);
       } else {
-        sleep(Duration::from_millis(randnum(
+        sleep!(randnum(
           options.min_delay.unwrap_or(2000),
-          options.max_delay.unwrap_or(4000),
-        )))
-        .await;
+          options.max_delay.unwrap_or(4000)
+        ));
       }
 
       let mut final_text = text;

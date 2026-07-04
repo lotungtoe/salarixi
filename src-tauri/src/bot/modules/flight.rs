@@ -6,13 +6,12 @@ use azalea::protocol::common::movements::MoveFlags;
 use azalea::protocol::packets::game::ServerboundMovePlayerPos;
 use azalea::Vec3;
 use serde::Deserialize;
-use tokio::time::sleep;
 
 use crate::bot::extensions::{BotDefaultExt, BotPhysicsExt};
 use crate::bot::systems::{gettskact, killtsk, pushrtsk, TaskName};
 use crate::bot::traits::SalarixiModule;
 use crate::other::tools::*;
-use crate::take_bot;
+use crate::{sleep, take_bot};
 
 pub struct FlightModule;
 
@@ -100,7 +99,7 @@ impl FlightModule {
 
       bot.set_velocity("y", 0.0);
 
-      sleep(Duration::from_millis(50)).await;
+      sleep!(50);
     }
   }
 
@@ -127,12 +126,12 @@ impl FlightModule {
         bot.set_on_ground(true);
       }
 
-      sleep(Duration::from_millis(randnum(50, 80))).await;
+      sleep!(randnum(50, 80));
 
       if config.use_jitter {
         for _ in 0..randnum(4, 6) {
           bot.set_velocity("y", randnum(config.min_change_y, config.max_change_y));
-          sleep(Duration::from_millis(50)).await;
+          sleep!(50);
         }
       } else {
         bot.set_velocity("y", randnum(config.min_change_y, config.max_change_y));
@@ -142,7 +141,7 @@ impl FlightModule {
         bot.set_on_ground(false);
       }
 
-      sleep(Duration::from_millis(randnum(config.min_delay, config.max_delay))).await;
+      sleep!(randnum(config.min_delay, config.max_delay));
 
       Self::hover(bot, Instant::now() + Duration::from_millis(randnum(100, 150))).await;
 
@@ -185,7 +184,7 @@ impl FlightModule {
           counter = 0;
         }
 
-        sleep(Duration::from_millis(randnum(50, 80))).await;
+        sleep!(randnum(50, 80));
 
         let pos = bot.feet_pos();
 
@@ -204,13 +203,13 @@ impl FlightModule {
         if config.use_jitter {
           for _ in 0..randnum(4, 6) {
             bot.write_packet(packet.clone());
-            sleep(Duration::from_millis(50)).await;
+            sleep!(50);
           }
         } else {
           bot.write_packet(packet);
         }
 
-        sleep(Duration::from_millis(randnum(config.min_delay, config.max_delay))).await;
+        sleep!(randnum(config.min_delay, config.max_delay));
 
         Self::hover(bot, Instant::now() + Duration::from_millis(randnum(100, 150))).await;
 
@@ -240,7 +239,7 @@ impl FlightModule {
     };
 
     loop {
-      sleep(Duration::from_millis(randnum(50, 100))).await;
+      sleep!(randnum(50, 100));
 
       if let Some(physics) = bot.get_physics() {
         if config.use_ground_spoof {
@@ -264,13 +263,13 @@ impl FlightModule {
         if config.use_jitter {
           for _ in 0..randnum(4, 6) {
             bot.write_packet(packet.clone());
-            sleep(Duration::from_millis(50)).await;
+            sleep!(50);
           }
         } else {
           bot.write_packet(packet);
         }
 
-        sleep(Duration::from_millis(randnum(config.min_delay, config.max_delay))).await;
+        sleep!(randnum(config.min_delay, config.max_delay));
 
         Self::hover(bot, Instant::now() + Duration::from_millis(randnum(100, 150))).await;
 
@@ -325,13 +324,13 @@ impl FlightModule {
       if config.use_jitter {
         for _ in 0..randnum(4, 6) {
           bot.set_velocity("y", direction.y.abs() * final_strength * 0.2);
-          sleep(Duration::from_millis(50)).await;
+          sleep!(50);
         }
       } else {
         bot.set_velocity("y", direction.y.abs() * final_strength * 0.2);
       }
 
-      sleep(Duration::from_millis(randnum(config.min_delay, config.max_delay))).await;
+      sleep!(randnum(config.min_delay, config.max_delay));
 
       Self::hover(bot, Instant::now() + Duration::from_millis(randnum(600, 800))).await;
 

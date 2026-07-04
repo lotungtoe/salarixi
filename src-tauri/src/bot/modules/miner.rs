@@ -1,18 +1,16 @@
-use std::time::Duration;
-
 use azalea::auto_tool::best_tool_in_hotbar_for_block;
 use azalea::core::position::BlockPos;
 use azalea::prelude::*;
 use azalea::Vec3;
 use azalea::WalkDirection;
 use serde::Deserialize;
-use tokio::time::sleep;
 
 use crate::bot::common::get_block_state;
 use crate::bot::extensions::{BotDefaultExt, BotInventoryExt, BotMovementExt};
 use crate::bot::systems::{gettskact, killtsk, pushrtsk, setmst, StateName, TaskName};
 use crate::bot::traits::SalarixiModule;
 use crate::other::tools::*;
+use crate::sleep;
 use crate::take_bot;
 
 pub struct MinerModule;
@@ -59,7 +57,7 @@ impl MinerModule {
       let walk_direction = randelem(walk_directions.as_ref());
 
       bot.walk(*walk_direction);
-      sleep(Duration::from_millis(randnum(150, 250))).await;
+      sleep!(randnum(150, 250));
       bot.walk(WalkDirection::None);
     }
   }
@@ -76,7 +74,7 @@ impl MinerModule {
 
       bot.look_at(pre);
 
-      sleep(Duration::from_millis(randnum(50, 150))).await;
+      sleep!(randnum(50, 150));
     }
 
     if randchance(0.7) {
@@ -104,7 +102,7 @@ impl MinerModule {
     }
 
     bot.walk(WalkDirection::Forward);
-    sleep(Duration::from_millis(randnum(50, 150))).await;
+    sleep!(randnum(50, 150));
     bot.walk(WalkDirection::None);
   }
 
@@ -200,7 +198,7 @@ impl MinerModule {
 
               Self::look_at_block(bot, block_pos, options.look.clone()).await;
 
-              sleep(Duration::from_millis(randnum(100, 200))).await;
+              sleep!(randnum(100, 200));
 
               if let Some(slot) = options.slot {
                 bot.set_selected_hotbar_slot(slot);
@@ -228,17 +226,17 @@ impl MinerModule {
                   break;
                 }
 
-                sleep(Duration::from_millis(50)).await;
+                sleep!(50);
               }
 
               Self::micro_offset(bot).await;
 
-              sleep(Duration::from_millis(randnum(50, 100))).await;
+              sleep!(randnum(50, 100));
 
               if let Some(s) = get_block_state(bot, block_pos) {
                 if !s.is_air() || Self::is_breakable_block(s.id()) {
                   bot.walk(WalkDirection::Backward);
-                  sleep(Duration::from_millis(randnum(50, 100))).await;
+                  sleep!(randnum(50, 100));
                   bot.walk(WalkDirection::None);
                 }
               }
@@ -265,11 +263,11 @@ impl MinerModule {
         }
       }
 
-      sleep(Duration::from_millis(randnum(50, 100))).await;
+      sleep!(randnum(50, 100));
 
       Self::move_forward(bot, territory).await;
 
-      sleep(Duration::from_millis(options.delay.unwrap_or(200))).await;
+      sleep!(options.delay.unwrap_or(200));
     }
   }
 

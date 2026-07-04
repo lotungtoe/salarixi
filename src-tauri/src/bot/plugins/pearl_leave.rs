@@ -3,7 +3,6 @@ use std::time::Duration;
 use azalea::prelude::*;
 use azalea::protocol::packets::game::s_interact::InteractionHand;
 use azalea::registry::builtin::ItemKind;
-use tokio::time::sleep;
 
 use crate::bot::extensions::{BotDefaultExt, BotInteractExt, BotInventoryExt};
 use crate::bot::plugin_manager::PluginName;
@@ -11,7 +10,7 @@ use crate::bot::systems::{getst, setmst, State, StateName};
 use crate::bot::traits::SalarixiPlugin;
 use crate::bot::PLUGINS;
 use crate::other::tools::randnum;
-use crate::take_bot;
+use crate::{sleep, take_bot};
 
 pub struct PearlLeavePlugin;
 
@@ -73,13 +72,13 @@ impl PearlLeavePlugin {
 
     setmst(username, StateName::Looking, false).await;
 
-    tokio::time::sleep(Duration::from_millis(randnum(100, 150))).await;
+    sleep!(randnum(100, 150));
 
     take_bot!(username, async |bot| {
       bot.jump();
     });
 
-    tokio::time::sleep(Duration::from_millis(randnum(100, 150))).await;
+    sleep!(randnum(100, 150));
 
     if !getst(username, State::CanInteracting).await {
       return;
@@ -107,7 +106,7 @@ impl SalarixiPlugin for PearlLeavePlugin {
     let task = tokio::spawn(async move {
       loop {
         self.tick(&username_clone).await;
-        sleep(Duration::from_millis(200)).await;
+        sleep!(200);
       }
     });
 

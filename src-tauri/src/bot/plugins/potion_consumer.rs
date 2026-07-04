@@ -1,12 +1,9 @@
-use std::time::Duration;
-
 use azalea::entity::Physics;
 use azalea::inventory::components::PotionContents;
 use azalea::inventory::ItemStack;
 use azalea::protocol::packets::game::s_interact::InteractionHand;
 use azalea::registry::builtin::ItemKind;
 use azalea::registry::builtin::Potion as PotionKind;
-use tokio::time::sleep;
 
 use crate::bot::extensions::{BotDefaultExt, BotInteractExt, BotInventoryExt, BotMovementExt, BotPhysicsExt};
 use crate::bot::plugin_manager::PluginName;
@@ -16,6 +13,7 @@ use crate::bot::systems::{getst, setmst, setst};
 use crate::bot::traits::SalarixiPlugin;
 use crate::bot::PLUGINS;
 use crate::other::tools::*;
+use crate::sleep;
 use crate::take_bot;
 
 /// Структура информации и зелье
@@ -79,9 +77,7 @@ impl PotionConsumerPlugin {
     setst(username, State::CanAttacking, false).await;
     setst(username, State::CanInteracting, false).await;
 
-    sleep(Duration::from_millis(50)).await;
     self.use_potion(username, best_potion).await;
-    sleep(Duration::from_millis(50)).await;
 
     setst(username, State::CanEating, true).await;
     setst(username, State::CanInteracting, true).await;
@@ -103,7 +99,7 @@ impl PotionConsumerPlugin {
           bot.start_use_held_item(InteractionHand::MainHand);
         });
 
-        sleep(Duration::from_millis(2600)).await;
+        sleep!(2600);
 
         take_bot!(username, async |bot| {
           bot.unfreeze_move().await;
@@ -119,13 +115,13 @@ impl PotionConsumerPlugin {
           bot.set_direction(direction.0 + randnum(-5.5, 5.5) as f32, randnum(87.0, 90.0) as f32);
         });
 
-        sleep(Duration::from_millis(randnum(400, 600))).await;
+        sleep!(randnum(400, 600));
 
         take_bot!(username, async |bot| {
           bot.start_use_held_item(InteractionHand::MainHand);
         });
 
-        sleep(Duration::from_millis(randnum(300, 500))).await;
+        sleep!(randnum(300, 500));
 
         take_bot!(username, async |bot| {
           bot.set_direction(
@@ -307,7 +303,7 @@ impl SalarixiPlugin for PotionConsumerPlugin {
     let task = tokio::spawn(async move {
       loop {
         self.tick(&username_clone).await;
-        sleep(Duration::from_millis(200)).await;
+        sleep!(200);
       }
     });
 

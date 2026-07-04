@@ -1,13 +1,11 @@
-use std::time::Duration;
-
 use azalea::prelude::*;
 use azalea::SprintDirection;
 use serde::Deserialize;
-use tokio::time::sleep;
 
 use crate::bot::extensions::{go_to, BotDefaultExt, BotMovementExt, EntityType};
 use crate::bot::systems::{getst, gettskact, killtsk, pushrtsk, setmst, State, StateName, TaskName};
 use crate::bot::traits::SalarixiModule;
+use crate::sleep;
 use crate::take_bot;
 
 pub struct StalkerModule;
@@ -60,7 +58,7 @@ impl StalkerModule {
         }
       }
 
-      sleep(Duration::from_millis(50)).await;
+      sleep!(50);
     }
   }
 
@@ -88,7 +86,7 @@ impl StalkerModule {
         }
       }
 
-      sleep(Duration::from_millis(200)).await;
+      sleep!(200);
     }
   }
 

@@ -1,9 +1,6 @@
-use std::time::Duration;
-
 use azalea::inventory::ItemStack;
 use azalea::protocol::packets::game::s_interact::InteractionHand;
 use azalea::registry::builtin::ItemKind;
-use tokio::time::sleep;
 
 use crate::bot::extensions::{BotDefaultExt, BotInteractExt, BotInventoryExt, BotMovementExt};
 use crate::bot::plugin_manager::PluginName;
@@ -11,7 +8,7 @@ use crate::bot::systems::{getst, setmst, setst, State, StateName};
 use crate::bot::traits::SalarixiPlugin;
 use crate::bot::PLUGINS;
 use crate::other::tools::randchance;
-use crate::take_bot;
+use crate::{sleep, take_bot};
 
 #[derive(Clone, Copy)]
 struct Food {
@@ -52,13 +49,13 @@ impl AutoEatPlugin {
             setmst(username, StateName::Eating, true).await;
 
             self.start_eating(username, best_food.slot).await;
-            sleep(Duration::from_millis(50)).await;
+            sleep!(50);
 
             setst(username, State::CanDrinking, true).await;
             setst(username, State::CanInteracting, true).await;
             setmst(username, StateName::Eating, false).await;
           } else {
-            sleep(Duration::from_millis(1800)).await;
+            sleep!(1800);
           }
         }
       }
@@ -70,11 +67,11 @@ impl AutoEatPlugin {
     take_bot!(username, async |bot| {
       bot.freeze_move().await;
       bot.take_item(slot, false).await;
-      sleep(Duration::from_millis(50)).await;
+      sleep!(50);
       bot.start_use_held_item(InteractionHand::MainHand);
     });
 
-    sleep(Duration::from_millis(1800)).await;
+    sleep!(1800);
 
     take_bot!(username, async |bot| {
       bot.unfreeze_move().await;
@@ -326,7 +323,7 @@ impl SalarixiPlugin for AutoEatPlugin {
     let task = tokio::spawn(async move {
       loop {
         self.tick(&username_clone).await;
-        sleep(Duration::from_millis(100)).await;
+        sleep!(100);
       }
     });
 

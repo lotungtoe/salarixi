@@ -1,18 +1,15 @@
-use std::time::Duration;
-
 use azalea::container::ContainerHandle;
 use azalea::core::position::BlockPos;
 use azalea::prelude::*;
 use azalea::Vec3;
 use serde::Deserialize;
-use tokio::time::sleep;
 
 use crate::bot::common::get_block_state;
 use crate::bot::extensions::BotMovementExt;
 use crate::bot::systems::{getst, gettskact, killtsk, pushrtsk, setmst, setst, State, StateName, TaskName};
 use crate::bot::traits::SalarixiModule;
 use crate::other::tools::*;
-use crate::take_bot;
+use crate::{sleep, take_bot};
 
 pub struct StealerModule;
 
@@ -118,12 +115,12 @@ impl StealerModule {
 
           bot.look_at(pos.center());
 
-          sleep(Duration::from_millis(randnum(50, 100))).await;
+          sleep!(randnum(50, 100));
 
           if let Some(container) = bot.open_container_at(pos).await {
             Self::extract_all_items(bot, &container).await;
             container.close();
-            sleep(Duration::from_millis(randnum(200, 350))).await;
+            sleep!(randnum(200, 350));
           }
 
           setmst(&username, StateName::Looking, false).await;
@@ -138,7 +135,7 @@ impl StealerModule {
         );
       }
 
-      sleep(Duration::from_millis(options.delay.unwrap_or(1000))).await;
+      sleep!(options.delay.unwrap_or(1000));
     }
   }
 }

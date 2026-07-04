@@ -1,11 +1,8 @@
-use std::time::Duration;
-
 use azalea::inventory::components::{Damage, Enchantments, MaxDamage};
 use azalea::inventory::ItemStack;
 use azalea::prelude::*;
 use azalea::protocol::packets::game::s_interact::InteractionHand;
 use azalea::registry::builtin::ItemKind;
-use tokio::time::sleep;
 
 use crate::bot::extensions::{BotInteractExt, BotInventoryExt};
 use crate::bot::plugin_manager::PluginName;
@@ -13,7 +10,7 @@ use crate::bot::systems::{getst, setmst, State, StateName};
 use crate::bot::traits::SalarixiPlugin;
 use crate::bot::PLUGINS;
 use crate::other::tools::*;
-use crate::take_bot;
+use crate::{sleep, take_bot};
 
 /// Структура данных сломанного предмета
 struct BrokenItem {
@@ -70,7 +67,7 @@ impl AutoMendingPlugin {
       if broken_item.slot != 45 && broken_item.slot > 8 {
         take_bot!(username, async |bot| {
           bot.take_item(broken_item.slot, false).await;
-          sleep(Duration::from_millis(50)).await;
+          sleep!(50);
           bot.move_item_to_offhand(broken_item.kind).await;
         });
       }
@@ -101,7 +98,7 @@ impl AutoMendingPlugin {
 
             if direction.1 < 84.0 {
               bot.set_direction(direction.0, randnum(84.0, 90.0) as f32);
-              sleep(Duration::from_millis(randnum(150, 200))).await;
+              sleep!(randnum(150, 200));
             }
 
             bot.start_use_held_item(InteractionHand::MainHand);
@@ -116,7 +113,7 @@ impl AutoMendingPlugin {
       setmst(username, StateName::Interacting, false).await;
       setmst(username, StateName::Looking, false).await;
 
-      sleep(Duration::from_millis(randnum(200, 250))).await;
+      sleep!(randnum(200, 250));
     }
   }
 
@@ -195,7 +192,7 @@ impl SalarixiPlugin for AutoMendingPlugin {
     let task = tokio::spawn(async move {
       loop {
         self.tick(&username_clone).await;
-        sleep(Duration::from_millis(300)).await;
+        sleep!(300);
       }
     });
 

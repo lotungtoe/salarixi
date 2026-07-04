@@ -1,18 +1,15 @@
-use std::time::Duration;
-
 use azalea::core::position::BlockPos;
 use azalea::prelude::*;
 use azalea::registry::builtin::{BlockKind, ItemKind};
 use azalea::Vec3;
 use serde::Deserialize;
-use tokio::time::sleep;
 
 use crate::bot::common::get_block_state;
 use crate::bot::extensions::{BotDefaultExt, BotInventoryExt, BotRotationExt};
 use crate::bot::systems::{getst, gettskact, killtsk, pushrtsk, setmst, State, StateName, TaskName};
 use crate::bot::traits::SalarixiModule;
 use crate::other::tools::*;
-use crate::take_bot;
+use crate::{sleep, take_bot};
 
 struct Tool {
   slot: Option<usize>,
@@ -147,7 +144,7 @@ impl FarmerModule {
       bot.take_item(slot, true).await;
 
       for _ in 0..=4 {
-        sleep(Duration::from_millis(Self::generate_delay(mode))).await;
+        sleep!(Self::generate_delay(mode));
         bot.start_use_item();
       }
     }
@@ -191,13 +188,13 @@ impl FarmerModule {
   async fn plow_block(bot: &Client, block_pos: BlockPos, mode: &String) {
     if let Some(state) = get_block_state(bot, block_pos) {
       Self::auto_tool(bot).await;
-      sleep(Duration::from_millis(50)).await;
+      sleep!(50);
 
       let kind = BlockKind::from(state);
 
       if kind == BlockKind::CoarseDirt || kind == BlockKind::RootedDirt {
         bot.start_use_item();
-        sleep(Duration::from_millis(Self::generate_delay(mode))).await;
+        sleep!(Self::generate_delay(mode));
         bot.start_use_item();
       } else {
         bot.start_use_item();
@@ -236,42 +233,42 @@ impl FarmerModule {
           bot.look_at_block(block_pos, true).await;
 
           if options.mode.as_str() != "ultra" {
-            sleep(Duration::from_millis(Self::generate_delay(&options.mode))).await;
+            sleep!(Self::generate_delay(&options.mode));
           }
 
           if Self::take_plant(bot).await {
-            sleep(Duration::from_millis(Self::generate_delay(&options.mode))).await;
+            sleep!(Self::generate_delay(&options.mode));
             bot.start_use_item();
-            sleep(Duration::from_millis(Self::generate_delay(&options.mode))).await;
+            sleep!(Self::generate_delay(&options.mode));
           }
         } else {
           if Self::this_is_plant(kind) {
             bot.look_at_block(block_pos, true).await;
 
-            sleep(Duration::from_millis(Self::generate_delay(&options.mode))).await;
+            sleep!(Self::generate_delay(&options.mode));
 
             if Self::this_is_grown_plant(state.id()) {
               Self::auto_tool(bot).await;
-              sleep(Duration::from_millis(Self::generate_delay(&options.mode))).await;
+              sleep!(Self::generate_delay(&options.mode));
               bot.mine(block_pos).await;
-              sleep(Duration::from_millis(50)).await;
+              sleep!(50);
             } else {
               Self::fertilize_plant(bot, &options.mode).await;
 
               if let Some(new_state) = get_block_state(bot, block_pos) {
-                sleep(Duration::from_millis(50)).await;
+                sleep!(50);
 
                 if Self::this_is_grown_plant(new_state.id()) {
                   Self::auto_tool(bot).await;
-                  sleep(Duration::from_millis(Self::generate_delay(&options.mode))).await;
+                  sleep!(Self::generate_delay(&options.mode));
                   bot.mine(block_pos).await;
-                  sleep(Duration::from_millis(50)).await;
+                  sleep!(50);
                 }
               }
             }
 
             if options.mode.as_str() != "ultra" {
-              sleep(Duration::from_millis(Self::generate_delay(&options.mode))).await;
+              sleep!(Self::generate_delay(&options.mode));
             }
           } else {
             if Self::block_can_plowed(bot, kind, block_pos) {
@@ -314,7 +311,7 @@ impl FarmerModule {
         }
       }
 
-      sleep(Duration::from_millis(options.delay.unwrap_or(100))).await;
+      sleep!(options.delay.unwrap_or(100));
 
       setmst(&username, StateName::Looking, false).await;
     }
