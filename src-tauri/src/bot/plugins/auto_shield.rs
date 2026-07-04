@@ -6,54 +6,29 @@ use azalea::protocol::packets::game::s_interact::InteractionHand;
 use azalea::registry::builtin::ItemKind;
 use tokio::time::sleep;
 
-use crate::bot::extensions::{BotDefaultExt, BotInteractExt, BotInventoryExt, EntityType};
+use crate::bot::extensions::{BotDefaultExt, BotInteractExt, BotInventoryExt, BotRotationExt, EntityType};
 use crate::bot::plugin_manager::PluginName;
-use crate::bot::systems::{getst, setmst, State, StateName};
+use crate::bot::systems::{getst, setmst, setst, State, StateName};
 use crate::bot::traits::SalarixiPlugin;
 use crate::bot::PLUGINS;
-use crate::other::tools::*;
 use crate::take_bot;
 
 pub struct AutoShieldPlugin;
 
 impl AutoShieldPlugin {
   /// Метод обработки тика
-  async fn tick(&self, bot: &Client) {
-    let Some(entity) = self.get_nearest_dangerous_entity(bot) else {
+  async fn tick(&self, username: &str) {
+    let mut danger_entity = None;
+
+    take_bot!(username, async |bot| {
+      danger_entity = self.get_nearest_dangerous_entity(bot);
+    });
+
+    if danger_entity.is_none() {
       return;
-    };
-
-    let username = bot.username();
-
-    if let Some(menu) = bot.get_inventory_menu() {
-      if let Some(item) = menu.slot(45) {
-        if item.is_empty() || item.kind() == ItemKind::Shield {
-          if getst(&username, State::IsEating).await || getst(&username, State::IsDrinking).await {
-            return;
-          }
-
-          let mut shield_equipped = false;
-
-          if item.kind() != ItemKind::Shield {
-            for (slot, item) in menu.slots().iter().enumerate() {
-              if slot != 45 {
-                if item.kind() == ItemKind::Shield {
-                  bot.inventory_move_item(ItemKind::Shield, slot, 45, true).await;
-                  shield_equipped = true;
-                  break;
-                }
-              }
-            }
-          } else {
-            shield_equipped = true;
-          }
-
-          if shield_equipped {
-            self.start_defending(bot, entity).await;
-          }
-        }
-      }
     }
+
+    self.start_defending(username).await;
   }
 
   /// Метод получения ближайшей опасной сущности
@@ -71,35 +46,89 @@ impl AutoShieldPlugin {
     nearest_entity
   }
 
-  /// Метод прикрытия щитом
-  async fn start_defending(&self, bot: &Client, entity: Entity) {
-    let username = bot.username();
+  /// Метод экипировки щита
+  async fn equip_shield(&self, username: &str) -> bool {
+    let mut shield_equipped = false;
 
-    if getst(&username, State::CanLooking).await && getst(&username, State::CanInteracting).await {
-      setmst(&username, StateName::Looking, true).await;
-      setmst(&username, StateName::Interacting, true).await;
+    take_bot!(username, async |bot| {
+      let Some(menu) = bot.get_inventory_menu() else {
+        return;
+      };
 
-      bot.start_use_held_item(InteractionHand::OffHand);
+      let Some(offhand_item) = menu.slot(45) else {
+        return;
+      };
 
-      sleep(Duration::from_millis(50)).await;
-
-      bot.look_at(bot.get_entity_position(entity));
-
-      sleep(Duration::from_millis(randnum(50, 100))).await;
-
-      for _ in 0..=randnum(2, 4) {
-        if let Some(e) = self.get_nearest_dangerous_entity(bot) {
-          bot.look_at(bot.get_entity_position(e));
-        }
-
-        sleep(Duration::from_millis(randnum(50, 100))).await;
+      if !offhand_item.is_empty() && offhand_item.kind() != ItemKind::Shield {
+        return;
       }
 
-      bot.release_use_held_item();
+      if offhand_item.kind() != ItemKind::Shield {
+        for (slot, item) in menu.slots().iter().enumerate() {
+          if slot == 45 || item.kind() != ItemKind::Shield {
+            continue;
+          }
 
-      setmst(&username, StateName::Looking, false).await;
-      setmst(&username, StateName::Interacting, false).await;
+          bot.inventory_move_item(ItemKind::Shield, slot, 45, true).await;
+          shield_equipped = true;
+
+          break;
+        }
+      } else {
+        shield_equipped = true;
+      }
+    });
+
+    shield_equipped
+  }
+
+  /// Метод прикрытия щитом
+  async fn start_defending(&self, username: &str) {
+    if !getst(username, State::CanLooking).await || !getst(username, State::CanInteracting).await {
+      return;
     }
+
+    if !self.equip_shield(username).await {
+      return;
+    }
+
+    setmst(username, StateName::Looking, true).await;
+    setmst(username, StateName::Interacting, true).await;
+    setst(username, State::CanAttacking, false).await;
+    setst(username, State::CanEating, false).await;
+    setst(username, State::CanDrinking, false).await;
+
+    take_bot!(username, async |bot| {
+      bot.start_use_held_item(InteractionHand::OffHand);
+    });
+
+    let mut danger_entity_exists = true;
+
+    while danger_entity_exists {
+      if !self.equip_shield(username).await {
+        break;
+      }
+
+      take_bot!(username, async |bot| {
+        if let Some(e) = self.get_nearest_dangerous_entity(bot) {
+          bot.look_at_entity(e, true);
+        } else {
+          danger_entity_exists = false;
+        }
+      });
+
+      sleep(Duration::from_millis(50)).await;
+    }
+
+    take_bot!(username, async |bot| {
+      bot.release_use_held_item();
+    });
+
+    setmst(username, StateName::Looking, false).await;
+    setmst(username, StateName::Interacting, false).await;
+    setst(username, State::CanAttacking, true).await;
+    setst(username, State::CanEating, true).await;
+    setst(username, State::CanDrinking, true).await;
   }
 }
 
@@ -112,14 +141,7 @@ impl SalarixiPlugin for AutoShieldPlugin {
     let username_clone = username.clone();
     let task = tokio::spawn(async move {
       loop {
-        take_bot!(&username_clone, async |bot| {
-          if !bot.workable() {
-            return;
-          }
-
-          self.tick(bot).await;
-        });
-
+        self.tick(&username_clone).await;
         sleep(Duration::from_millis(100)).await;
       }
     });

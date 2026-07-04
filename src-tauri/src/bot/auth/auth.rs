@@ -1,24 +1,22 @@
 use std::time::Duration;
 
-use azalea::prelude::*;
 use tokio::time::sleep;
 
 use crate::api::emit::emit_log;
 use crate::bot::systems::PROFILE_SYSTEM;
 use crate::launch::process::current_options;
 use crate::other::tools::*;
+use crate::take_bot;
 
 const DEFAULT_AUTH_TEMPLATE: &str = "$cmd $pass";
 
 /// Функция default-авторизации бота
-pub async fn default_authorize(bot: &Client) {
-  let username = bot.username();
-
+pub async fn default_authorize(username: &str) {
   let Some(opts) = current_options().await else {
     return;
   };
 
-  let Some(profile) = PROFILE_SYSTEM.get(&username).await else {
+  let Some(profile) = PROFILE_SYSTEM.get(username).await else {
     return;
   };
 
@@ -67,7 +65,9 @@ pub async fn default_authorize(bot: &Client) {
       .replace("$pass", &password.unwrap_or(String::new()))
       .replace("$email", &email.unwrap_or(String::new()));
 
-    bot.chat(&msg);
+    take_bot!(username, async |bot| {
+      bot.chat(&msg);
+    });
 
     // Нельзя просто поставить значение registered напрямую, так как
     // текущее значения может быть true (то есть бот уже зарегистрирован),
@@ -86,14 +86,12 @@ pub async fn default_authorize(bot: &Client) {
 }
 
 /// Функция trigger-авторизации бота
-pub async fn trigger_authorize(bot: &Client, message: String) {
-  let username = bot.username();
-
+pub async fn trigger_authorize(username: &str, message: String) {
   let Some(opts) = current_options().await else {
     return;
   };
 
-  let Some(profile) = PROFILE_SYSTEM.get(&username).await else {
+  let Some(profile) = PROFILE_SYSTEM.get(username).await else {
     return;
   };
 
@@ -144,7 +142,9 @@ pub async fn trigger_authorize(bot: &Client, message: String) {
       .replace("$pass", &password.unwrap_or(String::new()))
       .replace("$email", &email.unwrap_or(String::new()));
 
-    bot.chat(&msg);
+    take_bot!(username, async |bot| {
+      bot.chat(&msg);
+    });
 
     if registered {
       PROFILE_SYSTEM.set_bool(&username, "registered", true).await;

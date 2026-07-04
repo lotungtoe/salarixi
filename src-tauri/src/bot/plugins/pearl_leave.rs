@@ -17,23 +17,31 @@ pub struct PearlLeavePlugin;
 
 impl PearlLeavePlugin {
   /// Метод обработки тика
-  async fn tick(&self, bot: &Client) {
-    let health = bot.get_health();
+  async fn tick(&self, username: &str) {
+    take_bot!(username, async |bot| {
+      let health = bot.get_health();
 
-    if health < 6.0 || health > 10.0 {
-      return;
-    }
+      if health < 6.0 || health > 10.0 {
+        return;
+      }
 
-    if !self.take_pearl(bot).await {
-      return;
-    }
+      if !self.take_pearl(username).await {
+        return;
+      }
 
-    self.throw_pearl(bot).await;
+      self.throw_pearl(username).await;
+    });
   }
 
   /// Метод взятия жемчуга в руку
-  async fn take_pearl(&self, bot: &Client) -> bool {
-    if let Some(menu) = bot.get_inventory_menu() {
+  async fn take_pearl(&self, username: &str) -> bool {
+    let mut pearl_taken = false;
+
+    take_bot!(username, async |bot| {
+      let Some(menu) = bot.get_inventory_menu() else {
+        return;
+      };
+
       for (slot, item) in menu.slots().iter().enumerate() {
         if item.kind() != ItemKind::EnderPearl {
           continue;
@@ -41,42 +49,49 @@ impl PearlLeavePlugin {
 
         bot.take_item(slot, true).await;
 
-        return true;
+        pearl_taken = true;
       }
-    }
+    });
 
-    false
+    pearl_taken
   }
 
   /// Метод броска жемчуга
-  async fn throw_pearl(&self, bot: &Client) {
-    let username = bot.username();
-
-    if !getst(&username, State::CanLooking).await {
+  async fn throw_pearl(&self, username: &str) {
+    if !getst(username, State::CanLooking).await {
       return;
     }
 
-    setmst(&username, StateName::Looking, true).await;
+    setmst(username, StateName::Looking, true).await;
 
     let y_rot = randnum(-180.0, 180.0);
     let x_rot = randnum(-35.0, -30.0);
-    bot.set_direction(y_rot, x_rot);
 
-    setmst(&username, StateName::Looking, false).await;
+    take_bot!(username, async |bot| {
+      bot.set_direction(y_rot, x_rot);
+    });
+
+    setmst(username, StateName::Looking, false).await;
 
     tokio::time::sleep(Duration::from_millis(randnum(100, 150))).await;
 
-    bot.jump();
+    take_bot!(username, async |bot| {
+      bot.jump();
+    });
 
     tokio::time::sleep(Duration::from_millis(randnum(100, 150))).await;
 
-    if !getst(&username, State::CanInteracting).await {
+    if !getst(username, State::CanInteracting).await {
       return;
     }
 
-    setmst(&username, StateName::Interacting, true).await;
-    bot.start_use_held_item(InteractionHand::MainHand);
-    setmst(&username, StateName::Interacting, false).await;
+    setmst(username, StateName::Interacting, true).await;
+
+    take_bot!(username, async |bot| {
+      bot.start_use_held_item(InteractionHand::MainHand);
+    });
+
+    setmst(username, StateName::Interacting, false).await;
 
     tokio::time::sleep(Duration::from_secs(8)).await;
   }
@@ -91,14 +106,7 @@ impl SalarixiPlugin for PearlLeavePlugin {
     let username_clone = username.clone();
     let task = tokio::spawn(async move {
       loop {
-        take_bot!(&username_clone, async |bot| {
-          if !bot.workable() {
-            return;
-          }
-
-          self.tick(bot).await;
-        });
-
+        self.tick(&username_clone).await;
         sleep(Duration::from_millis(200)).await;
       }
     });

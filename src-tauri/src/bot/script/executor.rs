@@ -932,11 +932,8 @@ impl ScriptExecutor {
   }
 
   /// Метод остановки процесса исполнения пользовательского сценария
-  pub fn stop(&self) {
+  pub async fn stop(&self) {
     EXECUTOR_GLOBAL_STATE.store(false, Ordering::SeqCst);
-
-    if let Ok(mut states) = EXECUTOR_STATE_SYSTEM.try_write() {
-      states.clear();
-    }
+    EXECUTOR_STATE_SYSTEM.write().await.clear();
   }
 }

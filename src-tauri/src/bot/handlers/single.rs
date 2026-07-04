@@ -119,15 +119,15 @@ async fn process_spawn(bot: Client) {
     // некоторое время в лобби, после его кикнет. Легче вперёд поставить авторизацию,
     // так как в большинстве случаев выполнения сценария предпологается после авторизации,
     // если что это всегда можно сделать иначе - просто отключить опции рода авто-регистр.
-    default_authorize(&bot).await;
-
-    if opts.basic.use_auto_script {
-      if let Some(script) = opts.basic.script {
-        // Здесь нужно указывать юзернейм бота, чтобы исполнитель работал только с ним
-        SCRIPT_EXECUTOR.execute(bot.username(), script);
-      }
-    }
+    default_authorize(&username).await;
   });
+
+  if opts.basic.use_auto_script {
+    if let Some(script) = opts.basic.script {
+      // Здесь нужно указывать юзернейм бота, чтобы исполнитель работал только с ним
+      SCRIPT_EXECUTOR.execute(username, script);
+    }
+  }
 }
 
 /// Функция обработки отключения
@@ -203,13 +203,13 @@ async fn process_chat_message(bot: Client, packet: ChatPacket) {
 
         send_optional_event(OptionalEmitEvent::AntiWebCaptcha(AntiWebCaptchaEventPayload {
           captcha_url: url,
-          username: username,
+          username: username.clone(),
         }));
       }
     }
   }
 
-  trigger_authorize(&bot, packet.message().to_string()).await;
+  trigger_authorize(&username, packet.message().to_string()).await;
 }
 
 /// Функция обработки тика

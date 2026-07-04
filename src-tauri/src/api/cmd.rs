@@ -178,7 +178,7 @@ pub async fn execute_script(script: String) {
 /// Команда остановки пользовательского скрипта
 #[tauri::command]
 pub async fn stop_script() {
-  SCRIPT_EXECUTOR.stop();
+  SCRIPT_EXECUTOR.stop().await;
 }
 
 /// Команда открытия URL в браузере

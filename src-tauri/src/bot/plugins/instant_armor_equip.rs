@@ -5,7 +5,7 @@ use azalea::prelude::*;
 use azalea::registry::builtin::ItemKind;
 use tokio::time::sleep;
 
-use crate::bot::extensions::{BotDefaultExt, BotInventoryExt, ClickMode};
+use crate::bot::extensions::{BotInventoryExt, ClickMode};
 use crate::bot::plugin_manager::PluginName;
 use crate::bot::traits::SalarixiPlugin;
 use crate::bot::PLUGINS;
@@ -38,11 +38,15 @@ struct ArmorSet {
 pub struct InstantArmorEquipPlugin;
 
 impl InstantArmorEquipPlugin {
-  /// Метод экипировки брони
-  async fn equip_armor(&self, bot: &Client) {
-    let mut armors = vec![];
+  /// Метод обработки тика
+  async fn tick(&self, username: &str) {
+    take_bot!(username, async |bot| {
+      let mut armors = vec![];
 
-    if let Some(menu) = bot.get_inventory_menu() {
+      let Some(menu) = bot.get_inventory_menu() else {
+        return;
+      };
+
       for (slot, item) in menu.slots().iter().enumerate() {
         if slot > 8 {
           if let Some(armor) = self.is_armor(item, slot) {
@@ -50,33 +54,37 @@ impl InstantArmorEquipPlugin {
           }
         }
       }
-    }
 
-    let armor_set = self.get_best_armor(bot, armors);
-
-    if let Some(helmet) = armor_set.helmet {
-      if self.is_armor_better(bot, &helmet) {
-        self.equip(bot, helmet.slot, 5).await;
+      if armors.is_empty() {
+        return;
       }
-    }
 
-    if let Some(chestplate) = armor_set.chestplate {
-      if self.is_armor_better(bot, &chestplate) {
-        self.equip(bot, chestplate.slot, 6).await;
-      }
-    }
+      let armor_set = self.get_best_armor(bot, armors);
 
-    if let Some(leggings) = armor_set.leggings {
-      if self.is_armor_better(&bot, &leggings) {
-        self.equip(bot, leggings.slot, 7).await;
+      if let Some(helmet) = armor_set.helmet {
+        if self.is_armor_better(bot, &helmet) {
+          self.equip(bot, helmet.slot, 5).await;
+        }
       }
-    }
 
-    if let Some(boots) = armor_set.boots {
-      if self.is_armor_better(&bot, &boots) {
-        self.equip(bot, boots.slot, 8).await;
+      if let Some(chestplate) = armor_set.chestplate {
+        if self.is_armor_better(bot, &chestplate) {
+          self.equip(bot, chestplate.slot, 6).await;
+        }
       }
-    }
+
+      if let Some(leggings) = armor_set.leggings {
+        if self.is_armor_better(&bot, &leggings) {
+          self.equip(bot, leggings.slot, 7).await;
+        }
+      }
+
+      if let Some(boots) = armor_set.boots {
+        if self.is_armor_better(&bot, &boots) {
+          self.equip(bot, boots.slot, 8).await;
+        }
+      }
+    });
   }
 
   /// Метод экипировки определённого элемента брони
@@ -327,19 +335,21 @@ impl InstantArmorEquipPlugin {
       ArmorPart::Boots => 8,
     };
 
-    if let Some(menu) = bot.get_inventory_menu() {
-      if let Some(item) = menu.slot(current_armor_slot) {
-        if let Some(current_armor) = self.is_armor(item, current_armor_slot) {
-          if armor.part == current_armor.part {
-            return armor.priority > current_armor.priority;
-          }
-        } else {
-          return true;
-        }
+    let Some(menu) = bot.get_inventory_menu() else {
+      return false;
+    };
+
+    let Some(item) = menu.slot(current_armor_slot) else {
+      return false;
+    };
+
+    if let Some(current_armor) = self.is_armor(item, current_armor_slot) {
+      if armor.part == current_armor.part {
+        return armor.priority > current_armor.priority;
       }
     }
 
-    false
+    true
   }
 }
 
@@ -352,14 +362,7 @@ impl SalarixiPlugin for InstantArmorEquipPlugin {
     let username_clone = username.clone();
     let task = tokio::spawn(async move {
       loop {
-        take_bot!(&username_clone, async |bot| {
-          if !bot.workable() {
-            return;
-          }
-
-          self.equip_armor(bot).await;
-        });
-
+        self.tick(&username_clone).await;
         sleep(Duration::from_millis(200)).await;
       }
     });

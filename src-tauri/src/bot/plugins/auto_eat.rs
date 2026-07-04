@@ -1,7 +1,6 @@
 use std::time::Duration;
 
 use azalea::inventory::ItemStack;
-use azalea::prelude::*;
 use azalea::protocol::packets::game::s_interact::InteractionHand;
 use azalea::registry::builtin::ItemKind;
 use tokio::time::sleep;
@@ -24,38 +23,40 @@ pub struct AutoEatPlugin;
 
 impl AutoEatPlugin {
   /// Метод обработки тика
-  async fn tick(&self, bot: &Client) {
-    let satiety = bot.get_satiety();
-    let health = bot.get_health();
-    let username = bot.username();
+  async fn tick(&self, username: &str) {
+    let mut satiety = 20;
+    let mut health = 20.0;
+
+    take_bot!(username, async |bot| {
+      satiety = bot.get_satiety();
+      health = bot.get_health();
+    });
 
     if satiety < 20 || health < 15.0 {
-      let food_list = self.find_food_in_inventory(bot);
+      let food_list = self.find_food_in_inventory(username).await;
 
-      if let Some(best_food) = self.get_best_food(bot, &food_list) {
-        if getst(&username, State::CanEating).await
-          && !getst(&username, State::IsDrinking).await
-          && !getst(&username, State::IsInteracting).await
+      if let Some(best_food) = self.get_best_food(satiety, health, &food_list).await {
+        if getst(username, State::CanEating).await
+          && !getst(username, State::IsDrinking).await
+          && !getst(username, State::IsInteracting).await
         {
           let mut should_eat = true;
 
-          if getst(&username, State::IsAttacking).await {
+          if getst(username, State::IsAttacking).await {
             should_eat = !(randchance(satiety as f64 / 20.0) && randchance(health as f64 / 20.0));
           }
 
           if should_eat {
-            setst(&username, State::CanDrinking, false).await;
-            setst(&username, State::CanInteracting, false).await;
-            setmst(&username, StateName::Eating, true).await;
+            setst(username, State::CanDrinking, false).await;
+            setst(username, State::CanInteracting, false).await;
+            setmst(username, StateName::Eating, true).await;
 
-            bot.take_item(best_food.slot, false).await;
-            sleep(Duration::from_millis(50)).await;
-            self.start_eating(bot).await;
+            self.start_eating(username, best_food.slot).await;
             sleep(Duration::from_millis(50)).await;
 
-            setst(&username, State::CanDrinking, true).await;
-            setst(&username, State::CanInteracting, true).await;
-            setmst(&username, StateName::Eating, false).await;
+            setst(username, State::CanDrinking, true).await;
+            setst(username, State::CanInteracting, true).await;
+            setmst(username, StateName::Eating, false).await;
           } else {
             sleep(Duration::from_millis(1800)).await;
           }
@@ -65,18 +66,23 @@ impl AutoEatPlugin {
   }
 
   /// Метод отправки пакета о кушание еды
-  async fn start_eating(&self, bot: &Client) {
-    bot.freeze_move().await;
-    bot.start_use_held_item(InteractionHand::MainHand);
+  async fn start_eating(&self, username: &str, slot: usize) {
+    take_bot!(username, async |bot| {
+      bot.freeze_move().await;
+      bot.take_item(slot, false).await;
+      sleep(Duration::from_millis(50)).await;
+      bot.start_use_held_item(InteractionHand::MainHand);
+    });
+
     sleep(Duration::from_millis(1800)).await;
-    bot.unfreeze_move().await;
+
+    take_bot!(username, async |bot| {
+      bot.unfreeze_move().await;
+    });
   }
 
   /// Метод получения лучшей еды из списка
-  fn get_best_food(&self, bot: &Client, food_list: &Vec<Food>) -> Option<Food> {
-    let satiety = bot.get_satiety();
-    let health = bot.get_health();
-
+  async fn get_best_food(&self, satiety: u32, health: f32, food_list: &Vec<Food>) -> Option<Food> {
     let mut best_food = None;
 
     if food_list.len() > 1 {
@@ -146,16 +152,18 @@ impl AutoEatPlugin {
   }
 
   /// Метод поиска еды в инвентаре
-  fn find_food_in_inventory(&self, bot: &Client) -> Vec<Food> {
+  async fn find_food_in_inventory(&self, username: &str) -> Vec<Food> {
     let mut food_list = vec![];
 
-    if let Some(menu) = bot.get_inventory_menu() {
-      menu.slots().iter().enumerate().for_each(|(slot, item)| {
-        if let Some(food) = self.is_food(slot, item) {
-          food_list.push(food);
-        }
-      });
-    }
+    take_bot!(username, async |bot| {
+      if let Some(menu) = bot.get_inventory_menu() {
+        menu.slots().iter().enumerate().for_each(|(slot, item)| {
+          if let Some(food) = self.is_food(slot, item) {
+            food_list.push(food);
+          }
+        });
+      }
+    });
 
     food_list
   }
@@ -317,14 +325,7 @@ impl SalarixiPlugin for AutoEatPlugin {
     let username_clone = username.clone();
     let task = tokio::spawn(async move {
       loop {
-        take_bot!(&username_clone, async |bot| {
-          if !bot.workable() {
-            return;
-          }
-
-          self.tick(bot).await;
-        });
-
+        self.tick(&username_clone).await;
         sleep(Duration::from_millis(100)).await;
       }
     });
