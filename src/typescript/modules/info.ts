@@ -22,8 +22,9 @@ class InfoModule {
       // если он будет перенесён - загрузить актуальную ссылку не получится
       addOpeningUrlTo("codeberg", "click", "https://codeberg.org/nullclyze/salarixi");
 
-      const downloadCountEl = document.getElementById("download-count") as HTMLSpanElement;
       const releaseCountEl = document.getElementById("release-count") as HTMLSpanElement;
+      const startCountEl = document.getElementById("stars-count") as HTMLSpanElement;
+      const forksCountEl = document.getElementById("forks-count") as HTMLSpanElement;
 
       const onerr = (err: string) => {
         ["telegram", "discord", "youtube"].forEach(id => document.getElementById(id)?.remove());
@@ -33,8 +34,9 @@ class InfoModule {
       const result = await getCacheOrNew<ClientInfo>(this.lcf, this.lnf, this.scf, onerr);
       if (!result.data) return;
 
-      downloadCountEl.innerHTML = this.downloadCountToString(result.data.downloads);
-      releaseCountEl.innerHTML = result.data.releases.toString();
+      releaseCountEl.innerText = result.data.repo.releases > 0 ? String(result.data.repo.releases) : "?";
+      startCountEl.innerText = result.data.repo.stars > 0 ? String(result.data.repo.stars) : "?";
+      forksCountEl.innerText = result.data.repo.forks > 0 ? String(result.data.repo.forks) : "?";
 
       for (const key in result.data.social) {
         const link = result.data.social[key] as string;
@@ -61,11 +63,11 @@ class InfoModule {
   /** Метод загрузки актуальной информации о клиенте */
   private async lnf(): Promise<LnfResult> {
     try {
-      const releases = await invoke("download_json", {
-        url: "https://codeberg.org/api/v1/repos/nullclyze/salarixi/releases"
+      const repository = await invoke("download_json", {
+        url: "https://codeberg.org/api/v1/repos/nullclyze/salarixi"
       }) as any;
 
-      if (!releases) return { data: null, error: "resource moved or unavailable" };
+      if (!repository) return { data: null, error: "resource moved or unavailable" };
     
       const social = await invoke("download_json", {
         url: "https://codeberg.org/nullclyze/salarixi/raw/branch/main/salarixi.social.json"
@@ -73,18 +75,13 @@ class InfoModule {
 
       if (!social) return { data: null, error: "resource moved or unavailable" };
 
-      let totalDownloadCount = 0;
-      let totalReleaseCount = 0;
-
-      for (const release of releases) {
-        totalReleaseCount++;
-        for (const build of release["assets"]) totalDownloadCount += build["download_count"] ? build["download_count"] as number : 0;
-      }
-
       return {
         data: {
-          downloads: totalDownloadCount,
-          releases: totalReleaseCount,
+          repo: {
+            releases: repository["release_counter"] ?? repository["release_count"] ?? repository["releases"] ?? 0,
+            stars: repository["stars_count"] ?? repository["stars"] ?? 0,
+            forks: repository["forks_count"] ?? repository["forks"] ?? 0,
+          },
           social: social,
         },
         error: null,

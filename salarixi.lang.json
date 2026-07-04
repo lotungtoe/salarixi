@@ -2906,6 +2906,28 @@
     },
     {
       "versions": "1.1.0",
+      "tag": "stars-count",
+      "lang": {
+        "ru": "Количество звёзд",
+        "en": "Stars count",
+        "tr": "Yıldız sayısı",
+        "ja": "星の数",
+        "zh": "星級"
+      }
+    },
+    {
+      "versions": "1.1.0",
+      "tag": "forks-count",
+      "lang": {
+        "ru": "Количество форков",
+        "en": "Forks count",
+        "tr": "Çatal sayısı",
+        "ja": "フォークの数",
+        "zh": "分叉數量"
+      }
+    },
+    {
+      "versions": "1.1.0",
       "tag": "update-available",
       "lang": {
         "ru": "Доступно обновление",
