@@ -456,7 +456,7 @@ async fn check_proxy(proxy: String) -> bool {
         Err(_) => return,
       };
 
-      let target_addr = Address::DomainAddress(hostname_string, port);
+      let target_addr = Address::DomainAddress(hostname_string.into(), port);
 
       match tokio::time::timeout(
         Duration::from_secs(8),
