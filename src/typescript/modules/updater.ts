@@ -24,9 +24,10 @@ class UpdaterModule {
         if (!result.data) return;
 
         const data = result.data;
-        const version = data["version"] ?? data["id"] ?? data["version-id"] ?? data["name"];
-        const tag = data["tag"] ?? data["version-tag"] ?? data["release-tag"];
-        const published = data["published"] ?? data["released"] ?? data["release-date"] ?? data["date"];
+        const version = data["version"] ?? data["id"] ?? data["version_id"] ?? data["name"];
+        const url = data["url"] ?? data["download_url"] ?? data["release_url"] ?? data["target_url"];
+        const tag = data["tag"] ?? data["version_tag"] ?? data["release_tag"];
+        const published = data["published"] ?? data["released"] ?? data["release_date"] ?? data["date"];
 
         if (!isVersionNewer(version)) {
           notice.remove();
@@ -37,7 +38,8 @@ class UpdaterModule {
         (document.getElementById("new-client-tag") as HTMLElement).innerText = tag;
         (document.getElementById("new-client-published") as HTMLElement).innerText = published;
 
-        addOpeningUrlTo("open-client-release", "click", `https://codeberg.org/nullclyze/salarixi/releases/tag/${tag}`); 
+        const releaseUrl = url ? url : `https://codeberg.org/nullclyze/salarixi/releases/tag/${tag}`;
+        addOpeningUrlTo("open-client-release", "click", releaseUrl); 
 
         notice.style.display = "flex";
       } catch (error) {
