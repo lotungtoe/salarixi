@@ -49,17 +49,6 @@ class InfoModule {
     }
   }
 
-  /** Вспомогательный метод конвертации числа скачиваний в строку */
-  private downloadCountToString(count: number): string {
-    if (count < 1000) {
-      return count.toString();
-    } else if (count >= 1000 && count < 1_000_000) {
-      return (count / 1000).toFixed(2) + "k";
-    } else {
-      return (count / 1_000_000).toFixed(2) + "M";
-    }
-  }
-
   /** Метод загрузки актуальной информации о клиенте */
   private async lnf(): Promise<LnfResult> {
     try {
