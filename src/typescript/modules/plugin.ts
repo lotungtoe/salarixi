@@ -156,7 +156,7 @@ class PluginModule {
     for (const plugin of pluginList) {
       const id = plugin["id"] ?? plugin["name"] ?? plugin["header"] ?? plugin["kind"];
       const desc = plugin["description"] ?? plugin["purpose"];
-      const updated = plugin["latest-update"] ?? plugin["updated"] ?? plugin["modified"];
+      const updated = plugin["latest_update"] ?? plugin["updated"] ?? plugin["modified"];
 
       if (plugins[id]?.date) {
         if (updated !== plugins[id].date) {

@@ -6,8 +6,11 @@ import { getCacheOrNew, LcfResult, LnfResult, loadCache, saveCache, TimeType } f
 
 /** Структура информации клиента */
 interface ClientInfo {
-  downloads: number;
-  releases: number;
+  repo: {
+    releases: number;
+    stars: number;
+    forks: number;
+  };
   social: any;
 }
 
