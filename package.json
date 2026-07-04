@@ -2,7 +2,7 @@
   "name": "salarixi",
   "author": "nullclyze",
   "private": true,
-  "version": "1.1.0",
+  "version": "1.1.1",
   "type": "module",
   "repository": {
     "url": "https://codeberg.org/nullclyze/salarixi"
@@ -25,5 +25,8 @@
     "@tauri-apps/cli": "^2",
     "typescript": "~5.6.2",
     "vite": "^6.0.3"
+  },
+  "allowScripts": {
+    "esbuild@0.25.12": true
   }
 }

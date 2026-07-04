@@ -33,7 +33,7 @@ Chart.defaults.font.family = "'Inter', sans-serif";
 Chart.defaults.font.size = 13;
 Chart.defaults.font.weight = "normal";
 
-export const currentClientVersion = "1.1.0";
+export const currentClientVersion = "1.1.1";
 
 export let process: "active" | "sleep" = "sleep";
 export let quickTasksAllowed: boolean = true;

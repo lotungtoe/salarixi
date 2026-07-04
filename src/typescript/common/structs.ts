@@ -3,41 +3,41 @@ export const plugins: Record<string, { name: string; enable: boolean; date: stri
   "instant-armor-equip": {
     name: "Instant Armor Equip",
     enable: false,
-    date: "26.06.2026"
+    date: "04.07.2026"
   },
   "auto-totem": {
     name: "Auto Totem",
     enable: false,
-    date: "26.06.2026"
+    date: "04.07.2026"
   },
   "auto-eat": {
     name: "Auto Eat",
     enable: false,
-    date: "26.06.2026"
+    date: "04.07.2026"
   },
   "potion-consumer": {
     name: "Potion Consumer",
     enable: false,
-    date: "26.06.2026"
+    date: "04.07.2026"
   },
   "auto-look": {
     name: "Auto Look",
     enable: false,
-    date: "26.06.2026"
+    date: "04.07.2026"
   },
   "auto-shield": {
     name: "Auto Shield",
     enable: false,
-    date: "26.06.2026"
+    date: "04.07.2026"
   },
   "auto-mending": {
     name: "Auto Mending",
     enable: false,
-    date: "26.06.2026"
+    date: "04.07.2026"
   },
   "pearl-leave": {
     name: "Pearl Leave",
     enable: false,
-    date: "26.06.2026"
+    date: "04.07.2026"
   },
 };
