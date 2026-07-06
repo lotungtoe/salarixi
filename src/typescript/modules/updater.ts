@@ -3,7 +3,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { logger } from "../utils/logger";
 import { addOpeningUrlTo } from "../main";
 import { isVersionNewer } from "../utils/semver";
-import { getCacheOrNew, LcfResult, LnfResult, loadCache, saveCache, TimeType } from "../utils/cache";
+import { loadCacheOrNew, LcfResult, LnfResult, loadCache, saveCache, TimeType } from "../utils/cache";
 
 /** Небольшой модуль управления обновлениями клиента */
 class UpdaterModule {
@@ -20,7 +20,7 @@ class UpdaterModule {
           logger.log(`Ошибка проверки обновлений (не критично): ${err}`, "non-critical-error");
         };
 
-        const result = await getCacheOrNew<any>(this.lcf, this.lnf, this.scf, onerr);
+        const result = await loadCacheOrNew<any>(this.lcf, this.lnf, this.scf, onerr);
         if (!result.data) return;
 
         const data = result.data;
@@ -64,10 +64,11 @@ class UpdaterModule {
   /** Метод загрузки кэшированной информации о последней версии клиента */
   private async lcf(): Promise<LcfResult> {
     const result = await loadCache("latest-version", "latest-version.json", 14, TimeType.Hours);
-    if (!result.data) return { data: null, expired: false };
+    if (!result.data) return { data: null, incompatible: false, expired: false };
 
     return {
       data: JSON.parse(result.data),
+      incompatible: result.error === "incompatible",
       expired: result.error === "expired",
     };
   }

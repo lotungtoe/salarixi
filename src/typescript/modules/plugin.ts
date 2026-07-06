@@ -3,7 +3,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { logger } from "../utils/logger";
 import { plugins } from "../common/structs";
 import { process } from "../main";
-import { getCacheOrNew, LcfResult, LnfResult, loadCache, saveCache, TimeType } from "../utils/cache";
+import { loadCacheOrNew, LcfResult, LnfResult, loadCache, saveCache, TimeType } from "../utils/cache";
 
 /** Модуль загрузки и управления плагинами */
 class PluginModule {
@@ -130,7 +130,7 @@ class PluginModule {
       logger.log("Загрузка информации о плагинах...", "system");
 
       const onerr = (err: string) => logger.log(`Ошибка загрузки информации о плагинах (не критично): ${err}`, "non-critical-error");
-      const result = await getCacheOrNew<any>(this.lcf, this.lnf, this.scf, onerr);
+      const result = await loadCacheOrNew<any>(this.lcf, this.lnf, this.scf, onerr);
       if (!result.data) return;
 
       const data = result.data;
@@ -199,10 +199,11 @@ class PluginModule {
   /** Метод загрузки кэшированной информации о плагинах */
   private async lcf(): Promise<LcfResult> {
     const result = await loadCache("plugins-info", "plugins-info.json", 4, TimeType.Day);
-    if (!result.data) return { data: null, expired: false };
+    if (!result.data) return { data: null, incompatible: false, expired: false };
 
     return {
       data: JSON.parse(result.data),
+      incompatible: result.error === "incompatible",
       expired: result.error === "expired",
     };
   }

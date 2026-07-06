@@ -3,7 +3,7 @@ import { logger } from "../utils/logger";
 
 import { currentClientVersion } from "../main";
 import { isVersionNewer } from "../utils/semver";
-import { getCacheOrNew, LcfResult, LnfResult, loadCache, saveCache, TimeType } from "../utils/cache";
+import { loadCacheOrNew, LcfResult, LnfResult, loadCache, saveCache, TimeType } from "../utils/cache";
 
 /** Модуль переподчика */
 class TranslatorModule {
@@ -15,7 +15,7 @@ class TranslatorModule {
       const langSelect = document.getElementById("interface_select_language") as HTMLSelectElement;
 
       const onerr = (err: string) => logger.log(`Ошибка загрузки перевода: ${err}`, "error");
-      const result = await getCacheOrNew<any>(this.lcf, this.lnf, this.scf, onerr);
+      const result = await loadCacheOrNew<any>(this.lcf, this.lnf, this.scf, onerr);
       if (!result.data) return;
 
       const data = result.data;
@@ -146,10 +146,11 @@ class TranslatorModule {
   /** Метод загрузки кэшированного перевода */
   public async lcf(): Promise<LcfResult> {
     const result = await loadCache("translation", "translation.json", 3, TimeType.Day);
-    if (!result.data) return { data: null, expired: false };
+    if (!result.data) return { data: null, incompatible: false, expired: false };
 
     return {
       data: JSON.parse(result.data),
+      incompatible: result.error === "incompatible",
       expired: result.error === "expired",
     };
   }

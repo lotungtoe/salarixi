@@ -17,7 +17,7 @@ fn cache_dir() -> Option<PathBuf> {
 
 /// Команда сохранения текущего кэша в файл
 #[tauri::command]
-pub fn save_cache(cache: Vec<u8>, filename: String, date: String) -> CommandResult<()> {
+pub fn save_cache(cache: Vec<u8>, filename: String, client_version: String, date: String) -> CommandResult<()> {
   let Some(cache_dir) = cache_dir() else {
     failed!("cache directory is missing");
   };
@@ -28,28 +28,28 @@ pub fn save_cache(cache: Vec<u8>, filename: String, date: String) -> CommandResu
   }
 
   let filename_split = filename.split('.').collect::<Vec<&str>>();
-  let meta_path = cache_dir.join(format!("{}-meta.txt", filename_split[0]));
-  if fs::write(meta_path, date.as_bytes()).is_err() {
+  let meta_path = cache_dir.join(format!("{}.meta.txt", filename_split[0]));
+  if fs::write(meta_path, format!("{} {}", client_version, date).as_bytes()).is_err() {
     failed!("failed to save cache meta to specified file");
   }
 
   success!(());
 }
 
-/// Команда получения даты создания кэша
+/// Команда извлечения метаданных кэша
 #[tauri::command]
-pub fn get_cache_date(name: String) -> CommandResult<String> {
+pub fn extract_cache_meta(name: String) -> CommandResult<String> {
   let Some(cache_dir) = cache_dir() else {
     failed!("cache directory is missing");
   };
 
-  let meta_path = cache_dir.join(format!("{}-meta.txt", name));
-  let cache_date = match fs::read(meta_path) {
+  let meta_path = cache_dir.join(format!("{}.meta.txt", name));
+  let meta = match fs::read(meta_path) {
     Ok(b) => String::from_utf8_lossy(&b).trim().to_string(),
     Err(_) => failed!("could not read the specified file"),
   };
 
-  success!(cache_date);
+  success!(meta);
 }
 
 /// Команда загрузки кэша из файла

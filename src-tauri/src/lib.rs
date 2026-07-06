@@ -7,7 +7,7 @@ mod result;
 
 use api::cmd::*;
 use api::emit::emit_event_loop;
-use modules::cache::{get_cache_date, load_cache, save_cache};
+use modules::cache::{extract_cache_meta, load_cache, save_cache};
 use modules::config::{create_public_config, load_config, save_config};
 use modules::proxy::{check_proxies, collect_proxies};
 
@@ -52,7 +52,7 @@ pub fn run() {
       set_discord_rpc,
       collect_proxies,
       check_proxies,
-      get_cache_date,
+      extract_cache_meta,
       save_cache,
       load_cache,
       create_public_config,

@@ -4,7 +4,7 @@ import { marked } from "marked";
 import DOMPurify from "dompurify";
 
 import { logger } from "../utils/logger";
-import { getCacheOrNew, LcfResult, LnfResult, loadCache, saveCache, TimeType } from "../utils/cache";
+import { loadCacheOrNew, LcfResult, LnfResult, loadCache, saveCache, TimeType } from "../utils/cache";
 
 /** Функция очистки HTML */
 const sanitizeHtml = (html: string): string => DOMPurify.sanitize(html, {
@@ -31,7 +31,7 @@ class DocsModule {
       const docsNavigation = document.querySelector(".documentation-wrapper .navigation") as HTMLDivElement;
 
       const onerr = (err: string) => logger.log(`Ошибка загрузки документации (не критично): ${err}`, "non-critical-error");
-      const result = await getCacheOrNew<string>(this.lcf, this.lnf, this.scf, onerr);
+      const result = await loadCacheOrNew<string>(this.lcf, this.lnf, this.scf, onerr);
       if (!result.data) return;
 
       const html = await marked.parse(result.data);
@@ -107,10 +107,11 @@ class DocsModule {
   /** Метод загрузки кэшированной пользовательской документации */
   private async lcf(): Promise<LcfResult> {
     const result = await loadCache("user-docs", "user-docs.md", 2, TimeType.Day);
-    if (!result.data) return { data: null, expired: false };
+    if (!result.data) return { data: null, incompatible: false, expired: false };
 
     return {
       data: result.data,
+      incompatible: result.error === "incompatible",
       expired: result.error === "expired",
     };
   }

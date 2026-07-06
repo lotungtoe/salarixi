@@ -2,7 +2,7 @@ import { invoke } from "@tauri-apps/api/core";
 
 import { logger } from "../utils/logger";
 import { addOpeningUrlTo } from "../main";
-import { getCacheOrNew, LcfResult, LnfResult, loadCache, saveCache, TimeType } from "../utils/cache";
+import { loadCacheOrNew, LcfResult, LnfResult, loadCache, saveCache, TimeType } from "../utils/cache";
 
 /** Структура информации клиента */
 interface ClientInfo {
@@ -34,7 +34,7 @@ class InfoModule {
         logger.log(`Ошибка загрузки информации о клиенте (не критично): ${err}`, "non-critical-error");
       };
 
-      const result = await getCacheOrNew<ClientInfo>(this.lcf, this.lnf, this.scf, onerr);
+      const result = await loadCacheOrNew<ClientInfo>(this.lcf, this.lnf, this.scf, onerr);
       if (!result.data) return;
 
       releaseCountEl.innerText = result.data.repo.releases > 0 ? String(result.data.repo.releases) : "?";
@@ -86,10 +86,11 @@ class InfoModule {
   /** Метод загрузки кэшированной информации о клиенте */
   private async lcf(): Promise<LcfResult> {
     const result = await loadCache("client-info", "client-info.json", 3, TimeType.Day);
-    if (!result.data) return { data: null, expired: false };
+    if (!result.data) return { data: null, incompatible: false, expired: false };
 
     return {
       data: JSON.parse(result.data),
+      incompatible: result.error === "incompatible",
       expired: result.error === "expired",
     };
   }

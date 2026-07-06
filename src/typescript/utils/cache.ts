@@ -2,6 +2,7 @@ import { invoke } from "@tauri-apps/api/core";
 
 import { getStringSize } from "./size";
 import { date } from "./date";
+import { currentClientVersion } from "../main";
 
 /** Тип времени */
 export enum TimeType {
@@ -45,13 +46,15 @@ export async function saveCache(cache: string, filename: string): Promise<Comman
   return await invoke("save_cache", {
     cache: Array.from(uint8),
     filename: filename,
+    clientVersion: currentClientVersion,
     date: `${date("exact")}-${date("common")}`,
   });
 }
 
 /** Функция загрузки кэша */
 export async function loadCache(name: string, filename: string, maxStorageValue: number, timeType: TimeType): Promise<CommandResult<string>> {
-  const result1 = await invoke("get_cache_date", { name: name }) as CommandResult<string>;
+  const result1 = await invoke("extract_cache_meta", { name: name }) as CommandResult<string>;
+
   if (!result1.data) {
     return {
       data: null,
@@ -59,7 +62,15 @@ export async function loadCache(name: string, filename: string, maxStorageValue:
     };
   }
 
+  if (result1.data.split(" ")[0] !== currentClientVersion) {
+    return {
+      data: null,
+      error: "incompatible",
+    };
+  }
+
   const result2 = await invoke("load_cache", { filename: filename }) as CommandResult<number[]>;
+
   if (!result2.data) {
     return {
       data: null,
@@ -87,6 +98,7 @@ interface CacheOrNewResult<T> {
 export interface LcfResult {
   data: any;
   expired: boolean;
+  incompatible: boolean;
 }
 
 /** Структура данных результата функции загрузки актуальной информации */
@@ -98,8 +110,8 @@ export interface LnfResult {
 /** Вспомогательная функция конвертации данных в строку */
 const stringify = (data: any): string => typeof data === "object" ? JSON.stringify(data) : typeof data === "number" ? data.toString() : data as string;
 
-/** Функция получения кэшированной или новой информации */
-export async function getCacheOrNew<T>(lcf: Function, lnf: Function, scf: Function, onerr: Function): Promise<CacheOrNewResult<T>> {
+/** Функция загрузки кэшированной или новой информации */
+export async function loadCacheOrNew<T>(lcf: Function, lnf: Function, scf: Function, onerr: Function): Promise<CacheOrNewResult<T>> {
   const cache = await lcf() as LcfResult;
   let data = null;
   let dataSize = 0;
