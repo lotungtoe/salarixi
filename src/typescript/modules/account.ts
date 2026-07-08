@@ -90,9 +90,7 @@ class AccountModule {
       const usernameInput = document.getElementById("account-username") as HTMLInputElement;
       const username = usernameInput.value;
 
-      if (this.accounts[username] || username === "") return;
-
-      usernameInput.value = "";
+      if (this.accounts[username]) return;
 
       const success = this.createAccountCard(username, {
         creation_date: date("exact"),
@@ -104,6 +102,7 @@ class AccountModule {
 
       if (success) {
         this.updateAccountCounter();
+        usernameInput.value = "";
         logger.log(`Создан новый аккаунт "${username}"`, "system");
       } else {
         logger.log(`Не удалось создать аккаунт "${username}": Number of generated accounts is out of limits (minimum 1, maximum 200)`, "warning");
@@ -134,6 +133,7 @@ class AccountModule {
 
       this.noSelected = true;
       this.changeSelectorsState();
+      this.updateAccountCounter();
 
       messages.message("Аккаунты", `Удалено ${removedCount} аккаунтов`);
       logger.log(`Удалено ${removedCount} аккаунтов`, "system");
@@ -220,17 +220,23 @@ class AccountModule {
 
       if (template === "") return;
 
-      if (count > 200 || count < 1) {
+      if (count > 255 || count < 1) {
         messages.message("Аккаунты", "Не удалось сгенерировать аккаунты");
-        logger.log(`Не удалось сгенерировать аккаунты: Number of generated accounts is out of limits (minimum 1, maximum 200)`, "warning");
+        logger.log(`Не удалось сгенерировать аккаунты: Number of generated accounts is out of limits (minimum 1, maximum 255)`, "warning");
         return;
       }
 
       let generated = 0;
 
       for (let i = 0; i < count; i++) {
-        const username = this.generateUsername(i, template);
-        if (this.accounts[username]) continue;
+        let username = "";
+
+        for (let a = 0; a < 5; a++) {
+          const generatedUsername = this.generateUsername(i, template);
+          if (this.accounts[generatedUsername]) continue;
+          username = generatedUsername;
+          break;
+        }
 
         const success = this.createAccountCard(username, {
           creation_date: date("exact"),
@@ -343,7 +349,7 @@ class AccountModule {
 
     this.updateAccountCounter();
 
-    logger.log(`Сохранённые аккаунты загружены (${accounts.length > 200 ? 200 : accounts.length} штук)`, "system");
+    logger.log(`Сохранённые аккаунты загружены (${accounts.length > 255 ? 255 : accounts.length} штук)`, "system");
   }
 
   /** Метод генерации юзернейма */
@@ -375,9 +381,11 @@ class AccountModule {
 
   /** Метод создания карточки аккаунта */
   private createAccountCard(username: string, account: Account): boolean {
+    if (username === "") return false;
+
     let accountCount = 0;
     for (const _ in this.accounts) accountCount++;
-    if (accountCount >= 200) return false;
+    if (accountCount >= 255) return false;
 
     this.accounts[username] = account;
 
