@@ -3,7 +3,8 @@ use azalea::SprintDirection;
 use serde::Deserialize;
 
 use crate::bot::extensions::{go_to, BotDefaultExt, BotMovementExt, EntityType};
-use crate::bot::systems::{getst, gettskact, killtsk, pushrtsk, setmst, State, StateName, TaskName};
+use crate::bot::systems::states::{getst, setmst, State, StateName};
+use crate::bot::systems::tasks::{gettskact, killtsk, pushrtsk, TaskName};
 use crate::bot::traits::SalarixiModule;
 use crate::sleep;
 use crate::take_bot;
@@ -24,9 +25,7 @@ impl StalkerModule {
     Self
   }
 
-  async fn default_stalking(bot: &Client, options: &StalkerOptions) {
-    let username = bot.username();
-
+  async fn default_stalking(bot: &Client, index: &u8, options: &StalkerOptions) {
     loop {
       let Some(target_nickname) = options.target_nickname.clone() else {
         return;
@@ -42,19 +41,19 @@ impl StalkerModule {
         if bot.feet_pos().distance_to(target_pos) > min_distance {
           bot.look_at(target_pos);
           bot.start_jumping();
-          bot.start_sprinting(SprintDirection::Forward).await;
+          bot.start_sprinting(index, SprintDirection::Forward).await;
         } else {
           bot.stop_jumping();
 
-          if getst(&username, State::IsSprinting).await {
-            bot.stop_move().await;
+          if getst(index, State::IsSprinting).await {
+            bot.stop_move(index).await;
           }
         }
       } else {
         bot.stop_jumping();
 
-        if getst(&username, State::IsSprinting).await {
-          bot.stop_move().await;
+        if getst(index, State::IsSprinting).await {
+          bot.stop_move(index).await;
         }
       }
 
@@ -62,7 +61,7 @@ impl StalkerModule {
     }
   }
 
-  async fn advanced_stalking(bot: &Client, options: &StalkerOptions) {
+  async fn advanced_stalking(bot: &Client, index: u8, options: &StalkerOptions) {
     let Some(target_nickname) = options.target_nickname.clone() else {
       return;
     };
@@ -78,7 +77,7 @@ impl StalkerModule {
         if bot.feet_pos().distance_to(target_pos) > min_distance {
           if bot.is_goto_target_reached() {
             go_to(
-              bot.username(),
+              index,
               (target_pos.x - min_distance) as i32,
               (target_pos.z - min_distance) as i32,
             );
@@ -90,14 +89,12 @@ impl StalkerModule {
     }
   }
 
-  async fn start(bot: &Client, options: &StalkerOptions) {
-    let username = bot.username();
-
-    setmst(&username, StateName::Looking, true).await;
+  async fn start(bot: &Client, index: &u8, options: &StalkerOptions) {
+    setmst(index, StateName::Looking, true).await;
 
     match options.mode.as_str() {
-      "default" => Self::default_stalking(bot, options).await,
-      "advanced" => Self::advanced_stalking(bot, options).await,
+      "default" => Self::default_stalking(bot, &index, options).await,
+      "advanced" => Self::advanced_stalking(bot, *index, options).await,
       _ => {}
     }
   }
@@ -108,23 +105,22 @@ impl SalarixiModule<StalkerOptions> for StalkerModule {
     Self
   }
 
-  async fn switch(&self, username: String, options: StalkerOptions) -> bool {
-    if options.state && !gettskact(&username, TaskName::Stalker).await {
-      let username_clone = username.clone();
+  async fn switch(&self, index: u8, options: StalkerOptions) -> bool {
+    if options.state && !gettskact(&index, TaskName::Stalker).await {
       let task_handle = tokio::spawn(async move {
-        take_bot!(&username_clone, async |bot| Self::start(bot, &options).await);
+        take_bot!(&index, async |bot| Self::start(bot, &index, &options).await);
       });
 
-      pushrtsk(&username, TaskName::Stalker, task_handle).await;
-    } else if !options.state && gettskact(&username, TaskName::Stalker).await {
-      killtsk(&username, TaskName::Stalker).await;
+      pushrtsk(&index, TaskName::Stalker, task_handle).await;
+    } else if !options.state && gettskact(&index, TaskName::Stalker).await {
+      killtsk(&index, TaskName::Stalker).await;
 
-      take_bot!(&username, async |bot| {
-        bot.stop_move().await;
+      take_bot!(&index, async |bot| {
+        bot.stop_move(&index).await;
         bot.stop_jumping();
       });
 
-      setmst(&username, StateName::Looking, false).await;
+      setmst(&index, StateName::Looking, false).await;
     } else {
       return false;
     }

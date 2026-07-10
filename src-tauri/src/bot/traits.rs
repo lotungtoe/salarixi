@@ -4,7 +4,7 @@ pub trait SalarixiModule<T> {
   fn new() -> Self;
 
   /// Метод изменения состояния модуля (включить / выключить)
-  fn switch(&self, username: String, options: T) -> impl std::future::Future<Output = bool> + Send + Sync;
+  fn switch(&self, index: u8, options: T) -> impl std::future::Future<Output = bool> + Send + Sync;
 }
 
 /// Трейт плагина
@@ -13,5 +13,5 @@ pub trait SalarixiPlugin {
   fn new() -> Self;
 
   /// Метод активации плагина для определённого бота
-  fn activate(&'static self, username: String);
+  fn activate(&'static self, index: u8);
 }

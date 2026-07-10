@@ -12,7 +12,7 @@ use serde::Deserialize;
 
 use crate::bot::common::get_block_state;
 use crate::bot::extensions::{BotInventoryExt, BotPhysicsExt};
-use crate::bot::systems::{gettskact, killtsk, pushrtsk, TaskName};
+use crate::bot::systems::tasks::{gettskact, killtsk, pushrtsk, TaskName};
 use crate::bot::traits::SalarixiModule;
 use crate::other::tools::*;
 use crate::sleep;
@@ -68,13 +68,13 @@ impl AntiFallModule {
     false
   }
 
-  async fn take_water_bucket(bot: &Client) -> bool {
+  async fn take_water_bucket(bot: &Client, index: &u8) -> bool {
     let menu = bot.menu();
 
     for (slot, item) in menu.slots().iter().enumerate() {
       if !item.is_empty() {
         if item.kind() == ItemKind::WaterBucket {
-          bot.take_item(slot, true).await;
+          bot.take_item(index, slot, true).await;
           return true;
         }
       }
@@ -139,7 +139,7 @@ impl AntiFallModule {
     }
   }
 
-  async fn water_drop_anti_fall(bot: &Client, options: &AntiFallOptions) {
+  async fn water_drop_anti_fall(bot: &Client, index: &u8, options: &AntiFallOptions) {
     let distance_to_ground = options.distance_to_ground.unwrap_or(4);
 
     loop {
@@ -155,7 +155,7 @@ impl AntiFallModule {
 
           bot.set_direction(y_rot, randnum(85.0, 89.0) as f32);
 
-          if Self::take_water_bucket(bot).await {
+          if Self::take_water_bucket(bot, index).await {
             if !Self::exist_water_below(bot, distance_to_ground) {
               sleep!(50);
 
@@ -189,11 +189,11 @@ impl AntiFallModule {
     }
   }
 
-  async fn start(bot: &Client, options: &AntiFallOptions) {
+  async fn start(bot: &Client, index: &u8, options: &AntiFallOptions) {
     match options.mode.as_str() {
       "hovering" => Self::hovering_anti_fall(bot, options).await,
       "teleport" => Self::teleport_anti_fall(bot, options).await,
-      "water-drop" => Self::water_drop_anti_fall(bot, options).await,
+      "water-drop" => Self::water_drop_anti_fall(bot, index, options).await,
       _ => {}
     }
   }
@@ -204,16 +204,15 @@ impl SalarixiModule<AntiFallOptions> for AntiFallModule {
     Self
   }
 
-  async fn switch(&self, username: String, options: AntiFallOptions) -> bool {
-    if options.state && !gettskact(&username, TaskName::AntiFall).await {
-      let username_clone = username.clone();
+  async fn switch(&self, index: u8, options: AntiFallOptions) -> bool {
+    if options.state && !gettskact(&index, TaskName::AntiFall).await {
       let task_handle = tokio::spawn(async move {
-        take_bot!(&username_clone, async |bot| Self::start(bot, &options).await);
+        take_bot!(&index, async |bot| Self::start(bot, &index, &options).await);
       });
 
-      pushrtsk(&username, TaskName::AntiFall, task_handle).await;
-    } else if !options.state && gettskact(&username, TaskName::AntiFall).await {
-      killtsk(&username, TaskName::AntiFall).await;
+      pushrtsk(&index, TaskName::AntiFall, task_handle).await;
+    } else if !options.state && gettskact(&index, TaskName::AntiFall).await {
+      killtsk(&index, TaskName::AntiFall).await;
     } else {
       return false;
     }

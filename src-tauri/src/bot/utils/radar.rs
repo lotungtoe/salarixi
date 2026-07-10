@@ -7,7 +7,7 @@ use once_cell::sync::Lazy;
 use serde::Serialize;
 
 use crate::bot::extensions::{go_to, BotDefaultExt};
-use crate::bot::systems::PROFILE_SYSTEM;
+use crate::bot::systems::profile::PROFILE_SYSTEM;
 use crate::take_bot;
 
 pub static RADAR: Lazy<Radar> = Lazy::new(|| Radar::new());
@@ -41,8 +41,8 @@ impl Radar {
   pub async fn find_target(&self, target: String) -> Option<RadarInfo> {
     let mut info = None;
 
-    for username in PROFILE_SYSTEM.get_all_connected().await.keys() {
-      take_bot!(username, async |bot| {
+    for index in PROFILE_SYSTEM.get_all_connected().await.keys() {
+      take_bot!(index, async |bot| {
         let Some(tab_list) = bot.get_players() else {
           return;
         };
@@ -94,8 +94,8 @@ impl Radar {
 
   /// Метод преследования цели
   pub async fn follow(&self, x: i32, z: i32) {
-    for username in PROFILE_SYSTEM.get_all_connected().await.into_keys() {
-      go_to(username, x, z);
+    for (index, _) in PROFILE_SYSTEM.get_all_connected().await.iter() {
+      go_to(*index, x, z);
     }
   }
 }

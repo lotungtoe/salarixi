@@ -5,7 +5,7 @@ use tokio::task::JoinHandle;
 
 use crate::api::emit::emit_log;
 use crate::bot::plugins::*;
-use crate::bot::systems::PROFILE_SYSTEM;
+use crate::bot::systems::profile::PROFILE_SYSTEM;
 use crate::bot::traits::SalarixiPlugin;
 use crate::launch::options::PluginOptions;
 
@@ -28,7 +28,7 @@ pub enum PluginName {
 /// Изначально он хранит в себе объекты всех существующих плагинов и список их задач.
 /// Данный менеджер выполняет роль загрузчика плагинов для бота.
 pub struct PluginManager {
-  tasks: RwLock<HashMap<String, HashMap<PluginName, Option<JoinHandle<()>>>>>,
+  tasks: RwLock<HashMap<u8, HashMap<PluginName, Option<JoinHandle<()>>>>>,
   plugins: PluginList,
 }
 
@@ -62,46 +62,46 @@ impl PluginManager {
   }
 
   /// Метод активации плагинов для указанного бота
-  pub async fn activate_for(&'static self, username: String, plugins: PluginOptions) {
-    self.tasks.write().await.insert(username.clone(), HashMap::new());
+  pub async fn activate_for(&'static self, index: u8, plugins: PluginOptions) {
+    self.tasks.write().await.insert(index, HashMap::new());
 
     if plugins.instant_armor_equip {
-      self.plugins.instant_armor_equip.activate(username.clone());
+      self.plugins.instant_armor_equip.activate(index);
     }
 
     if plugins.auto_totem {
-      self.plugins.auto_totem.activate(username.clone());
+      self.plugins.auto_totem.activate(index);
     }
 
     if plugins.auto_eat {
-      self.plugins.auto_eat.activate(username.clone());
+      self.plugins.auto_eat.activate(index);
     }
 
     if plugins.potion_consumer {
-      self.plugins.potion_consumer.activate(username.clone());
+      self.plugins.potion_consumer.activate(index);
     }
 
     if plugins.auto_look {
-      self.plugins.auto_look.activate(username.clone());
+      self.plugins.auto_look.activate(index);
     }
 
     if plugins.auto_shield {
-      self.plugins.auto_shield.activate(username.clone());
+      self.plugins.auto_shield.activate(index);
     }
 
     if plugins.auto_mending {
-      self.plugins.auto_mending.activate(username.clone());
+      self.plugins.auto_mending.activate(index);
     }
 
     if plugins.pearl_leave {
-      self.plugins.pearl_leave.activate(username.clone());
+      self.plugins.pearl_leave.activate(index);
     }
   }
 
   /// Метод добавления задачи плагина указанному боту
-  pub fn push_task(&self, username: &str, plugin_name: PluginName, task: JoinHandle<()>) {
+  pub fn push_task(&self, index: &u8, plugin_name: PluginName, task: JoinHandle<()>) {
     if let Ok(mut guard) = self.tasks.try_write() {
-      if let Some(tasks) = guard.get_mut(username) {
+      if let Some(tasks) = guard.get_mut(index) {
         if let Some(old_task) = tasks.get(&plugin_name) {
           if let Some(active_old_task) = old_task {
             active_old_task.abort();
@@ -114,10 +114,10 @@ impl PluginManager {
   }
 
   /// Метод уничтожения всех задач плагинов указанного бота
-  pub async fn kill_all_tasks_for(&self, username: &str) {
+  pub async fn kill_all_tasks_for(&self, index: &u8) {
     let mut map = self.tasks.write().await;
 
-    if let Some(tasks) = map.get_mut(username) {
+    if let Some(tasks) = map.get_mut(index) {
       for (_, t) in tasks {
         if let Some(h) = t {
           h.abort();
@@ -128,8 +128,8 @@ impl PluginManager {
 
   /// Метод очистки всех задач
   pub async fn clear(&self) {
-    for username in PROFILE_SYSTEM.get_all().await.keys() {
-      self.kill_all_tasks_for(username).await;
+    for index in PROFILE_SYSTEM.get_all().await.keys() {
+      self.kill_all_tasks_for(index).await;
     }
 
     emit_log("Активные задачи плагинов остановлены", "extended");

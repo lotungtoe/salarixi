@@ -5,7 +5,7 @@ use azalea::registry::builtin::ItemKind;
 
 use crate::bot::extensions::{BotDefaultExt, BotInteractExt, BotInventoryExt, BotRotationExt, EntityType};
 use crate::bot::plugin_manager::PluginName;
-use crate::bot::systems::{getst, setmst, setst, State, StateName};
+use crate::bot::systems::states::{getst, setmst, setst, State, StateName};
 use crate::bot::traits::SalarixiPlugin;
 use crate::bot::PLUGINS;
 use crate::{sleep, take_bot};
@@ -14,10 +14,10 @@ pub struct AutoShieldPlugin;
 
 impl AutoShieldPlugin {
   /// Метод обработки тика
-  async fn tick(&self, username: &str) {
+  async fn tick(&self, index: &u8) {
     let mut danger_entity = None;
 
-    take_bot!(username, async |bot| {
+    take_bot!(index, async |bot| {
       danger_entity = self.get_nearest_dangerous_entity(bot);
     });
 
@@ -25,7 +25,7 @@ impl AutoShieldPlugin {
       return;
     }
 
-    self.start_defending(username).await;
+    self.start_defending(index).await;
   }
 
   /// Метод получения ближайшей опасной сущности
@@ -44,10 +44,10 @@ impl AutoShieldPlugin {
   }
 
   /// Метод экипировки щита
-  async fn equip_shield(&self, username: &str) -> bool {
+  async fn equip_shield(&self, index: &u8) -> bool {
     let mut shield_equipped = false;
 
-    take_bot!(username, async |bot| {
+    take_bot!(index, async |bot| {
       let Some(menu) = bot.get_inventory_menu() else {
         return;
       };
@@ -66,7 +66,7 @@ impl AutoShieldPlugin {
             continue;
           }
 
-          bot.inventory_move_item(ItemKind::Shield, slot, 45, true).await;
+          bot.inventory_move_item(index, ItemKind::Shield, slot, 45, true).await;
           shield_equipped = true;
 
           break;
@@ -80,33 +80,33 @@ impl AutoShieldPlugin {
   }
 
   /// Метод прикрытия щитом
-  async fn start_defending(&self, username: &str) {
-    if !getst(username, State::CanLooking).await || !getst(username, State::CanInteracting).await {
+  async fn start_defending(&self, index: &u8) {
+    if !getst(index, State::CanLooking).await || !getst(index, State::CanInteracting).await {
       return;
     }
 
-    if !self.equip_shield(username).await {
+    if !self.equip_shield(index).await {
       return;
     }
 
-    setmst(username, StateName::Looking, true).await;
-    setmst(username, StateName::Interacting, true).await;
-    setst(username, State::CanAttacking, false).await;
-    setst(username, State::CanEating, false).await;
-    setst(username, State::CanDrinking, false).await;
+    setmst(index, StateName::Looking, true).await;
+    setmst(index, StateName::Interacting, true).await;
+    setst(index, State::CanAttacking, false).await;
+    setst(index, State::CanEating, false).await;
+    setst(index, State::CanDrinking, false).await;
 
-    take_bot!(username, async |bot| {
+    take_bot!(index, async |bot| {
       bot.start_use_held_item(InteractionHand::OffHand);
     });
 
     let mut danger_entity_exists = true;
 
     while danger_entity_exists {
-      if !self.equip_shield(username).await {
+      if !self.equip_shield(index).await {
         break;
       }
 
-      take_bot!(username, async |bot| {
+      take_bot!(index, async |bot| {
         if let Some(e) = self.get_nearest_dangerous_entity(bot) {
           bot.look_at_entity(e, true);
         } else {
@@ -117,15 +117,15 @@ impl AutoShieldPlugin {
       sleep!(50);
     }
 
-    take_bot!(username, async |bot| {
+    take_bot!(index, async |bot| {
       bot.release_use_held_item();
     });
 
-    setmst(username, StateName::Looking, false).await;
-    setmst(username, StateName::Interacting, false).await;
-    setst(username, State::CanAttacking, true).await;
-    setst(username, State::CanEating, true).await;
-    setst(username, State::CanDrinking, true).await;
+    setmst(index, StateName::Looking, false).await;
+    setmst(index, StateName::Interacting, false).await;
+    setst(index, State::CanAttacking, true).await;
+    setst(index, State::CanEating, true).await;
+    setst(index, State::CanDrinking, true).await;
   }
 }
 
@@ -134,15 +134,14 @@ impl SalarixiPlugin for AutoShieldPlugin {
     Self
   }
 
-  fn activate(&'static self, username: String) {
-    let username_clone = username.clone();
+  fn activate(&'static self, index: u8) {
     let task = tokio::spawn(async move {
       loop {
-        self.tick(&username_clone).await;
+        self.tick(&index).await;
         sleep!(100);
       }
     });
 
-    PLUGINS.push_task(&username, PluginName::AutoShield, task);
+    PLUGINS.push_task(&index, PluginName::AutoShield, task);
   }
 }

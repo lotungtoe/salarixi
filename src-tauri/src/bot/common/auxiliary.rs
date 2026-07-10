@@ -4,8 +4,8 @@ use azalea::prelude::*;
 use azalea::Vec3;
 
 use crate::bot::extensions::BotDefaultExt;
-use crate::bot::registry::BOT_REGISTRY;
-use crate::bot::systems::PROFILE_SYSTEM;
+use crate::bot::systems::profile::PROFILE_SYSTEM;
+use crate::bot::systems::registry::REGISTRY_SYSTEM;
 
 /// Функция получения состояния блока
 pub fn get_block_state(bot: &Client, block_pos: BlockPos) -> Option<BlockState> {
@@ -52,16 +52,16 @@ pub fn get_average_coordinates_of_bots(positions: &Vec<Vec3>) -> (f64, f64, f64)
 }
 
 /// Функция получения UUID игрока
-pub async fn get_player_uuid(nickname: String) -> Option<String> {
-  for username in PROFILE_SYSTEM.get_all_connected().await.keys() {
-    let uuid = BOT_REGISTRY
-      .async_get_bot(username, async |bot| {
+pub async fn get_player_uuid(username: String) -> Option<String> {
+  for index in PROFILE_SYSTEM.get_all_connected().await.keys() {
+    let uuid = REGISTRY_SYSTEM
+      .async_get_bot(index, async |bot| {
         let Some(tab_list) = bot.get_players() else {
           return None;
         };
 
         for (uuid, info) in tab_list.iter() {
-          if info.profile.name == nickname {
+          if info.profile.name == username {
             return Some(uuid.to_string());
           }
         }

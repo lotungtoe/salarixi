@@ -4,9 +4,10 @@ use serde::Deserialize;
 
 use crate::bot::common::get_player_uuid;
 use crate::bot::extensions::BotDefaultExt;
-use crate::bot::registry::BOT_REGISTRY;
-use crate::bot::systems::PROFILE_SYSTEM;
-use crate::bot::systems::{gettskact, killtsk, pushrtsk, TaskName};
+use crate::bot::systems::index::INDEX_SYSTEM;
+use crate::bot::systems::profile::PROFILE_SYSTEM;
+use crate::bot::systems::registry::REGISTRY_SYSTEM;
+use crate::bot::systems::tasks::{gettskact, killtsk, pushrtsk, TaskName};
 use crate::bot::traits::SalarixiModule;
 use crate::bot::utils::radar::RADAR;
 use crate::other::tools::*;
@@ -115,7 +116,7 @@ impl ChatModule {
     }
   }
 
-  async fn process_extra_tags(username: &str, text: String) -> String {
+  async fn process_extra_tags(index: &u8, text: String) -> String {
     let mut result = text.clone();
 
     for tag in Regex::new(r"#radar\[\w+]").unwrap().find_iter(&text) {
@@ -161,21 +162,23 @@ impl ChatModule {
 
     for tag in Regex::new(r"#pass").unwrap().find_iter(&text) {
       if !tag.is_empty() {
-        if let Some(profile) = PROFILE_SYSTEM.get(username).await {
+        if let Some(profile) = PROFILE_SYSTEM.get(index).await {
           result = text.replace(tag.as_str(), profile.password.unwrap_or("".to_string()).as_str());
         }
       }
     }
 
-    for tag in Regex::new(r"#name").unwrap().find_iter(&text) {
+    for tag in Regex::new(r"#username").unwrap().find_iter(&text) {
       if !tag.is_empty() {
-        result = text.replace(tag.as_str(), username);
+        if let Some(username) = INDEX_SYSTEM.username_by_index(index).await {
+          result = text.replace(tag.as_str(), &username);
+        }
       }
     }
 
     for tag in Regex::new(r"#health").unwrap().find_iter(&text) {
       if !tag.is_empty() {
-        if let Some(profile) = PROFILE_SYSTEM.get(username).await {
+        if let Some(profile) = PROFILE_SYSTEM.get(index).await {
           result = text.replace(tag.as_str(), profile.health.to_string().as_str());
         }
       }
@@ -183,7 +186,7 @@ impl ChatModule {
 
     for tag in Regex::new(r"#player").unwrap().find_iter(&text) {
       if !tag.is_empty() {
-        if let Some(bot) = BOT_REGISTRY.get_bot(username) {
+        if let Some(bot) = REGISTRY_SYSTEM.get_bot(index) {
           if let Some(players) = bot.get_players() {
             let mut usernames = Vec::new();
 
@@ -200,11 +203,11 @@ impl ChatModule {
     result
   }
 
-  async fn message(bot: &Client, options: &ChatOptions) {
+  async fn message(bot: &Client, index: &u8, options: &ChatOptions) {
     let mut text = options.message.clone();
 
     if options.use_text_mutation {
-      text = Self::process_extra_tags(&bot.username(), text).await;
+      text = Self::process_extra_tags(index, text).await;
       text = mutate_text(text);
     }
 
@@ -223,14 +226,14 @@ impl ChatModule {
     bot.chat(&text);
   }
 
-  async fn spamming(bot: &Client, options: &ChatOptions) {
+  async fn spamming(bot: &Client, index: &u8, options: &ChatOptions) {
     let mut latest_text = String::new();
 
     loop {
       let mut text = options.message.clone();
 
       if options.use_text_mutation {
-        text = Self::process_extra_tags(&bot.username(), text).await;
+        text = Self::process_extra_tags(index, text).await;
         text = mutate_text(text);
       }
 
@@ -268,10 +271,10 @@ impl ChatModule {
     }
   }
 
-  async fn start(bot: &Client, options: &ChatOptions) {
+  async fn start(bot: &Client, index: &u8, options: &ChatOptions) {
     match options.mode.as_str() {
-      "message" => Self::message(bot, options).await,
-      "spamming" => Self::spamming(bot, options).await,
+      "message" => Self::message(bot, index, options).await,
+      "spamming" => Self::spamming(bot, index, options).await,
       _ => {}
     }
   }
@@ -282,27 +285,25 @@ impl SalarixiModule<ChatOptions> for ChatModule {
     Self
   }
 
-  async fn switch(&self, username: String, options: ChatOptions) -> bool {
+  async fn switch(&self, index: u8, options: ChatOptions) -> bool {
     let is_spamming = options.mode == "spamming";
 
     if !is_spamming {
-      let username_clone = username.clone();
       tokio::spawn(async move {
-        take_bot!(&username_clone, async |bot| Self::start(bot, &options).await);
+        take_bot!(&index, async |bot| Self::start(bot, &index, &options).await);
       });
 
       return true;
     }
 
-    if options.state && !gettskact(&username, TaskName::Spamming).await {
-      let username_clone = username.clone();
+    if options.state && !gettskact(&index, TaskName::Spamming).await {
       let task_handle = tokio::spawn(async move {
-        take_bot!(&username_clone, async |bot| Self::start(bot, &options).await);
+        take_bot!(&index, async |bot| Self::start(bot, &index, &options).await);
       });
 
-      pushrtsk(&username, TaskName::Spamming, task_handle).await;
-    } else if !options.state && gettskact(&username, TaskName::Spamming).await {
-      killtsk(&username, TaskName::Spamming).await;
+      pushrtsk(&index, TaskName::Spamming, task_handle).await;
+    } else if !options.state && gettskact(&index, TaskName::Spamming).await {
+      killtsk(&index, TaskName::Spamming).await;
     } else {
       return false;
     }

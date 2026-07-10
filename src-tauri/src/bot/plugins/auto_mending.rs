@@ -6,7 +6,7 @@ use azalea::registry::builtin::ItemKind;
 
 use crate::bot::extensions::{BotInteractExt, BotInventoryExt};
 use crate::bot::plugin_manager::PluginName;
-use crate::bot::systems::{getst, setmst, State, StateName};
+use crate::bot::systems::states::{getst, setmst, State, StateName};
 use crate::bot::traits::SalarixiPlugin;
 use crate::bot::PLUGINS;
 use crate::other::tools::*;
@@ -22,25 +22,25 @@ pub struct AutoMendingPlugin;
 
 impl AutoMendingPlugin {
   /// Метод обработки тика
-  async fn tick(&self, username: &str) {
-    let broken_items = self.find_broken_items(username).await;
+  async fn tick(&self, index: &u8) {
+    let broken_items = self.find_broken_items(index).await;
 
     for broken_item in broken_items {
-      if !getst(username, State::IsEating).await && !getst(username, State::IsDrinking).await {
-        self.repair_item(username, broken_item).await;
+      if !getst(index, State::IsEating).await && !getst(index, State::IsDrinking).await {
+        self.repair_item(index, broken_item).await;
       }
     }
   }
 
   /// Метод поиска и взятия в руку бутылок опыта
-  async fn take_experience_bottles(&self, username: &str) -> Option<i32> {
+  async fn take_experience_bottles(&self, index: &u8) -> Option<i32> {
     let mut count = None;
 
-    take_bot!(username, async |bot| {
+    take_bot!(index, async |bot| {
       if let Some(menu) = bot.get_inventory_menu() {
         for (slot, item) in menu.slots().iter().enumerate() {
           if item.kind() == ItemKind::ExperienceBottle {
-            bot.take_item(slot, true).await;
+            bot.take_item(index, slot, true).await;
             count = Some(item.count());
           }
         }
@@ -51,22 +51,22 @@ impl AutoMendingPlugin {
   }
 
   /// Метод починки сломанного предмета
-  async fn repair_item(&self, username: &str, broken_item: BrokenItem) {
-    let Some(count) = self.take_experience_bottles(username).await else {
+  async fn repair_item(&self, index: &u8, broken_item: BrokenItem) {
+    let Some(count) = self.take_experience_bottles(index).await else {
       return;
     };
 
     for _ in 0..=count {
-      if !getst(username, State::CanInteracting).await || !getst(username, State::CanLooking).await {
+      if !getst(index, State::CanInteracting).await || !getst(index, State::CanLooking).await {
         continue;
       }
 
-      setmst(username, StateName::Interacting, true).await;
-      setmst(username, StateName::Looking, true).await;
+      setmst(index, StateName::Interacting, true).await;
+      setmst(index, StateName::Looking, true).await;
 
       if broken_item.slot != 45 && broken_item.slot > 8 {
-        take_bot!(username, async |bot| {
-          bot.take_item(broken_item.slot, false).await;
+        take_bot!(index, async |bot| {
+          bot.take_item(index, broken_item.slot, false).await;
           sleep!(50);
           bot.move_item_to_offhand(broken_item.kind).await;
         });
@@ -80,7 +80,7 @@ impl AutoMendingPlugin {
 
       let mut inv_menu = None;
 
-      take_bot!(username, async |bot| {
+      take_bot!(index, async |bot| {
         inv_menu = bot.get_inventory_menu();
       });
 
@@ -93,7 +93,7 @@ impl AutoMendingPlugin {
         let max_durability = self.get_max_item_durability(item);
 
         if current_damage != 0 && max_durability - current_damage < max_durability / 2 {
-          take_bot!(username, async |bot| {
+          take_bot!(index, async |bot| {
             let direction = bot.direction();
 
             if direction.1 < 84.0 {
@@ -104,14 +104,14 @@ impl AutoMendingPlugin {
             bot.start_use_held_item(InteractionHand::MainHand);
           });
         } else {
-          setmst(username, StateName::Interacting, false).await;
-          setmst(username, StateName::Looking, false).await;
+          setmst(index, StateName::Interacting, false).await;
+          setmst(index, StateName::Looking, false).await;
           break;
         }
       }
 
-      setmst(username, StateName::Interacting, false).await;
-      setmst(username, StateName::Looking, false).await;
+      setmst(index, StateName::Interacting, false).await;
+      setmst(index, StateName::Looking, false).await;
 
       sleep!(randnum(200, 250));
     }
@@ -151,10 +151,10 @@ impl AutoMendingPlugin {
   }
 
   /// Метод поиска сломанных предметов в инвентаре
-  async fn find_broken_items(&self, username: &str) -> Vec<BrokenItem> {
+  async fn find_broken_items(&self, index: &u8) -> Vec<BrokenItem> {
     let mut broken_items = vec![];
 
-    take_bot!(username, async |bot| {
+    take_bot!(index, async |bot| {
       let Some(menu) = bot.get_inventory_menu() else {
         return;
       };
@@ -187,15 +187,14 @@ impl SalarixiPlugin for AutoMendingPlugin {
     Self
   }
 
-  fn activate(&'static self, username: String) {
-    let username_clone = username.clone();
+  fn activate(&'static self, index: u8) {
     let task = tokio::spawn(async move {
       loop {
-        self.tick(&username_clone).await;
+        self.tick(&index).await;
         sleep!(300);
       }
     });
 
-    PLUGINS.push_task(&username, PluginName::AutoMending, task);
+    PLUGINS.push_task(&index, PluginName::AutoMending, task);
   }
 }

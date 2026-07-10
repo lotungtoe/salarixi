@@ -1,12 +1,11 @@
 use hashbrown::HashMap;
 use once_cell::sync::Lazy;
 use std::sync::atomic::{AtomicU16, Ordering};
-use std::sync::Arc;
 use tokio::sync::RwLock;
 
 use crate::api::emit::emit_log;
 
-pub static STATE_SYSTEM: Lazy<Arc<StateSystem>> = Lazy::new(|| Arc::new(StateSystem::new()));
+pub static STATE_SYSTEM: Lazy<StateSystem> = Lazy::new(|| StateSystem::new());
 
 /// Состояние бота
 pub enum State {
@@ -124,11 +123,11 @@ impl States {
 
 /// Система управления состояниями ботов
 pub struct StateSystem {
-  pub map: RwLock<HashMap<String, States>>,
+  pub map: RwLock<HashMap<u8, States>>,
 }
 
 impl StateSystem {
-  /// Метод создания менеджера состояний
+  /// Метод создания системы состояний
   pub fn new() -> Self {
     Self {
       map: RwLock::new(HashMap::new()),
@@ -136,8 +135,8 @@ impl StateSystem {
   }
 
   /// Метод регистрации бота
-  pub async fn register(&self, username: &str) {
-    self.map.write().await.insert(username.to_string(), States::new());
+  pub async fn register(&self, index: u8) {
+    self.map.write().await.insert(index, States::new());
   }
 
   /// Метод очистки хранилища состояний
@@ -147,23 +146,23 @@ impl StateSystem {
   }
 
   /// Метод сброса состояний указанного бота
-  pub async fn reset(&self, username: &str) {
+  pub async fn reset(&self, index: &u8) {
     let mut guard = self.map.write().await;
-    if let Some(s) = guard.get_mut(username) {
+    if let Some(s) = guard.get_mut(index) {
       s.mask.store(0x7F, Ordering::SeqCst);
     }
   }
 
   /// Метод удаления всех состояний указанного бота
-  pub async fn remove(&self, username: &str) {
-    self.map.write().await.remove(username);
+  pub async fn remove(&self, index: &u8) {
+    self.map.write().await.remove(index);
   }
 }
 
 /// Вспомогательная функция получения состояния
-pub async fn getst(username: &str, state: State) -> bool {
+pub async fn getst(index: &u8, state: State) -> bool {
   let guard = STATE_SYSTEM.map.read().await;
-  if let Some(s) = guard.get(username) {
+  if let Some(s) = guard.get(index) {
     return s.get(state);
   }
 
@@ -171,15 +170,15 @@ pub async fn getst(username: &str, state: State) -> bool {
 }
 
 /// Вспомогательная функция установки значения для состояния
-pub async fn setst(username: &str, state: State, value: bool) {
+pub async fn setst(index: &u8, state: State, value: bool) {
   let mut guard = STATE_SYSTEM.map.write().await;
-  if let Some(s) = guard.get_mut(username) {
+  if let Some(s) = guard.get_mut(index) {
     s.set(state, value);
   }
 }
 
 /// Вспомогательная функция взаимной установки значений для ```can``` и ```is``` состояний
-pub async fn setmst(username: &str, state_name: StateName, current_value: bool) {
+pub async fn setmst(index: &u8, state_name: StateName, current_value: bool) {
   let (is_state, can_state) = match state_name {
     StateName::Walking => (State::IsWalking, State::CanWalking),
     StateName::Sprinting => (State::IsSprinting, State::CanSprinting),
@@ -191,16 +190,16 @@ pub async fn setmst(username: &str, state_name: StateName, current_value: bool) 
   };
 
   let mut guard = STATE_SYSTEM.map.write().await;
-  if let Some(s) = guard.get_mut(username) {
+  if let Some(s) = guard.get_mut(index) {
     s.set(is_state, current_value);
     s.set(can_state, !current_value);
   }
 }
 
 /// Вспомогательная функция попытки получения состояния
-pub fn try_getst(username: &str, state: State) -> bool {
+pub fn try_getst(index: &u8, state: State) -> bool {
   if let Ok(states) = STATE_SYSTEM.map.try_read() {
-    if let Some(s) = states.get(username) {
+    if let Some(s) = states.get(index) {
       return s.get(state);
     }
   }
@@ -209,9 +208,9 @@ pub fn try_getst(username: &str, state: State) -> bool {
 }
 
 /// Вспомогательная функция попытки установки значения для состояния
-pub fn try_setst(username: &str, state: State, value: bool) {
+pub fn try_setst(index: &u8, state: State, value: bool) {
   if let Ok(mut states) = STATE_SYSTEM.map.try_write() {
-    if let Some(s) = states.get_mut(username) {
+    if let Some(s) = states.get_mut(index) {
       s.set(state, value);
     }
   }

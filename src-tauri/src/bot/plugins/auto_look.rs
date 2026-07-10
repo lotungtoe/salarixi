@@ -2,7 +2,7 @@ use azalea::prelude::*;
 
 use crate::bot::extensions::{BotDefaultExt, BotRotationExt, EntityType};
 use crate::bot::plugin_manager::PluginName;
-use crate::bot::systems::{getst, State};
+use crate::bot::systems::states::{getst, State};
 use crate::bot::traits::SalarixiPlugin;
 use crate::bot::PLUGINS;
 use crate::other::tools::randnum;
@@ -12,9 +12,9 @@ pub struct AutoLookPlugin;
 
 impl AutoLookPlugin {
   /// Метод обработки тика
-  async fn tick(&self, username: &str) {
-    if getst(&username, State::CanLooking).await {
-      take_bot!(username, async |bot| {
+  async fn tick(&self, index: &u8) {
+    if getst(index, State::CanLooking).await {
+      take_bot!(index, async |bot| {
         if !bot.is_goto_target_reached() {
           return;
         }
@@ -34,15 +34,14 @@ impl SalarixiPlugin for AutoLookPlugin {
     Self
   }
 
-  fn activate(&'static self, username: String) {
-    let username_clone = username.clone();
+  fn activate(&'static self, index: u8) {
     let task = tokio::spawn(async move {
       loop {
-        self.tick(&username_clone).await;
+        self.tick(&index).await;
         sleep!(100);
       }
     });
 
-    PLUGINS.push_task(&username, PluginName::AutoLook, task);
+    PLUGINS.push_task(&index, PluginName::AutoLook, task);
   }
 }

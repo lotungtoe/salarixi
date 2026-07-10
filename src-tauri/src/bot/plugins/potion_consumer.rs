@@ -7,9 +7,7 @@ use azalea::registry::builtin::Potion as PotionKind;
 
 use crate::bot::extensions::{BotDefaultExt, BotInteractExt, BotInventoryExt, BotMovementExt, BotPhysicsExt};
 use crate::bot::plugin_manager::PluginName;
-use crate::bot::systems::State;
-use crate::bot::systems::StateName;
-use crate::bot::systems::{getst, setmst, setst};
+use crate::bot::systems::states::{getst, setmst, setst, State, StateName};
 use crate::bot::traits::SalarixiPlugin;
 use crate::bot::PLUGINS;
 use crate::other::tools::*;
@@ -28,10 +26,10 @@ pub struct PotionConsumerPlugin;
 
 impl PotionConsumerPlugin {
   /// Метод обработки тика
-  async fn tick(&self, username: &str) {
+  async fn tick(&self, index: &u8) {
     let mut health = 20.0;
 
-    take_bot!(username, async |bot| {
+    take_bot!(index, async |bot| {
       health = bot.get_health();
     });
 
@@ -39,7 +37,7 @@ impl PotionConsumerPlugin {
       return;
     }
 
-    let potions = self.find_potion_in_inventory(username).await;
+    let potions = self.find_potion_in_inventory(index).await;
 
     if potions.len() == 0 {
       return;
@@ -47,7 +45,7 @@ impl PotionConsumerPlugin {
 
     let mut current_physics = None;
 
-    take_bot!(username, async |bot| {
+    take_bot!(index, async |bot| {
       current_physics = bot.get_physics();
     });
 
@@ -59,13 +57,13 @@ impl PotionConsumerPlugin {
       return;
     };
 
-    if !getst(username, State::CanDrinking).await {
+    if !getst(index, State::CanDrinking).await {
       return;
     }
 
     let mut should_drink = true;
 
-    if getst(username, State::IsAttacking).await {
+    if getst(index, State::IsAttacking).await {
       should_drink = !randchance(health as f64 / 20.0);
     }
 
@@ -73,57 +71,57 @@ impl PotionConsumerPlugin {
       return;
     }
 
-    setst(username, State::CanEating, false).await;
-    setst(username, State::CanAttacking, false).await;
-    setst(username, State::CanInteracting, false).await;
+    setst(index, State::CanEating, false).await;
+    setst(index, State::CanAttacking, false).await;
+    setst(index, State::CanInteracting, false).await;
 
-    self.use_potion(username, best_potion).await;
+    self.use_potion(index, best_potion).await;
 
-    setst(username, State::CanEating, true).await;
-    setst(username, State::CanInteracting, true).await;
-    setst(username, State::CanAttacking, true).await;
+    setst(index, State::CanEating, true).await;
+    setst(index, State::CanInteracting, true).await;
+    setst(index, State::CanAttacking, true).await;
   }
 
   /// Метод отправки пакета об использовании зелья
-  async fn use_potion(&self, username: &str, potion: Potion) {
-    take_bot!(username, async |bot| {
-      bot.take_item(potion.slot, false).await;
+  async fn use_potion(&self, index: &u8, potion: Potion) {
+    take_bot!(index, async |bot| {
+      bot.take_item(index, potion.slot, false).await;
     });
 
     match potion.kind.as_str() {
       "default" => {
-        setmst(username, StateName::Drinking, true).await;
+        setmst(index, StateName::Drinking, true).await;
 
-        take_bot!(username, async |bot| {
-          bot.freeze_move().await;
+        take_bot!(index, async |bot| {
+          bot.freeze_move(index).await;
           bot.start_use_held_item(InteractionHand::MainHand);
         });
 
         sleep!(2600);
 
-        take_bot!(username, async |bot| {
-          bot.unfreeze_move().await;
+        take_bot!(index, async |bot| {
+          bot.unfreeze_move(index).await;
         });
 
-        setmst(username, StateName::Drinking, false).await;
+        setmst(index, StateName::Drinking, false).await;
       }
       "splash" => {
         let mut direction = (0.0, 0.0);
 
-        take_bot!(username, async |bot| {
+        take_bot!(index, async |bot| {
           direction = bot.direction();
           bot.set_direction(direction.0 + randnum(-5.5, 5.5) as f32, randnum(87.0, 90.0) as f32);
         });
 
         sleep!(randnum(400, 600));
 
-        take_bot!(username, async |bot| {
+        take_bot!(index, async |bot| {
           bot.start_use_held_item(InteractionHand::MainHand);
         });
 
         sleep!(randnum(300, 500));
 
-        take_bot!(username, async |bot| {
+        take_bot!(index, async |bot| {
           bot.set_direction(
             direction.0 + randnum(-2.5, 2.5) as f32,
             direction.1 + randnum(-2.5, 2.5) as f32,
@@ -243,10 +241,10 @@ impl PotionConsumerPlugin {
   }
 
   /// Метод поиска зелья в инвентаре
-  async fn find_potion_in_inventory(&self, username: &str) -> Vec<Potion> {
+  async fn find_potion_in_inventory(&self, index: &u8) -> Vec<Potion> {
     let mut potion_list = vec![];
 
-    take_bot!(username, async |bot| {
+    take_bot!(index, async |bot| {
       let Some(menu) = bot.get_inventory_menu() else {
         return;
       };
@@ -298,15 +296,14 @@ impl SalarixiPlugin for PotionConsumerPlugin {
     Self
   }
 
-  fn activate(&'static self, username: String) {
-    let username_clone = username.clone();
+  fn activate(&'static self, index: u8) {
     let task = tokio::spawn(async move {
       loop {
-        self.tick(&username_clone).await;
+        self.tick(&index).await;
         sleep!(200);
       }
     });
 
-    PLUGINS.push_task(&username, PluginName::PotionConsumer, task);
+    PLUGINS.push_task(&index, PluginName::PotionConsumer, task);
   }
 }

@@ -6,9 +6,10 @@ use serde::Deserialize;
 
 use crate::api::emit::{emit_log, emit_msg};
 use crate::bot::functions::{disconnect_bot, reset_bot, send_message_from_bot};
-use crate::bot::registry::{RegistryEvent, BOT_REGISTRY};
 use crate::bot::script::SCRIPT_EXECUTOR;
-use crate::bot::systems::{Profile, PROFILE_SYSTEM};
+use crate::bot::systems::index::INDEX_SYSTEM;
+use crate::bot::systems::profile::{Profile, PROFILE_SYSTEM};
+use crate::bot::systems::registry::{RegistryEvent, REGISTRY_SYSTEM};
 use crate::bot::utils::ping::{ping_server, ServerInformation};
 use crate::bot::utils::radar::{RadarInfo, RADAR};
 use crate::launch::options::LaunchOptions;
@@ -37,7 +38,15 @@ pub async fn stop_bots() -> bool {
 /// Команда получения профилей ботов
 #[tauri::command]
 pub async fn get_bot_profiles() -> HashMap<String, Profile> {
-  PROFILE_SYSTEM.get_all().await
+  let mut profiles = HashMap::new();
+  let index_map = INDEX_SYSTEM.map.read().await;
+  for (index, profile) in PROFILE_SYSTEM.get_all().await {
+    if let Some(username) = index_map.get(index as usize) {
+      profiles.insert(username.clone(), profile);
+    }
+  }
+
+  profiles
 }
 
 #[derive(Deserialize)]
@@ -91,7 +100,9 @@ pub async fn quick_operation(operation: String, options: serde_json::Value) {
 /// Команда установки группы указанному боту
 #[tauri::command]
 pub async fn set_group(username: String, group: String) {
-  PROFILE_SYSTEM.set_str(&username, "group", &group).await;
+  if let Some(index) = INDEX_SYSTEM.index_by_username(&username).await {
+    PROFILE_SYSTEM.set_str(&index, "group", &group).await;
+  }
 }
 
 /// Команда получения количества активных ботов
@@ -104,7 +115,7 @@ pub async fn get_active_bots_count() -> i32 {
 #[tauri::command]
 pub async fn control_bots(name: String, options: serde_json::Value, group: String) {
   if process_is_active() {
-    BOT_REGISTRY.send_event(RegistryEvent::ControlModules { name, options, group });
+    REGISTRY_SYSTEM.send_event(RegistryEvent::ControlModules { name, options, group });
   }
 }
 
@@ -162,7 +173,7 @@ pub async fn quick_task(name: String) {
     ),
   );
 
-  BOT_REGISTRY.send_event(RegistryEvent::QuickTask { name });
+  REGISTRY_SYSTEM.send_event(RegistryEvent::QuickTask { name });
 }
 
 /// Команда выполнения пользовательского скрипта
@@ -171,7 +182,7 @@ pub async fn execute_script(script: String) {
   if process_is_active() {
     // Здесь не нужен определённый юзернейм бота, ибо
     // пользователь сам в своём сценарии их указывает в функциях
-    SCRIPT_EXECUTOR.execute(String::new(), script);
+    SCRIPT_EXECUTOR.execute(String::new(), 0, script);
   }
 }
 

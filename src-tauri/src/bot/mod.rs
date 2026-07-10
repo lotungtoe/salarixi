@@ -6,7 +6,6 @@ pub mod handlers;
 pub mod modules;
 pub mod plugins;
 pub mod quick;
-pub mod registry;
 pub mod script;
 pub mod systems;
 pub mod traits;

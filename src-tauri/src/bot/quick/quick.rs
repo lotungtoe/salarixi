@@ -8,16 +8,17 @@ use once_cell::sync::Lazy;
 
 use crate::bot::common::{get_average_coordinates_of_bots, this_is_solid_block};
 use crate::bot::extensions::{go_to, BotDefaultExt, BotInventoryExt, BotMovementExt, BotPhysicsExt, ClickMode};
-use crate::bot::registry::BOT_REGISTRY;
-use crate::bot::systems::{getst, setmst, State, StateName, PROFILE_SYSTEM, STATE_SYSTEM, TASK_SYSTEM};
+use crate::bot::systems::profile::PROFILE_SYSTEM;
+use crate::bot::systems::registry::REGISTRY_SYSTEM;
+use crate::bot::systems::states::{getst, setmst, State, StateName, STATE_SYSTEM};
+use crate::bot::systems::tasks::TASK_SYSTEM;
 use crate::bot::PLUGINS;
 use crate::other::tools::*;
 use crate::{sleep, take_bot};
 
 pub static QUICK_TASKS: Lazy<QuickTaskManager> = Lazy::new(|| QuickTaskManager::new());
 
-/// Менеджер быстрых задач.
-/// Позволяет распределять быстрые задачи ботов.
+/// Менеджер быстрых задач
 pub struct QuickTaskManager;
 
 impl QuickTaskManager {
@@ -28,37 +29,37 @@ impl QuickTaskManager {
 
   /// Метод выполненя быстрой задачи
   pub async fn execute(&self, name: String) {
-    for (number, username) in PROFILE_SYSTEM.get_all().await.into_keys().enumerate() {
+    for (number, index) in PROFILE_SYSTEM.get_all_connected().await.into_keys().enumerate() {
       let name = name.clone();
 
       tokio::spawn(async move {
-        take_bot!(&username, async |bot| match name.as_str() {
+        take_bot!(&index, async |bot| match name.as_str() {
           "clear-inventory" => {
             if let Some(menu) = bot.get_inventory_menu() {
               for (slot, _) in menu.slots().iter().enumerate() {
-                bot.inventory_click(slot, ClickMode::DropAll, true).await;
+                bot.inventory_click(&index, slot, ClickMode::DropAll, true).await;
               }
             }
           }
           "move-forward" => {
-            bot.start_walking(WalkDirection::Forward).await;
+            bot.start_walking(&index, WalkDirection::Forward).await;
             sleep!(200);
-            bot.stop_move().await;
+            bot.stop_move(&index).await;
           }
           "move-backward" => {
-            bot.start_walking(WalkDirection::Backward).await;
+            bot.start_walking(&index, WalkDirection::Backward).await;
             sleep!(200);
-            bot.stop_move().await;
+            bot.stop_move(&index).await;
           }
           "move-left" => {
-            bot.start_walking(WalkDirection::Right).await;
+            bot.start_walking(&index, WalkDirection::Right).await;
             sleep!(200);
-            bot.stop_move().await;
+            bot.stop_move(&index).await;
           }
           "move-right" => {
-            bot.start_walking(WalkDirection::Left).await;
+            bot.start_walking(&index, WalkDirection::Left).await;
             sleep!(200);
-            bot.stop_move().await;
+            bot.stop_move(&index).await;
           }
           "jump" => {
             bot.jump();
@@ -75,20 +76,20 @@ impl QuickTaskManager {
             }
           }
           "quit" => {
-            PLUGINS.kill_all_tasks_for(&username).await;
-            TASK_SYSTEM.kill_all_tasks_for(&username).await;
+            PLUGINS.kill_all_tasks_for(&index).await;
+            TASK_SYSTEM.kill_all_tasks_for(&index).await;
 
             sleep!(2000);
 
             bot.disconnect();
 
-            STATE_SYSTEM.remove(&username).await;
-            TASK_SYSTEM.remove(&username).await;
+            STATE_SYSTEM.remove(&index).await;
+            TASK_SYSTEM.remove(&index).await;
 
-            PROFILE_SYSTEM.set_str(&username, "status", "Оффлайн").await;
+            PROFILE_SYSTEM.set_str(&index, "status", "Оффлайн").await;
           }
           "rise" => {
-            if getst(&username, State::CanLooking).await && getst(&username, State::CanInteracting).await {
+            if getst(&index, State::CanLooking).await && getst(&index, State::CanInteracting).await {
               let mut block_slot = None;
 
               if let Some(menu) = bot.get_inventory_menu() {
@@ -103,10 +104,10 @@ impl QuickTaskManager {
               }
 
               if let Some(slot) = block_slot {
-                setmst(&username, StateName::Looking, true).await;
-                setmst(&username, StateName::Interacting, true).await;
+                setmst(&index, StateName::Looking, true).await;
+                setmst(&index, StateName::Interacting, true).await;
 
-                bot.take_item(slot, true).await;
+                bot.take_item(&index, slot, true).await;
 
                 let original_direction_1 = bot.direction();
 
@@ -135,8 +136,8 @@ impl QuickTaskManager {
 
                 bot.set_direction(original_direction_1.0, original_direction_1.1);
 
-                setmst(&username, StateName::Looking, false).await;
-                setmst(&username, StateName::Interacting, false).await;
+                setmst(&index, StateName::Looking, false).await;
+                setmst(&index, StateName::Interacting, false).await;
               }
             }
           }
@@ -213,11 +214,11 @@ impl QuickTaskManager {
               }
 
               if let Some(slot) = block_slot {
-                if getst(&username, State::CanLooking).await && getst(&username, State::CanInteracting).await {
-                  setmst(&username, StateName::Looking, true).await;
-                  setmst(&username, StateName::Interacting, true).await;
+                if getst(&index, State::CanLooking).await && getst(&index, State::CanInteracting).await {
+                  setmst(&index, StateName::Looking, true).await;
+                  setmst(&index, StateName::Interacting, true).await;
 
-                  bot.take_item(slot, true).await;
+                  bot.take_item(&index, slot, true).await;
 
                   count = count + 1;
 
@@ -243,8 +244,8 @@ impl QuickTaskManager {
                     bot.set_crouching(false);
                   }
 
-                  setmst(&username, StateName::Looking, false).await;
-                  setmst(&username, StateName::Interacting, false).await;
+                  setmst(&index, StateName::Looking, false).await;
+                  setmst(&index, StateName::Interacting, false).await;
 
                   sleep!(randnum(100, 150));
                 }
@@ -255,7 +256,7 @@ impl QuickTaskManager {
             let mut positions = vec![];
 
             for username in PROFILE_SYSTEM.get_all_connected().await.keys() {
-              let Some(b) = BOT_REGISTRY.get_bot(username) else {
+              let Some(b) = REGISTRY_SYSTEM.get_bot(username) else {
                 continue;
               };
 
@@ -264,7 +265,7 @@ impl QuickTaskManager {
 
             let average_cords = get_average_coordinates_of_bots(&positions);
 
-            go_to(bot.username(), average_cords.0 as i32, average_cords.2 as i32);
+            go_to(index, average_cords.0 as i32, average_cords.2 as i32);
           }
           "turn" => {
             let direction = bot.direction();
@@ -277,7 +278,7 @@ impl QuickTaskManager {
             let mut positions = vec![];
 
             for username in PROFILE_SYSTEM.get_all_connected().await.keys() {
-              let Some(b) = BOT_REGISTRY.get_bot(username) else {
+              let Some(b) = REGISTRY_SYSTEM.get_bot(username) else {
                 continue;
               };
 
@@ -290,13 +291,13 @@ impl QuickTaskManager {
             let x = average_cords.0 + positions.len() as f64 * 0.5 * angle.cos() as f64;
             let z = average_cords.2 + positions.len() as f64 * 0.5 * angle.sin() as f64;
 
-            go_to(bot.username(), x as i32, z as i32);
+            go_to(index, x as i32, z as i32);
           }
           "form-line" => {
             let mut positions = vec![];
 
             for username in PROFILE_SYSTEM.get_all_connected().await.keys() {
-              let Some(b) = BOT_REGISTRY.get_bot(username) else {
+              let Some(b) = REGISTRY_SYSTEM.get_bot(username) else {
                 continue;
               };
 
@@ -308,7 +309,7 @@ impl QuickTaskManager {
             let x = average_cords.0 + 1.0 * (number as f64 * 1.0);
             let z = average_cords.2 * (number as f64 * 1.0);
 
-            go_to(bot.username(), x as i32, z as i32);
+            go_to(index, x as i32, z as i32);
           }
           "pathfinder-stop" => {
             bot.stop_pathfinding();

@@ -1,12 +1,11 @@
 use hashbrown::HashMap;
 use once_cell::sync::Lazy;
-use std::sync::Arc;
 use tokio::sync::RwLock;
 use tokio::task::JoinHandle;
 
 use crate::api::emit::emit_log;
 
-pub static TASK_SYSTEM: Lazy<Arc<TaskSystem>> = Lazy::new(|| Arc::new(TaskSystem::new()));
+pub static TASK_SYSTEM: Lazy<TaskSystem> = Lazy::new(|| TaskSystem::new());
 
 /// Название задачи бота
 #[derive(Clone, PartialEq, Eq, Hash)]
@@ -93,11 +92,11 @@ impl Tasks {
 
 /// Система управления задачами
 pub struct TaskSystem {
-  pub map: RwLock<HashMap<String, Tasks>>,
+  pub map: RwLock<HashMap<u8, Tasks>>,
 }
 
 impl TaskSystem {
-  /// Метод создания менеджера задач
+  /// Метод создания системы задач
   pub fn new() -> Self {
     Self {
       map: RwLock::new(HashMap::new()),
@@ -105,26 +104,26 @@ impl TaskSystem {
   }
 
   /// Метод регистрации бота
-  pub async fn register(&self, username: &str) {
+  pub async fn register(&self, index: u8) {
     let mut guard = self.map.write().await;
-    if let Some(t) = guard.get_mut(username) {
+    if let Some(t) = guard.get_mut(&index) {
       t.kill_all_tasks();
     }
 
-    guard.insert(username.to_string(), Tasks::new());
+    guard.insert(index, Tasks::new());
   }
 
   /// Метод остановки всех задач указанного бота
-  pub async fn kill_all_tasks_for(&self, username: &str) {
+  pub async fn kill_all_tasks_for(&self, index: &u8) {
     let mut guard = self.map.write().await;
-    if let Some(t) = guard.get_mut(username) {
+    if let Some(t) = guard.get_mut(index) {
       t.kill_all_tasks();
     }
   }
 
   /// Метод удаления бота
-  pub async fn remove(&self, username: &str) {
-    self.map.write().await.remove(username);
+  pub async fn remove(&self, index: &u8) {
+    self.map.write().await.remove(index);
   }
 
   /// Метод остановки всех активных задач и очистки хранилища
@@ -138,11 +137,11 @@ impl TaskSystem {
 }
 
 /// Вспомогательная функция получения активности определённой задачи указанного бота
-pub async fn gettskact(username: &str, task_name: TaskName) -> bool {
+pub async fn gettskact(index: &u8, task_name: TaskName) -> bool {
   let guard = TASK_SYSTEM.map.read().await;
 
-  for (name, t) in guard.iter() {
-    if name.as_str() == username {
+  for (i, t) in guard.iter() {
+    if i == index {
       return t.get_root_task_activity(task_name);
     }
   }
@@ -151,25 +150,25 @@ pub async fn gettskact(username: &str, task_name: TaskName) -> bool {
 }
 
 /// Вспомогательная функция добавления корневой задачи указанному бота
-pub async fn pushrtsk(username: &str, task_name: TaskName, root_task: JoinHandle<()>) {
+pub async fn pushrtsk(index: &u8, task_name: TaskName, root_task: JoinHandle<()>) {
   let mut guard = TASK_SYSTEM.map.write().await;
-  if let Some(t) = guard.get_mut(username) {
+  if let Some(t) = guard.get_mut(index) {
     t.pushrtsk(task_name, root_task);
   }
 }
 
 /// Вспомогательная функция добавления дополнительной задачи указанному бота
-pub async fn pushetsk(username: &str, task_name: TaskName, extra_task: JoinHandle<()>) {
+pub async fn pushetsk(index: &u8, task_name: TaskName, extra_task: JoinHandle<()>) {
   let mut guard = TASK_SYSTEM.map.write().await;
-  if let Some(t) = guard.get_mut(username) {
+  if let Some(t) = guard.get_mut(index) {
     t.pushetsk(task_name, extra_task);
   }
 }
 
 /// Вспомогательная функция остановки определённой задачи указанного бота
-pub async fn killtsk(username: &str, task_name: TaskName) {
+pub async fn killtsk(index: &u8, task_name: TaskName) {
   let mut guard = TASK_SYSTEM.map.write().await;
-  if let Some(t) = guard.get_mut(username) {
+  if let Some(t) = guard.get_mut(index) {
     t.killtsk(task_name);
   }
 }

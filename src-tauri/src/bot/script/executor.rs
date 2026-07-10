@@ -16,8 +16,10 @@ use crate::bot::extensions::{
   go_to, BotDefaultExt, BotInteractExt, BotInventoryExt, BotMovementExt, BotPhysicsExt, BotRotationExt, ClickMode,
   EntityType,
 };
-use crate::bot::registry::BOT_REGISTRY;
-use crate::bot::systems::{try_getst, try_setst, State, PROFILE_SYSTEM};
+use crate::bot::systems::index::INDEX_SYSTEM;
+use crate::bot::systems::profile::PROFILE_SYSTEM;
+use crate::bot::systems::registry::REGISTRY_SYSTEM;
+use crate::bot::systems::states::{try_getst, try_setst, State};
 use crate::launch::process::{current_options, process_is_active};
 use crate::other::webhook::*;
 
@@ -26,13 +28,33 @@ pub static SCRIPT_EXECUTOR: Lazy<ScriptExecutor> = Lazy::new(|| ScriptExecutor::
 static EXECUTOR_STATE_SYSTEM: Lazy<RwLock<HashMap<String, ()>>> = Lazy::new(|| RwLock::new(HashMap::new()));
 static EXECUTOR_GLOBAL_STATE: Lazy<AtomicBool> = Lazy::new(|| AtomicBool::new(false));
 
-/// Функция выбора юзернейма
-fn select_username<'a>(su: &'a str, mu: &'a str) -> &'a str {
-  if su.is_empty() {
+/// Функция генерации кода
+fn generate_code<'a>(su: &'a str, mu: &'a str) -> i16 {
+  // По логике здесь не может быть ошибки, ибо .write() у Index Map берётся только
+  // во время добавления аккаунтов и после остановки ботов. В эти моменты сценарий
+  // не может выполнятся. Это не самая лучшая реализация но и не костыль.
+  let index_map = match INDEX_SYSTEM.map.try_read() {
+    Ok(m) => m,
+    Err(_) => return 0,
+  };
+
+  let tu = if su.is_empty() {
+    if mu == "*" {
+      return -1;
+    }
+
     mu
   } else {
     su
+  };
+
+  for (i, u) in index_map.iter().enumerate() {
+    if u == tu {
+      return i as i16;
+    }
   }
+
+  0
 }
 
 /// Функция создания динамичного вектора координат
@@ -45,10 +67,10 @@ fn create_dynamic_vec(x: f64, y: f64, z: f64) -> Dynamic {
 }
 
 /// Функция создания динамичного профиля
-fn create_dynamic_profile(username: &str) -> Dynamic {
+fn create_dynamic_profile(index: &u8) -> Dynamic {
   let mut map = Map::new();
 
-  if let Some(profile) = PROFILE_SYSTEM.try_get(username) {
+  if let Some(profile) = PROFILE_SYSTEM.try_get(index) {
     map.insert("ping".into(), Dynamic::from_int(profile.ping as i64));
     map.insert("captcha_caught".into(), Dynamic::from_bool(profile.captcha_caught));
     map.insert("registered".into(), Dynamic::from_bool(profile.registered));
@@ -75,162 +97,161 @@ impl ScriptExecutor {
     Self
   }
 
-  fn chat(username: &str, message: String) {
-    if username == "*" {
-      PROFILE_SYSTEM.try_get_all_connected().keys().for_each(|name| {
-        if let Some(bot) = BOT_REGISTRY.get_bot(name) {
+  fn chat(code: i16, message: String) {
+    if code == -1 {
+      PROFILE_SYSTEM.try_get_all_connected().keys().for_each(|index| {
+        if let Some(bot) = REGISTRY_SYSTEM.get_bot(index) {
           bot.chat(&message);
         }
       });
     } else {
-      if let Some(bot) = BOT_REGISTRY.get_bot(username) {
+      if let Some(bot) = REGISTRY_SYSTEM.get_bot(&(code as u8)) {
         bot.chat(&message);
       }
     }
   }
 
-  fn jump(username: &str) {
-    if username == "*" {
-      PROFILE_SYSTEM.try_get_all_connected().keys().for_each(|name| {
-        if let Some(bot) = BOT_REGISTRY.get_bot(name) {
+  fn jump(code: i16) {
+    if code == -1 {
+      PROFILE_SYSTEM.try_get_all_connected().keys().for_each(|index| {
+        if let Some(bot) = REGISTRY_SYSTEM.get_bot(index) {
           bot.jump();
         }
       });
     } else {
-      if let Some(bot) = BOT_REGISTRY.get_bot(username) {
+      if let Some(bot) = REGISTRY_SYSTEM.get_bot(&(code as u8)) {
         bot.jump();
       }
     }
   }
 
-  fn swing_arm(username: &str) {
-    if username == "*" {
-      PROFILE_SYSTEM.try_get_all_connected().keys().for_each(|name| {
-        if let Some(bot) = BOT_REGISTRY.get_bot(name) {
+  fn swing_arm(code: i16) {
+    if code == -1 {
+      PROFILE_SYSTEM.try_get_all_connected().keys().for_each(|index| {
+        if let Some(bot) = REGISTRY_SYSTEM.get_bot(index) {
           bot.swing_arm();
         }
       });
     } else {
-      if let Some(bot) = BOT_REGISTRY.get_bot(username) {
+      if let Some(bot) = REGISTRY_SYSTEM.get_bot(&(code as u8)) {
         bot.swing_arm();
       }
     }
   }
 
-  fn set_jumping(username: &str, state: bool) {
-    if username == "*" {
-      PROFILE_SYSTEM.try_get_all_connected().keys().for_each(|name| {
-        if let Some(bot) = BOT_REGISTRY.get_bot(name) {
+  fn set_jumping(code: i16, state: bool) {
+    if code == -1 {
+      PROFILE_SYSTEM.try_get_all_connected().keys().for_each(|index| {
+        if let Some(bot) = REGISTRY_SYSTEM.get_bot(index) {
           bot.set_jumping(state);
         }
       });
     } else {
-      if let Some(bot) = BOT_REGISTRY.get_bot(username) {
+      if let Some(bot) = REGISTRY_SYSTEM.get_bot(&(code as u8)) {
         bot.set_jumping(state);
       }
     }
   }
 
-  fn set_crouching(username: &str, state: bool) {
-    if username == "*" {
-      PROFILE_SYSTEM.try_get_all_connected().keys().for_each(|name| {
-        if let Some(bot) = BOT_REGISTRY.get_bot(name) {
+  fn set_crouching(code: i16, state: bool) {
+    if code == -1 {
+      PROFILE_SYSTEM.try_get_all_connected().keys().for_each(|index| {
+        if let Some(bot) = REGISTRY_SYSTEM.get_bot(index) {
           bot.set_crouching(state);
         }
       });
     } else {
-      if let Some(bot) = BOT_REGISTRY.get_bot(username) {
+      if let Some(bot) = REGISTRY_SYSTEM.get_bot(&(code as u8)) {
         bot.set_crouching(state);
       }
     }
   }
 
-  fn set_velocity(username: &str, axis: &str, velocity: f64) {
-    if username == "*" {
-      PROFILE_SYSTEM.try_get_all_connected().keys().for_each(|name| {
-        if let Some(bot) = BOT_REGISTRY.get_bot(name) {
+  fn set_velocity(code: i16, axis: &str, velocity: f64) {
+    if code == -1 {
+      PROFILE_SYSTEM.try_get_all_connected().keys().for_each(|index| {
+        if let Some(bot) = REGISTRY_SYSTEM.get_bot(index) {
           bot.set_velocity(axis, velocity);
         }
       });
     } else {
-      if let Some(bot) = BOT_REGISTRY.get_bot(username) {
+      if let Some(bot) = REGISTRY_SYSTEM.get_bot(&(code as u8)) {
         bot.set_velocity(axis, velocity);
       }
     }
   }
 
-  fn set_on_ground(username: &str, on_ground: bool) {
-    if username == "*" {
-      PROFILE_SYSTEM.try_get_all_connected().keys().for_each(|name| {
-        if let Some(bot) = BOT_REGISTRY.get_bot(name) {
+  fn set_on_ground(code: i16, on_ground: bool) {
+    if code == -1 {
+      PROFILE_SYSTEM.try_get_all_connected().keys().for_each(|index| {
+        if let Some(bot) = REGISTRY_SYSTEM.get_bot(index) {
           bot.set_on_ground(on_ground);
         }
       });
     } else {
-      if let Some(bot) = BOT_REGISTRY.get_bot(username) {
+      if let Some(bot) = REGISTRY_SYSTEM.get_bot(&(code as u8)) {
         bot.set_on_ground(on_ground);
       }
     }
   }
 
-  fn set_old_position(username: &str, x: f64, y: f64, z: f64) {
-    if username == "*" {
-      PROFILE_SYSTEM.try_get_all_connected().keys().for_each(|name| {
-        if let Some(bot) = BOT_REGISTRY.get_bot(name) {
+  fn set_old_position(code: i16, x: f64, y: f64, z: f64) {
+    if code == -1 {
+      PROFILE_SYSTEM.try_get_all_connected().keys().for_each(|index| {
+        if let Some(bot) = REGISTRY_SYSTEM.get_bot(index) {
           bot.set_old_position(x, y, z);
         }
       });
     } else {
-      if let Some(bot) = BOT_REGISTRY.get_bot(username) {
+      if let Some(bot) = REGISTRY_SYSTEM.get_bot(&(code as u8)) {
         bot.set_old_position(x, y, z);
       }
     }
   }
 
-  fn set_no_jump_delay(username: &str, delay: u32) {
-    if username == "*" {
-      PROFILE_SYSTEM.try_get_all_connected().keys().for_each(|name| {
-        if let Some(bot) = BOT_REGISTRY.get_bot(name) {
+  fn set_no_jump_delay(code: i16, delay: u32) {
+    if code == -1 {
+      PROFILE_SYSTEM.try_get_all_connected().keys().for_each(|index| {
+        if let Some(bot) = REGISTRY_SYSTEM.get_bot(index) {
           bot.set_no_jump_delay(delay);
         }
       });
     } else {
-      if let Some(bot) = BOT_REGISTRY.get_bot(username) {
+      if let Some(bot) = REGISTRY_SYSTEM.get_bot(&(code as u8)) {
         bot.set_no_jump_delay(delay);
       }
     }
   }
 
-  fn set_was_touching_water(username: &str, state: bool) {
-    if username == "*" {
-      PROFILE_SYSTEM.try_get_all_connected().keys().for_each(|name| {
-        if let Some(bot) = BOT_REGISTRY.get_bot(name) {
+  fn set_was_touching_water(code: i16, state: bool) {
+    if code == -1 {
+      PROFILE_SYSTEM.try_get_all_connected().keys().for_each(|index| {
+        if let Some(bot) = REGISTRY_SYSTEM.get_bot(index) {
           bot.set_was_touching_water(state);
         }
       });
     } else {
-      if let Some(bot) = BOT_REGISTRY.get_bot(username) {
+      if let Some(bot) = REGISTRY_SYSTEM.get_bot(&(code as u8)) {
         bot.set_was_touching_water(state);
       }
     }
   }
 
-  fn set_has_impulse(username: &str, state: bool) {
-    if username == "*" {
-      PROFILE_SYSTEM.try_get_all_connected().keys().for_each(|name| {
-        if let Some(bot) = BOT_REGISTRY.get_bot(name) {
+  fn set_has_impulse(code: i16, state: bool) {
+    if code == -1 {
+      PROFILE_SYSTEM.try_get_all_connected().keys().for_each(|index| {
+        if let Some(bot) = REGISTRY_SYSTEM.get_bot(index) {
           bot.set_has_impulse(state);
         }
       });
     } else {
-      if let Some(bot) = BOT_REGISTRY.get_bot(username) {
+      if let Some(bot) = REGISTRY_SYSTEM.get_bot(&(code as u8)) {
         bot.set_has_impulse(state);
       }
     }
   }
 
-  fn start_walking(username: &str, direction_name: &str) {
-    let username_string = username.to_string();
+  fn start_walking(code: i16, direction_name: &str) {
     let direction = match direction_name {
       "forward" => WalkDirection::Forward,
       "backward" => WalkDirection::Backward,
@@ -244,22 +265,21 @@ impl ScriptExecutor {
     };
 
     tokio::spawn(async move {
-      if username_string == "*" {
-        for name in PROFILE_SYSTEM.get_all_connected().await.keys() {
-          if let Some(bot) = BOT_REGISTRY.get_bot(name) {
-            bot.start_walking(direction).await;
+      if code == -1 {
+        for index in PROFILE_SYSTEM.get_all_connected().await.keys() {
+          if let Some(bot) = REGISTRY_SYSTEM.get_bot(index) {
+            bot.start_walking(index, direction).await;
           }
         }
       } else {
-        if let Some(bot) = BOT_REGISTRY.get_bot(&username_string) {
-          bot.start_walking(direction).await;
+        if let Some(bot) = REGISTRY_SYSTEM.get_bot(&(code as u8)) {
+          bot.start_walking(&(code as u8), direction).await;
         }
       }
     });
   }
 
-  fn start_sprinting(username: &str, direction_name: &str) {
-    let username_string = username.to_string();
+  fn start_sprinting(code: i16, direction_name: &str) {
     let direction = match direction_name {
       "forward" => SprintDirection::Forward,
       "forward-left" => SprintDirection::ForwardLeft,
@@ -268,143 +288,141 @@ impl ScriptExecutor {
     };
 
     tokio::spawn(async move {
-      if username_string == "*" {
-        for name in PROFILE_SYSTEM.get_all_connected().await.keys() {
-          if let Some(bot) = BOT_REGISTRY.get_bot(name) {
-            bot.start_sprinting(direction).await;
+      if code == -1 {
+        for index in PROFILE_SYSTEM.get_all_connected().await.keys() {
+          if let Some(bot) = REGISTRY_SYSTEM.get_bot(index) {
+            bot.start_sprinting(index, direction).await;
           }
         }
       } else {
-        if let Some(bot) = BOT_REGISTRY.get_bot(&username_string) {
-          bot.start_sprinting(direction).await;
+        if let Some(bot) = REGISTRY_SYSTEM.get_bot(&(code as u8)) {
+          bot.start_sprinting(&(code as u8), direction).await;
         }
       }
     });
   }
 
-  fn start_pathfinder(username: &str, x: i32, z: i32) {
-    if username == "*" {
-      PROFILE_SYSTEM.try_get_all_connected().keys().for_each(|name| {
-        go_to(name.to_string(), x, z);
+  fn start_pathfinder(code: i16, x: i32, z: i32) {
+    if code == -1 {
+      PROFILE_SYSTEM.try_get_all_connected().keys().for_each(|index| {
+        go_to(*index, x, z);
       });
     } else {
-      go_to(username.to_string(), x, z);
+      go_to(code as u8, x, z);
     }
   }
 
-  fn stop_move(username: &str) {
-    let username_string = username.to_string();
-
+  fn stop_move(code: i16) {
     tokio::spawn(async move {
-      if username_string == "*" {
-        for name in PROFILE_SYSTEM.get_all_connected().await.keys() {
-          if let Some(bot) = BOT_REGISTRY.get_bot(name) {
-            bot.stop_move().await;
+      if code == -1 {
+        for index in PROFILE_SYSTEM.get_all_connected().await.keys() {
+          if let Some(bot) = REGISTRY_SYSTEM.get_bot(index) {
+            bot.stop_move(index).await;
           }
         }
       } else {
-        if let Some(bot) = BOT_REGISTRY.get_bot(&username_string) {
-          bot.stop_move().await;
+        if let Some(bot) = REGISTRY_SYSTEM.get_bot(&(code as u8)) {
+          bot.stop_move(&(code as u8)).await;
         }
       }
     });
   }
 
-  fn stop_pathfinder(username: &str) {
-    if username == "*" {
-      PROFILE_SYSTEM.try_get_all_connected().keys().for_each(|name| {
-        if let Some(bot) = BOT_REGISTRY.get_bot(name) {
+  fn stop_pathfinder(code: i16) {
+    if code == -1 {
+      PROFILE_SYSTEM.try_get_all_connected().keys().for_each(|index| {
+        if let Some(bot) = REGISTRY_SYSTEM.get_bot(index) {
           bot.stop_pathfinding();
         }
       });
     } else {
-      if let Some(bot) = BOT_REGISTRY.get_bot(username) {
+      if let Some(bot) = REGISTRY_SYSTEM.get_bot(&(code as u8)) {
         bot.stop_pathfinding();
       }
     }
   }
 
-  fn look_at(username: &str, x: f64, y: f64, z: f64) {
-    if username == "*" {
-      PROFILE_SYSTEM.try_get_all_connected().keys().for_each(|name| {
-        if let Some(bot) = BOT_REGISTRY.get_bot(name) {
+  fn look_at(code: i16, x: f64, y: f64, z: f64) {
+    if code == -1 {
+      PROFILE_SYSTEM.try_get_all_connected().keys().for_each(|index| {
+        if let Some(bot) = REGISTRY_SYSTEM.get_bot(index) {
           bot.look_at(Vec3 { x, y, z });
         }
       });
     } else {
-      if let Some(bot) = BOT_REGISTRY.get_bot(username) {
+      if let Some(bot) = REGISTRY_SYSTEM.get_bot(&(code as u8)) {
         bot.look_at(Vec3 { x, y, z });
       }
     }
   }
 
-  fn look_at_block(username: &str, x: i32, y: i32, z: i32) {
-    if username == "*" {
-      PROFILE_SYSTEM.try_get_all_connected().keys().for_each(|name| {
-        if let Some(bot) = BOT_REGISTRY.get_bot(name) {
+  fn look_at_block(code: i16, x: i32, y: i32, z: i32) {
+    if code == -1 {
+      PROFILE_SYSTEM.try_get_all_connected().keys().for_each(|index| {
+        if let Some(bot) = REGISTRY_SYSTEM.get_bot(index) {
           bot.look_at(BlockPos::new(x, y, z).center());
         }
       });
     } else {
-      if let Some(bot) = BOT_REGISTRY.get_bot(username) {
+      if let Some(bot) = REGISTRY_SYSTEM.get_bot(&(code as u8)) {
         bot.look_at(BlockPos::new(x, y, z).center());
       }
     }
   }
 
-  fn place_block(username: &str, x: i32, y: i32, z: i32) {
-    if username == "*" {
-      PROFILE_SYSTEM.try_get_all_connected().keys().for_each(|name| {
-        if let Some(bot) = BOT_REGISTRY.get_bot(name) {
+  fn place_block(code: i16, x: i32, y: i32, z: i32) {
+    if code == -1 {
+      PROFILE_SYSTEM.try_get_all_connected().keys().for_each(|index| {
+        if let Some(bot) = REGISTRY_SYSTEM.get_bot(index) {
           bot.block_interact(BlockPos::new(x, y, z));
         }
       });
     } else {
-      if let Some(bot) = BOT_REGISTRY.get_bot(username) {
+      if let Some(bot) = REGISTRY_SYSTEM.get_bot(&(code as u8)) {
         bot.block_interact(BlockPos::new(x, y, z));
       }
     }
   }
 
-  fn drop_selected_item(username: &str, lock: bool) {
-    let username_string = username.to_string();
-
+  fn drop_selected_item(code: i16, lock: bool) {
     tokio::spawn(async move {
-      if username_string == "*" {
-        for name in PROFILE_SYSTEM.get_all_connected().await.keys() {
-          if let Some(bot) = BOT_REGISTRY.get_bot(name) {
+      if code == -1 {
+        for index in PROFILE_SYSTEM.get_all_connected().await.keys() {
+          if let Some(bot) = REGISTRY_SYSTEM.get_bot(index) {
             let selected_slot = convert_hotbar_slot_to_inventory_slot(bot.get_selected_slot());
-            bot.inventory_click(selected_slot, ClickMode::DropAll, lock).await;
+            bot
+              .inventory_click(index, selected_slot, ClickMode::DropAll, lock)
+              .await;
           }
         }
       } else {
-        if let Some(bot) = BOT_REGISTRY.get_bot(&username_string) {
+        if let Some(bot) = REGISTRY_SYSTEM.get_bot(&(code as u8)) {
           let selected_slot = convert_hotbar_slot_to_inventory_slot(bot.get_selected_slot());
-          bot.inventory_click(selected_slot, ClickMode::DropAll, lock).await;
+          bot
+            .inventory_click(&(code as u8), selected_slot, ClickMode::DropAll, lock)
+            .await;
         }
       }
     });
   }
 
-  fn drop_all_items(username: &str, lock: bool) {
-    let username_string = username.to_string();
-
+  fn drop_all_items(code: i16, lock: bool) {
     tokio::spawn(async move {
-      if username_string == "*" {
-        for name in PROFILE_SYSTEM.get_all_connected().await.keys() {
-          if let Some(bot) = BOT_REGISTRY.get_bot(name) {
+      if code == -1 {
+        for index in PROFILE_SYSTEM.get_all_connected().await.keys() {
+          if let Some(bot) = REGISTRY_SYSTEM.get_bot(index) {
             if let Some(menu) = bot.get_inventory_menu() {
               for (slot, _) in menu.slots().iter().enumerate() {
-                bot.inventory_click(slot, ClickMode::DropAll, lock).await;
+                bot.inventory_click(index, slot, ClickMode::DropAll, lock).await;
               }
             }
           }
         }
       } else {
-        if let Some(bot) = BOT_REGISTRY.get_bot(&username_string) {
+        if let Some(bot) = REGISTRY_SYSTEM.get_bot(&(code as u8)) {
           if let Some(menu) = bot.get_inventory_menu() {
             for (slot, _) in menu.slots().iter().enumerate() {
-              bot.inventory_click(slot, ClickMode::DropAll, lock).await;
+              bot.inventory_click(&(code as u8), slot, ClickMode::DropAll, lock).await;
             }
           }
         }
@@ -412,71 +430,69 @@ impl ScriptExecutor {
     });
   }
 
-  fn inv_click(username: &str, slot: usize, mode: &str, lock: bool) {
-    let username_string = username.to_string();
+  fn inv_click(code: i16, slot: usize, mode: &str, lock: bool) {
     let mode_string = mode.to_string();
 
     tokio::spawn(async move {
-      if username_string == "*" {
-        for name in PROFILE_SYSTEM.get_all_connected().await.keys() {
-          if let Some(bot) = BOT_REGISTRY.get_bot(name) {
+      if code == -1 {
+        for index in PROFILE_SYSTEM.get_all_connected().await.keys() {
+          if let Some(bot) = REGISTRY_SYSTEM.get_bot(index) {
             bot
-              .inventory_click(slot, ClickMode::from(mode_string.as_str()), lock)
+              .inventory_click(index, slot, ClickMode::from(mode_string.as_str()), lock)
               .await;
           }
         }
       } else {
-        if let Some(bot) = BOT_REGISTRY.get_bot(&username_string) {
+        if let Some(bot) = REGISTRY_SYSTEM.get_bot(&(code as u8)) {
           bot
-            .inventory_click(slot, ClickMode::from(mode_string.as_str()), lock)
+            .inventory_click(&(code as u8), slot, ClickMode::from(mode_string.as_str()), lock)
             .await;
         }
       }
     });
   }
 
-  fn inv_click_on(username: &str, name: &str, mode: &str, lock: bool) {
-    let username_string = username.to_string();
+  fn inv_click_on(code: i16, name: &str, mode: &str, lock: bool) {
     let name_string = name.to_string();
     let mode_string = mode.to_string();
 
     tokio::spawn(async move {
-      if username_string == "*" {
-        for name in PROFILE_SYSTEM.get_all_connected().await.keys() {
-          if let Some(bot) = BOT_REGISTRY.get_bot(name) {
+      if code == -1 {
+        for index in PROFILE_SYSTEM.get_all_connected().await.keys() {
+          if let Some(bot) = REGISTRY_SYSTEM.get_bot(index) {
             bot
-              .inventory_click_on(&name_string, ClickMode::from(mode_string.as_str()), lock)
+              .inventory_click_on(index, &name_string, ClickMode::from(mode_string.as_str()), lock)
               .await;
           }
         }
       } else {
-        if let Some(bot) = BOT_REGISTRY.get_bot(&username_string) {
+        if let Some(bot) = REGISTRY_SYSTEM.get_bot(&(code as u8)) {
           bot
-            .inventory_click_on(&name_string, ClickMode::from(mode_string.as_str()), lock)
+            .inventory_click_on(&(code as u8), &name_string, ClickMode::from(mode_string.as_str()), lock)
             .await;
         }
       }
     });
   }
 
-  fn set_selected_slot(username: &str, slot: u8) {
-    if username == "*" {
-      PROFILE_SYSTEM.try_get_all_connected().keys().for_each(|name| {
-        if let Some(bot) = BOT_REGISTRY.get_bot(name) {
+  fn set_selected_slot(code: i16, slot: u8) {
+    if code == -1 {
+      PROFILE_SYSTEM.try_get_all_connected().keys().for_each(|index| {
+        if let Some(bot) = REGISTRY_SYSTEM.get_bot(index) {
           bot.set_selected_hotbar_slot(slot);
         }
       });
     } else {
-      if let Some(bot) = BOT_REGISTRY.get_bot(username) {
+      if let Some(bot) = REGISTRY_SYSTEM.get_bot(&(code as u8)) {
         bot.set_selected_hotbar_slot(slot);
       }
     }
   }
 
-  fn attack(username: &str, target: String, distance: f64, look_at_target: bool) {
-    if username == "*" {
-      PROFILE_SYSTEM.try_get_all_connected().keys().for_each(|name| {
-        if let Some(bot) = BOT_REGISTRY.get_bot(name) {
+  fn attack(code: i16, target: String, distance: f64, look_at_target: bool) {
+    if code == -1 {
+      PROFILE_SYSTEM.try_get_all_connected().keys().for_each(|index| {
+        if let Some(bot) = REGISTRY_SYSTEM.get_bot(index) {
           if let Some(entity) = bot.find_nearest_entity(EntityType::from(target.clone()), distance) {
             if look_at_target {
               bot.look_at_entity(entity, false);
@@ -487,7 +503,7 @@ impl ScriptExecutor {
         }
       });
     } else {
-      if let Some(bot) = BOT_REGISTRY.get_bot(username) {
+      if let Some(bot) = REGISTRY_SYSTEM.get_bot(&(code as u8)) {
         if let Some(entity) = bot.find_nearest_entity(EntityType::from(target), distance) {
           if look_at_target {
             bot.look_at_entity(entity, false);
@@ -499,42 +515,42 @@ impl ScriptExecutor {
     }
   }
 
-  fn start_use_item(username: &str, hand: &str) {
+  fn start_use_item(code: i16, hand: &str) {
     let interaction_hand = if hand == "offhand" {
       InteractionHand::OffHand
     } else {
       InteractionHand::MainHand
     };
 
-    if username == "*" {
-      PROFILE_SYSTEM.try_get_all_connected().keys().for_each(|name| {
-        BOT_REGISTRY.get_bot(name).map(|bot| {
+    if code == -1 {
+      PROFILE_SYSTEM.try_get_all_connected().keys().for_each(|index| {
+        REGISTRY_SYSTEM.get_bot(index).map(|bot| {
           bot.start_use_held_item(interaction_hand);
         });
       });
     } else {
-      BOT_REGISTRY.get_bot(username).map(|bot| {
+      REGISTRY_SYSTEM.get_bot(&(code as u8)).map(|bot| {
         bot.start_use_held_item(interaction_hand);
       });
     }
   }
 
-  fn release_use_item(username: &str) {
-    if username == "*" {
-      PROFILE_SYSTEM.try_get_all_connected().keys().for_each(|name| {
-        BOT_REGISTRY.get_bot(name).map(|bot| {
+  fn release_use_item(code: i16) {
+    if code == -1 {
+      PROFILE_SYSTEM.try_get_all_connected().keys().for_each(|index| {
+        REGISTRY_SYSTEM.get_bot(index).map(|bot| {
           bot.release_use_held_item();
         });
       });
     } else {
-      BOT_REGISTRY.get_bot(username).map(|bot| {
+      REGISTRY_SYSTEM.get_bot(&(code as u8)).map(|bot| {
         bot.release_use_held_item();
       });
     }
   }
 
   /// Метод исполнения пользовательского сценария
-  pub fn execute(&self, su: String, script: String) {
+  pub fn execute(&self, su: String, si: u8, script: String) {
     let mut states = match EXECUTOR_STATE_SYSTEM.try_write() {
       Ok(g) => g,
       Err(_) => {
@@ -632,8 +648,12 @@ impl ScriptExecutor {
       .register_fn("get_bot_id", {
         let su = su.clone();
         move |mu: &str| {
-          BOT_REGISTRY
-            .get_bot(select_username(&su, mu))
+          if mu == "*" {
+            return 0;
+          }
+
+          REGISTRY_SYSTEM
+            .get_bot(&(generate_code(&su, mu) as u8))
             .map(|b| b.id().0 as i64)
             .unwrap_or(0)
         }
@@ -641,8 +661,12 @@ impl ScriptExecutor {
       .register_fn("get_bot_ping", {
         let su = su.clone();
         move |mu: &str| {
-          BOT_REGISTRY
-            .get_bot(select_username(&su, mu))
+          if mu == "*" {
+            return 0;
+          }
+
+          REGISTRY_SYSTEM
+            .get_bot(&(generate_code(&su, mu) as u8))
             .map(|b| b.ping() as i64)
             .unwrap_or(0)
         }
@@ -650,8 +674,12 @@ impl ScriptExecutor {
       .register_fn("get_bot_feet_pos", {
         let su = su.clone();
         move |mu: &str| {
-          BOT_REGISTRY
-            .get_bot(select_username(&su, mu))
+          if mu == "*" {
+            return create_dynamic_vec(0.0, 0.0, 0.0);
+          }
+
+          REGISTRY_SYSTEM
+            .get_bot(&(generate_code(&su, mu) as u8))
             .map(|b| {
               let pos = b.feet_pos();
               create_dynamic_vec(pos.x, pos.y, pos.z)
@@ -662,8 +690,12 @@ impl ScriptExecutor {
       .register_fn("get_bot_eye_pos", {
         let su = su.clone();
         move |mu: &str| {
-          BOT_REGISTRY
-            .get_bot(select_username(&su, mu))
+          if mu == "*" {
+            return create_dynamic_vec(0.0, 0.0, 0.0);
+          }
+
+          REGISTRY_SYSTEM
+            .get_bot(&(generate_code(&su, mu) as u8))
             .map(|b| {
               let pos = b.eye_pos();
               create_dynamic_vec(pos.x, pos.y, pos.z)
@@ -674,8 +706,12 @@ impl ScriptExecutor {
       .register_fn("get_bot_health", {
         let su = su.clone();
         move |mu: &str| {
-          BOT_REGISTRY
-            .get_bot(select_username(&su, mu))
+          if mu == "*" {
+            return 0.0;
+          }
+
+          REGISTRY_SYSTEM
+            .get_bot(&(generate_code(&su, mu) as u8))
             .map(|b| b.get_health() as f64)
             .unwrap_or(0.0)
         }
@@ -683,8 +719,12 @@ impl ScriptExecutor {
       .register_fn("get_bot_satiety", {
         let su = su.clone();
         move |mu: &str| {
-          BOT_REGISTRY
-            .get_bot(select_username(&su, mu))
+          if mu == "*" {
+            return 0;
+          }
+
+          REGISTRY_SYSTEM
+            .get_bot(&(generate_code(&su, mu) as u8))
             .map(|b| b.get_satiety() as i64)
             .unwrap_or(0)
         }
@@ -692,205 +732,212 @@ impl ScriptExecutor {
       .register_fn("bot_is_workable", {
         let su = su.clone();
         move |mu: &str| {
-          BOT_REGISTRY
-            .get_bot(select_username(&su, mu))
+          if mu == "*" {
+            return false;
+          }
+
+          REGISTRY_SYSTEM
+            .get_bot(&(generate_code(&su, mu) as u8))
             .map(|b| b.workable())
             .unwrap_or(false)
         }
       })
       .register_fn("get_bot_profile", {
         let su = su.clone();
-        move |mu: &str| create_dynamic_profile(select_username(&su, mu))
+        move |mu: &str| {
+          if mu == "*" {
+            return Dynamic::ZERO;
+          }
+
+          create_dynamic_profile(&(generate_code(&su, mu) as u8))
+        }
       });
 
     if !su.is_empty() {
       engine
-        .register_fn("current_bot_id", {
-          let su = su.clone();
-          move || BOT_REGISTRY.get_bot(&su).map(|b| b.id().0 as i64).unwrap_or(0)
+        .register_fn("current_bot_id", move || {
+          REGISTRY_SYSTEM.get_bot(&si).map(|b| b.id().0 as i64).unwrap_or(0)
         })
-        .register_fn("current_bot_ping", {
-          let su = su.clone();
-          move || BOT_REGISTRY.get_bot(&su).map(|b| b.ping() as i64).unwrap_or(0)
+        .register_fn("current_bot_ping", move || {
+          REGISTRY_SYSTEM.get_bot(&si).map(|b| b.ping() as i64).unwrap_or(0)
         })
-        .register_fn("current_bot_feet_pos", {
-          let su = su.clone();
-          move || {
-            BOT_REGISTRY
-              .get_bot(&su)
-              .map(|b| {
-                let pos = b.feet_pos();
-                create_dynamic_vec(pos.x, pos.y, pos.z)
-              })
-              .unwrap_or(create_dynamic_vec(0.0, 0.0, 0.0))
-          }
+        .register_fn("current_bot_feet_pos", move || {
+          REGISTRY_SYSTEM
+            .get_bot(&si)
+            .map(|b| {
+              let pos = b.feet_pos();
+              create_dynamic_vec(pos.x, pos.y, pos.z)
+            })
+            .unwrap_or(create_dynamic_vec(0.0, 0.0, 0.0))
         })
-        .register_fn("current_bot_eye_pos", {
-          let su = su.clone();
-          move || {
-            BOT_REGISTRY
-              .get_bot(&su)
-              .map(|b| {
-                let pos = b.eye_pos();
-                create_dynamic_vec(pos.x, pos.y, pos.z)
-              })
-              .unwrap_or(create_dynamic_vec(0.0, 0.0, 0.0))
-          }
+        .register_fn("current_bot_eye_pos", move || {
+          REGISTRY_SYSTEM
+            .get_bot(&si)
+            .map(|b| {
+              let pos = b.eye_pos();
+              create_dynamic_vec(pos.x, pos.y, pos.z)
+            })
+            .unwrap_or(create_dynamic_vec(0.0, 0.0, 0.0))
         })
-        .register_fn("current_bot_health", {
-          let su = su.clone();
-          move || BOT_REGISTRY.get_bot(&su).map(|b| b.get_health() as f64).unwrap_or(0.0)
+        .register_fn("current_bot_health", move || {
+          REGISTRY_SYSTEM
+            .get_bot(&si)
+            .map(|b| b.get_health() as f64)
+            .unwrap_or(0.0)
         })
-        .register_fn("current_bot_satiety", {
-          let su = su.clone();
-          move || BOT_REGISTRY.get_bot(&su).map(|b| b.get_satiety() as i64).unwrap_or(0)
+        .register_fn("current_bot_satiety", move || {
+          REGISTRY_SYSTEM
+            .get_bot(&si)
+            .map(|b| b.get_satiety() as i64)
+            .unwrap_or(0)
         })
-        .register_fn("current_bot_profile", {
-          let su = su.clone();
-          move || create_dynamic_profile(&su)
-        });
+        .register_fn("current_bot_profile", move || create_dynamic_profile(&si));
     }
 
     engine
       .register_fn("chat", {
         let su = su.clone();
-        move |mu: &str, message: &str| Self::chat(select_username(&su, mu), message.to_string())
+        move |mu: &str, message: &str| Self::chat(generate_code(&su, mu), message.to_string())
       })
       .register_fn("jump", {
         let su = su.clone();
-        move |mu: &str| Self::jump(select_username(&su, mu))
+        move |mu: &str| Self::jump(generate_code(&su, mu))
       })
       .register_fn("swing_arm", {
         let su = su.clone();
-        move |mu: &str| Self::swing_arm(select_username(&su, mu))
+        move |mu: &str| Self::swing_arm(generate_code(&su, mu))
       })
       .register_fn("set_jumping", {
         let su = su.clone();
-        move |mu: &str, state: bool| Self::set_jumping(select_username(&su, mu), state)
+        move |mu: &str, state: bool| Self::set_jumping(generate_code(&su, mu), state)
       })
       .register_fn("set_crouching", {
         let su = su.clone();
-        move |mu: &str, state: bool| Self::set_crouching(select_username(&su, mu), state)
+        move |mu: &str, state: bool| Self::set_crouching(generate_code(&su, mu), state)
       })
       .register_fn("set_velocity", {
         let su = su.clone();
-        move |mu: &str, axis: &str, velocity: f64| Self::set_velocity(select_username(&su, mu), axis, velocity)
+        move |mu: &str, axis: &str, velocity: f64| Self::set_velocity(generate_code(&su, mu), axis, velocity)
       })
       .register_fn("set_on_ground", {
         let su = su.clone();
-        move |mu: &str, on_ground: bool| Self::set_on_ground(select_username(&su, mu), on_ground)
+        move |mu: &str, on_ground: bool| Self::set_on_ground(generate_code(&su, mu), on_ground)
       })
       .register_fn("set_old_position", {
         let su = su.clone();
-        move |mu: &str, x: f64, y: f64, z: f64| Self::set_old_position(select_username(&su, mu), x, y, z)
+        move |mu: &str, x: f64, y: f64, z: f64| Self::set_old_position(generate_code(&su, mu), x, y, z)
       })
       .register_fn("set_no_jump_delay", {
         let su = su.clone();
-        move |mu: &str, delay: i64| Self::set_no_jump_delay(select_username(&su, mu), delay as u32)
+        move |mu: &str, delay: i64| Self::set_no_jump_delay(generate_code(&su, mu), delay as u32)
       })
       .register_fn("set_was_touching_water", {
         let su = su.clone();
-        move |mu: &str, state: bool| Self::set_was_touching_water(select_username(&su, mu), state)
+        move |mu: &str, state: bool| Self::set_was_touching_water(generate_code(&su, mu), state)
       })
       .register_fn("set_has_impulse", {
         let su = su.clone();
-        move |mu: &str, state: bool| Self::set_has_impulse(select_username(&su, mu), state)
+        move |mu: &str, state: bool| Self::set_has_impulse(generate_code(&su, mu), state)
       })
       .register_fn("start_walking", {
         let su = su.clone();
-        move |mu: &str, direction: &str| Self::start_walking(select_username(&su, mu), direction)
+        move |mu: &str, direction: &str| Self::start_walking(generate_code(&su, mu), direction)
       })
       .register_fn("start_sprinting", {
         let su = su.clone();
-        move |mu: &str, direction: &str| Self::start_sprinting(select_username(&su, mu), direction)
+        move |mu: &str, direction: &str| Self::start_sprinting(generate_code(&su, mu), direction)
       })
       .register_fn("start_pathfinder", {
         let su = su.clone();
-        move |mu: &str, x: i64, z: i64| Self::start_pathfinder(select_username(&su, mu), x as i32, z as i32)
+        move |mu: &str, x: i64, z: i64| Self::start_pathfinder(generate_code(&su, mu), x as i32, z as i32)
       })
       .register_fn("stop_move", {
         let su = su.clone();
-        move |mu: &str| Self::stop_move(select_username(&su, mu))
+        move |mu: &str| Self::stop_move(generate_code(&su, mu))
       })
       .register_fn("stop_pathfinder", {
         let su = su.clone();
-        move |mu: &str| Self::stop_pathfinder(select_username(&su, mu))
+        move |mu: &str| Self::stop_pathfinder(generate_code(&su, mu))
       });
 
     engine
       .register_fn("place_block", {
         let su = su.clone();
-        move |mu: &str, x: i64, y: i64, z: i64| {
-          Self::place_block(select_username(&su, mu), x as i32, y as i32, z as i32)
-        }
+        move |mu: &str, x: i64, y: i64, z: i64| Self::place_block(generate_code(&su, mu), x as i32, y as i32, z as i32)
       })
       .register_fn("look_at", {
         let su = su.clone();
-        move |mu: &str, x: f64, y: f64, z: f64| Self::look_at(select_username(&su, mu), x, y, z)
+        move |mu: &str, x: f64, y: f64, z: f64| Self::look_at(generate_code(&su, mu), x, y, z)
       })
       .register_fn("look_at_block", {
         let su = su.clone();
         move |mu: &str, x: i64, y: i64, z: i64| {
-          Self::look_at_block(select_username(&su, mu), x as i32, y as i32, z as i32)
+          Self::look_at_block(generate_code(&su, mu), x as i32, y as i32, z as i32)
         }
       });
 
     engine
       .register_fn("drop_selected_item", {
         let su = su.clone();
-        move |mu: &str, lock: bool| Self::drop_selected_item(select_username(&su, mu), lock)
+        move |mu: &str, lock: bool| Self::drop_selected_item(generate_code(&su, mu), lock)
       })
       .register_fn("drop_all_items", {
         let su = su.clone();
-        move |mu: &str, lock: bool| Self::drop_all_items(select_username(&su, mu), lock)
+        move |mu: &str, lock: bool| Self::drop_all_items(generate_code(&su, mu), lock)
       })
       .register_fn("inv_click", {
         let su = su.clone();
         move |mu: &str, slot: i64, mode: &str, lock: bool| {
-          Self::inv_click(select_username(&su, mu), slot as usize, mode, lock)
+          Self::inv_click(generate_code(&su, mu), slot as usize, mode, lock)
         }
       })
       .register_fn("inv_click_on", {
         let su = su.clone();
-        move |mu: &str, name: &str, mode: &str, lock: bool| {
-          Self::inv_click_on(select_username(&su, mu), name, mode, lock)
-        }
+        move |mu: &str, name: &str, mode: &str, lock: bool| Self::inv_click_on(generate_code(&su, mu), name, mode, lock)
       })
       .register_fn("set_selected_slot", {
         let su = su.clone();
-        move |mu: &str, slot: i64| Self::set_selected_slot(select_username(&su, mu), slot as u8)
+        move |mu: &str, slot: i64| Self::set_selected_slot(generate_code(&su, mu), slot as u8)
       });
 
     engine
       .register_fn("attack", {
         let su = su.clone();
         move |mu: &str, target: &str, distance: f64, look_at_target: bool| {
-          Self::attack(select_username(&su, mu), target.to_string(), distance, look_at_target);
+          Self::attack(generate_code(&su, mu), target.to_string(), distance, look_at_target);
         }
       })
       .register_fn("start_use_item", {
         let su = su.clone();
-        move |mu: &str, hand: &str| Self::start_use_item(select_username(&su, mu), hand)
+        move |mu: &str, hand: &str| Self::start_use_item(generate_code(&su, mu), hand)
       })
       .register_fn("release_use_item", {
         let su = su.clone();
-        move |mu: &str| Self::release_use_item(select_username(&su, mu))
+        move |mu: &str| Self::release_use_item(generate_code(&su, mu))
       });
 
     engine
       .register_fn("set_state", {
         let su = su.clone();
         move |mu: &str, state_str: &str, value: bool| {
+          if mu == "*" {
+            return;
+          }
+
           if let Some(state) = State::from_str(state_str) {
-            try_setst(select_username(&su, mu), state, value);
+            try_setst(&(generate_code(&su, mu) as u8), state, value);
           }
         }
       })
       .register_fn("get_state", {
         let su = su.clone();
         move |mu: &str, state_str: &str| {
+          if mu == "*" {
+            return false;
+          }
+
           if let Some(state) = State::from_str(state_str) {
-            try_getst(select_username(&su, mu), state)
+            try_getst(&(generate_code(&su, mu) as u8), state)
           } else {
             false
           }

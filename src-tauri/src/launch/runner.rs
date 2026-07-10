@@ -13,8 +13,11 @@ use socks5_impl::protocol::UserKey;
 use crate::api::emit::{emit_log, emit_msg};
 use crate::bot::handlers::single::single_handler;
 use crate::bot::handlers::swarm::swarm_handler;
-use crate::bot::registry::{registry_event_loop, BOT_REGISTRY};
-use crate::bot::systems::{ProfileProxy, PROFILE_SYSTEM, STATE_SYSTEM, TASK_SYSTEM};
+use crate::bot::systems::index::INDEX_SYSTEM;
+use crate::bot::systems::profile::{ProfileProxy, PROFILE_SYSTEM};
+use crate::bot::systems::registry::{registry_event_loop, REGISTRY_SYSTEM};
+use crate::bot::systems::states::STATE_SYSTEM;
+use crate::bot::systems::tasks::TASK_SYSTEM;
 use crate::bot::utils::acaptcha::MAP_ACCUMULATOR;
 use crate::bot::PLUGINS;
 use crate::other::webhook::send_webhook;
@@ -29,6 +32,7 @@ use super::process::{current_options, process_is_active, set_options, set_proces
 struct CustomAccount {
   object: Account,
   options: AccountOptions,
+  index: u8,
 }
 
 /// Вспомогательная функция очистки прокси
@@ -41,7 +45,7 @@ fn clear_proxy(proxy: &str) -> &str {
 }
 
 /// Функция парсинга и обработки прокси
-async fn processs_proxy(username: &str, proxy: &str, join_opts: JoinOpts) -> JoinOpts {
+async fn processs_proxy(index: &u8, proxy: &str, join_opts: JoinOpts) -> JoinOpts {
   let mut profile_proxy = ProfileProxy {
     ip_address: None,
     proxy: None,
@@ -84,7 +88,7 @@ async fn processs_proxy(username: &str, proxy: &str, join_opts: JoinOpts) -> Joi
       };
 
       profile_proxy.ip_address = Some(ip_addr.to_string());
-      PROFILE_SYSTEM.set_proxy(&username, profile_proxy).await;
+      PROFILE_SYSTEM.set_proxy(index, profile_proxy).await;
 
       return join_opts.proxy(proxy);
     }
@@ -100,7 +104,7 @@ async fn processs_proxy(username: &str, proxy: &str, join_opts: JoinOpts) -> Joi
         };
 
         profile_proxy.ip_address = Some(ip_addr.to_string());
-        PROFILE_SYSTEM.set_proxy(&username, profile_proxy).await;
+        PROFILE_SYSTEM.set_proxy(index, profile_proxy).await;
 
         return join_opts.proxy(proxy);
       }
@@ -180,13 +184,16 @@ pub async fn launch_bots_on_server(options: LaunchOptions) -> bool {
 
         if options.basic.use_accounts {
           for (username, opts) in &options.accounts {
+            let index = INDEX_SYSTEM.register(username).await;
+
             accounts.push(CustomAccount {
               object: Account::offline(username),
               options: opts.clone(),
+              index,
             });
 
             PROFILE_SYSTEM
-              .register(username, opts.password.clone(), opts.email.clone())
+              .register(index, opts.password.clone(), opts.email.clone())
               .await;
           }
         } else {
@@ -196,6 +203,8 @@ pub async fn launch_bots_on_server(options: LaunchOptions) -> bool {
             else {
               continue;
             };
+
+            let index = INDEX_SYSTEM.register(&username).await;
 
             let password = generate_username_or_password(
               "password",
@@ -212,9 +221,10 @@ pub async fn launch_bots_on_server(options: LaunchOptions) -> bool {
                 email: None,
                 proxy: None,
               },
+              index,
             });
 
-            PROFILE_SYSTEM.register(&username, password, email).await;
+            PROFILE_SYSTEM.register(index, password, email).await;
           }
         }
 
@@ -226,7 +236,7 @@ pub async fn launch_bots_on_server(options: LaunchOptions) -> bool {
               let mut join_opts = JoinOpts::new();
 
               if let Some(proxy) = &account.options.proxy {
-                join_opts = processs_proxy(&account.object.username, proxy, join_opts).await;
+                join_opts = processs_proxy(&account.index, proxy, join_opts).await;
               }
 
               accounts_with_opts.push((account, join_opts));
@@ -240,7 +250,7 @@ pub async fn launch_bots_on_server(options: LaunchOptions) -> bool {
 
                 if !list.is_empty() {
                   let proxy = list[i % list.len()];
-                  join_opts = processs_proxy(&account.object.username, proxy, join_opts).await;
+                  join_opts = processs_proxy(&account.index, proxy, join_opts).await;
                 }
               }
 
@@ -292,7 +302,8 @@ pub async fn stop_bots_and_destroy_data() -> bool {
   STATE_SYSTEM.clear().await;
   PROFILE_SYSTEM.clear().await;
   MAP_ACCUMULATOR.clear_all().await;
-  BOT_REGISTRY.clear();
+  REGISTRY_SYSTEM.clear();
+  INDEX_SYSTEM.clear().await;
 
   set_process_activity(false);
 

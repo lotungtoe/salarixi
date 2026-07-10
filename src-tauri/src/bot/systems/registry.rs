@@ -11,21 +11,19 @@ use crate::bot::quick::QUICK_TASKS;
 use crate::bot::{MODULES, PLUGINS};
 use crate::launch::process::current_options;
 
-pub static BOT_REGISTRY: Lazy<BotRegistry> = Lazy::new(|| BotRegistry::new());
+pub static REGISTRY_SYSTEM: Lazy<RegistrySystem> = Lazy::new(|| RegistrySystem::new());
 
-/// Реестр роя, всех ботов и событий.
-/// Он выполняет роль основного хранилища всех ботов.
-/// Так же данный реестр содержит в себе канал, по которому передаются все основные события для ботов (загрузить плагины, выполнить быструю задачу и так далее).
-pub struct BotRegistry {
+/// Система реестра ботов и их событий
+pub struct RegistrySystem {
   pub swarm: Arc<RwLock<Option<Swarm>>>,
-  pub bots: DashMap<String, Arc<Client>>,
+  pub bots: DashMap<u8, Arc<Client>>,
   pub events: broadcast::Sender<RegistryEvent>,
 }
 
 #[derive(Clone)]
 pub enum RegistryEvent {
   LoadPlugins {
-    username: String,
+    index: u8,
   },
   ControlModules {
     name: String,
@@ -39,7 +37,7 @@ pub enum RegistryEvent {
   StopProcessing,
 }
 
-impl BotRegistry {
+impl RegistrySystem {
   /// Метод создания нового реестра
   pub fn new() -> Self {
     let (tx, _) = broadcast::channel(100);
@@ -65,27 +63,27 @@ impl BotRegistry {
   }
 
   /// Метод регистрации бота
-  pub fn register_bot(&self, username: &str, bot: Client) {
-    self.bots.insert(username.to_string(), Arc::new(bot));
+  pub fn register_bot(&self, index: u8, bot: Client) {
+    self.bots.insert(index, Arc::new(bot));
   }
 
   /// Метод удаления бота из реестра
-  pub async fn remove_bot(&self, username: &str) -> Option<Client> {
-    let (_, cell) = self.bots.remove(username)?;
+  pub async fn remove_bot(&self, index: &u8) -> Option<Client> {
+    let (_, cell) = self.bots.remove(index)?;
     Some((*cell).clone())
   }
 
   /// Метод получения бота по юзернейму
-  pub fn get_bot(&self, username: &str) -> Option<Arc<Client>> {
-    self.bots.get(username).map(|cell| cell.clone())
+  pub fn get_bot(&self, index: &u8) -> Option<Arc<Client>> {
+    self.bots.get(index).map(|cell| cell.clone())
   }
 
   /// Асинхронный метод получения бота по юзернейму
-  pub async fn async_get_bot<F, T>(&self, username: &str, f: F) -> Option<T>
+  pub async fn async_get_bot<F, T>(&self, index: &u8, f: F) -> Option<T>
   where
     F: AsyncFnOnce(&Client) -> T,
   {
-    if let Some(reference) = self.bots.get(username) {
+    if let Some(reference) = self.bots.get(index) {
       return Some(f(reference.as_ref()).await);
     }
 
@@ -109,13 +107,13 @@ impl BotRegistry {
 
 /// Функция процессинга всех событий из `RegistryEvent`
 pub async fn registry_event_loop() {
-  let mut rx = BOT_REGISTRY.events.subscribe();
+  let mut rx = REGISTRY_SYSTEM.events.subscribe();
 
   while let Ok(event) = rx.recv().await {
     match event {
-      RegistryEvent::LoadPlugins { username } => {
+      RegistryEvent::LoadPlugins { index } => {
         if let Some(opts) = current_options().await {
-          PLUGINS.activate_for(username.clone(), opts.plugins).await;
+          PLUGINS.activate_for(index, opts.plugins).await;
         }
       }
       RegistryEvent::ControlModules { name, options, group } => {
@@ -125,7 +123,7 @@ pub async fn registry_event_loop() {
         QUICK_TASKS.execute(name).await;
       }
       RegistryEvent::DestroySwarm => {
-        BOT_REGISTRY.destroy_swarm().await;
+        REGISTRY_SYSTEM.destroy_swarm().await;
       }
       RegistryEvent::StopProcessing => {
         return;
@@ -138,6 +136,8 @@ pub async fn registry_event_loop() {
 #[macro_export]
 macro_rules! take_bot {
   ($username:expr, $func:expr) => {
-    crate::bot::registry::BOT_REGISTRY.async_get_bot($username, $func).await;
+    crate::bot::systems::registry::REGISTRY_SYSTEM
+      .async_get_bot($username, $func)
+      .await;
   };
 }

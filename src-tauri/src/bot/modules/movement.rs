@@ -3,7 +3,7 @@ use azalea::WalkDirection;
 use serde::Deserialize;
 
 use crate::bot::extensions::{go_to, BotMovementExt};
-use crate::bot::systems::{gettskact, killtsk, pushrtsk, TaskName};
+use crate::bot::systems::tasks::{gettskact, killtsk, pushrtsk, TaskName};
 use crate::bot::traits::SalarixiModule;
 use crate::other::tools::*;
 use crate::sleep;
@@ -27,7 +27,7 @@ impl MovementModule {
     Self
   }
 
-  async fn default_move(bot: &Client, options: &MovementOptions) {
+  async fn default_move(bot: &Client, index: &u8, options: &MovementOptions) {
     if options.use_impulsiveness {
       if !options.use_sync {
         sleep!(randnum(500, 2000));
@@ -46,7 +46,7 @@ impl MovementModule {
           _ => return,
         };
 
-        bot.start_walking(direction).await;
+        bot.start_walking(index, direction).await;
 
         if options.use_sync {
           sleep!(1200);
@@ -54,7 +54,7 @@ impl MovementModule {
           sleep!(randnum(800, 1800));
         }
 
-        bot.stop_move().await;
+        bot.stop_move(index).await;
       }
     } else {
       if !options.use_sync {
@@ -73,26 +73,26 @@ impl MovementModule {
         _ => return,
       };
 
-      bot.start_walking(direction).await;
+      bot.start_walking(index, direction).await;
     }
   }
 
-  async fn pathfinder_move(bot: &Client, options: &MovementOptions) {
+  async fn pathfinder_move(index: u8, options: &MovementOptions) {
     if let Some(x) = options.x {
       if let Some(z) = options.z {
         if !options.use_sync {
           sleep!(randnum(500, 2000));
         }
 
-        go_to(bot.username(), x, z);
+        go_to(index, x, z);
       }
     }
   }
 
-  async fn start(bot: &Client, options: &MovementOptions) {
+  async fn start(bot: &Client, index: &u8, options: &MovementOptions) {
     match options.mode.as_str() {
-      "default" => Self::default_move(bot, &options).await,
-      "pathfinder" => Self::pathfinder_move(bot, &options).await,
+      "default" => Self::default_move(bot, index, &options).await,
+      "pathfinder" => Self::pathfinder_move(*index, &options).await,
       _ => {}
     }
   }
@@ -103,20 +103,19 @@ impl SalarixiModule<MovementOptions> for MovementModule {
     Self
   }
 
-  async fn switch(&self, username: String, options: MovementOptions) -> bool {
-    if options.state && !gettskact(&username, TaskName::Movement).await {
-      let username_clone = username.clone();
+  async fn switch(&self, index: u8, options: MovementOptions) -> bool {
+    if options.state && !gettskact(&index, TaskName::Movement).await {
       let task_handle = tokio::spawn(async move {
-        take_bot!(&username_clone, async |bot| Self::start(bot, &options).await);
+        take_bot!(&index, async |bot| Self::start(bot, &index, &options).await);
       });
 
-      pushrtsk(&username, TaskName::Movement, task_handle).await;
-    } else if !options.state && gettskact(&username, TaskName::Movement).await {
-      killtsk(&username, TaskName::Movement).await;
+      pushrtsk(&index, TaskName::Movement, task_handle).await;
+    } else if !options.state && gettskact(&index, TaskName::Movement).await {
+      killtsk(&index, TaskName::Movement).await;
 
-      take_bot!(&username, async |bot| {
+      take_bot!(&index, async |bot| {
         bot.stop_pathfinding();
-        bot.stop_move().await;
+        bot.stop_move(&index).await;
       });
     } else {
       return false;

@@ -36,8 +36,8 @@ pub struct InstantArmorEquipPlugin;
 
 impl InstantArmorEquipPlugin {
   /// Метод обработки тика
-  async fn tick(&self, username: &str) {
-    take_bot!(username, async |bot| {
+  async fn tick(&self, index: &u8) {
+    take_bot!(index, async |bot| {
       let mut armors = vec![];
 
       let Some(menu) = bot.get_inventory_menu() else {
@@ -60,37 +60,37 @@ impl InstantArmorEquipPlugin {
 
       if let Some(helmet) = armor_set.helmet {
         if self.is_armor_better(bot, &helmet) {
-          self.equip(bot, helmet.slot, 5).await;
+          self.equip(bot, index, helmet.slot, 5).await;
         }
       }
 
       if let Some(chestplate) = armor_set.chestplate {
         if self.is_armor_better(bot, &chestplate) {
-          self.equip(bot, chestplate.slot, 6).await;
+          self.equip(bot, index, chestplate.slot, 6).await;
         }
       }
 
       if let Some(leggings) = armor_set.leggings {
         if self.is_armor_better(&bot, &leggings) {
-          self.equip(bot, leggings.slot, 7).await;
+          self.equip(bot, index, leggings.slot, 7).await;
         }
       }
 
       if let Some(boots) = armor_set.boots {
         if self.is_armor_better(&bot, &boots) {
-          self.equip(bot, boots.slot, 8).await;
+          self.equip(bot, index, boots.slot, 8).await;
         }
       }
     });
   }
 
   /// Метод экипировки определённого элемента брони
-  async fn equip(&self, bot: &Client, armor_slot: usize, target_slot: usize) {
+  async fn equip(&self, bot: &Client, index: &u8, armor_slot: usize, target_slot: usize) {
     if let Some(menu) = bot.get_inventory_menu() {
       if let Some(item) = menu.slot(target_slot) {
         if !item.is_empty() {
           if let Some(_) = bot.find_empty_slot_in_invenotry() {
-            bot.inventory_click(target_slot, ClickMode::Shift, true).await;
+            bot.inventory_click(index, target_slot, ClickMode::Shift, true).await;
             sleep!(50);
           } else {
             return;
@@ -99,7 +99,7 @@ impl InstantArmorEquipPlugin {
       }
     }
 
-    bot.inventory_click(armor_slot, ClickMode::Shift, true).await;
+    bot.inventory_click(index, armor_slot, ClickMode::Shift, true).await;
   }
 
   /// Метод проверки предмета, является ли тот бронёй
@@ -355,15 +355,14 @@ impl SalarixiPlugin for InstantArmorEquipPlugin {
     Self
   }
 
-  fn activate(&'static self, username: String) {
-    let username_clone = username.clone();
+  fn activate(&'static self, index: u8) {
     let task = tokio::spawn(async move {
       loop {
-        self.tick(&username_clone).await;
+        self.tick(&index).await;
         sleep!(200);
       }
     });
 
-    PLUGINS.push_task(&username, PluginName::InstantArmorEquip, task);
+    PLUGINS.push_task(&index, PluginName::InstantArmorEquip, task);
   }
 }

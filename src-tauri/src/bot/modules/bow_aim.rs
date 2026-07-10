@@ -5,7 +5,8 @@ use azalea::Vec3;
 use serde::Deserialize;
 
 use crate::bot::extensions::{BotDefaultExt, BotInteractExt, BotInventoryExt, EntityType};
-use crate::bot::systems::{getst, gettskact, killtsk, pushetsk, pushrtsk, setmst, State, StateName, TaskName};
+use crate::bot::systems::states::{getst, setmst, State, StateName};
+use crate::bot::systems::tasks::{gettskact, killtsk, pushetsk, pushrtsk, TaskName};
 use crate::bot::traits::SalarixiModule;
 use crate::other::tools::*;
 use crate::{sleep, take_bot};
@@ -38,18 +39,17 @@ impl BowAimModule {
     None
   }
 
-  async fn aiming(username: String, target: String, distance: f64) {
-    let username_clone = username.clone();
+  async fn aiming(index: u8, target: String, distance: f64) {
     let extra_task = tokio::spawn(async move {
-      take_bot!(&username_clone, async |bot| {
-        if !getst(&username_clone, State::CanLooking).await {
+      take_bot!(&index, async |bot| {
+        if !getst(&index, State::CanLooking).await {
           return;
         }
 
-        setmst(&username_clone, StateName::Looking, true).await;
+        setmst(&index, StateName::Looking, true).await;
 
         loop {
-          if !gettskact(&username_clone, TaskName::BowAim).await {
+          if !gettskact(&index, TaskName::BowAim).await {
             break;
           }
 
@@ -68,21 +68,19 @@ impl BowAimModule {
       });
     });
 
-    pushetsk(&username, TaskName::BowAim, extra_task).await;
+    pushetsk(&index, TaskName::BowAim, extra_task).await;
   }
 
-  async fn shoot(bot: &Client, target: String, distance: f64) {
-    let username = bot.username();
-
-    if getst(&username, State::CanInteracting).await
-      && !getst(&username, State::IsEating).await
-      && !getst(&username, State::IsDrinking).await
-      && !getst(&username, State::IsAttacking).await
+  async fn shoot(bot: &Client, index: &u8, target: String, distance: f64) {
+    if getst(index, State::CanInteracting).await
+      && !getst(index, State::IsEating).await
+      && !getst(index, State::IsDrinking).await
+      && !getst(index, State::IsAttacking).await
     {
       if let Some(slot) = Self::find_bow_in_inventory(bot) {
-        setmst(&username, StateName::Interacting, true).await;
+        setmst(index, StateName::Interacting, true).await;
 
-        bot.take_item(slot, true).await;
+        bot.take_item(index, slot, true).await;
 
         sleep!(50);
 
@@ -114,12 +112,12 @@ impl BowAimModule {
 
         bot.release_use_held_item();
 
-        setmst(&username, StateName::Interacting, false).await;
+        setmst(index, StateName::Interacting, false).await;
       }
     }
   }
 
-  async fn start(bot: &Client, options: &BowAimOptions) {
+  async fn start(bot: &Client, index: &u8, options: &BowAimOptions) {
     let target = if options.target.as_str() == "custom" {
       options.target_nickname.clone()
     } else {
@@ -130,10 +128,10 @@ impl BowAimModule {
       return;
     };
 
-    Self::aiming(bot.username(), target.clone(), options.max_distance.unwrap_or(70.0)).await;
+    Self::aiming(*index, target.clone(), options.max_distance.unwrap_or(70.0)).await;
 
     loop {
-      Self::shoot(bot, target.clone(), options.max_distance.unwrap_or(70.0)).await;
+      Self::shoot(bot, index, target.clone(), options.max_distance.unwrap_or(70.0)).await;
       sleep!(options.delay.unwrap_or(50));
     }
   }
@@ -144,23 +142,22 @@ impl SalarixiModule<BowAimOptions> for BowAimModule {
     Self
   }
 
-  async fn switch(&self, username: String, options: BowAimOptions) -> bool {
-    if options.state && !gettskact(&username, TaskName::BowAim).await {
-      let username_clone = username.clone();
+  async fn switch(&self, index: u8, options: BowAimOptions) -> bool {
+    if options.state && !gettskact(&index, TaskName::BowAim).await {
       let task_handle = tokio::spawn(async move {
-        take_bot!(&username_clone, async |bot| Self::start(bot, &options).await);
+        take_bot!(&index, async |bot| Self::start(bot, &index, &options).await);
       });
 
-      pushrtsk(&username, TaskName::BowAim, task_handle).await;
-    } else if !options.state && gettskact(&username, TaskName::BowAim).await {
-      killtsk(&username, TaskName::BowAim).await;
+      pushrtsk(&index, TaskName::BowAim, task_handle).await;
+    } else if !options.state && gettskact(&index, TaskName::BowAim).await {
+      killtsk(&index, TaskName::BowAim).await;
 
-      take_bot!(&username, async |bot| {
+      take_bot!(&index, async |bot| {
         bot.release_use_held_item();
       });
 
-      setmst(&username, StateName::Looking, false).await;
-      setmst(&username, StateName::Interacting, false).await;
+      setmst(&index, StateName::Looking, false).await;
+      setmst(&index, StateName::Interacting, false).await;
     } else {
       return false;
     }

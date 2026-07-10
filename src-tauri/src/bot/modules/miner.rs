@@ -7,7 +7,8 @@ use serde::Deserialize;
 
 use crate::bot::common::get_block_state;
 use crate::bot::extensions::{BotDefaultExt, BotInventoryExt, BotMovementExt};
-use crate::bot::systems::{gettskact, killtsk, pushrtsk, setmst, StateName, TaskName};
+use crate::bot::systems::states::{setmst, StateName};
+use crate::bot::systems::tasks::{gettskact, killtsk, pushrtsk, TaskName};
 use crate::bot::traits::SalarixiModule;
 use crate::other::tools::*;
 use crate::sleep;
@@ -285,25 +286,24 @@ impl SalarixiModule<MinerOptions> for MinerModule {
     Self
   }
 
-  async fn switch(&self, username: String, options: MinerOptions) -> bool {
-    if options.state && !gettskact(&username, TaskName::Miner).await {
-      let username_clone = username.clone();
+  async fn switch(&self, index: u8, options: MinerOptions) -> bool {
+    if options.state && !gettskact(&index, TaskName::Miner).await {
       let task_handle = tokio::spawn(async move {
-        take_bot!(&username_clone, async |bot| Self::start(bot, &options).await);
+        take_bot!(&index, async |bot| Self::start(bot, &options).await);
       });
 
-      pushrtsk(&username, TaskName::Miner, task_handle).await;
-    } else if !options.state && gettskact(&username, TaskName::Miner).await {
-      killtsk(&username, TaskName::Miner).await;
+      pushrtsk(&index, TaskName::Miner, task_handle).await;
+    } else if !options.state && gettskact(&index, TaskName::Miner).await {
+      killtsk(&index, TaskName::Miner).await;
 
-      take_bot!(&username, async |bot| {
+      take_bot!(&index, async |bot| {
         bot.left_click_mine(false);
         bot.set_crouching(false);
-        bot.stop_move().await;
+        bot.stop_move(&index).await;
       });
 
-      setmst(&username, StateName::Interacting, false).await;
-      setmst(&username, StateName::Looking, false).await;
+      setmst(&index, StateName::Interacting, false).await;
+      setmst(&index, StateName::Looking, false).await;
     } else {
       return false;
     }

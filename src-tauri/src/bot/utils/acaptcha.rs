@@ -12,7 +12,8 @@ use serde_json::json;
 use tokio::sync::RwLock;
 
 use crate::api::emit::emit_log;
-use crate::bot::registry::BOT_REGISTRY;
+use crate::bot::systems::index::INDEX_SYSTEM;
+use crate::bot::systems::registry::REGISTRY_SYSTEM;
 use crate::launch::options::CaptchaBypassOptions;
 use crate::launch::process::current_options;
 
@@ -425,8 +426,12 @@ impl MapCaptchaBypass {
         if let Some(status) = res_data["status"].as_str() {
           if status == "ready" {
             if let Some(solved_text) = res_data["solution"]["text"].as_str() {
-              BOT_REGISTRY
-                .async_get_bot(&username, async |bot| {
+              let Some(index) = INDEX_SYSTEM.index_by_username(&username).await else {
+                return;
+              };
+
+              REGISTRY_SYSTEM
+                .async_get_bot(&index, async |bot| {
                   bot.chat(solved_text);
                 })
                 .await;
@@ -474,10 +479,10 @@ pub struct MapData {
 }
 
 pub struct MapAccumulator {
-  maps: RwLock<HashMap<String, Vec<MapData>>>,
-  frame_positions: RwLock<HashMap<String, Vec<(i32, f64, f64, f64)>>>,
-  processing: RwLock<HashMap<String, bool>>,
-  last_captcha_time: RwLock<HashMap<String, Instant>>,
+  maps: RwLock<HashMap<u8, Vec<MapData>>>,
+  frame_positions: RwLock<HashMap<u8, Vec<(i32, f64, f64, f64)>>>,
+  processing: RwLock<HashMap<u8, bool>>,
+  last_captcha_time: RwLock<HashMap<u8, Instant>>,
 }
 
 impl MapAccumulator {
@@ -491,16 +496,16 @@ impl MapAccumulator {
   }
 
   /// Метод добавления позиции рамки
-  pub async fn add_frame_position(&self, username: &str, entity_id: i32, x: f64, y: f64, z: f64) {
+  pub async fn add_frame_position(&self, index: u8, entity_id: i32, x: f64, y: f64, z: f64) {
     let mut positions = self.frame_positions.write().await;
-    let user_positions = positions.entry(username.to_string()).or_insert_with(Vec::new);
+    let user_positions = positions.entry(index).or_insert_with(Vec::new);
     user_positions.push((entity_id, x, y, z));
   }
 
   /// Метод добавления данных карты
   pub async fn add_map_data(
     &self,
-    username: &str,
+    index: u8,
     width: u32,
     height: u32,
     colors: Vec<u8>,
@@ -509,7 +514,7 @@ impl MapAccumulator {
     yaw: f32,
   ) {
     let mut maps = self.maps.write().await;
-    let user_maps = maps.entry(username.to_string()).or_insert_with(Vec::new);
+    let user_maps = maps.entry(index).or_insert_with(Vec::new);
 
     user_maps.push(MapData {
       width,
@@ -524,32 +529,32 @@ impl MapAccumulator {
   }
 
   /// Метод получения карт указанного бота
-  pub async fn get_maps(&self, username: &str) -> Option<Vec<MapData>> {
+  pub async fn get_maps(&self, index: &u8) -> Option<Vec<MapData>> {
     let maps = self.maps.read().await;
-    maps.get(username).cloned()
+    maps.get(index).cloned()
   }
 
   /// Метод проверки статуса сборки капчи указанного бота
-  pub async fn is_processing(&self, username: &str) -> bool {
+  pub async fn is_processing(&self, index: &u8) -> bool {
     let processing = self.processing.read().await;
-    processing.get(username).copied().unwrap_or(false)
+    processing.get(index).copied().unwrap_or(false)
   }
 
   /// Метод установки статуса сборки капчи указанного бота
-  pub async fn set_processing(&self, username: &str, value: bool) {
+  pub async fn set_processing(&self, index: u8, value: bool) {
     let mut processing = self.processing.write().await;
-    processing.insert(username.to_string(), value);
+    processing.insert(index, value);
   }
 
   /// Метод обновления времени капчи указанного бота
-  pub async fn update_captcha_time(&self, username: &str) {
+  pub async fn update_captcha_time(&self, index: u8) {
     let mut last_time = self.last_captcha_time.write().await;
-    last_time.insert(username.to_string(), Instant::now());
+    last_time.insert(index, Instant::now());
   }
 
   /// Метод комбинации всех карт и созданий Base64-изображения
-  pub async fn combine_all(&self, username: &str) -> Option<String> {
-    let mut map_data = self.get_maps(username).await?;
+  pub async fn combine_all(&self, index: &u8) -> Option<String> {
+    let mut map_data = self.get_maps(index).await?;
     let positions = self.frame_positions.read().await;
 
     let Some(opts) = current_options().await else {
@@ -589,13 +594,13 @@ impl MapAccumulator {
     }
 
     if map_data.len() < num_frames {
-      let all_maps = self.get_maps(username).await?;
+      let all_maps = self.get_maps(index).await?;
       map_data = all_maps;
     }
 
     map_data.truncate(num_frames);
 
-    if let Some(user_positions) = positions.get(username) {
+    if let Some(user_positions) = positions.get(index) {
       if user_positions.len() >= num_frames {
         let mut sorted_positions = user_positions.clone();
 
@@ -659,14 +664,14 @@ impl MapAccumulator {
   }
 
   /// Метод очистки карт указанного бота
-  pub async fn clear_maps(&self, username: &str) {
+  pub async fn clear_maps(&self, index: &u8) {
     let mut maps = self.maps.write().await;
     let mut positions = self.frame_positions.write().await;
     let mut processing = self.processing.write().await;
 
-    maps.remove(username);
-    positions.remove(username);
-    processing.remove(username);
+    maps.remove(index);
+    positions.remove(index);
+    processing.remove(index);
   }
 
   /// Метод очистки всего хранилища

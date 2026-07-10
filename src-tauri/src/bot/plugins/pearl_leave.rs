@@ -6,7 +6,7 @@ use azalea::registry::builtin::ItemKind;
 
 use crate::bot::extensions::{BotDefaultExt, BotInteractExt, BotInventoryExt};
 use crate::bot::plugin_manager::PluginName;
-use crate::bot::systems::{getst, setmst, State, StateName};
+use crate::bot::systems::states::{getst, setmst, State, StateName};
 use crate::bot::traits::SalarixiPlugin;
 use crate::bot::PLUGINS;
 use crate::other::tools::randnum;
@@ -16,27 +16,27 @@ pub struct PearlLeavePlugin;
 
 impl PearlLeavePlugin {
   /// Метод обработки тика
-  async fn tick(&self, username: &str) {
-    take_bot!(username, async |bot| {
+  async fn tick(&self, index: &u8) {
+    take_bot!(index, async |bot| {
       let health = bot.get_health();
 
       if health < 6.0 || health > 10.0 {
         return;
       }
 
-      if !self.take_pearl(username).await {
+      if !self.take_pearl(index).await {
         return;
       }
 
-      self.throw_pearl(username).await;
+      self.throw_pearl(index).await;
     });
   }
 
   /// Метод взятия жемчуга в руку
-  async fn take_pearl(&self, username: &str) -> bool {
+  async fn take_pearl(&self, index: &u8) -> bool {
     let mut pearl_taken = false;
 
-    take_bot!(username, async |bot| {
+    take_bot!(index, async |bot| {
       let Some(menu) = bot.get_inventory_menu() else {
         return;
       };
@@ -46,7 +46,7 @@ impl PearlLeavePlugin {
           continue;
         }
 
-        bot.take_item(slot, true).await;
+        bot.take_item(index, slot, true).await;
 
         pearl_taken = true;
       }
@@ -56,41 +56,41 @@ impl PearlLeavePlugin {
   }
 
   /// Метод броска жемчуга
-  async fn throw_pearl(&self, username: &str) {
-    if !getst(username, State::CanLooking).await {
+  async fn throw_pearl(&self, index: &u8) {
+    if !getst(index, State::CanLooking).await {
       return;
     }
 
-    setmst(username, StateName::Looking, true).await;
+    setmst(index, StateName::Looking, true).await;
 
     let y_rot = randnum(-180.0, 180.0);
     let x_rot = randnum(-35.0, -30.0);
 
-    take_bot!(username, async |bot| {
+    take_bot!(index, async |bot| {
       bot.set_direction(y_rot, x_rot);
     });
 
-    setmst(username, StateName::Looking, false).await;
+    setmst(index, StateName::Looking, false).await;
 
     sleep!(randnum(100, 150));
 
-    take_bot!(username, async |bot| {
+    take_bot!(index, async |bot| {
       bot.jump();
     });
 
     sleep!(randnum(100, 150));
 
-    if !getst(username, State::CanInteracting).await {
+    if !getst(index, State::CanInteracting).await {
       return;
     }
 
-    setmst(username, StateName::Interacting, true).await;
+    setmst(index, StateName::Interacting, true).await;
 
-    take_bot!(username, async |bot| {
+    take_bot!(index, async |bot| {
       bot.start_use_held_item(InteractionHand::MainHand);
     });
 
-    setmst(username, StateName::Interacting, false).await;
+    setmst(index, StateName::Interacting, false).await;
 
     tokio::time::sleep(Duration::from_secs(8)).await;
   }
@@ -101,15 +101,14 @@ impl SalarixiPlugin for PearlLeavePlugin {
     Self
   }
 
-  fn activate(&'static self, username: String) {
-    let username_clone = username.clone();
+  fn activate(&'static self, index: u8) {
     let task = tokio::spawn(async move {
       loop {
-        self.tick(&username_clone).await;
+        self.tick(&index).await;
         sleep!(200);
       }
     });
 
-    PLUGINS.push_task(&username, PluginName::PearlLeave, task);
+    PLUGINS.push_task(&index, PluginName::PearlLeave, task);
   }
 }

@@ -6,7 +6,8 @@ use serde::Deserialize;
 
 use crate::bot::common::get_block_state;
 use crate::bot::extensions::{BotDefaultExt, BotInventoryExt, BotRotationExt};
-use crate::bot::systems::{getst, gettskact, killtsk, pushrtsk, setmst, State, StateName, TaskName};
+use crate::bot::systems::states::{getst, setmst, State, StateName};
+use crate::bot::systems::tasks::{gettskact, killtsk, pushrtsk, TaskName};
 use crate::bot::traits::SalarixiModule;
 use crate::other::tools::*;
 use crate::{sleep, take_bot};
@@ -27,7 +28,7 @@ pub struct FarmerOptions {
 }
 
 impl FarmerModule {
-  async fn auto_tool(bot: &Client) {
+  async fn auto_tool(bot: &Client, index: &u8) {
     let mut tools = vec![];
 
     if let Some(menu) = bot.get_inventory_menu() {
@@ -94,7 +95,7 @@ impl FarmerModule {
     }
 
     if let Some(slot) = best_tool.slot {
-      bot.take_item(slot, true).await;
+      bot.take_item(index, slot, true).await;
     }
   }
 
@@ -126,7 +127,7 @@ impl FarmerModule {
     false
   }
 
-  async fn fertilize_plant(bot: &Client, mode: &String) {
+  async fn fertilize_plant(bot: &Client, index: &u8, mode: &String) {
     let mut ferilizer_slot = None;
 
     if let Some(menu) = bot.get_inventory_menu() {
@@ -141,7 +142,7 @@ impl FarmerModule {
     }
 
     if let Some(slot) = ferilizer_slot {
-      bot.take_item(slot, true).await;
+      bot.take_item(index, slot, true).await;
 
       for _ in 0..=4 {
         sleep!(Self::generate_delay(mode));
@@ -150,7 +151,7 @@ impl FarmerModule {
     }
   }
 
-  async fn take_plant(bot: &Client) -> bool {
+  async fn take_plant(bot: &Client, index: &u8) -> bool {
     let mut plant_slot = None;
 
     if let Some(menu) = bot.get_inventory_menu() {
@@ -168,7 +169,7 @@ impl FarmerModule {
     }
 
     if let Some(slot) = plant_slot {
-      bot.take_item(slot, true).await;
+      bot.take_item(index, slot, true).await;
       return true;
     }
 
@@ -185,9 +186,9 @@ impl FarmerModule {
     }
   }
 
-  async fn plow_block(bot: &Client, block_pos: BlockPos, mode: &String) {
+  async fn plow_block(bot: &Client, index: &u8, block_pos: BlockPos, mode: &String) {
     if let Some(state) = get_block_state(bot, block_pos) {
-      Self::auto_tool(bot).await;
+      Self::auto_tool(bot, index).await;
       sleep!(50);
 
       let kind = BlockKind::from(state);
@@ -217,15 +218,13 @@ impl FarmerModule {
     false
   }
 
-  async fn interact_with_block(bot: &Client, block_pos: BlockPos, options: &FarmerOptions) {
-    let username = bot.username();
-
-    if !getst(&username, State::IsEating).await
-      && !getst(&username, State::IsDrinking).await
-      && getst(&username, State::CanInteracting).await
+  async fn interact_with_block(bot: &Client, index: &u8, block_pos: BlockPos, options: &FarmerOptions) {
+    if !getst(index, State::IsEating).await
+      && !getst(index, State::IsDrinking).await
+      && getst(index, State::CanInteracting).await
     {
       if let Some(state) = get_block_state(bot, block_pos) {
-        setmst(&username, StateName::Interacting, true).await;
+        setmst(index, StateName::Interacting, true).await;
 
         let kind = BlockKind::from(state);
 
@@ -236,7 +235,7 @@ impl FarmerModule {
             sleep!(Self::generate_delay(&options.mode));
           }
 
-          if Self::take_plant(bot).await {
+          if Self::take_plant(bot, index).await {
             sleep!(Self::generate_delay(&options.mode));
             bot.start_use_item();
             sleep!(Self::generate_delay(&options.mode));
@@ -248,18 +247,18 @@ impl FarmerModule {
             sleep!(Self::generate_delay(&options.mode));
 
             if Self::this_is_grown_plant(state.id()) {
-              Self::auto_tool(bot).await;
+              Self::auto_tool(bot, index).await;
               sleep!(Self::generate_delay(&options.mode));
               bot.mine(block_pos).await;
               sleep!(50);
             } else {
-              Self::fertilize_plant(bot, &options.mode).await;
+              Self::fertilize_plant(bot, index, &options.mode).await;
 
               if let Some(new_state) = get_block_state(bot, block_pos) {
                 sleep!(50);
 
                 if Self::this_is_grown_plant(new_state.id()) {
-                  Self::auto_tool(bot).await;
+                  Self::auto_tool(bot, index).await;
                   sleep!(Self::generate_delay(&options.mode));
                   bot.mine(block_pos).await;
                   sleep!(50);
@@ -273,28 +272,26 @@ impl FarmerModule {
           } else {
             if Self::block_can_plowed(bot, kind, block_pos) {
               bot.look_at_block(block_pos, true).await;
-              Self::plow_block(bot, block_pos, &options.mode).await;
+              Self::plow_block(bot, index, block_pos, &options.mode).await;
             }
           }
         }
 
-        setmst(&username, StateName::Interacting, false).await;
+        setmst(index, StateName::Interacting, false).await;
       }
     }
   }
 
-  async fn start(bot: &Client, options: &FarmerOptions) {
-    let username = bot.username();
-
+  async fn start(bot: &Client, index: &u8, options: &FarmerOptions) {
     loop {
-      setmst(&username, StateName::Looking, true).await;
+      setmst(index, StateName::Looking, true).await;
 
       for y in -1..=1 {
         let pos = bot.feet_pos();
 
         let block_pos = BlockPos::from(Vec3::new(pos.x, pos.y + y as f64, pos.z));
 
-        Self::interact_with_block(bot, block_pos, &options).await;
+        Self::interact_with_block(bot, index, block_pos, &options).await;
       }
 
       for x in -1..=1 {
@@ -305,7 +302,7 @@ impl FarmerModule {
             let block_pos = BlockPos::from(Vec3::new(pos.x + x as f64, pos.y + y as f64, pos.z + z as f64));
 
             if block_pos != BlockPos::from(Vec3::new(pos.x, pos.y + y as f64, pos.z)) {
-              Self::interact_with_block(bot, block_pos, &options).await;
+              Self::interact_with_block(bot, index, block_pos, &options).await;
             }
           }
         }
@@ -313,7 +310,7 @@ impl FarmerModule {
 
       sleep!(options.delay.unwrap_or(100));
 
-      setmst(&username, StateName::Looking, false).await;
+      setmst(index, StateName::Looking, false).await;
     }
   }
 }
@@ -323,18 +320,17 @@ impl SalarixiModule<FarmerOptions> for FarmerModule {
     Self
   }
 
-  async fn switch(&self, username: String, options: FarmerOptions) -> bool {
-    if options.state && !gettskact(&username, TaskName::Farmer).await {
-      let username_clone = username.clone();
+  async fn switch(&self, index: u8, options: FarmerOptions) -> bool {
+    if options.state && !gettskact(&index, TaskName::Farmer).await {
       let task_handle = tokio::spawn(async move {
-        take_bot!(&username_clone, async |bot| Self::start(bot, &options).await);
+        take_bot!(&index, async |bot| Self::start(bot, &index, &options).await);
       });
 
-      pushrtsk(&username, TaskName::Farmer, task_handle).await;
-    } else if !options.state && gettskact(&username, TaskName::Farmer).await {
-      killtsk(&username, TaskName::Farmer).await;
-      setmst(&username, StateName::Looking, false).await;
-      setmst(&username, StateName::Interacting, false).await;
+      pushrtsk(&index, TaskName::Farmer, task_handle).await;
+    } else if !options.state && gettskact(&index, TaskName::Farmer).await {
+      killtsk(&index, TaskName::Farmer).await;
+      setmst(&index, StateName::Looking, false).await;
+      setmst(&index, StateName::Interacting, false).await;
     } else {
       return false;
     }

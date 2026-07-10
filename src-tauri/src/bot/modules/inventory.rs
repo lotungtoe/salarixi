@@ -3,6 +3,7 @@ use serde::Deserialize;
 
 use crate::api::emit::*;
 use crate::bot::extensions::{BotInventoryExt, ClickMode};
+use crate::bot::systems::index::INDEX_SYSTEM;
 use crate::bot::traits::SalarixiModule;
 use crate::take_bot;
 
@@ -20,31 +21,33 @@ impl InventoryModule {
     Self
   }
 
-  pub async fn interact(bot: &Client, username: &str, options: &InventoryOptions) {
+  pub async fn interact(bot: &Client, index: &u8, options: &InventoryOptions) {
     if let Some(s) = options.slot {
       if options.state.as_str() == "select" {
         if s <= 8 {
           bot.set_selected_hotbar_slot(s as u8);
         } else {
-          emit_log(
-            format!("Бот {} не смог взять слот {} (неверный индекс слота)", username, s),
-            "error",
-          );
+          if let Some(username) = INDEX_SYSTEM.username_by_index(index).await {
+            emit_log(
+              format!("Бот {} не смог взять слот {} (неверный индекс слота)", username, s),
+              "error",
+            );
+          }
         }
       } else {
         match options.state.as_str() {
           "drop" => {
-            bot.inventory_click(s, ClickMode::DropAll, true).await;
+            bot.inventory_click(index, s, ClickMode::DropAll, true).await;
           }
           "left-click" => {
-            bot.inventory_click(s, ClickMode::Left, true).await;
+            bot.inventory_click(index, s, ClickMode::Left, true).await;
           }
           "right-click" => {
-            bot.inventory_click(s, ClickMode::Right, true).await;
+            bot.inventory_click(index, s, ClickMode::Right, true).await;
           }
           "swap" => {
             bot
-              .inventory_swap_click(s, if let Some(t) = options.target_slot { t } else { 0 }, true)
+              .inventory_swap_click(index, s, if let Some(t) = options.target_slot { t } else { 0 }, true)
               .await;
           }
           _ => {}
@@ -59,9 +62,9 @@ impl SalarixiModule<InventoryOptions> for InventoryModule {
     Self
   }
 
-  async fn switch(&self, username: String, options: InventoryOptions) -> bool {
+  async fn switch(&self, index: u8, options: InventoryOptions) -> bool {
     tokio::spawn(async move {
-      take_bot!(&username, async |bot| Self::interact(bot, &username, &options).await);
+      take_bot!(&index, async |bot| Self::interact(bot, &index, &options).await);
     });
 
     true

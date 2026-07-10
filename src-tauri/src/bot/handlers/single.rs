@@ -13,9 +13,14 @@ use azalea::{ClientInformation, NoState};
 use crate::api::emit::*;
 use crate::bot::auth::{default_authorize, trigger_authorize};
 use crate::bot::extensions::BotDefaultExt;
-use crate::bot::registry::{RegistryEvent, BOT_REGISTRY};
 use crate::bot::script::SCRIPT_EXECUTOR;
-use crate::bot::systems::{BotStatus, PROFILE_SYSTEM, STATE_SYSTEM, TASK_SYSTEM};
+use crate::bot::systems::index::INDEX_SYSTEM;
+use crate::bot::systems::profile::BotStatus;
+use crate::bot::systems::profile::PROFILE_SYSTEM;
+use crate::bot::systems::registry::RegistryEvent;
+use crate::bot::systems::registry::REGISTRY_SYSTEM;
+use crate::bot::systems::states::STATE_SYSTEM;
+use crate::bot::systems::tasks::TASK_SYSTEM;
 use crate::bot::utils::acaptcha::{MAP_ACCUMULATOR, MAP_CAPTCHA_BYPASS, WEB_CAPTCHA_BYPASS};
 use crate::bot::PLUGINS;
 use crate::launch::process::current_options;
@@ -67,22 +72,23 @@ async fn process_init(bot: Client) {
 /// Функция обработки спавна
 async fn process_spawn(bot: Client) {
   let username = bot.username();
+  let Some(index) = INDEX_SYSTEM.index_by_username(&username).await else {
+    return;
+  };
 
-  BOT_REGISTRY.register_bot(&username, bot);
-  TASK_SYSTEM.register(&username).await;
-  STATE_SYSTEM.register(&username).await;
+  REGISTRY_SYSTEM.register_bot(index, bot);
+  TASK_SYSTEM.register(index).await;
+  STATE_SYSTEM.register(index).await;
 
-  BOT_REGISTRY.send_event(RegistryEvent::LoadPlugins {
-    username: username.clone(),
-  });
+  REGISTRY_SYSTEM.send_event(RegistryEvent::LoadPlugins { index: index });
 
-  PROFILE_SYSTEM.set_status(&username, BotStatus::Connected).await;
+  PROFILE_SYSTEM.set_status(&index, BotStatus::Connected).await;
 
   let Some(opts) = current_options().await else {
     return;
   };
 
-  take_bot!(&username, async |bot| {
+  take_bot!(&index, async |bot| {
     let pos = bot.feet_pos();
     let health = bot.get_health();
     let str_pos = format!("{}, {}, {}", pos.x as i32, pos.y as i32, pos.z as i32);
@@ -92,13 +98,13 @@ async fn process_spawn(bot: Client) {
         opts.webhook.url,
         format!(
           "Бот {} заспавнился | Координаты (XYZ): {} | Здоровье: {} / 20",
-          &username, str_pos, health
+          username, str_pos, health
         ),
       );
     }
 
     emit_log(
-      format!("Бот {} заспавнился, координаты (XYZ): {}", &username, str_pos),
+      format!("Бот {} заспавнился, координаты (XYZ): {}", username, str_pos),
       "info",
     );
 
@@ -106,7 +112,7 @@ async fn process_spawn(bot: Client) {
       "Система",
       format!(
         "Бот {} заспавнился<br><br>Координаты (XYZ): {}<br>Здоровье: {} / 20",
-        &username, str_pos, health
+        username, str_pos, health
       ),
     );
   });
@@ -120,12 +126,12 @@ async fn process_spawn(bot: Client) {
   // некоторое время в лобби, после его кикнет. Легче вперёд поставить авторизацию,
   // так как в большинстве случаев выполнения сценария предпологается после авторизации,
   // если что это всегда можно сделать иначе - просто отключить опции рода авто-регистр.
-  default_authorize(&username).await;
+  default_authorize(&index).await;
 
   if opts.basic.use_auto_script {
     if let Some(script) = opts.basic.script {
       // Здесь нужно указывать юзернейм бота, чтобы исполнитель работал только с ним
-      SCRIPT_EXECUTOR.execute(username, script);
+      SCRIPT_EXECUTOR.execute(username, index, script);
     }
   }
 }
@@ -133,39 +139,45 @@ async fn process_spawn(bot: Client) {
 /// Функция обработки отключения
 async fn process_disconnect(bot: Client, text: Option<FormattedText>) {
   let username = bot.username();
+  let Some(index) = INDEX_SYSTEM.index_by_username(&username).await else {
+    return;
+  };
 
-  TASK_SYSTEM.kill_all_tasks_for(&username).await;
-  PLUGINS.kill_all_tasks_for(&username).await;
+  TASK_SYSTEM.kill_all_tasks_for(&index).await;
+  PLUGINS.kill_all_tasks_for(&index).await;
 
   sleep!(2000);
 
-  BOT_REGISTRY.remove_bot(&username).await;
+  REGISTRY_SYSTEM.remove_bot(&index).await;
 
-  PROFILE_SYSTEM.set_bool(&username, "logined", false).await;
-  PROFILE_SYSTEM.set_bool(&username, "captcha_caught", false).await;
-  STATE_SYSTEM.reset(&username).await;
-  TASK_SYSTEM.remove(&username).await;
+  PROFILE_SYSTEM.set_bool(&index, "logined", false).await;
+  PROFILE_SYSTEM.set_bool(&index, "captcha_caught", false).await;
+  STATE_SYSTEM.reset(&index).await;
+  TASK_SYSTEM.remove(&index).await;
 
-  PROFILE_SYSTEM.set_status(&username, BotStatus::Disconnected).await;
+  PROFILE_SYSTEM.set_status(&index, BotStatus::Disconnected).await;
 
   if let Some(t) = text {
     if let Some(options) = current_options().await {
       if options.basic.use_webhook {
         send_webhook(
           options.webhook.url,
-          format!("Бот {} отключился: {}", &username, t.to_html()),
+          format!("Бот {} отключился: {}", username, t.to_html()),
         );
       }
     }
 
-    emit_log(format!("Бот {} отключился: {}", &username, t.to_string()), "info");
-    emit_msg("Система", format!("Бот {} отключился: {}", &username, t.to_string()));
+    emit_log(format!("Бот {} отключился: {}", username, t.to_string()), "info");
+    emit_msg("Система", format!("Бот {} отключился: {}", username, t.to_string()));
   }
 }
 
 /// Функция обработки сообщения из чата
 async fn process_chat_message(bot: Client, packet: ChatPacket) {
   let username = bot.username();
+  let Some(index) = INDEX_SYSTEM.index_by_username(&username).await else {
+    return;
+  };
 
   let Some(options) = current_options().await else {
     return;
@@ -182,12 +194,12 @@ async fn process_chat_message(bot: Client, packet: ChatPacket) {
       options.captcha_bypass.regex.as_str(),
       options.captcha_bypass.required_url_part,
     ) {
-      let Some(profile) = PROFILE_SYSTEM.get(&username).await else {
+      let Some(profile) = PROFILE_SYSTEM.get(&index).await else {
         return;
       };
 
       if !profile.captcha_caught {
-        PROFILE_SYSTEM.set_bool(&username, "captcha_caught", true).await;
+        PROFILE_SYSTEM.set_bool(&index, "captcha_caught", true).await;
 
         if options.basic.use_webhook && options.webhook.send_information {
           send_webhook(
@@ -209,14 +221,19 @@ async fn process_chat_message(bot: Client, packet: ChatPacket) {
     }
   }
 
-  trigger_authorize(&username, packet.message().to_string()).await;
+  trigger_authorize(&index, packet.message().to_string()).await;
 }
 
 /// Функция обработки тика
 async fn process_tick(bot: Client) {
   let username = bot.username();
+  let Some(index) = INDEX_SYSTEM.index_by_username(&username).await else {
+    return;
+  };
 
-  take_profile!(&username, async |profile| {
+  drop(username);
+
+  take_profile!(&index, async |profile| {
     if profile.status == BotStatus::Connected {
       if !bot.workable() {
         return;
@@ -231,13 +248,16 @@ async fn process_tick(bot: Client) {
 /// Функция обработки пакета
 async fn process_packet(bot: Client, packet: Arc<ClientboundGamePacket>) {
   let username = bot.username();
+  let Some(index) = INDEX_SYSTEM.index_by_username(&username).await else {
+    return;
+  };
 
   match &*packet {
     ClientboundGamePacket::AddEntity(entity_packet) => {
       if entity_packet.entity_type == EntityKind::ItemFrame || entity_packet.entity_type == EntityKind::GlowItemFrame {
         let pos = entity_packet.position;
         MAP_ACCUMULATOR
-          .add_frame_position(&username, entity_packet.id.0 as i32, pos.x, pos.y, pos.z)
+          .add_frame_position(index, entity_packet.id.0 as i32, pos.x, pos.y, pos.z)
           .await;
       }
     }
@@ -251,7 +271,7 @@ async fn process_packet(bot: Client, packet: Arc<ClientboundGamePacket>) {
           return;
         };
 
-        let Some(profile) = PROFILE_SYSTEM.get(&username).await else {
+        let Some(profile) = PROFILE_SYSTEM.get(&index).await else {
           return;
         };
 
@@ -268,7 +288,7 @@ async fn process_packet(bot: Client, packet: Arc<ClientboundGamePacket>) {
 
             MAP_ACCUMULATOR
               .add_map_data(
-                &username,
+                index,
                 map_patch.width as u32,
                 map_patch.height as u32,
                 map_patch.map_colors.clone(),
@@ -278,22 +298,22 @@ async fn process_packet(bot: Client, packet: Arc<ClientboundGamePacket>) {
               )
               .await;
 
-            if MAP_ACCUMULATOR.is_processing(&username).await {
+            if MAP_ACCUMULATOR.is_processing(&index).await {
               return;
             }
 
-            let maps = MAP_ACCUMULATOR.get_maps(&username).await.unwrap_or_default();
+            let maps = MAP_ACCUMULATOR.get_maps(&index).await.unwrap_or_default();
 
             if maps.len() < (options.captcha_bypass.number_of_columns * options.captcha_bypass.number_of_rows) as usize
             {
               return;
             }
 
-            MAP_ACCUMULATOR.set_processing(&username, true).await;
+            MAP_ACCUMULATOR.set_processing(index, true).await;
 
-            if let Some(combined_base64) = MAP_ACCUMULATOR.combine_all(&username).await {
-              PROFILE_SYSTEM.set_bool(&username, "captcha_caught", true).await;
-              MAP_ACCUMULATOR.update_captcha_time(&username).await;
+            if let Some(combined_base64) = MAP_ACCUMULATOR.combine_all(&index).await {
+              PROFILE_SYSTEM.set_bool(&index, "captcha_caught", true).await;
+              MAP_ACCUMULATOR.update_captcha_time(index).await;
 
               if options.basic.use_webhook && options.webhook.send_information {
                 send_webhook(options.webhook.url, format!("Бот {} получил капчу с карты", username));
@@ -312,11 +332,9 @@ async fn process_packet(bot: Client, packet: Arc<ClientboundGamePacket>) {
                   username: username.to_string(),
                 }));
               }
-
-              MAP_ACCUMULATOR.clear_maps(&username).await;
-            } else {
-              MAP_ACCUMULATOR.clear_maps(&username).await;
             }
+
+            MAP_ACCUMULATOR.clear_maps(&index).await;
           } else {
             let base64_code = MAP_CAPTCHA_BYPASS.create_png_image(
               map_patch.width as u32,
@@ -324,8 +342,8 @@ async fn process_packet(bot: Client, packet: Arc<ClientboundGamePacket>) {
               &map_patch.map_colors,
             );
 
-            PROFILE_SYSTEM.set_bool(&username, "captcha_caught", true).await;
-            MAP_ACCUMULATOR.update_captcha_time(&username).await;
+            PROFILE_SYSTEM.set_bool(&index, "captcha_caught", true).await;
+            MAP_ACCUMULATOR.update_captcha_time(index).await;
 
             if options.basic.use_webhook && options.webhook.send_information {
               send_webhook(options.webhook.url, format!("Бот {} получил капчу с карты", username));

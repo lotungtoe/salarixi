@@ -11,7 +11,6 @@ pub static PROFILE_SYSTEM: Lazy<ProfileSystem> = Lazy::new(|| ProfileSystem::new
 #[derive(Clone, Serialize)]
 pub struct Profile {
   pub status: BotStatus,
-  pub username: String,
   pub password: Option<String>,
   pub email: Option<String>,
   pub proxy: ProfileProxy,
@@ -42,10 +41,9 @@ pub struct ProfileProxy {
 
 impl Profile {
   /// Метод создания нового профиля
-  pub fn new(username: &str, password: Option<String>, email: Option<String>) -> Self {
+  pub fn new(password: Option<String>, email: Option<String>) -> Self {
     Self {
       status: BotStatus::Waiting,
-      username: username.to_string(),
       password: password,
       email: email,
       proxy: ProfileProxy {
@@ -66,11 +64,11 @@ impl Profile {
 
 /// Система управления профилями
 pub struct ProfileSystem {
-  pub map: RwLock<HashMap<String, Profile>>,
+  pub map: RwLock<HashMap<u8, Profile>>,
 }
 
 impl ProfileSystem {
-  /// Метод создания нового менеджера профилей
+  /// Метод создания системы профилей
   pub fn new() -> Self {
     Self {
       map: RwLock::new(HashMap::new()),
@@ -78,12 +76,8 @@ impl ProfileSystem {
   }
 
   /// Метод регистрации бота
-  pub async fn register(&self, username: &str, password: Option<String>, email: Option<String>) {
-    self
-      .map
-      .write()
-      .await
-      .insert(username.to_string(), Profile::new(username, password, email));
+  pub async fn register(&self, index: u8, password: Option<String>, email: Option<String>) {
+    self.map.write().await.insert(index, Profile::new(password, email));
   }
 
   /// Метод очистки хранилища всех профилей
@@ -129,42 +123,42 @@ impl ProfileSystem {
   }
 
   /// Метод получения клонированного профиля указанного бота
-  pub async fn get(&self, username: &str) -> Option<Profile> {
+  pub async fn get(&self, index: &u8) -> Option<Profile> {
     let guard = self.map.read().await;
-    guard.get(username).cloned()
+    guard.get(index).cloned()
   }
 
   /// Метод захвата мутабельного профиля указанного бота
-  pub async fn lock_mut<F>(&self, username: &str, func: F)
+  pub async fn lock_mut<F>(&self, index: &u8, func: F)
   where
     F: AsyncFnOnce(&mut Profile),
   {
     let mut guard = self.map.write().await;
-    if let Some(profile) = guard.get_mut(username) {
+    if let Some(profile) = guard.get_mut(index) {
       func(profile).await;
     }
   }
 
   /// Метод получения всех профилей
-  pub async fn get_all(&self) -> HashMap<String, Profile> {
+  pub async fn get_all(&self) -> HashMap<u8, Profile> {
     let mut result = HashMap::new();
     let guard = self.map.read().await;
 
-    guard.iter().for_each(|(username, profile)| {
-      result.insert(username.to_string(), profile.clone());
+    guard.iter().for_each(|(index, profile)| {
+      result.insert(*index, profile.clone());
     });
 
     result
   }
 
   /// Метод получения всех профилей подключенных ботов
-  pub async fn get_all_connected(&self) -> HashMap<String, Profile> {
+  pub async fn get_all_connected(&self) -> HashMap<u8, Profile> {
     let mut result = HashMap::new();
     let guard = self.map.read().await;
 
-    guard.iter().for_each(|(username, profile)| {
+    guard.iter().for_each(|(index, profile)| {
       if profile.status == BotStatus::Connected {
-        result.insert(username.clone(), profile.clone());
+        result.insert(*index, profile.clone());
       }
     });
 
@@ -172,9 +166,9 @@ impl ProfileSystem {
   }
 
   /// Метод попытки получения профиля указанного бота
-  pub fn try_get(&self, username: &str) -> Option<Profile> {
+  pub fn try_get(&self, index: &u8) -> Option<Profile> {
     if let Ok(guard) = self.map.try_read() {
-      if let Some(p) = guard.get(username) {
+      if let Some(p) = guard.get(index) {
         return Some(p.clone());
       }
     }
@@ -183,13 +177,13 @@ impl ProfileSystem {
   }
 
   /// Метод попытки получения всех профилей подключенных ботов
-  pub fn try_get_all_connected(&self) -> HashMap<String, Profile> {
+  pub fn try_get_all_connected(&self) -> HashMap<u8, Profile> {
     let mut result = HashMap::new();
 
     if let Ok(guard) = self.map.try_read() {
-      guard.iter().for_each(|(username, profile)| {
+      guard.iter().for_each(|(index, profile)| {
         if profile.status == BotStatus::Connected {
-          result.insert(username.clone(), profile.clone());
+          result.insert(*index, profile.clone());
         }
       });
     }
@@ -197,16 +191,16 @@ impl ProfileSystem {
     result
   }
 
-  pub async fn set_status(&self, username: &str, status: BotStatus) {
+  pub async fn set_status(&self, index: &u8, status: BotStatus) {
     let mut profiles = self.map.write().await;
-    if let Some(profile) = profiles.get_mut(username) {
+    if let Some(profile) = profiles.get_mut(index) {
       profile.status = status;
     }
   }
 
-  pub async fn set_str(&self, username: &str, field: &str, value: &str) {
+  pub async fn set_str(&self, index: &u8, field: &str, value: &str) {
     let mut profiles = self.map.write().await;
-    if let Some(profile) = profiles.get_mut(username) {
+    if let Some(profile) = profiles.get_mut(index) {
       match field {
         "password" => profile.password = Some(value.to_string()),
         "email" => profile.email = Some(value.to_string()),
@@ -216,9 +210,9 @@ impl ProfileSystem {
     }
   }
 
-  pub async fn set_bool(&self, username: &str, field: &str, value: bool) {
+  pub async fn set_bool(&self, index: &u8, field: &str, value: bool) {
     let mut profiles = self.map.write().await;
-    if let Some(profile) = profiles.get_mut(username) {
+    if let Some(profile) = profiles.get_mut(index) {
       match field {
         "registered" => profile.registered = value,
         "logined" => profile.logined = value,
@@ -228,9 +222,9 @@ impl ProfileSystem {
     }
   }
 
-  pub async fn set_proxy(&self, username: &str, proxy: ProfileProxy) {
+  pub async fn set_proxy(&self, index: &u8, proxy: ProfileProxy) {
     let mut profiles = self.map.write().await;
-    if let Some(profile) = profiles.get_mut(username) {
+    if let Some(profile) = profiles.get_mut(index) {
       profile.proxy = proxy;
     }
   }
@@ -239,7 +233,9 @@ impl ProfileSystem {
 /// Вспомогательный макрос захвата профиля указанного бота
 #[macro_export]
 macro_rules! take_profile {
-  ($username:expr, $func:expr) => {
-    crate::bot::systems::PROFILE_SYSTEM.lock_mut($username, $func).await;
+  ($index:expr, $func:expr) => {
+    crate::bot::systems::profile::PROFILE_SYSTEM
+      .lock_mut($index, $func)
+      .await;
   };
 }

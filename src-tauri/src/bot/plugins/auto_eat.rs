@@ -4,7 +4,7 @@ use azalea::registry::builtin::ItemKind;
 
 use crate::bot::extensions::{BotDefaultExt, BotInteractExt, BotInventoryExt, BotMovementExt};
 use crate::bot::plugin_manager::PluginName;
-use crate::bot::systems::{getst, setmst, setst, State, StateName};
+use crate::bot::systems::states::{getst, setmst, setst, State, StateName};
 use crate::bot::traits::SalarixiPlugin;
 use crate::bot::PLUGINS;
 use crate::other::tools::randchance;
@@ -20,40 +20,40 @@ pub struct AutoEatPlugin;
 
 impl AutoEatPlugin {
   /// Метод обработки тика
-  async fn tick(&self, username: &str) {
+  async fn tick(&self, index: &u8) {
     let mut satiety = 20;
     let mut health = 20.0;
 
-    take_bot!(username, async |bot| {
+    take_bot!(index, async |bot| {
       satiety = bot.get_satiety();
       health = bot.get_health();
     });
 
     if satiety < 20 || health < 15.0 {
-      let food_list = self.find_food_in_inventory(username).await;
+      let food_list = self.find_food_in_inventory(index).await;
 
       if let Some(best_food) = self.get_best_food(satiety, health, &food_list).await {
-        if getst(username, State::CanEating).await
-          && !getst(username, State::IsDrinking).await
-          && !getst(username, State::IsInteracting).await
+        if getst(index, State::CanEating).await
+          && !getst(index, State::IsDrinking).await
+          && !getst(index, State::IsInteracting).await
         {
           let mut should_eat = true;
 
-          if getst(username, State::IsAttacking).await {
+          if getst(index, State::IsAttacking).await {
             should_eat = !(randchance(satiety as f64 / 20.0) && randchance(health as f64 / 20.0));
           }
 
           if should_eat {
-            setst(username, State::CanDrinking, false).await;
-            setst(username, State::CanInteracting, false).await;
-            setmst(username, StateName::Eating, true).await;
+            setst(index, State::CanDrinking, false).await;
+            setst(index, State::CanInteracting, false).await;
+            setmst(index, StateName::Eating, true).await;
 
-            self.start_eating(username, best_food.slot).await;
+            self.start_eating(index, best_food.slot).await;
             sleep!(50);
 
-            setst(username, State::CanDrinking, true).await;
-            setst(username, State::CanInteracting, true).await;
-            setmst(username, StateName::Eating, false).await;
+            setst(index, State::CanDrinking, true).await;
+            setst(index, State::CanInteracting, true).await;
+            setmst(index, StateName::Eating, false).await;
           } else {
             sleep!(1800);
           }
@@ -63,18 +63,18 @@ impl AutoEatPlugin {
   }
 
   /// Метод отправки пакета о кушание еды
-  async fn start_eating(&self, username: &str, slot: usize) {
-    take_bot!(username, async |bot| {
-      bot.freeze_move().await;
-      bot.take_item(slot, false).await;
+  async fn start_eating(&self, index: &u8, slot: usize) {
+    take_bot!(index, async |bot| {
+      bot.freeze_move(index).await;
+      bot.take_item(index, slot, false).await;
       sleep!(50);
       bot.start_use_held_item(InteractionHand::MainHand);
     });
 
     sleep!(1800);
 
-    take_bot!(username, async |bot| {
-      bot.unfreeze_move().await;
+    take_bot!(index, async |bot| {
+      bot.unfreeze_move(index).await;
     });
   }
 
@@ -149,10 +149,10 @@ impl AutoEatPlugin {
   }
 
   /// Метод поиска еды в инвентаре
-  async fn find_food_in_inventory(&self, username: &str) -> Vec<Food> {
+  async fn find_food_in_inventory(&self, index: &u8) -> Vec<Food> {
     let mut food_list = vec![];
 
-    take_bot!(username, async |bot| {
+    take_bot!(index, async |bot| {
       if let Some(menu) = bot.get_inventory_menu() {
         menu.slots().iter().enumerate().for_each(|(slot, item)| {
           if let Some(food) = self.is_food(slot, item) {
@@ -318,15 +318,14 @@ impl SalarixiPlugin for AutoEatPlugin {
     Self
   }
 
-  fn activate(&'static self, username: String) {
-    let username_clone = username.clone();
+  fn activate(&'static self, index: u8) {
     let task = tokio::spawn(async move {
       loop {
-        self.tick(&username_clone).await;
+        self.tick(&index).await;
         sleep!(100);
       }
     });
 
-    PLUGINS.push_task(&username, PluginName::AutoEat, task);
+    PLUGINS.push_task(&index, PluginName::AutoEat, task);
   }
 }

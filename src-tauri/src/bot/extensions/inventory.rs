@@ -12,7 +12,7 @@ use azalea::registry::builtin::ItemKind;
 
 use crate::bot::common::convert_inventory_slot_to_hotbar_slot;
 use crate::bot::extensions::BotMovementExt;
-use crate::bot::systems::{getst, setmst, setst, State, StateName};
+use crate::bot::systems::states::{getst, setmst, setst, State, StateName};
 use crate::other::tools::randnum;
 use crate::sleep;
 
@@ -21,30 +21,39 @@ pub trait BotInventoryExt {
   fn get_current_inventory(&self) -> Option<ContainerHandleRef>;
   fn get_inventory_menu(&self) -> Option<Menu>;
   fn find_empty_slot_in_invenotry(&self) -> Option<usize>;
-  fn start_interacting_with_inventory(&self) -> impl std::future::Future<Output = ()> + Send + Sync;
-  fn stop_interacting_with_inventory(&self) -> impl std::future::Future<Output = ()> + Send + Sync;
+  fn start_interacting_with_inventory(&self, index: &u8) -> impl std::future::Future<Output = ()> + Send + Sync;
+  fn stop_interacting_with_inventory(&self, index: &u8) -> impl std::future::Future<Output = ()> + Send + Sync;
   fn move_item_to_offhand(&self, kind: ItemKind) -> impl std::future::Future<Output = ()> + Send + Sync;
   fn inventory_click(
     &self,
+    index: &u8,
     slot: usize,
     mode: ClickMode,
     lock: bool,
   ) -> impl std::future::Future<Output = ()> + Send + Sync;
   fn inventory_click_on(
     &self,
+    index: &u8,
     name: &str,
     mode: ClickMode,
     lock: bool,
   ) -> impl std::future::Future<Output = ()> + Send + Sync;
-  fn take_item(&self, source_slot: usize, lock: bool) -> impl std::future::Future<Output = ()> + Send + Sync;
+  fn take_item(
+    &self,
+    index: &u8,
+    source_slot: usize,
+    lock: bool,
+  ) -> impl std::future::Future<Output = ()> + Send + Sync;
   fn inventory_swap_click(
     &self,
+    index: &u8,
     source_slot: usize,
     target_slot: usize,
     lock: bool,
   ) -> impl std::future::Future<Output = ()> + Send + Sync;
   fn inventory_move_item(
     &self,
+    index: &u8,
     kind: ItemKind,
     source_slot: usize,
     target_slot: usize,
@@ -114,39 +123,33 @@ impl BotInventoryExt for Client {
     None
   }
 
-  async fn start_interacting_with_inventory(&self) {
-    let username = self.username();
+  async fn start_interacting_with_inventory(&self, index: &u8) {
+    self.freeze_move(index).await;
 
-    self.freeze_move().await;
+    setst(index, State::CanEating, false).await;
+    setst(index, State::CanDrinking, false).await;
+    setst(index, State::CanAttacking, false).await;
 
-    setst(&username, State::CanEating, false).await;
-    setst(&username, State::CanDrinking, false).await;
-    setst(&username, State::CanAttacking, false).await;
-
-    setmst(&username, StateName::Interacting, true).await;
+    setmst(index, StateName::Interacting, true).await;
   }
 
-  async fn stop_interacting_with_inventory(&self) {
-    let username = self.username();
+  async fn stop_interacting_with_inventory(&self, index: &u8) {
+    self.unfreeze_move(index).await;
 
-    self.unfreeze_move().await;
+    setst(index, State::CanEating, true).await;
+    setst(index, State::CanDrinking, true).await;
+    setst(index, State::CanAttacking, true).await;
 
-    setst(&username, State::CanEating, true).await;
-    setst(&username, State::CanDrinking, true).await;
-    setst(&username, State::CanAttacking, true).await;
-
-    setmst(&username, StateName::Interacting, false).await;
+    setmst(index, StateName::Interacting, false).await;
   }
 
-  async fn take_item(&self, source_slot: usize, lock: bool) {
-    let username = self.username();
-
+  async fn take_item(&self, index: &u8, source_slot: usize, lock: bool) {
     if lock {
-      if !getst(&username, State::CanInteracting).await {
+      if !getst(index, State::CanInteracting).await {
         return;
       }
 
-      self.start_interacting_with_inventory().await;
+      self.start_interacting_with_inventory(index).await;
     }
 
     if let Some(hotbar_slot) = convert_inventory_slot_to_hotbar_slot(source_slot) {
@@ -155,7 +158,9 @@ impl BotInventoryExt for Client {
       }
     } else {
       if let Some(empty_slot) = self.find_empty_slot_in_invenotry() {
-        self.inventory_swap_click(source_slot, empty_slot as usize, false).await;
+        self
+          .inventory_swap_click(index, source_slot, empty_slot as usize, false)
+          .await;
 
         if let Some(slot) = convert_inventory_slot_to_hotbar_slot(empty_slot as usize) {
           if self.get_selected_slot() != slot {
@@ -166,9 +171,9 @@ impl BotInventoryExt for Client {
       } else {
         let random_slot = randnum(36, 44) as usize;
 
-        self.inventory_click(random_slot, ClickMode::Shift, false).await;
+        self.inventory_click(index, random_slot, ClickMode::Shift, false).await;
         sleep!(50);
-        self.inventory_swap_click(source_slot, random_slot, false).await;
+        self.inventory_swap_click(index, source_slot, random_slot, false).await;
 
         sleep!(50);
 
@@ -181,7 +186,7 @@ impl BotInventoryExt for Client {
     }
 
     if lock {
-      self.stop_interacting_with_inventory().await;
+      self.stop_interacting_with_inventory(index).await;
     }
   }
 
@@ -202,16 +207,14 @@ impl BotInventoryExt for Client {
     });
   }
 
-  async fn inventory_swap_click(&self, source_slot: usize, target_slot: usize, lock: bool) {
-    let username = self.username();
-
+  async fn inventory_swap_click(&self, index: &u8, source_slot: usize, target_slot: usize, lock: bool) {
     if let Some(inventory) = self.get_current_inventory() {
       if lock {
-        if !getst(&username, State::CanInteracting).await {
+        if !getst(&index, State::CanInteracting).await {
           return;
         }
 
-        self.start_interacting_with_inventory().await;
+        self.start_interacting_with_inventory(index).await;
       }
 
       if let Some(menu) = self.get_inventory_menu() {
@@ -222,7 +225,9 @@ impl BotInventoryExt for Client {
               sleep!(50);
               inventory.left_click(empty_slot);
             } else {
-              self.inventory_click(target_slot, ClickMode::DropAll, false).await;
+              self
+                .inventory_click(index, target_slot, ClickMode::DropAll, false)
+                .await;
             }
 
             sleep!(50);
@@ -237,21 +242,19 @@ impl BotInventoryExt for Client {
       sleep!(50);
 
       if lock {
-        self.stop_interacting_with_inventory().await;
+        self.stop_interacting_with_inventory(index).await;
       }
     }
   }
 
-  async fn inventory_click(&self, slot: usize, mode: ClickMode, lock: bool) {
-    let username = self.username();
-
+  async fn inventory_click(&self, index: &u8, slot: usize, mode: ClickMode, lock: bool) {
     if let Some(inventory) = self.get_current_inventory() {
       if lock {
-        if !getst(&username, State::CanInteracting).await {
+        if !getst(&index, State::CanInteracting).await {
           return;
         }
 
-        self.start_interacting_with_inventory().await;
+        self.start_interacting_with_inventory(index).await;
       }
 
       match mode {
@@ -273,12 +276,12 @@ impl BotInventoryExt for Client {
       }
 
       if lock {
-        self.stop_interacting_with_inventory().await;
+        self.stop_interacting_with_inventory(index).await;
       }
     }
   }
 
-  async fn inventory_click_on(&self, name: &str, mode: ClickMode, lock: bool) {
+  async fn inventory_click_on(&self, index: &u8, name: &str, mode: ClickMode, lock: bool) {
     let string_name = name.to_string();
 
     if let Some(menu) = self.get_inventory_menu() {
@@ -288,14 +291,14 @@ impl BotInventoryExt for Client {
         };
 
         if item_name.name.to_string() == string_name {
-          self.inventory_click(slot, mode, lock).await;
+          self.inventory_click(index, slot, mode, lock).await;
           break;
         }
       }
     }
   }
 
-  async fn inventory_move_item(&self, kind: ItemKind, source_slot: usize, target_slot: usize, lock: bool) {
+  async fn inventory_move_item(&self, index: &u8, kind: ItemKind, source_slot: usize, target_slot: usize, lock: bool) {
     if let Some(menu) = self.get_inventory_menu() {
       if let Some(item) = menu.slot(target_slot) {
         if item.kind() == kind {
@@ -304,6 +307,6 @@ impl BotInventoryExt for Client {
       }
     }
 
-    self.inventory_swap_click(source_slot, target_slot, lock).await;
+    self.inventory_swap_click(index, source_slot, target_slot, lock).await;
   }
 }

@@ -10,8 +10,8 @@ pub struct AutoTotemPlugin;
 
 impl AutoTotemPlugin {
   /// Метод обработки тика
-  async fn tick(&self, username: &str) {
-    take_bot!(username, async |bot| {
+  async fn tick(&self, index: &u8) {
+    take_bot!(index, async |bot| {
       let Some(menu) = bot.get_inventory_menu() else {
         return;
       };
@@ -28,7 +28,9 @@ impl AutoTotemPlugin {
         }
 
         if item.kind() == ItemKind::TotemOfUndying {
-          bot.inventory_move_item(ItemKind::TotemOfUndying, slot, 45, true).await;
+          bot
+            .inventory_move_item(index, ItemKind::TotemOfUndying, slot, 45, true)
+            .await;
         }
       }
     });
@@ -40,15 +42,14 @@ impl SalarixiPlugin for AutoTotemPlugin {
     Self
   }
 
-  fn activate(&'static self, username: String) {
-    let username_clone = username.clone();
+  fn activate(&'static self, index: u8) {
     let task = tokio::spawn(async move {
       loop {
-        self.tick(&username_clone).await;
+        self.tick(&index).await;
         sleep!(150);
       }
     });
 
-    PLUGINS.push_task(&username, PluginName::AutoTotem, task);
+    PLUGINS.push_task(&index, PluginName::AutoTotem, task);
   }
 }

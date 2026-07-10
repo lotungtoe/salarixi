@@ -5,7 +5,7 @@ use serde::Deserialize;
 use tokio::time::sleep;
 
 use crate::bot::extensions::BotDefaultExt;
-use crate::bot::systems::{gettskact, killtsk, pushrtsk, TaskName};
+use crate::bot::systems::tasks::{gettskact, killtsk, pushrtsk, TaskName};
 use crate::bot::traits::SalarixiModule;
 use crate::other::tools::*;
 use crate::{sleep, take_bot};
@@ -101,7 +101,7 @@ impl SalarixiModule<ActionOptions> for ActionModule {
     Self
   }
 
-  async fn switch(&self, username: String, options: ActionOptions) -> bool {
+  async fn switch(&self, index: u8, options: ActionOptions) -> bool {
     let task_name = match options.action.as_str() {
       "jumping" => TaskName::Jumping,
       "shifting" => TaskName::Shifting,
@@ -109,17 +109,16 @@ impl SalarixiModule<ActionOptions> for ActionModule {
       _ => return false,
     };
 
-    if options.state && !gettskact(&username, task_name.clone()).await {
-      let username_clone = username.clone();
+    if options.state && !gettskact(&index, task_name.clone()).await {
       let root_task = tokio::spawn(async move {
-        take_bot!(&username_clone, async |bot| Self::start(bot, &options).await);
+        take_bot!(&index, async |bot| Self::start(bot, &options).await);
       });
 
-      pushrtsk(&username, task_name, root_task).await;
-    } else if !options.state && gettskact(&username, task_name.clone()).await {
-      killtsk(&username, task_name).await;
+      pushrtsk(&index, task_name, root_task).await;
+    } else if !options.state && gettskact(&index, task_name.clone()).await {
+      killtsk(&index, task_name).await;
 
-      take_bot!(&username, async |bot| match options.action.as_str() {
+      take_bot!(&index, async |bot| match options.action.as_str() {
         "jumping" => bot.set_jumping(false),
         "shifting" => bot.set_crouching(false),
         _ => {}

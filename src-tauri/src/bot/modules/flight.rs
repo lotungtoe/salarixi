@@ -8,7 +8,7 @@ use azalea::Vec3;
 use serde::Deserialize;
 
 use crate::bot::extensions::{BotDefaultExt, BotPhysicsExt};
-use crate::bot::systems::{gettskact, killtsk, pushrtsk, TaskName};
+use crate::bot::systems::tasks::{gettskact, killtsk, pushrtsk, TaskName};
 use crate::bot::traits::SalarixiModule;
 use crate::other::tools::*;
 use crate::{sleep, take_bot};
@@ -356,16 +356,15 @@ impl SalarixiModule<FlightOptions> for FlightModule {
     Self
   }
 
-  async fn switch(&self, username: String, options: FlightOptions) -> bool {
-    if options.state && !gettskact(&username, TaskName::Flight).await {
-      let username_clone = username.clone();
+  async fn switch(&self, index: u8, options: FlightOptions) -> bool {
+    if options.state && !gettskact(&index, TaskName::Flight).await {
       let task_handle = tokio::spawn(async move {
-        take_bot!(&username_clone, async |bot| Self::start(bot, &options).await);
+        take_bot!(&index, async |bot| Self::start(bot, &options).await);
       });
 
-      pushrtsk(&username, TaskName::Flight, task_handle).await;
-    } else if !options.state && gettskact(&username, TaskName::Flight).await {
-      killtsk(&username, TaskName::Flight).await;
+      pushrtsk(&index, TaskName::Flight, task_handle).await;
+    } else if !options.state && gettskact(&index, TaskName::Flight).await {
+      killtsk(&index, TaskName::Flight).await;
     } else {
       return false;
     }

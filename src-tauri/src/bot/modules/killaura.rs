@@ -4,7 +4,8 @@ use azalea::{prelude::*, SprintDirection};
 use serde::Deserialize;
 
 use crate::bot::extensions::{BotDefaultExt, BotInventoryExt, BotMovementExt, BotRotationExt, EntityType};
-use crate::bot::systems::{getst, gettskact, killtsk, pushetsk, pushrtsk, setmst, State, StateName, TaskName};
+use crate::bot::systems::states::{getst, setmst, State, StateName};
+use crate::bot::systems::tasks::{gettskact, killtsk, pushetsk, pushrtsk, TaskName};
 use crate::bot::traits::SalarixiModule;
 use crate::other::tools::*;
 use crate::{sleep, take_bot};
@@ -95,7 +96,7 @@ impl KillauraModule {
   }
 
   /// Метод взятия оружия в руку
-  async fn take_weapon(bot: &Client, weapon: &String) {
+  async fn take_weapon(bot: &Client, index: &u8, weapon: &String) {
     let mut weapons = vec![];
 
     if let Some(menu) = bot.get_inventory_menu() {
@@ -210,16 +211,15 @@ impl KillauraModule {
     }
 
     if let Some(slot) = best_weapon.slot {
-      bot.take_item(slot, true).await;
+      bot.take_item(index, slot, true).await;
     }
   }
 
   /// Метод включения доджинга
-  async fn start_dodging(username: String) {
-    let username_clone = username.clone();
+  async fn start_dodging(index: u8) {
     let extra_task = tokio::spawn(async move {
       loop {
-        take_bot!(&username_clone, async |bot| {
+        take_bot!(&index, async |bot| {
           bot.start_crouching();
           sleep!(randnum(100, 800));
           bot.stop_crouching();
@@ -229,41 +229,40 @@ impl KillauraModule {
       }
     });
 
-    pushetsk(&username, TaskName::Killaura, extra_task).await;
+    pushetsk(&index, TaskName::Killaura, extra_task).await;
   }
 
   /// Метод включения преследования
   async fn start_chase(
-    username: String,
+    index: u8,
     target: String,
     target_nickname: Option<String>,
     distance: f64,
     min_distance_to_target: f64,
   ) {
-    let username_clone = username.clone();
     let extra_task = tokio::spawn(async move {
       loop {
-        take_bot!(&username_clone, async |bot| {
+        take_bot!(&index, async |bot| {
           if let Some(entity) = Self::find_nearest_entity(&bot, target.clone(), target_nickname.clone(), distance) {
             let eye_pos = bot.eye_pos();
 
             if eye_pos.distance_to(bot.get_entity_position(entity)) > min_distance_to_target {
               bot.start_jumping();
-              bot.start_sprinting(SprintDirection::Forward).await;
+              bot.start_sprinting(&index, SprintDirection::Forward).await;
 
               bot.look_at_entity(entity, true);
             } else {
               bot.stop_jumping();
 
-              if getst(&username_clone, State::IsSprinting).await {
-                bot.stop_move().await;
+              if getst(&index, State::IsSprinting).await {
+                bot.stop_move(&index).await;
               }
             }
           } else {
             bot.stop_jumping();
 
-            if getst(&username_clone, State::IsSprinting).await {
-              bot.stop_move().await;
+            if getst(&index, State::IsSprinting).await {
+              bot.stop_move(&index).await;
             }
           }
         });
@@ -272,17 +271,16 @@ impl KillauraModule {
       }
     });
 
-    pushetsk(&username, TaskName::Killaura, extra_task).await;
+    pushetsk(&index, TaskName::Killaura, extra_task).await;
   }
 
   /// Метод включения автоматической наводки
-  async fn start_aiming(username: String, target: String, target_nickname: Option<String>, distance: f64) {
-    let username_clone = username.clone();
+  async fn start_aiming(index: u8, target: String, target_nickname: Option<String>, distance: f64) {
     let extra_task = tokio::spawn(async move {
       loop {
-        setmst(&username_clone, StateName::Looking, true).await;
+        setmst(&index, StateName::Looking, true).await;
 
-        take_bot!(&username_clone, async |bot| {
+        take_bot!(&index, async |bot| {
           if let Some(entity) = Self::find_nearest_entity(&bot, target.clone(), target_nickname.clone(), distance) {
             bot.look_at_entity(entity, false);
           }
@@ -290,19 +288,19 @@ impl KillauraModule {
 
         sleep!(randnum(50, 100));
 
-        setmst(&username_clone, StateName::Looking, false).await;
+        setmst(&index, StateName::Looking, false).await;
       }
     });
 
-    pushetsk(&username, TaskName::Killaura, extra_task).await;
+    pushetsk(&index, TaskName::Killaura, extra_task).await;
   }
 
   /// Метод запуска умеренной киллауры
-  async fn moderate_killaura(bot: &Client, options: &KillauraOptions) {
+  async fn moderate_killaura(bot: &Client, index: u8, options: &KillauraOptions) {
     let config = Self::create_config(options);
 
     Self::start_aiming(
-      bot.username(),
+      index,
       config.target.clone(),
       options.target_nickname.clone(),
       config.attack_distance,
@@ -311,7 +309,7 @@ impl KillauraModule {
 
     if options.use_chase {
       Self::start_chase(
-        bot.username(),
+        index,
         config.target.clone(),
         options.target_nickname.clone(),
         config.chase_distance,
@@ -321,16 +319,14 @@ impl KillauraModule {
     }
 
     if options.use_dodging {
-      Self::start_dodging(bot.username()).await;
+      Self::start_dodging(index).await;
     }
 
-    let username = bot.username();
-
     loop {
-      if getst(&username, State::CanAttacking).await
-        && !getst(&username, State::IsInteracting).await
-        && !getst(&username, State::IsEating).await
-        && !getst(&username, State::IsDrinking).await
+      if getst(&index, State::CanAttacking).await
+        && !getst(&index, State::IsInteracting).await
+        && !getst(&index, State::IsEating).await
+        && !getst(&index, State::IsDrinking).await
       {
         if let Some(entity) = Self::find_nearest_entity(
           bot,
@@ -338,19 +334,19 @@ impl KillauraModule {
           options.target_nickname.clone(),
           config.attack_distance,
         ) {
-          setmst(&username, StateName::Attacking, true).await;
+          setmst(&index, StateName::Attacking, true).await;
 
           if options.use_auto_weapon {
-            Self::take_weapon(bot, &options.weapon).await;
+            Self::take_weapon(bot, &index, &options.weapon).await;
           } else {
             if let Some(slot) = config.weapon_slot {
               if slot <= 8 {
                 bot.set_selected_hotbar_slot(slot);
               } else {
-                Self::take_weapon(bot, &options.weapon).await;
+                Self::take_weapon(bot, &index, &options.weapon).await;
               }
             } else {
-              Self::take_weapon(bot, &options.weapon).await;
+              Self::take_weapon(bot, &index, &options.weapon).await;
             }
           }
 
@@ -371,7 +367,7 @@ impl KillauraModule {
             bot.attack(entity);
           }
 
-          setmst(&username, StateName::Attacking, false).await;
+          setmst(&index, StateName::Attacking, false).await;
         }
       }
 
@@ -380,12 +376,12 @@ impl KillauraModule {
   }
 
   /// Метод запуска агрессивной киллауры
-  async fn aggressive_killaura(bot: &Client, options: &KillauraOptions) {
+  async fn aggressive_killaura(bot: &Client, index: u8, options: &KillauraOptions) {
     let config = Self::create_config(options);
 
     if options.use_chase {
       Self::start_chase(
-        bot.username(),
+        index,
         config.target.clone(),
         options.target_nickname.clone(),
         config.chase_distance,
@@ -395,16 +391,14 @@ impl KillauraModule {
     }
 
     if options.use_dodging {
-      Self::start_dodging(bot.username()).await;
+      Self::start_dodging(index).await;
     }
 
-    let username = bot.username();
-
     loop {
-      if getst(&username, State::CanAttacking).await
-        && !getst(&username, State::IsInteracting).await
-        && !getst(&username, State::IsEating).await
-        && !getst(&username, State::IsDrinking).await
+      if getst(&index, State::CanAttacking).await
+        && !getst(&index, State::IsInteracting).await
+        && !getst(&index, State::IsEating).await
+        && !getst(&index, State::IsDrinking).await
       {
         if let Some(entity) = Self::find_nearest_entity(
           bot,
@@ -412,19 +406,19 @@ impl KillauraModule {
           options.target_nickname.clone(),
           config.attack_distance,
         ) {
-          setmst(&username, StateName::Attacking, true).await;
+          setmst(&index, StateName::Attacking, true).await;
 
           if options.use_auto_weapon {
-            Self::take_weapon(bot, &options.weapon).await;
+            Self::take_weapon(bot, &index, &options.weapon).await;
           } else {
             if let Some(slot) = config.weapon_slot {
               if slot <= 8 {
                 bot.set_selected_hotbar_slot(slot);
               } else {
-                Self::take_weapon(bot, &options.weapon).await;
+                Self::take_weapon(bot, &index, &options.weapon).await;
               }
             } else {
-              Self::take_weapon(bot, &options.weapon).await;
+              Self::take_weapon(bot, &index, &options.weapon).await;
             }
           }
 
@@ -444,7 +438,7 @@ impl KillauraModule {
             bot.attack(entity);
           }
 
-          setmst(&username, StateName::Attacking, false).await;
+          setmst(&index, StateName::Attacking, false).await;
         }
       }
 
@@ -453,10 +447,10 @@ impl KillauraModule {
   }
 
   /// Метод запуска киллауры
-  async fn start(bot: &Client, options: &KillauraOptions) {
+  async fn start(bot: &Client, index: u8, options: &KillauraOptions) {
     match options.behavior.as_str() {
-      "moderate" => Self::moderate_killaura(bot, &options).await,
-      "aggressive" => Self::aggressive_killaura(bot, &options).await,
+      "moderate" => Self::moderate_killaura(bot, index, &options).await,
+      "aggressive" => Self::aggressive_killaura(bot, index, &options).await,
       _ => {}
     }
   }
@@ -467,25 +461,24 @@ impl SalarixiModule<KillauraOptions> for KillauraModule {
     Self
   }
 
-  async fn switch(&self, username: String, options: KillauraOptions) -> bool {
-    if options.state && !gettskact(&username, TaskName::Killaura).await {
-      let username_clone = username.clone();
+  async fn switch(&self, index: u8, options: KillauraOptions) -> bool {
+    if options.state && !gettskact(&index, TaskName::Killaura).await {
       let task_handle = tokio::spawn(async move {
-        take_bot!(&username_clone, async |bot| Self::start(bot, &options).await);
+        take_bot!(&index, async |bot| Self::start(bot, index, &options).await);
       });
 
-      pushrtsk(&username, TaskName::Killaura, task_handle).await;
-    } else if !options.state && gettskact(&username, TaskName::Killaura).await {
-      killtsk(&username, TaskName::Killaura).await;
+      pushrtsk(&index, TaskName::Killaura, task_handle).await;
+    } else if !options.state && gettskact(&index, TaskName::Killaura).await {
+      killtsk(&index, TaskName::Killaura).await;
 
-      take_bot!(&username, async |bot| {
-        bot.stop_move().await;
+      take_bot!(&index, async |bot| {
+        bot.stop_move(&index).await;
         bot.stop_crouching();
         bot.stop_jumping();
       });
 
-      setmst(&username, StateName::Looking, false).await;
-      setmst(&username, StateName::Attacking, false).await;
+      setmst(&index, StateName::Looking, false).await;
+      setmst(&index, StateName::Attacking, false).await;
     } else {
       return false;
     }

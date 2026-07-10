@@ -3,8 +3,8 @@ use azalea::WalkDirection;
 use serde::Deserialize;
 
 use crate::bot::extensions::{BotDefaultExt, BotMovementExt};
-use crate::bot::systems::gettskact;
-use crate::bot::systems::{killtsk, pushetsk, pushrtsk, setmst, StateName, TaskName};
+use crate::bot::systems::states::{setmst, StateName};
+use crate::bot::systems::tasks::{gettskact, killtsk, pushetsk, pushrtsk, TaskName};
 use crate::bot::traits::SalarixiModule;
 use crate::other::tools::*;
 use crate::sleep;
@@ -52,7 +52,7 @@ impl AntiAfkModule {
     }
   }
 
-  async fn normal(bot: &Client, options: &AntiAfkOptions) {
+  async fn normal(bot: &Client, index: &u8, options: &AntiAfkOptions) {
     let min_delay = options.min_delay.unwrap_or(1000);
     let max_delay = options.max_delay.unwrap_or(2500);
 
@@ -70,7 +70,7 @@ impl AntiAfkModule {
 
       let walk_direction = randelem(&walk_directions);
 
-      bot.start_walking(*walk_direction).await;
+      bot.start_walking(index, *walk_direction).await;
 
       let direction = bot.direction();
 
@@ -81,22 +81,19 @@ impl AntiAfkModule {
 
       sleep!(randnum(150, 400));
 
-      bot.stop_move().await;
+      bot.stop_move(index).await;
 
       sleep!(randnum(min_delay, max_delay));
     }
   }
 
-  async fn advanced(bot: &Client, options: &AntiAfkOptions) {
+  async fn advanced(bot: &Client, index: u8, options: &AntiAfkOptions) {
     let min_delay = options.min_delay.unwrap_or(1000);
     let max_delay = options.max_delay.unwrap_or(2500);
 
-    let username = bot.username();
-    let username_clone = username.clone();
-
     let extra_task = tokio::spawn(async move {
       loop {
-        take_bot!(&username_clone, async |bot| {
+        take_bot!(&index, async |bot| {
           let direction = bot.direction();
 
           bot.set_direction(
@@ -109,10 +106,10 @@ impl AntiAfkModule {
       }
     });
 
-    pushetsk(&username, TaskName::AntiAfk, extra_task).await;
+    pushetsk(&index, TaskName::AntiAfk, extra_task).await;
 
     loop {
-      bot.start_walking(WalkDirection::Forward).await;
+      bot.start_walking(&index, WalkDirection::Forward).await;
 
       if randchance(0.4) {
         bot.swing_arm();
@@ -132,11 +129,11 @@ impl AntiAfkModule {
     }
   }
 
-  async fn start(bot: &Client, options: &AntiAfkOptions) {
+  async fn start(bot: &Client, index: &u8, options: &AntiAfkOptions) {
     match options.mode.as_str() {
       "minimal" => Self::minimal(bot, options).await,
-      "normal" => Self::normal(bot, options).await,
-      "advanced" => Self::advanced(bot, options).await,
+      "normal" => Self::normal(bot, index, options).await,
+      "advanced" => Self::advanced(bot, *index, options).await,
       _ => {}
     }
   }
@@ -147,23 +144,22 @@ impl SalarixiModule<AntiAfkOptions> for AntiAfkModule {
     Self
   }
 
-  async fn switch(&self, username: String, options: AntiAfkOptions) -> bool {
-    if options.state && !gettskact(&username, TaskName::AntiAfk).await {
-      let username_clone = username.clone();
+  async fn switch(&self, index: u8, options: AntiAfkOptions) -> bool {
+    if options.state && !gettskact(&index, TaskName::AntiAfk).await {
       let task_handle = tokio::spawn(async move {
-        take_bot!(&username_clone, async |bot| Self::start(bot, &options).await);
+        take_bot!(&index, async |bot| Self::start(bot, &index, &options).await);
       });
 
-      pushrtsk(&username, TaskName::AntiAfk, task_handle).await;
-    } else if !options.state && gettskact(&username, TaskName::AntiAfk).await {
-      killtsk(&username, TaskName::AntiAfk).await;
+      pushrtsk(&index, TaskName::AntiAfk, task_handle).await;
+    } else if !options.state && gettskact(&index, TaskName::AntiAfk).await {
+      killtsk(&index, TaskName::AntiAfk).await;
 
-      take_bot!(&username, async |bot| {
-        bot.stop_move().await;
+      take_bot!(&index, async |bot| {
+        bot.stop_move(&index).await;
         bot.stop_crouching();
       });
 
-      setmst(&username, StateName::Looking, false).await;
+      setmst(&index, StateName::Looking, false).await;
     } else {
       return false;
     }

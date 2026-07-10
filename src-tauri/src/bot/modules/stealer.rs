@@ -6,7 +6,8 @@ use serde::Deserialize;
 
 use crate::bot::common::get_block_state;
 use crate::bot::extensions::BotMovementExt;
-use crate::bot::systems::{getst, gettskact, killtsk, pushrtsk, setmst, setst, State, StateName, TaskName};
+use crate::bot::systems::states::{getst, setmst, setst, State, StateName};
+use crate::bot::systems::tasks::{gettskact, killtsk, pushrtsk, TaskName};
 use crate::bot::traits::SalarixiModule;
 use crate::other::tools::*;
 use crate::{sleep, take_bot};
@@ -71,16 +72,14 @@ impl StealerModule {
     positions
   }
 
-  async fn extract_all_items(bot: &Client, container: &ContainerHandle) {
+  async fn extract_all_items(bot: &Client, index: &u8, container: &ContainerHandle) {
     if let Some(menu) = container.menu() {
-      bot.freeze_move().await;
+      bot.freeze_move(index).await;
 
-      let username = bot.username();
-
-      setst(&username, State::CanAttacking, false).await;
-      setst(&username, State::CanInteracting, false).await;
-      setst(&username, State::CanEating, false).await;
-      setst(&username, State::CanDrinking, false).await;
+      setst(index, State::CanAttacking, false).await;
+      setst(index, State::CanInteracting, false).await;
+      setst(index, State::CanEating, false).await;
+      setst(index, State::CanDrinking, false).await;
 
       for slot in 0..=26 {
         if let Some(item) = menu.slot(slot) {
@@ -90,18 +89,16 @@ impl StealerModule {
         }
       }
 
-      bot.unfreeze_move().await;
+      bot.unfreeze_move(index).await;
 
-      setst(&username, State::CanAttacking, true).await;
-      setst(&username, State::CanInteracting, true).await;
-      setst(&username, State::CanEating, true).await;
-      setst(&username, State::CanDrinking, true).await;
+      setst(index, State::CanAttacking, true).await;
+      setst(index, State::CanInteracting, true).await;
+      setst(index, State::CanEating, true).await;
+      setst(index, State::CanDrinking, true).await;
     }
   }
 
-  async fn start(bot: &Client, options: &StealerOptions) {
-    let username = bot.username();
-
+  async fn start(bot: &Client, index: &u8, options: &StealerOptions) {
     loop {
       let position = bot.position();
       let direction = bot.direction();
@@ -109,26 +106,26 @@ impl StealerModule {
       let target_positions = Self::find_nearest_targets(bot, position, &options.target, options.radius.unwrap_or(5));
 
       for pos in target_positions {
-        if getst(&username, State::CanLooking).await && getst(&username, State::CanInteracting).await {
-          setmst(&username, StateName::Looking, true).await;
-          setmst(&username, StateName::Interacting, true).await;
+        if getst(index, State::CanLooking).await && getst(index, State::CanInteracting).await {
+          setmst(index, StateName::Looking, true).await;
+          setmst(index, StateName::Interacting, true).await;
 
           bot.look_at(pos.center());
 
           sleep!(randnum(50, 100));
 
           if let Some(container) = bot.open_container_at(pos).await {
-            Self::extract_all_items(bot, &container).await;
+            Self::extract_all_items(bot, index, &container).await;
             container.close();
             sleep!(randnum(200, 350));
           }
 
-          setmst(&username, StateName::Looking, false).await;
-          setmst(&username, StateName::Interacting, false).await;
+          setmst(index, StateName::Looking, false).await;
+          setmst(index, StateName::Interacting, false).await;
         }
       }
 
-      if getst(&username, State::CanLooking).await {
+      if getst(index, State::CanLooking).await {
         bot.set_direction(
           direction.0 + randnum(-2.5, 2.5) as f32,
           direction.1 + randnum(-2.5, 2.5) as f32,
@@ -145,16 +142,15 @@ impl SalarixiModule<StealerOptions> for StealerModule {
     Self
   }
 
-  async fn switch(&self, username: String, options: StealerOptions) -> bool {
-    if options.state && !gettskact(&username, TaskName::Stealer).await {
-      let username_clone = username.clone();
+  async fn switch(&self, index: u8, options: StealerOptions) -> bool {
+    if options.state && !gettskact(&index, TaskName::Stealer).await {
       let task_handle = tokio::spawn(async move {
-        take_bot!(&username_clone, async |bot| Self::start(bot, &options).await);
+        take_bot!(&index, async |bot| Self::start(bot, &index, &options).await);
       });
 
-      pushrtsk(&username, TaskName::Stealer, task_handle).await;
-    } else if !options.state && gettskact(&username, TaskName::Stealer).await {
-      killtsk(&username, TaskName::Stealer).await;
+      pushrtsk(&index, TaskName::Stealer, task_handle).await;
+    } else if !options.state && gettskact(&index, TaskName::Stealer).await {
+      killtsk(&index, TaskName::Stealer).await;
     } else {
       return false;
     }

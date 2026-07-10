@@ -1,7 +1,5 @@
-mod profile;
-mod states;
-mod tasks;
-
-pub use profile::*;
-pub use states::*;
-pub use tasks::*;
+pub mod index;
+pub mod profile;
+pub mod registry;
+pub mod states;
+pub mod tasks;

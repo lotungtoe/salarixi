@@ -3,7 +3,7 @@ use serde::de::DeserializeOwned;
 
 use crate::api::emit::{emit_log, emit_msg};
 use crate::bot::modules::*;
-use crate::bot::systems::PROFILE_SYSTEM;
+use crate::bot::systems::profile::PROFILE_SYSTEM;
 use crate::bot::traits::SalarixiModule;
 use crate::launch::process::current_options;
 use crate::other::webhook::send_webhook;
@@ -71,10 +71,10 @@ impl ModuleManager {
     let total_count = profiles.len();
     let mut success_count = 0;
 
-    for (username, _) in profiles {
+    for (index, _) in profiles {
       let cur_opts = options.clone();
 
-      if let Some(profile) = PROFILE_SYSTEM.get(&username).await {
+      if let Some(profile) = PROFILE_SYSTEM.get(&index).await {
         if profile.group != group {
           continue;
         }
@@ -85,59 +85,59 @@ impl ModuleManager {
       match module_name.as_str() {
         "chat" => {
           let options: ChatOptions = try_parse_options(cur_opts)?;
-          success = self.chat.switch(username, options).await;
+          success = self.chat.switch(index, options).await;
         }
         "action" => {
           let options: ActionOptions = try_parse_options(cur_opts)?;
-          success = self.action.switch(username, options).await;
+          success = self.action.switch(index, options).await;
         }
         "inventory" => {
           let options: InventoryOptions = try_parse_options(cur_opts)?;
-          success = self.inventory.switch(username, options).await;
+          success = self.inventory.switch(index, options).await;
         }
         "movement" => {
           let options: MovementOptions = try_parse_options(cur_opts)?;
-          success = self.movement.switch(username, options).await;
+          success = self.movement.switch(index, options).await;
         }
         "anti-afk" => {
           let options: AntiAfkOptions = try_parse_options(cur_opts)?;
-          success = self.anti_afk.switch(username, options).await;
+          success = self.anti_afk.switch(index, options).await;
         }
         "stalker" => {
           let options: StalkerOptions = try_parse_options(cur_opts)?;
-          success = self.stalker.switch(username, options).await;
+          success = self.stalker.switch(index, options).await;
         }
         "flight" => {
           let options: FlightOptions = try_parse_options(cur_opts)?;
-          success = self.flight.switch(username, options).await;
+          success = self.flight.switch(index, options).await;
         }
         "killaura" => {
           let options: KillauraOptions = try_parse_options(cur_opts)?;
-          success = self.killaura.switch(username, options).await;
+          success = self.killaura.switch(index, options).await;
         }
         "scaffold" => {
           let options: ScaffoldOptions = try_parse_options(cur_opts)?;
-          success = self.scaffold.switch(username, options).await;
+          success = self.scaffold.switch(index, options).await;
         }
         "anti-fall" => {
           let options: AntiFallOptions = try_parse_options(cur_opts)?;
-          success = self.anti_fall.switch(username, options).await;
+          success = self.anti_fall.switch(index, options).await;
         }
         "bow-aim" => {
           let options: BowAimOptions = try_parse_options(cur_opts)?;
-          success = self.bow_aim.switch(username, options).await;
+          success = self.bow_aim.switch(index, options).await;
         }
         "stealer" => {
           let options: StealerOptions = try_parse_options(cur_opts)?;
-          success = self.stealer.switch(username, options).await;
+          success = self.stealer.switch(index, options).await;
         }
         "miner" => {
           let options: MinerOptions = try_parse_options(cur_opts)?;
-          success = self.miner.switch(username, options).await;
+          success = self.miner.switch(index, options).await;
         }
         "farmer" => {
           let options: FarmerOptions = try_parse_options(cur_opts)?;
-          success = self.farmer.switch(username, options).await;
+          success = self.farmer.switch(index, options).await;
         }
         _ => continue,
       }

@@ -7,7 +7,8 @@ use crate::bot::common::{
   convert_hotbar_slot_to_inventory_slot, convert_inventory_slot_to_hotbar_slot, get_block_state, this_is_solid_block,
 };
 use crate::bot::extensions::{BotDefaultExt, BotInventoryExt, BotMovementExt, BotPhysicsExt};
-use crate::bot::systems::{gettskact, killtsk, pushetsk, pushrtsk, setmst, StateName, TaskName};
+use crate::bot::systems::states::{setmst, StateName};
+use crate::bot::systems::tasks::{gettskact, killtsk, pushetsk, pushrtsk, TaskName};
 use crate::bot::traits::SalarixiModule;
 use crate::other::tools::*;
 use crate::{sleep, take_bot};
@@ -24,7 +25,7 @@ pub struct ScaffoldOptions {
 }
 
 impl ScaffoldModule {
-  async fn take_block(bot: &Client) -> bool {
+  async fn take_block(bot: &Client, index: &u8) -> bool {
     if let Some(menu) = bot.get_inventory_menu() {
       if let Some(item) = menu.slot(convert_hotbar_slot_to_inventory_slot(bot.get_selected_slot())) {
         if this_is_solid_block(item.kind()) {
@@ -60,7 +61,7 @@ impl ScaffoldModule {
       }
 
       if let Some(slot) = block_slot {
-        bot.take_item(slot, true).await;
+        bot.take_item(index, slot, true).await;
         return true;
       }
     }
@@ -86,28 +87,27 @@ impl ScaffoldModule {
     bot.set_direction(direction.0, randnum(min_x, max_x) as f32);
   }
 
-  async fn go_back(username: String) {
-    let username_clone = username.clone();
+  async fn go_back(index: u8) {
     let extra_task = tokio::spawn(async move {
       loop {
-        take_bot!(&username_clone, async |bot| {
-          bot.start_walking(WalkDirection::Backward).await;
+        take_bot!(&index, async |bot| {
+          bot.start_walking(&index, WalkDirection::Backward).await;
         });
 
         sleep!(100);
       }
     });
 
-    pushetsk(&username, TaskName::Scaffold, extra_task).await;
+    pushetsk(&index, TaskName::Scaffold, extra_task).await;
   }
 
-  async fn noob_bridge_scaffold(bot: &Client, options: &ScaffoldOptions) {
+  async fn noob_bridge_scaffold(bot: &Client, index: &u8, options: &ScaffoldOptions) {
     loop {
       if !bot.crouching() {
         bot.set_crouching(true);
       }
 
-      if Self::take_block(bot).await {
+      if Self::take_block(bot, index).await {
         Self::direct_gaze(bot, options.min_gaze_degree_x, options.max_gaze_degree_x);
 
         let position = bot.position();
@@ -140,9 +140,9 @@ impl ScaffoldModule {
     }
   }
 
-  async fn ninja_bridge_scaffold(bot: &Client, options: &ScaffoldOptions) {
+  async fn ninja_bridge_scaffold(bot: &Client, index: &u8, options: &ScaffoldOptions) {
     loop {
-      if Self::take_block(bot).await {
+      if Self::take_block(bot, index).await {
         Self::direct_gaze(bot, options.min_gaze_degree_x, options.max_gaze_degree_x);
 
         let pos = bot.position();
@@ -177,9 +177,9 @@ impl ScaffoldModule {
     }
   }
 
-  async fn god_bridge_scaffold(bot: &Client, options: &ScaffoldOptions) {
+  async fn god_bridge_scaffold(bot: &Client, index: &u8, options: &ScaffoldOptions) {
     loop {
-      if Self::take_block(bot).await {
+      if Self::take_block(bot, index).await {
         Self::direct_gaze(bot, options.min_gaze_degree_x, options.max_gaze_degree_x);
 
         let position = bot.position();
@@ -208,9 +208,9 @@ impl ScaffoldModule {
     }
   }
 
-  async fn jump_bridge_scaffold(bot: &Client, options: &ScaffoldOptions) {
+  async fn jump_bridge_scaffold(bot: &Client, index: &u8, options: &ScaffoldOptions) {
     loop {
-      if Self::take_block(bot).await {
+      if Self::take_block(bot, index).await {
         Self::direct_gaze(bot, options.min_gaze_degree_x, options.max_gaze_degree_x);
 
         let position = bot.position();
@@ -252,14 +252,14 @@ impl ScaffoldModule {
     }
   }
 
-  async fn start(bot: &Client, options: &ScaffoldOptions) {
-    Self::go_back(bot.username()).await;
+  async fn start(bot: &Client, index: u8, options: &ScaffoldOptions) {
+    Self::go_back(index).await;
 
     match options.mode.as_str() {
-      "noob-bridge" => Self::noob_bridge_scaffold(bot, &options).await,
-      "ninja-bridge" => Self::ninja_bridge_scaffold(bot, &options).await,
-      "god-bridge" => Self::god_bridge_scaffold(bot, &options).await,
-      "jump-bridge" => Self::jump_bridge_scaffold(bot, &options).await,
+      "noob-bridge" => Self::noob_bridge_scaffold(bot, &index, &options).await,
+      "ninja-bridge" => Self::ninja_bridge_scaffold(bot, &index, &options).await,
+      "god-bridge" => Self::god_bridge_scaffold(bot, &index, &options).await,
+      "jump-bridge" => Self::jump_bridge_scaffold(bot, &index, &options).await,
       _ => {}
     }
   }
@@ -270,24 +270,23 @@ impl SalarixiModule<ScaffoldOptions> for ScaffoldModule {
     Self
   }
 
-  async fn switch(&self, username: String, options: ScaffoldOptions) -> bool {
-    if options.state && !gettskact(&username, TaskName::Scaffold).await {
-      let username_clone = username.clone();
+  async fn switch(&self, index: u8, options: ScaffoldOptions) -> bool {
+    if options.state && !gettskact(&index, TaskName::Scaffold).await {
       let task_handle = tokio::spawn(async move {
-        take_bot!(&username_clone, async |bot| Self::start(bot, &options).await);
+        take_bot!(&index, async |bot| Self::start(bot, index, &options).await);
       });
 
-      pushrtsk(&username, TaskName::Scaffold, task_handle).await;
-    } else if !options.state && gettskact(&username, TaskName::Scaffold).await {
-      killtsk(&username, TaskName::Scaffold).await;
+      pushrtsk(&index, TaskName::Scaffold, task_handle).await;
+    } else if !options.state && gettskact(&index, TaskName::Scaffold).await {
+      killtsk(&index, TaskName::Scaffold).await;
 
-      take_bot!(&username, async |bot| {
+      take_bot!(&index, async |bot| {
         bot.set_crouching(false);
-        bot.stop_move().await;
+        bot.stop_move(&index).await;
       });
 
-      setmst(&username, StateName::Looking, false).await;
-      setmst(&username, StateName::Interacting, false).await;
+      setmst(&index, StateName::Looking, false).await;
+      setmst(&index, StateName::Interacting, false).await;
     } else {
       return false;
     }

@@ -1,5 +1,6 @@
 use crate::api::emit::emit_log;
-use crate::bot::systems::PROFILE_SYSTEM;
+use crate::bot::systems::index::INDEX_SYSTEM;
+use crate::bot::systems::profile::PROFILE_SYSTEM;
 use crate::launch::process::current_options;
 use crate::other::tools::*;
 use crate::{sleep, take_bot};
@@ -7,12 +8,12 @@ use crate::{sleep, take_bot};
 const DEFAULT_AUTH_TEMPLATE: &str = "$cmd $pass";
 
 /// Функция default-авторизации бота
-pub async fn default_authorize(username: &str) {
+pub async fn default_authorize(index: &u8) {
   let Some(opts) = current_options().await else {
     return;
   };
 
-  let Some(profile) = PROFILE_SYSTEM.get(username).await else {
+  let Some(profile) = PROFILE_SYSTEM.get(index).await else {
     return;
   };
 
@@ -53,41 +54,45 @@ pub async fn default_authorize(username: &str) {
 
   drop(profile);
 
-  if !cmd.is_empty() {
-    sleep!(randnum(min_delay, max_delay));
+  if cmd.is_empty() {
+    return;
+  }
 
-    let msg = template
-      .replace("$cmd", &cmd)
-      .replace("$pass", &password.unwrap_or(String::new()))
-      .replace("$email", &email.unwrap_or(String::new()));
+  sleep!(randnum(min_delay, max_delay));
 
-    take_bot!(username, async |bot| {
-      bot.chat(&msg);
-    });
+  let msg = template
+    .replace("$cmd", &cmd)
+    .replace("$pass", &password.unwrap_or(String::new()))
+    .replace("$email", &email.unwrap_or(String::new()));
 
-    // Нельзя просто поставить значение registered напрямую, так как
-    // текущее значения может быть true (то есть бот уже зарегистрирован),
-    // и при этом оно сбросится на false, что будет некорректно
-    if registered {
-      PROFILE_SYSTEM.set_bool(&username, "registered", true).await;
-    }
+  take_bot!(index, async |bot| {
+    bot.chat(&msg);
+  });
 
-    // Аналогично registered
-    if logined {
-      PROFILE_SYSTEM.set_bool(&username, "logined", true).await;
-    }
+  // Нельзя просто поставить значение registered напрямую, так как
+  // текущее значения может быть true (то есть бот уже зарегистрирован),
+  // и при этом оно сбросится на false, что будет некорректно
+  if registered {
+    PROFILE_SYSTEM.set_bool(index, "registered", true).await;
+  }
 
+  // Аналогично registered
+  if logined {
+    PROFILE_SYSTEM.set_bool(index, "logined", true).await;
+  }
+
+  if let Some(username) = INDEX_SYSTEM.username_by_index(index).await {
     emit_log(format!("Бот {} {}: {}", &username, action, &msg), "info");
   }
 }
 
 /// Функция trigger-авторизации бота
-pub async fn trigger_authorize(username: &str, message: String) {
+pub async fn trigger_authorize(index: &u8, message: String) {
   let Some(opts) = current_options().await else {
     return;
   };
 
-  let Some(profile) = PROFILE_SYSTEM.get(username).await else {
+  let Some(profile) = PROFILE_SYSTEM.get(index).await else {
     return;
   };
 
@@ -132,24 +137,28 @@ pub async fn trigger_authorize(username: &str, message: String) {
 
   drop(profile);
 
-  if !cmd.is_empty() {
-    let msg = template
-      .replace("$cmd", &cmd)
-      .replace("$pass", &password.unwrap_or(String::new()))
-      .replace("$email", &email.unwrap_or(String::new()));
+  if cmd.is_empty() {
+    return;
+  }
 
-    take_bot!(username, async |bot| {
-      bot.chat(&msg);
-    });
+  let msg = template
+    .replace("$cmd", &cmd)
+    .replace("$pass", &password.unwrap_or(String::new()))
+    .replace("$email", &email.unwrap_or(String::new()));
 
-    if registered {
-      PROFILE_SYSTEM.set_bool(&username, "registered", true).await;
-    }
+  take_bot!(index, async |bot| {
+    bot.chat(&msg);
+  });
 
-    if logined {
-      PROFILE_SYSTEM.set_bool(&username, "logined", true).await;
-    }
+  if registered {
+    PROFILE_SYSTEM.set_bool(index, "registered", true).await;
+  }
 
+  if logined {
+    PROFILE_SYSTEM.set_bool(index, "logined", true).await;
+  }
+
+  if let Some(username) = INDEX_SYSTEM.username_by_index(index).await {
     emit_log(format!("Бот {} {}: {}", &username, action, &msg), "info");
   }
 }

@@ -1,4 +1,4 @@
-use crate::bot::systems::PROFILE_SYSTEM;
+use crate::bot::systems::index::INDEX_SYSTEM;
 use crate::other::tools::*;
 
 const LEGIT_NICKNAMES: &[&str] = &[
@@ -235,21 +235,14 @@ pub fn generate_email(class: &str) -> Option<String> {
 
 /// Функция генерации уникального юзернейма
 pub async fn generate_unique_username(class: &str, template: &str) -> Option<String> {
+  let usernames = INDEX_SYSTEM.get_all_usernames().await;
+
   for _ in 0..5 {
     let Some(username) = generate_username_or_password("username", class, template) else {
       continue;
     };
 
-    let mut is_unique = true;
-
-    for name in PROFILE_SYSTEM.get_all().await.keys() {
-      if username == *name {
-        is_unique = false;
-        break;
-      }
-    }
-
-    if is_unique {
+    if !usernames.contains(&username) {
       return Some(username);
     }
   }
