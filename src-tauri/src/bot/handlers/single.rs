@@ -10,7 +10,6 @@ use azalea::registry::builtin::EntityKind;
 use azalea::FormattedText;
 use azalea::{ClientInformation, NoState};
 
-use crate::api::emit::*;
 use crate::bot::auth::{default_authorize, trigger_authorize};
 use crate::bot::extensions::BotDefaultExt;
 use crate::bot::script::SCRIPT_EXECUTOR;
@@ -23,6 +22,7 @@ use crate::bot::systems::states::STATE_SYSTEM;
 use crate::bot::systems::tasks::TASK_SYSTEM;
 use crate::bot::utils::acaptcha::{MAP_ACCUMULATOR, MAP_CAPTCHA_BYPASS, WEB_CAPTCHA_BYPASS};
 use crate::bot::PLUGINS;
+use crate::emit::*;
 use crate::launch::process::current_options;
 use crate::other::tools::*;
 use crate::other::webhook::*;

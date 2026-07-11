@@ -3,10 +3,10 @@ use once_cell::sync::Lazy;
 use tokio::sync::RwLock;
 use tokio::task::JoinHandle;
 
-use crate::api::emit::emit_log;
 use crate::bot::plugins::*;
 use crate::bot::systems::profile::PROFILE_SYSTEM;
 use crate::bot::traits::SalarixiPlugin;
+use crate::emit::emit_log;
 use crate::launch::options::PluginOptions;
 
 pub static PLUGINS: Lazy<PluginManager> = Lazy::new(|| PluginManager::new());

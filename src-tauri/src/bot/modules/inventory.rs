@@ -1,10 +1,10 @@
 use azalea::Client;
 use serde::Deserialize;
 
-use crate::api::emit::*;
 use crate::bot::extensions::{BotInventoryExt, ClickMode};
 use crate::bot::systems::index::INDEX_SYSTEM;
 use crate::bot::traits::SalarixiModule;
+use crate::emit::*;
 use crate::take_bot;
 
 pub struct InventoryModule;

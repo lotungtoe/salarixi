@@ -10,7 +10,6 @@ use azalea::swarm::*;
 use azalea::JoinOpts;
 use socks5_impl::protocol::UserKey;
 
-use crate::api::emit::{emit_log, emit_msg};
 use crate::bot::handlers::single::single_handler;
 use crate::bot::handlers::swarm::swarm_handler;
 use crate::bot::systems::index::INDEX_SYSTEM;
@@ -20,6 +19,7 @@ use crate::bot::systems::states::STATE_SYSTEM;
 use crate::bot::systems::tasks::TASK_SYSTEM;
 use crate::bot::utils::acaptcha::MAP_ACCUMULATOR;
 use crate::bot::PLUGINS;
+use crate::emit::{emit_log, emit_msg};
 use crate::other::webhook::send_webhook;
 use crate::sleep;
 

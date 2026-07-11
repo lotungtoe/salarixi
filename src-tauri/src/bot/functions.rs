@@ -1,6 +1,5 @@
 use azalea::pathfinder::PathfinderClientExt;
 
-use crate::api::emit::*;
 use crate::bot::extensions::{BotDefaultExt, BotMovementExt};
 use crate::bot::systems::index::INDEX_SYSTEM;
 use crate::bot::systems::profile::PROFILE_SYSTEM;
@@ -8,6 +7,7 @@ use crate::bot::systems::registry::REGISTRY_SYSTEM;
 use crate::bot::systems::states::STATE_SYSTEM;
 use crate::bot::systems::tasks::TASK_SYSTEM;
 use crate::bot::PLUGINS;
+use crate::emit::*;
 use crate::{sleep, take_bot};
 
 /// Вспомогательная функция отправки сообщения в чат от бота

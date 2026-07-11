@@ -1,7 +1,7 @@
 use reqwest;
 use serde::{Deserialize, Serialize};
 
-use crate::api::emit::*;
+use crate::emit::*;
 
 #[derive(Serialize, Deserialize)]
 struct Webhook {

@@ -3,7 +3,7 @@ use once_cell::sync::Lazy;
 use std::sync::atomic::{AtomicU16, Ordering};
 use tokio::sync::RwLock;
 
-use crate::api::emit::emit_log;
+use crate::emit::emit_log;
 
 pub static STATE_SYSTEM: Lazy<StateSystem> = Lazy::new(|| StateSystem::new());
 

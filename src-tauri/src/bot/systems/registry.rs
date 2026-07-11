@@ -6,9 +6,9 @@ use dashmap::DashMap;
 use once_cell::sync::Lazy;
 use tokio::sync::{broadcast, RwLock};
 
-use crate::api::emit::emit_log;
 use crate::bot::quick::QUICK_TASKS;
 use crate::bot::{MODULES, PLUGINS};
+use crate::emit::emit_log;
 use crate::launch::process::current_options;
 
 pub static REGISTRY_SYSTEM: Lazy<RegistrySystem> = Lazy::new(|| RegistrySystem::new());

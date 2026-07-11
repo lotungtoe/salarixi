@@ -10,7 +10,6 @@ use once_cell::sync::Lazy;
 use rhai::{Dynamic, Engine, EvalAltResult, Map};
 use tokio::sync::RwLock;
 
-use crate::api::emit::{emit_log, emit_msg};
 use crate::bot::common::convert_hotbar_slot_to_inventory_slot;
 use crate::bot::extensions::{
   go_to, BotDefaultExt, BotInteractExt, BotInventoryExt, BotMovementExt, BotPhysicsExt, BotRotationExt, ClickMode,
@@ -20,6 +19,7 @@ use crate::bot::systems::index::INDEX_SYSTEM;
 use crate::bot::systems::profile::PROFILE_SYSTEM;
 use crate::bot::systems::registry::REGISTRY_SYSTEM;
 use crate::bot::systems::states::{try_getst, try_setst, State};
+use crate::emit::{emit_log, emit_msg};
 use crate::launch::process::{current_options, process_is_active};
 use crate::other::webhook::*;
 

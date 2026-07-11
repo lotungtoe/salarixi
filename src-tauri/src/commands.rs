@@ -4,7 +4,6 @@ use std::time::Duration;
 use hashbrown::HashMap;
 use serde::Deserialize;
 
-use crate::api::emit::{emit_log, emit_msg};
 use crate::bot::functions::{disconnect_bot, reset_bot, send_message_from_bot};
 use crate::bot::script::SCRIPT_EXECUTOR;
 use crate::bot::systems::index::INDEX_SYSTEM;
@@ -12,6 +11,7 @@ use crate::bot::systems::profile::{Profile, PROFILE_SYSTEM};
 use crate::bot::systems::registry::{RegistryEvent, REGISTRY_SYSTEM};
 use crate::bot::utils::ping::{ping_server, ServerInformation};
 use crate::bot::utils::radar::{RadarInfo, RADAR};
+use crate::emit::{emit_log, emit_msg};
 use crate::launch::options::LaunchOptions;
 use crate::launch::process::{current_options, process_is_active};
 use crate::launch::runner::{launch_bots_on_server, stop_bots_and_destroy_data};
