@@ -1705,46 +1705,29 @@ button svg {
 .feature-card {
   display: flex;
   flex-direction: column;
-  justify-content: start;
-  align-items: start;
-  background: var(--secondary-bg);
-  border: 1px solid var(--secondary-border);
+  justify-content: center;
+  align-items: center;
   border-radius: 12px;
   gap: 10px;
-  padding: 10px;
+  padding: 20px;
   color: var(--dim-color);
+  transition: color 0.12s ease, background 0.12s ease;
 }
 
-.feature-card .head {
-  display: flex;
-  justify-content: start;
-  align-items: center;
-  gap: 6px;
+.feature-card svg {
+  width: 70px;
+  height: 70px;
 }
 
-.feature-card .head svg {
-  width: 35px;
-  height: 35px;
-  transition: color 0.12s ease;
-}
-
-.feature-card .head label {
-  color: var(--muted-color);
+.feature-card label {
   font-family: var(--global-font-family);
   font-size: 18px;
   font-weight: 600;
-  transition: color 0.12s ease;
 }
 
-.feature-card p {
-  color: var(--dim-color);
-  font-family: var(--global-font-family);
-  font-size: 15px;
-}
-
-.feature-card:hover .head svg,
-.feature-card:hover .head label {
+.feature-card:hover {
   color: var(--highlight-color);
+  background: var(--bright-bg);
 }
 
 .highlight {
