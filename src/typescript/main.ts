@@ -115,6 +115,13 @@ async function startBots(): Promise<void> {
       }
     });
 
+    const botsCount = options.basic.bots_count as number;
+    if (botsCount > 255 || botsCount < 1) {
+      messages.message("Cистема", "Невозможно запустить ботов");
+      logger.log("Невозможно запустить ботов: Number of simultaneously launching bots cannot be less than 1 and more than 255", "warning");
+      return;
+    }
+
     options.basic["script"] = options.basic.use_auto_script ? (document.getElementById("user-script") as HTMLTextAreaElement).value : null;
 
     options.accounts = accountModule.getAccounts();
