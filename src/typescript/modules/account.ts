@@ -9,6 +9,7 @@ import { messages } from "../utils/message";
 /** Структура данных аккаунта */
 interface Account {
   creation_date: string;
+  initial_group: string | null;
   password: string | null;
   email: string | null;
   proxy: string | null;
@@ -38,6 +39,7 @@ class AccountModule {
     const changeAccountPanelBtn = document.getElementById("change-account-panel") as HTMLButtonElement;
 
     const selectedAccountsEditor = document.getElementById("selected-accounts-editor") as HTMLDivElement;
+    const selectedAccountsInitialGroup = document.getElementById("selected-accounts-initial-group") as HTMLInputElement;
     const selectedAccountsPassword = document.getElementById("selected-accounts-password") as HTMLInputElement;
     const selectedAccountsEmail = document.getElementById("selected-accounts-email") as HTMLInputElement;
     const selectedAccountsProxy = document.getElementById("selected-accounts-proxy") as HTMLInputElement;
@@ -73,6 +75,7 @@ class AccountModule {
 
       const status = this.createAccountCard(username, {
         creation_date: date("exact"),
+        initial_group: null,
         password: null,
         email: null,
         proxy: null,
@@ -120,6 +123,7 @@ class AccountModule {
     openSelectedAccountsEditorBtn.addEventListener("click", () => selectedAccountsEditor.style.display = "flex");
     closeSelectedAccountsEditorBtn.addEventListener("click", () => selectedAccountsEditor.style.display = "none");
 
+    selectedAccountsInitialGroup.addEventListener("input", () => this.setValueForAllSelected("initial_group", selectedAccountsInitialGroup.value));
     selectedAccountsPassword.addEventListener("input", () => this.setValueForAllSelected("password", selectedAccountsPassword.value));
     selectedAccountsEmail.addEventListener("input", () => this.setValueForAllSelected("email", selectedAccountsEmail.value));
     selectedAccountsProxy.addEventListener("input", () => this.setValueForAllSelected("proxy", selectedAccountsProxy.value));
@@ -168,14 +172,15 @@ class AccountModule {
         const accounts = JSON.parse(decoder.decode(buffer));
 
         for (const username in accounts) {
-          const data = accounts[username];
-          if (!data) continue;
+          const account = accounts[username];
+          if (!account) continue;
 
           this.createAccountCard(username, {
             creation_date: date("exact"),
-            password: data["password"],
-            email: data["email"],
-            proxy: data["proxy"],
+            initial_group: account["initial_group"],
+            password: account["password"],
+            email: account["email"],
+            proxy: account["proxy"],
             selected: false,
           });
         } 
@@ -201,6 +206,7 @@ class AccountModule {
 
         for (const [username, account] of this.accounts) {
           accounts[username] = {
+            initial_group: account.initial_group,
             password: account.password,
             email: account.email,
             proxy: account.proxy,
@@ -245,6 +251,7 @@ class AccountModule {
 
         const status = this.createAccountCard(username, {
           creation_date: date("exact"),
+          initial_group: null,
           password: null,
           email: null,
           proxy: null,
@@ -269,6 +276,7 @@ class AccountModule {
 
     for (const [username, account] of this.accounts) {
       cleanAccounts[username] = {
+        initial_group: account.initial_group,
         password: account.password,
         email: account.email,
         proxy: account.proxy,
@@ -286,6 +294,7 @@ class AccountModule {
       for (const [username, account] of this.accounts) {
         cleanAccounts[username] = {
           creation_date: account.creation_date,
+          initial_group: account.initial_group,
           password: account.password,
           email: account.email,
           proxy: account.proxy,
@@ -324,7 +333,7 @@ class AccountModule {
 
   /** Метод измнения значения всех выбранных аккаунтов */
   private setValueForAllSelected(
-    field: "password" | "email" | "proxy",
+    field: "initial_group" | "password" | "email" | "proxy",
     value: string,
   ): void {
     for (const [username, account] of this.accounts) {
@@ -540,6 +549,11 @@ class AccountModule {
     settingsContainer.className = "account-settings";
 
     const options = [
+      {
+        name: "Первоначальная группа",
+        tag: "initial-group",
+        placeholder: "my_group",
+      },
       {
         name: "Пароль",
         tag: "password",

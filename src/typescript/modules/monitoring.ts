@@ -8,7 +8,6 @@ import { process } from "../main";
 /** Структура информации о боте */
 interface BotProfile {
   status: any;
-  username: string;
   password: string | null;
   proxy: { 
     ip_address: string | null;
@@ -19,7 +18,6 @@ interface BotProfile {
   ping: number;
   health: number;
   registered: boolean;
-  skin_is_set: boolean;
   captcha_caught: boolean;
   group: string;
 }
@@ -264,10 +262,11 @@ class MonitoringModule {
 
   /** Метод обновления карточки бота */
   private updateBotCard(username: string, profile: BotProfile): void {
-    const status = document.getElementById(`monitoring-status-${username}`) as HTMLElement;
-    const proxy = document.getElementById(`monitoring-proxy-${username}`) as HTMLElement;
-    const ping = document.getElementById(`monitoring-ping-${username}`) as HTMLElement;
-    const health = document.getElementById(`monitoring-health-${username}`) as HTMLElement;
+    const status = document.getElementById(`monitoring-status-${username}`) as HTMLSpanElement;
+    const proxy = document.getElementById(`monitoring-proxy-${username}`) as HTMLSpanElement;
+    const ping = document.getElementById(`monitoring-ping-${username}`) as HTMLSpanElement;
+    const health = document.getElementById(`monitoring-health-${username}`) as HTMLSpanElement;
+    const group = document.getElementById(`bot-group-${username}`) as HTMLInputElement;
 
     if (health.innerText.split("/")[0].replace(" ", "") != profile.health.toString()) {
       const card = document.getElementById(`bot-card-${username}`);
@@ -294,6 +293,9 @@ class MonitoringModule {
     proxy.innerText = profile.proxy.ip_address ? profile.proxy.ip_address : "No proxy";
     ping.innerText = profile.ping.toString();
     health.innerText = profile.health.toString();
+
+    // Если группа по умолчанию её можно и не отображать, это ни на что не повлияет
+    if (profile.group !== "global") group.value = profile.group;
   }
 
   /** Метод инициализации карточки бота */

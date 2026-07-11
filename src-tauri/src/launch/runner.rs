@@ -217,6 +217,7 @@ pub async fn launch_bots_on_server(options: LaunchOptions) -> bool {
             accounts.push(CustomAccount {
               object: Account::offline(&username),
               options: AccountOptions {
+                initial_group: None,
                 password: None,
                 email: None,
                 proxy: None,
@@ -233,6 +234,10 @@ pub async fn launch_bots_on_server(options: LaunchOptions) -> bool {
 
           if options.basic.use_accounts {
             for account in accounts.into_iter() {
+              if let Some(initial_group) = &account.options.initial_group {
+                PROFILE_SYSTEM.set_str(&account.index, "group", initial_group).await;
+              }
+
               let mut join_opts = JoinOpts::new();
 
               if let Some(proxy) = &account.options.proxy {

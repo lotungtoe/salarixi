@@ -54,6 +54,7 @@ pub struct BasicOptions {
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct AccountOptions {
+  pub initial_group: Option<String>,
   pub password: Option<String>,
   pub email: Option<String>,
   pub proxy: Option<String>,
