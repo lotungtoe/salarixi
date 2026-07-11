@@ -130,8 +130,10 @@ async fn process_spawn(bot: Client) {
 
   if opts.basic.use_auto_script {
     if let Some(script) = opts.basic.script {
-      // Здесь нужно указывать юзернейм бота, чтобы исполнитель работал только с ним
-      SCRIPT_EXECUTOR.execute(username, index, script);
+      tokio::spawn(async move {
+        // Здесь нужно указывать юзернейм бота, чтобы исполнитель работал только с ним
+        SCRIPT_EXECUTOR.execute(username, index, script);
+      });
     }
   }
 }

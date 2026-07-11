@@ -59,7 +59,7 @@ impl State {
   }
 
   /// Метод получени индекса состояния
-  pub fn index(&self) -> u16 {
+  pub fn index(&self) -> u8 {
     match self {
       Self::CanWalking => 0,
       Self::CanSprinting => 1,

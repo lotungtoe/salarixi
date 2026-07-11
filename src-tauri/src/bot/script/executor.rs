@@ -25,7 +25,7 @@ use crate::other::webhook::*;
 
 pub static SCRIPT_EXECUTOR: Lazy<ScriptExecutor> = Lazy::new(|| ScriptExecutor::new());
 
-static EXECUTOR_STATE_SYSTEM: Lazy<RwLock<HashMap<String, ()>>> = Lazy::new(|| RwLock::new(HashMap::new()));
+static EXECUTOR_STATES: Lazy<RwLock<HashMap<String, ()>>> = Lazy::new(|| RwLock::new(HashMap::new()));
 static EXECUTOR_GLOBAL_STATE: Lazy<AtomicBool> = Lazy::new(|| AtomicBool::new(false));
 
 /// Функция генерации кода
@@ -551,7 +551,7 @@ impl ScriptExecutor {
 
   /// Метод исполнения пользовательского сценария
   pub fn execute(&self, su: String, si: u8, script: String) {
-    let mut states = match EXECUTOR_STATE_SYSTEM.try_write() {
+    let mut states = match EXECUTOR_STATES.try_write() {
       Ok(g) => g,
       Err(_) => {
         if su.is_empty() {
@@ -613,7 +613,7 @@ impl ScriptExecutor {
           return Some(Dynamic::UNIT);
         }
       } else {
-        if let Ok(states) = EXECUTOR_STATE_SYSTEM.try_read() {
+        if let Ok(states) = EXECUTOR_STATES.try_read() {
           if !states.contains_key(&su_clone) {
             return Some(Dynamic::UNIT);
           }
@@ -972,7 +972,7 @@ impl ScriptExecutor {
     if su.is_empty() {
       EXECUTOR_GLOBAL_STATE.store(false, Ordering::SeqCst);
     } else {
-      if let Ok(mut states) = EXECUTOR_STATE_SYSTEM.try_write() {
+      if let Ok(mut states) = EXECUTOR_STATES.try_write() {
         states.remove(&su);
       }
     }
@@ -981,6 +981,6 @@ impl ScriptExecutor {
   /// Метод остановки процесса исполнения пользовательского сценария
   pub async fn stop(&self) {
     EXECUTOR_GLOBAL_STATE.store(false, Ordering::SeqCst);
-    EXECUTOR_STATE_SYSTEM.write().await.clear();
+    EXECUTOR_STATES.write().await.clear();
   }
 }
