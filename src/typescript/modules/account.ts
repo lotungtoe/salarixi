@@ -19,9 +19,10 @@ interface Account {
 class AccountModule {
   private accountList: HTMLDivElement | null = null;
   private accountCounter: HTMLSpanElement | null = null;
+  private selectedAccountCounter: HTMLSpanElement | null = null;
   private wrappers: HTMLDivElement | null = null;
 
-  private accounts: Record<string, Account | null> = {};
+  private accounts: Map<string, Account> = new Map();
 
   private noSelected: boolean = true;
 
@@ -29,11 +30,10 @@ class AccountModule {
   public init(): void {
     this.accountList = document.getElementById("account-list") as HTMLDivElement;
     this.accountCounter = document.getElementById("account-counter") as HTMLSpanElement;
+    this.selectedAccountCounter = document.getElementById("selected-account-counter") as HTMLSpanElement;
     this.wrappers = document.getElementById("account-wrappers") as HTMLDivElement;
 
     this.loadSavedAccounts();
-
-    const accountsContainer = document.getElementById("accounts-container") as HTMLDivElement;
 
     const changeAccountPanelBtn = document.getElementById("change-account-panel") as HTMLButtonElement;
 
@@ -48,6 +48,8 @@ class AccountModule {
     const removeSelectedAccountsBtn = document.getElementById("remove-selected-accounts") as HTMLButtonElement;
     const importAccounts = document.getElementById("import-accounts") as HTMLButtonElement;
     const exportAccounts = document.getElementById("export-accounts") as HTMLButtonElement;
+
+    const changeAllAccountsSelect = document.getElementById("change-all-accounts-select") as HTMLInputElement;
 
     const generateAccountsBtn = document.getElementById("generate-accounts") as HTMLButtonElement;
 
@@ -65,34 +67,11 @@ class AccountModule {
       }
     });
 
-    accountsContainer.addEventListener("keydown", e => {
-      if (e.key.toLowerCase() !== "escape") return;
-
-      let count = 0;
-
-      for (const username in this.accounts) {
-        const account = this.accounts[username];
-        if (!account || (this.noSelected ? account.selected : !account.selected)) continue;
-
-        account.selected = this.noSelected;
-        (document.getElementById(`account-${username}-selector-flag`) as HTMLInputElement).checked = this.noSelected;
-
-        count++;
-      }
-
-      if (count > 0) {
-        this.noSelected = !this.noSelected;
-        this.changeSelectorsState();
-      }
-    });
-
     addAccountBtn.addEventListener("click", () => {
       const usernameInput = document.getElementById("account-username") as HTMLInputElement;
       const username = usernameInput.value;
 
-      if (this.accounts[username]) return;
-
-      const success = this.createAccountCard(username, {
+      const status = this.createAccountCard(username, {
         creation_date: date("exact"),
         password: null,
         email: null,
@@ -100,12 +79,41 @@ class AccountModule {
         selected: false,
       });
 
-      if (success) {
-        this.updateAccountCounter();
-        usernameInput.value = "";
-        logger.log(`Создан новый аккаунт "${username}"`, "system");
-      } else {
-        logger.log(`Не удалось создать аккаунт "${username}": Number of generated accounts is out of limits (minimum 1, maximum 200)`, "warning");
+      switch (status) {
+        case 0:
+          this.updateAccountCounter();
+          usernameInput.value = "";
+          logger.log(`Создан новый аккаунт "${username}"`, "system");
+          break;
+        case 1:
+          logger.log(`Не удалось создать аккаунт "${username}": Accounts with empty usernames are prohibited`, "warning");
+          break;
+        case 2:
+          logger.log(`Не удалось создать аккаунт "${username}": Account with this username already exists`, "warning");
+          break;
+        case 3:
+          logger.log(`Не удалось создать аккаунт "${username}": Number of generated accounts is out of limits (minimum 1, maximum 200)`, "warning");
+          break;
+      }
+
+      if (status !== 0) {
+        messages.message("Аккаунты", `Не удалось создать аккаунт "${username}"`);
+      }
+    });
+
+    changeAllAccountsSelect.addEventListener("change", () => {
+      let count = 0;
+
+      for (const [username, account] of this.accounts) {
+        account.selected = changeAllAccountsSelect.checked;
+        (document.getElementById(`account-${username}-selector-flag`) as HTMLInputElement).checked = changeAllAccountsSelect.checked;
+        count++;
+      }
+
+      if (count > 0) {
+        this.noSelected = !changeAllAccountsSelect.checked;
+        this.changeSelectorsState();
+        this.updateSelectedAccountCounter();
       }
     });
 
@@ -119,11 +127,10 @@ class AccountModule {
     removeSelectedAccountsBtn.addEventListener("click", () => {
       let removedCount = 0;
 
-      for (const username in this.accounts) {
-        const account = this.accounts[username];
-        if (!account || !account.selected) continue;
+      for (const [username, account] of this.accounts) {
+        if (!account.selected) continue;
 
-        delete this.accounts[username];
+        this.accounts.delete(username);
 
         document.getElementById(`account-editor-${username}`)?.remove();
         document.getElementById(`account-card-${username}`)?.remove();
@@ -134,6 +141,7 @@ class AccountModule {
       this.noSelected = true;
       this.changeSelectorsState();
       this.updateAccountCounter();
+      this.updateSelectedAccountCounter();
 
       messages.message("Аккаунты", `Удалено ${removedCount} аккаунтов`);
       logger.log(`Удалено ${removedCount} аккаунтов`, "system");
@@ -191,14 +199,11 @@ class AccountModule {
 
         const accounts: any = {};
 
-        for (const username in this.accounts) {
-          const data = this.accounts[username];
-          if (!data) continue;
-
+        for (const [username, account] of this.accounts) {
           accounts[username] = {
-            password: data.password,
-            email: data.email,
-            proxy: data.proxy,
+            password: account.password,
+            email: account.email,
+            proxy: account.proxy,
           };
         }
 
@@ -233,12 +238,12 @@ class AccountModule {
 
         for (let a = 0; a < 5; a++) {
           const generatedUsername = this.generateUsername(i, template);
-          if (this.accounts[generatedUsername]) continue;
+          if (this.accounts.has(generatedUsername)) continue;
           username = generatedUsername;
           break;
         }
 
-        const success = this.createAccountCard(username, {
+        const status = this.createAccountCard(username, {
           creation_date: date("exact"),
           password: null,
           email: null,
@@ -246,7 +251,7 @@ class AccountModule {
           selected: false,
         });
 
-        if (success) generated++;
+        if (status === 0) generated++;
       }
 
       this.updateAccountCounter();
@@ -262,10 +267,7 @@ class AccountModule {
   public getAccounts(): Record<string, any> {
     let cleanAccounts: any = {};
 
-    for (const username in this.accounts) {
-      const account = this.accounts[username];
-      if (!account) continue;
-
+    for (const [username, account] of this.accounts) {
       cleanAccounts[username] = {
         password: account.password,
         email: account.email,
@@ -281,10 +283,7 @@ class AccountModule {
     setInterval(() => {
       let cleanAccounts: any = {};
 
-      for (const username in this.accounts) {
-        const account = this.accounts[username];
-        if (!account) continue;
-
+      for (const [username, account] of this.accounts) {
         cleanAccounts[username] = {
           creation_date: account.creation_date,
           password: account.password,
@@ -299,9 +298,22 @@ class AccountModule {
 
   /** Метод обновления счётчика аккаунтов */
   private updateAccountCounter(): void {
+    if (!this.accountCounter) return;
+    this.accountCounter.innerText = this.accounts.size.toString();
+  }
+
+  /** Метод обновления счётчика выбранных аккаунтов */
+  private updateSelectedAccountCounter(): void {
+    if (!this.selectedAccountCounter) return;
+
     let count = 0;
-    for (const _ in this.accounts) count++;
-    if (this.accountCounter) this.accountCounter.innerText = count.toString();
+    for (const [_, account] of this.accounts) account.selected ? count++ : null;
+
+    if (count < 1) {
+      this.selectedAccountCounter.innerText = "";
+    } else {
+      this.selectedAccountCounter.innerText = `(${count})`;
+    }
   }
 
   /** Метод измнения состояния кнопок, отвечающих за взаимодействие с выбранными аккаунтами */
@@ -315,9 +327,8 @@ class AccountModule {
     field: "password" | "email" | "proxy",
     value: string,
   ): void {
-    for (const username in this.accounts) {
-      const account = this.accounts[username];
-      if (!account || !account.selected) continue;
+    for (const [username, account] of this.accounts) {
+      if (!account.selected) continue;
 
       account[field] = value;
 
@@ -331,7 +342,7 @@ class AccountModule {
     document.querySelectorAll('[wrapper="account-editor"]').forEach(w => w.remove());
     document.querySelectorAll('[wrapper="account-card"]').forEach(w => w.remove());
 
-    this.accounts = {};
+    this.accounts.clear();
     localStorage.removeItem("accounts");
 
     this.updateAccountCounter();
@@ -380,14 +391,12 @@ class AccountModule {
   }
 
   /** Метод создания карточки аккаунта */
-  private createAccountCard(username: string, account: Account): boolean {
-    if (username === "") return false;
+  private createAccountCard(username: string, account: Account): number {
+    if (username === "") return 1;
+    if (this.accounts.has(username)) return 2;
+    if (this.accounts.size >= 255) return 3;
 
-    let accountCount = 0;
-    for (const _ in this.accounts) accountCount++;
-    if (accountCount >= 255) return false;
-
-    this.accounts[username] = account;
+    this.accounts.set(username, account);
 
     const editorWrapper = this.createEditWrapper(username, account);
 
@@ -407,7 +416,7 @@ class AccountModule {
     accountSelectorFlag.type = "checkbox";
 
     accountSelectorFlag.addEventListener("change", () => {
-      const account = this.accounts[username];
+      const account = this.accounts.get(username);
       if (!account) return;
 
       account.selected = accountSelectorFlag.checked;
@@ -417,10 +426,7 @@ class AccountModule {
       } else {
         let noSelected = true;
 
-        for (const u in this.accounts) {
-          const a = this.accounts[u];
-          if (!a) continue;
-
+        for (const [_, a] of this.accounts) {
           if (a.selected) {
             noSelected = false;
             break;
@@ -431,6 +437,7 @@ class AccountModule {
       }
 
       this.changeSelectorsState();
+      this.updateSelectedAccountCounter();
     });
 
     const accountSelectorMark = document.createElement("span");
@@ -441,8 +448,8 @@ class AccountModule {
 
     chbxContainer.appendChild(accountSelectorFlag);
     chbxContainer.appendChild(accountSelectorMark);
+    chbxContainer.appendChild(usernameText);
     usernameCell.appendChild(chbxContainer);
-    usernameCell.appendChild(usernameText);
 
     const creationDateCell = document.createElement("div");
     creationDateCell.className = "account-cell date-cell";
@@ -455,9 +462,10 @@ class AccountModule {
     editAccountBtn.className = "action-btn";
     editAccountBtn.addEventListener("click", () => editorWrapper.style.display = "flex");
     editAccountBtn.innerHTML = `
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-        <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492M5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0"/>
-        <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115z"/>
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-settings">
+        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+        <path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065" />
+        <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" />
       </svg>
     `;
 
@@ -467,13 +475,18 @@ class AccountModule {
     removeAccountBtn.addEventListener("click", () => {
       row.remove();
       editorWrapper.remove();
-      delete this.accounts[username];
+      this.accounts.delete(username);
       this.updateAccountCounter();
     });
 
     removeAccountBtn.innerHTML = `
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-        <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5M8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5m3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0"/>
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-trash">
+        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+        <path d="M4 7l16 0" />
+        <path d="M10 11l0 6" />
+        <path d="M14 11l0 6" />
+        <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" />
+        <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" />
       </svg>
     `;
 
@@ -486,7 +499,7 @@ class AccountModule {
 
     this.accountList?.appendChild(row);
 
-    return true;
+    return 0;
   }
 
   /** Метод создания обёркти редактора настроек аккаунта */
@@ -511,8 +524,10 @@ class AccountModule {
     closeEditorBtn.className = "btn min";
     closeEditorBtn.addEventListener("click", () => wrapper.style.display = "none");
     closeEditorBtn.innerHTML = `
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-lg" viewBox="0 0 16 16">
-        <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/>
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-x">
+        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+        <path d="M18 6l-12 12" />
+        <path d="M6 6l12 12" />
       </svg>
     `;
 
