@@ -5,6 +5,7 @@ import { logger } from "../utils/logger";
 import { readFile, writeFile } from "@tauri-apps/plugin-fs";
 import { join } from "@tauri-apps/api/path";
 import { messages } from "../utils/message";
+import { invoke } from "@tauri-apps/api/core";
 
 /** Структура данных аккаунта */
 interface Account {
@@ -28,13 +29,13 @@ class AccountModule {
   private noSelected: boolean = true;
 
   /** Метод инициализации функций, связанных с аккаунтами */
-  public init(): void {
+  public async init(): Promise<void> {
     this.accountList = document.getElementById("account-list") as HTMLDivElement;
     this.accountCounter = document.getElementById("account-counter") as HTMLSpanElement;
     this.selectedAccountCounter = document.getElementById("selected-account-counter") as HTMLSpanElement;
     this.wrappers = document.getElementById("account-wrappers") as HTMLDivElement;
 
-    this.loadSavedAccounts();
+    await this.loadSavedAccounts();
 
     const changeAccountPanelBtn = document.getElementById("change-account-panel") as HTMLButtonElement;
 
@@ -128,9 +129,16 @@ class AccountModule {
     selectedAccountsEmail.addEventListener("input", () => this.setValueForAllSelected("email", selectedAccountsEmail.value));
     selectedAccountsProxy.addEventListener("input", () => this.setValueForAllSelected("proxy", selectedAccountsProxy.value));
 
-    removeSelectedAccountsBtn.addEventListener("click", () => {
-      let removedCount = 0;
+    removeSelectedAccountsBtn.addEventListener("click", async () => {
+      let selectedCount = 0;
+      for (const [_, account] of this.accounts) account.selected ? selectedCount++ : null;
 
+      if (selectedCount === this.accounts.size) {
+        await this.clearAccounts();
+        return;
+      }
+
+      let removedCount = 0;
       for (const [username, account] of this.accounts) {
         if (!account.selected) continue;
 
@@ -288,7 +296,7 @@ class AccountModule {
 
   /** Метод запуска цикла сохранения пользовательских аккаунтов */
   private watch(): void {
-    setInterval(() => {
+    setInterval(async () => {
       let cleanAccounts: any = {};
 
       for (const [username, account] of this.accounts) {
@@ -301,7 +309,16 @@ class AccountModule {
         };
       }
 
-      localStorage.setItem("accounts", JSON.stringify(cleanAccounts))
+      const string = JSON.stringify(cleanAccounts);
+      const encoder = new TextEncoder();
+      const encoded = encoder.encode(string);
+
+      const result = await invoke("save_file", {
+        filename: "accounts.json",
+        content: encoded,
+      }) as CommandResult<null>;
+
+      if (result.error) logger.log(`Ошибка сохранения аккаунтов: ${result.error}`, "error");
     }, 2000);
   }
 
@@ -347,25 +364,40 @@ class AccountModule {
   }
 
   /** Метод полной очистки всех аккаунтов */
-  private clearAccounts(): void {
+  private async clearAccounts(): Promise<void> {
     document.querySelectorAll('[wrapper="account-editor"]').forEach(w => w.remove());
     document.querySelectorAll('[wrapper="account-card"]').forEach(w => w.remove());
 
     this.accounts.clear();
-    localStorage.removeItem("accounts");
+    
+    const result = await invoke("remove_file", { filename: "accounts.json" }) as CommandResult<null>;
+    if (result.error) logger.log(`Ошибка удаления файла "accounts.json": ${result.error}`, "error");
 
+    this.noSelected = true;
+    this.changeSelectorsState();
     this.updateAccountCounter();
+    this.updateSelectedAccountCounter();
   }
 
   /** Метод загрузки сохранённых аккаунтов из локального хранилища */
-  private loadSavedAccounts(): void {
-    const accounts_json = localStorage.getItem("accounts");
-    if (!accounts_json) return;
+  private async loadSavedAccounts(): Promise<void> {
+    const result = await invoke("read_file", { filename: "accounts.json" }) as CommandResult<number[]>;
 
-    const accounts = Object.entries<Account | null>(JSON.parse(accounts_json));
+    if (result.error) {
+      logger.log(`Ошибка загрузки контента из файла "accounts.json": ${result.error}`, "error");
+      return;
+    }
+
+    if (!result.data || result.data.length < 1) return;
+
+    const uint8arr = new Uint8Array(result.data);
+    const decoder = new TextDecoder("utf-8");
+    const decoded = decoder.decode(uint8arr);
+    const accounts = Object.entries<Account>(JSON.parse(decoded));
+
     if (accounts.length < 1) return;
 
-    for (const [username, fields] of accounts) fields ? this.createAccountCard(username, fields) : null;
+    for (const [username, account] of accounts) this.createAccountCard(username, account);
 
     this.updateAccountCounter();
 

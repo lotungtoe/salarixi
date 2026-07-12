@@ -18,7 +18,7 @@ class ConfigModule {
 
     setInterval(async () => await this.saveCurrentConfig(), 5000);
 
-    const result = await invoke("load_config") as CommandResult<number[]>;
+    const result = await invoke("read_file", { filename: "config.json" }) as CommandResult<number[]>;
 
     if (result.error) {
       logger.log(`Ошибка загрузки конфига: ${result.error}`, "error");
@@ -29,11 +29,11 @@ class ConfigModule {
 
     logger.log("Загрузка конфига...", "system");
 
-    const uint8 = new Uint8Array(result.data);
+    const uint8arr = new Uint8Array(result.data);
     const decoder = new TextDecoder("utf-8");
-    const config = decoder.decode(uint8);
+    const decoded = decoder.decode(uint8arr);
 
-    for (const [id, value] of Object.entries<ConfigValue>(JSON.parse(config))) this.setValue(id, value);
+    for (const [id, value] of Object.entries<ConfigValue>(JSON.parse(decoded))) this.setValue(id, value);
 
     triggerRegistry.triggerAll();
 
@@ -61,15 +61,15 @@ class ConfigModule {
     });
 
     const encoder = new TextEncoder();
-    const uint8 = encoder.encode(JSON.stringify(config));
+    const encoded = encoder.encode(JSON.stringify(config));
+    const content = Array.from(encoded);
 
-    const result = await invoke("save_config", {
-      bytes: Array.from(uint8),
+    const result = await invoke("save_file", {
+      filename: "config.json",
+      content: content,
     }) as CommandResult<null>;
 
-    if (result.error) {
-      logger.log(`Ошибка сохранения конфига: ${result.error}`, "error");
-    }
+    if (result.error) logger.log(`Ошибка сохранения конфига: ${result.error}`, "error");
   }
 
   /** Метод установки значения для элемента */
@@ -113,9 +113,9 @@ class ConfigModule {
       if (!buffer) return;
 
       const decoder = new TextDecoder();
-      const config = JSON.parse(decoder.decode(buffer));
+      const decoded = JSON.parse(decoder.decode(buffer));
 
-      for (const [id, value] of Object.entries<ConfigValue>(config)) value || value === 0 ? this.setValue(id, value) : null;
+      for (const [id, value] of Object.entries<ConfigValue>(decoded)) value || value === 0 ? this.setValue(id, value) : null;
 
       triggerRegistry.triggerAll();
 

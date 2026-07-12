@@ -367,29 +367,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.addEventListener("contextmenu", e => e.preventDefault());
 
-  // Инициализация логгера и сообщений
   logger.init();
   messages.init();
 
   logger.log(`Клиент запущен, версия ${currentClientVersion}`, "info");
 
   try {
-    // Инициализация таймера
     timerModule.init();
 
-    // Изначально инициализация глобальных элементов и пополнение реестра триггер-функций
     initGlobalElements();
     replenishTriggerRegistry();
 
     document.querySelectorAll('[global="true"]').forEach(c => globalWrappers.push({ id: c.id, el: c as HTMLDivElement }));
     document.querySelectorAll('[sector="true"]').forEach(c => controlWrappers.push({ id: c.id, el: c as HTMLDivElement }));
 
-    // Перед инициализацией конфигуратора должны включаться фоновые партиклы,
-    // чтобы он мог применить к ним состояние (включены / выключены)
     enableParticles();
 
-    // Инициализация модулей (синхронная)
-    accountModule.init();
     graphicModule.init();
     radarModule.init();
     scriptModule.init();
@@ -403,26 +396,23 @@ document.addEventListener("DOMContentLoaded", () => {
 // Слушатель события DOMContent у document (#2, асинхронный)
 document.addEventListener("DOMContentLoaded", async () => {
   try {
-    // Инициализация слушателей событий
     await listenEvents();
 
-    // Инициализация модулей (асинхронная)
     await configModule.init();
+    await accountModule.init();
     await monitoringModule.init();
     await captchaModule.init();
     await proxyModule.init();
     await translatorModule.init();
+    await pluginModule.init();
     await docsModule.init();
     await infoModule.init();
-    await pluginModule.init();
 
-    // Инициализация Discord RPC
     const selectDiscordRpcMode = document.getElementById("interface_select_discord-rpc") as HTMLSelectElement;
 
     selectDiscordRpcMode.addEventListener("change", async () => await invoke("set_discord_rpc", { version: currentClientVersion, state: selectDiscordRpcMode.value === "enable" }));
     await invoke("set_discord_rpc", { version: currentClientVersion, state: selectDiscordRpcMode.value === "enable" });
 
-    // Проверка обновлений в последнюю очередь
     updaterModule.init();
   } catch (error) {
     logger.log(`Ошибка инициализации (async): ${error}`, "error");
