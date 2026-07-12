@@ -9,6 +9,8 @@ use azalea::protocol::packets::game::ServerboundUseItem;
 use azalea::registry::builtin::ItemKind;
 use azalea::Vec3;
 use serde::Deserialize;
+use serde_repr::Deserialize_repr;
+use serde_repr::Serialize_repr;
 
 use crate::bot::common::get_block_state;
 use crate::bot::extensions::{BotInventoryExt, BotPhysicsExt};
@@ -18,16 +20,24 @@ use crate::other::tools::*;
 use crate::sleep;
 use crate::take_bot;
 
-pub struct AntiFallModule;
+#[derive(Serialize_repr, Deserialize_repr)]
+#[repr(u8)]
+enum Mode {
+  Hovering = 0,
+  Teleport = 1,
+  WaterDrop = 2,
+}
 
 #[derive(Deserialize)]
 pub struct AntiFallOptions {
-  pub mode: String,
-  pub distance_to_ground: Option<i32>,
-  pub fall_velocity: Option<f64>,
-  pub delay: Option<u64>,
-  pub state: bool,
+  mode: Mode,
+  distance_to_ground: Option<i32>,
+  fall_velocity: Option<f64>,
+  delay: Option<u64>,
+  state: u8,
 }
+
+pub struct AntiFallModule;
 
 impl AntiFallModule {
   pub fn new() -> Self {
@@ -190,11 +200,10 @@ impl AntiFallModule {
   }
 
   async fn start(bot: &Client, index: &u8, options: &AntiFallOptions) {
-    match options.mode.as_str() {
-      "hovering" => Self::hovering_anti_fall(bot, options).await,
-      "teleport" => Self::teleport_anti_fall(bot, options).await,
-      "water-drop" => Self::water_drop_anti_fall(bot, index, options).await,
-      _ => {}
+    match options.mode {
+      Mode::Hovering => Self::hovering_anti_fall(bot, options).await,
+      Mode::Teleport => Self::teleport_anti_fall(bot, options).await,
+      Mode::WaterDrop => Self::water_drop_anti_fall(bot, index, options).await,
     }
   }
 }
@@ -205,13 +214,13 @@ impl SalarixiModule<AntiFallOptions> for AntiFallModule {
   }
 
   async fn switch(&self, index: u8, options: AntiFallOptions) -> bool {
-    if options.state && !gettskact(&index, TaskName::AntiFall).await {
+    if options.state == 1 && !gettskact(&index, TaskName::AntiFall).await {
       let task_handle = tokio::spawn(async move {
         take_bot!(&index, async |bot| Self::start(bot, &index, &options).await);
       });
 
       pushrtsk(&index, TaskName::AntiFall, task_handle).await;
-    } else if !options.state && gettskact(&index, TaskName::AntiFall).await {
+    } else if options.state == 0 && gettskact(&index, TaskName::AntiFall).await {
       killtsk(&index, TaskName::AntiFall).await;
     } else {
       return false;

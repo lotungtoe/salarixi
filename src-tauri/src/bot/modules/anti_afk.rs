@@ -1,6 +1,8 @@
 use azalea::prelude::*;
 use azalea::WalkDirection;
 use serde::Deserialize;
+use serde_repr::Deserialize_repr;
+use serde_repr::Serialize_repr;
 
 use crate::bot::extensions::{BotDefaultExt, BotMovementExt};
 use crate::bot::systems::states::{setmst, StateName};
@@ -10,15 +12,23 @@ use crate::other::tools::*;
 use crate::sleep;
 use crate::take_bot;
 
-pub struct AntiAfkModule;
+#[derive(Serialize_repr, Deserialize_repr)]
+#[repr(u8)]
+enum Mode {
+  Minimal = 0,
+  Normal = 1,
+  Advanced = 2,
+}
 
 #[derive(Deserialize)]
 pub struct AntiAfkOptions {
-  pub mode: String,
-  pub min_delay: Option<u64>,
-  pub max_delay: Option<u64>,
-  pub state: bool,
+  mode: Mode,
+  min_delay: Option<u64>,
+  max_delay: Option<u64>,
+  state: u8,
 }
+
+pub struct AntiAfkModule;
 
 impl AntiAfkModule {
   pub fn new() -> Self {
@@ -130,11 +140,10 @@ impl AntiAfkModule {
   }
 
   async fn start(bot: &Client, index: &u8, options: &AntiAfkOptions) {
-    match options.mode.as_str() {
-      "minimal" => Self::minimal(bot, options).await,
-      "normal" => Self::normal(bot, index, options).await,
-      "advanced" => Self::advanced(bot, *index, options).await,
-      _ => {}
+    match options.mode {
+      Mode::Minimal => Self::minimal(bot, options).await,
+      Mode::Normal => Self::normal(bot, index, options).await,
+      Mode::Advanced => Self::advanced(bot, *index, options).await,
     }
   }
 }
@@ -145,13 +154,13 @@ impl SalarixiModule<AntiAfkOptions> for AntiAfkModule {
   }
 
   async fn switch(&self, index: u8, options: AntiAfkOptions) -> bool {
-    if options.state && !gettskact(&index, TaskName::AntiAfk).await {
+    if options.state == 1 && !gettskact(&index, TaskName::AntiAfk).await {
       let task_handle = tokio::spawn(async move {
         take_bot!(&index, async |bot| Self::start(bot, &index, &options).await);
       });
 
       pushrtsk(&index, TaskName::AntiAfk, task_handle).await;
-    } else if !options.state && gettskact(&index, TaskName::AntiAfk).await {
+    } else if options.state == 0 && gettskact(&index, TaskName::AntiAfk).await {
       killtsk(&index, TaskName::AntiAfk).await;
 
       take_bot!(&index, async |bot| {

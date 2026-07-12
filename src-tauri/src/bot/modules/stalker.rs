@@ -1,24 +1,32 @@
 use azalea::prelude::*;
 use azalea::SprintDirection;
 use serde::Deserialize;
+use serde_repr::Deserialize_repr;
+use serde_repr::Serialize_repr;
 
 use crate::bot::extensions::{go_to, BotDefaultExt, BotMovementExt, EntityType};
 use crate::bot::systems::states::{getst, setmst, State, StateName};
 use crate::bot::systems::tasks::{gettskact, killtsk, pushrtsk, TaskName};
 use crate::bot::traits::SalarixiModule;
-use crate::sleep;
-use crate::take_bot;
+use crate::{sleep, take_bot};
 
-pub struct StalkerModule;
+#[derive(Serialize_repr, Deserialize_repr)]
+#[repr(u8)]
+enum Mode {
+  Default = 0,
+  Advanced = 1,
+}
 
 #[derive(Deserialize)]
 pub struct StalkerOptions {
-  pub mode: String,
-  pub target_nickname: Option<String>,
-  pub min_distance: Option<f64>,
-  pub max_distance: Option<f64>,
-  pub state: bool,
+  mode: Mode,
+  target_nickname: Option<String>,
+  min_distance: Option<f64>,
+  max_distance: Option<f64>,
+  state: u8,
 }
+
+pub struct StalkerModule;
 
 impl StalkerModule {
   pub fn new() -> Self {
@@ -92,10 +100,9 @@ impl StalkerModule {
   async fn start(bot: &Client, index: &u8, options: &StalkerOptions) {
     setmst(index, StateName::Looking, true).await;
 
-    match options.mode.as_str() {
-      "default" => Self::default_stalking(bot, &index, options).await,
-      "advanced" => Self::advanced_stalking(bot, *index, options).await,
-      _ => {}
+    match options.mode {
+      Mode::Default => Self::default_stalking(bot, &index, options).await,
+      Mode::Advanced => Self::advanced_stalking(bot, *index, options).await,
     }
   }
 }
@@ -106,13 +113,13 @@ impl SalarixiModule<StalkerOptions> for StalkerModule {
   }
 
   async fn switch(&self, index: u8, options: StalkerOptions) -> bool {
-    if options.state && !gettskact(&index, TaskName::Stalker).await {
+    if options.state == 1 && !gettskact(&index, TaskName::Stalker).await {
       let task_handle = tokio::spawn(async move {
         take_bot!(&index, async |bot| Self::start(bot, &index, &options).await);
       });
 
       pushrtsk(&index, TaskName::Stalker, task_handle).await;
-    } else if !options.state && gettskact(&index, TaskName::Stalker).await {
+    } else if options.state == 0 && gettskact(&index, TaskName::Stalker).await {
       killtsk(&index, TaskName::Stalker).await;
 
       take_bot!(&index, async |bot| {

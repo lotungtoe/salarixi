@@ -1069,12 +1069,12 @@
 
           <div class="btn-group-flex" style="margin-top: 25px;">
             <div class="btn-group-flex" id="chat-default-btns-container">
-              <button class="toggler" control-toggler="true" name="chat" state="true" tt="send">Отправить</button>
+              <button class="toggler" control-toggler="true" name="chat" state="1" tt="send">Отправить</button>
             </div>
 
             <div class="btn-group-flex" id="chat-spamming-btns-container" style="display: none;">
-              <button class="toggler" control-toggler="true" name="chat" state="true" tt="control-start">Старт</button>
-              <button class="toggler" control-toggler="true" name="chat" state="false" tt="control-stop">Стоп</button>
+              <button class="toggler" control-toggler="true" name="chat" state="1" tt="control-start">Старт</button>
+              <button class="toggler" control-toggler="true" name="chat" state="0" tt="control-stop">Стоп</button>
             </div>
           </div>
         </div>
@@ -1142,8 +1142,8 @@
           </div>
 
           <div class="btn-group-flex" style="margin-top: 25px;">
-            <button class="toggler" control-toggler="true" name="action" state="true" tt="control-start">Старт</button>
-            <button class="toggler" control-toggler="true" name="action" state="false" tt="control-stop">Стоп</button>
+            <button class="toggler" control-toggler="true" name="action" state="1" tt="control-start">Старт</button>
+            <button class="toggler" control-toggler="true" name="action" state="0" tt="control-stop">Стоп</button>
           </div>
         </div>
 
@@ -1195,19 +1195,19 @@
 
           <div id="inventory-basic-btn-container" style="flex-direction: column;">
             <div class="btn-group-flex" style="margin-top: 25px;">
-              <button class="toggler" control-toggler="true" name="inventory" state="select" tt="select">Выбрать</button>
-              <button class="toggler" control-toggler="true" name="inventory" state="drop" tt="drop">Выбросить</button>
+              <button class="toggler" control-toggler="true" name="inventory" state="0" tt="select">Выбрать</button>
+              <button class="toggler" control-toggler="true" name="inventory" state="1" tt="drop">Выбросить</button>
             </div>
 
             <div class="btn-group-flex">
-              <button class="toggler" control-toggler="true" name="inventory" state="left-click" tt="left-click">Клик (ЛКМ)</button>
-              <button class="toggler" control-toggler="true" name="inventory" state="right-click" tt="right-click">Клик (ПКМ)</button>
+              <button class="toggler" control-toggler="true" name="inventory" state="2" tt="left-click">Клик (ЛКМ)</button>
+              <button class="toggler" control-toggler="true" name="inventory" state="3" tt="right-click">Клик (ПКМ)</button>
             </div>
           </div>
 
           <div id="inventory-swap-btn-container" style="display: none;">
             <div class="btn-group-flex" style="margin-top: 25px;">
-              <button class="toggler" control-toggler="true" name="inventory" state="swap" tt="move">Переместить</button>
+              <button class="toggler" control-toggler="true" name="inventory" state="4" tt="move">Переместить</button>
             </div>
           </div>
         </div>
@@ -1256,8 +1256,8 @@
           </div>
 
           <div class="btn-group-flex" style="margin-top: 25px;">
-            <button class="toggler" control-toggler="true" name="movement" state="true" tt="control-start">Старт</button>
-            <button class="toggler" control-toggler="true" name="movement" state="false" tt="control-stop">Стоп</button>
+            <button class="toggler" control-toggler="true" name="movement" state="1" tt="control-start">Старт</button>
+            <button class="toggler" control-toggler="true" name="movement" state="0" tt="control-stop">Стоп</button>
           </div>
         </div>
 
@@ -1308,8 +1308,8 @@
           </div>
 
           <div class="btn-group-flex" style="margin-top: 25px;">
-            <button class="toggler" control-toggler="true" name="anti-afk" state="true" tt="control-start">Старт</button>
-            <button class="toggler" control-toggler="true" name="anti-afk" state="false" tt="control-stop">Стоп</button>
+            <button class="toggler" control-toggler="true" name="anti-afk" state="1" tt="control-start">Старт</button>
+            <button class="toggler" control-toggler="true" name="anti-afk" state="0" tt="control-stop">Стоп</button>
           </div>
         </div>
       </div>
@@ -1344,8 +1344,8 @@
           </div>
 
           <div class="btn-group-flex" style="margin-top: 25px;">
-            <button class="toggler" control-toggler="true" name="stalker" state="true" tt="control-start">Старт</button>
-            <button class="toggler" control-toggler="true" name="stalker" state="false" tt="control-stop">Стоп</button>
+            <button class="toggler" control-toggler="true" name="stalker" state="1" tt="control-start">Старт</button>
+            <button class="toggler" control-toggler="true" name="stalker" state="0" tt="control-stop">Стоп</button>
           </div>
         </div>
       </div>
@@ -1414,8 +1414,8 @@
           </div>
 
           <div class="btn-group-flex" style="margin-top: 25px;">
-            <button class="toggler" control-toggler="true" name="flight" state="true" tt="control-start">Старт</button>
-            <button class="toggler" control-toggler="true" name="flight" state="false" tt="control-stop">Стоп</button>
+            <button class="toggler" control-toggler="true" name="flight" state="1" tt="control-start">Старт</button>
+            <button class="toggler" control-toggler="true" name="flight" state="0" tt="control-stop">Стоп</button>
           </div>
         </div>
       </div>
@@ -1503,8 +1503,8 @@
           </div>
 
           <div class="btn-group-flex" style="margin-top: 25px;">
-            <button class="toggler" control-toggler="true" name="killaura" state="true" tt="control-start">Старт</button>
-            <button class="toggler" control-toggler="true" name="killaura" state="false" tt="control-stop">Стоп</button>
+            <button class="toggler" control-toggler="true" name="killaura" state="1" tt="control-start">Старт</button>
+            <button class="toggler" control-toggler="true" name="killaura" state="0" tt="control-stop">Стоп</button>
           </div>
         </div>
 
@@ -1573,8 +1573,8 @@
           </div>
 
           <div class="btn-group-flex" style="margin-top: 25px;">
-            <button class="toggler" control-toggler="true" name="scaffold" state="true" tt="control-start">Старт</button>
-            <button class="toggler" control-toggler="true" name="scaffold" state="false" tt="control-stop">Стоп</button>
+            <button class="toggler" control-toggler="true" name="scaffold" state="1" tt="control-start">Старт</button>
+            <button class="toggler" control-toggler="true" name="scaffold" state="0" tt="control-stop">Стоп</button>
           </div>
         </div>
       </div>
@@ -1611,8 +1611,8 @@
           </div>
 
           <div class="btn-group-flex" style="margin-top: 25px;">
-            <button class="toggler" control-toggler="true" name="anti-fall" state="true" tt="control-start">Старт</button>
-            <button class="toggler" control-toggler="true" name="anti-fall" state="false" tt="control-stop">Стоп</button>
+            <button class="toggler" control-toggler="true" name="anti-fall" state="1" tt="control-start">Старт</button>
+            <button class="toggler" control-toggler="true" name="anti-fall" state="0" tt="control-stop">Стоп</button>
           </div>
         </div>
       </div>
@@ -1652,8 +1652,8 @@
           </div>
 
           <div class="btn-group-flex" style="margin-top: 25px;">
-            <button class="toggler" control-toggler="true" name="bow-aim" state="true" tt="control-start">Старт</button>
-            <button class="toggler" control-toggler="true" name="bow-aim" state="false" tt="control-stop">Стоп</button>
+            <button class="toggler" control-toggler="true" name="bow-aim" state="1" tt="control-start">Старт</button>
+            <button class="toggler" control-toggler="true" name="bow-aim" state="0" tt="control-stop">Стоп</button>
           </div>
         </div>
       </div>
@@ -1684,8 +1684,8 @@
           </div>
 
           <div class="btn-group-flex" style="margin-top: 25px;">
-            <button class="toggler" control-toggler="true" name="stealer" state="true" tt="control-start">Старт</button>
-            <button class="toggler" control-toggler="true" name="stealer" state="false" tt="control-stop">Стоп</button>
+            <button class="toggler" control-toggler="true" name="stealer" state="1" tt="control-start">Старт</button>
+            <button class="toggler" control-toggler="true" name="stealer" state="0" tt="control-stop">Стоп</button>
           </div>
         </div>
       </div>
@@ -1740,8 +1740,8 @@
           </div>
 
           <div class="btn-group-flex" style="margin-top: 25px;">
-            <button class="toggler" control-toggler="true" name="miner" state="true" tt="control-start">Старт</button>
-            <button class="toggler" control-toggler="true" name="miner" state="false" tt="control-stop">Стоп</button>
+            <button class="toggler" control-toggler="true" name="miner" state="1" tt="control-start">Старт</button>
+            <button class="toggler" control-toggler="true" name="miner" state="0" tt="control-stop">Стоп</button>
           </div>
         </div>
       </div>
@@ -1767,8 +1767,8 @@
           </div>
 
           <div class="btn-group-flex" style="margin-top: 25px;">
-            <button class="toggler" control-toggler="true" name="farmer" state="true" tt="control-start">Старт</button>
-            <button class="toggler" control-toggler="true" name="farmer" state="false" tt="control-stop">Стоп</button>
+            <button class="toggler" control-toggler="true" name="farmer" state="1" tt="control-start">Старт</button>
+            <button class="toggler" control-toggler="true" name="farmer" state="0" tt="control-stop">Стоп</button>
           </div>
         </div>
       </div>

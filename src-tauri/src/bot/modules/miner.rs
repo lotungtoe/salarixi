@@ -4,6 +4,8 @@ use azalea::prelude::*;
 use azalea::Vec3;
 use azalea::WalkDirection;
 use serde::Deserialize;
+use serde_repr::Deserialize_repr;
+use serde_repr::Serialize_repr;
 
 use crate::bot::common::get_block_state;
 use crate::bot::extensions::{BotDefaultExt, BotInventoryExt, BotMovementExt};
@@ -14,18 +16,41 @@ use crate::other::tools::*;
 use crate::sleep;
 use crate::take_bot;
 
-pub struct MinerModule;
+#[derive(Serialize_repr, Deserialize_repr)]
+#[repr(u8)]
+enum Mode {
+  Default = 0,
+  Extended = 1,
+}
+
+#[derive(Serialize_repr, Deserialize_repr)]
+#[repr(u8)]
+enum Tunnel {
+  Tun2x2x2 = 0,
+  Tun3x2x2 = 1,
+  Tun2x3x3 = 2,
+  Tun3x3x3 = 3,
+}
+
+#[derive(PartialEq, Serialize_repr, Deserialize_repr)]
+#[repr(u8)]
+enum Look {
+  Smooth = 0,
+  Cutting = 1,
+}
 
 #[derive(Deserialize)]
 pub struct MinerOptions {
-  pub mode: String,
-  pub tunnel: String,
-  pub look: String,
-  pub direction_x: Option<f32>,
-  pub slot: Option<u8>,
-  pub delay: Option<u64>,
-  pub state: bool,
+  mode: Mode,
+  tunnel: Tunnel,
+  look: Look,
+  direction_x: Option<f32>,
+  slot: Option<u8>,
+  delay: Option<u64>,
+  state: u8,
 }
+
+pub struct MinerModule;
 
 impl MinerModule {
   pub fn new() -> Self {
@@ -63,19 +88,22 @@ impl MinerModule {
     }
   }
 
-  async fn look_at_block(bot: &Client, block_pos: BlockPos, look: String) {
+  async fn look_at_block(bot: &Client, block_pos: BlockPos, look: &Look) {
     let mut center = block_pos.center();
 
-    if look.as_str() == "smooth" {
-      let pre = Vec3::new(
-        (block_pos.x as f64) + randnum(-0.05, 0.05),
-        (block_pos.y as f64) + randnum(-0.05, 0.05),
-        (block_pos.z as f64) + randnum(-0.05, 0.05),
-      );
+    match look {
+      Look::Smooth => {
+        let pre = Vec3::new(
+          (block_pos.x as f64) + randnum(-0.05, 0.05),
+          (block_pos.y as f64) + randnum(-0.05, 0.05),
+          (block_pos.z as f64) + randnum(-0.05, 0.05),
+        );
 
-      bot.look_at(pre);
+        bot.look_at(pre);
 
-      sleep!(randnum(50, 150));
+        sleep!(randnum(50, 150));
+      }
+      Look::Cutting => {}
     }
 
     if randchance(0.7) {
@@ -107,15 +135,15 @@ impl MinerModule {
     bot.walk(WalkDirection::None);
   }
 
-  fn get_territory(pos: Vec3, tunnel: String) -> Vec<BlockPos> {
+  fn get_territory(pos: Vec3, tunnel: &Tunnel) -> Vec<BlockPos> {
     let x = pos.x.floor() as i32;
     let y = pos.y.floor() as i32;
     let z = pos.z.floor() as i32;
 
     let territory;
 
-    match tunnel.as_str() {
-      "2x2x2" => {
+    match tunnel {
+      Tunnel::Tun2x2x2 => {
         territory = vec![
           BlockPos::new(x + 1, y, z),
           BlockPos::new(x - 1, y, z),
@@ -123,7 +151,7 @@ impl MinerModule {
           BlockPos::new(x, y, z - 1),
         ];
       }
-      "3x2x2" => {
+      Tunnel::Tun3x2x2 => {
         territory = vec![
           BlockPos::new(x + 1, y, z),
           BlockPos::new(x - 1, y, z),
@@ -131,7 +159,7 @@ impl MinerModule {
           BlockPos::new(x, y, z - 1),
         ];
       }
-      "2x3x3" => {
+      Tunnel::Tun2x3x3 => {
         territory = vec![
           BlockPos::new(x + 1, y, z),
           BlockPos::new(x - 1, y, z),
@@ -143,7 +171,7 @@ impl MinerModule {
           BlockPos::new(x, y, z - 2),
         ];
       }
-      _ => {
+      Tunnel::Tun3x3x3 => {
         territory = vec![
           BlockPos::new(x + 1, y, z),
           BlockPos::new(x - 1, y, z),
@@ -174,12 +202,11 @@ impl MinerModule {
     loop {
       let position = bot.feet_pos();
 
-      let territory = Self::get_territory(position, options.tunnel.clone());
+      let territory = Self::get_territory(position, &options.tunnel);
 
       for pos in territory.clone() {
-        let heights = match options.tunnel.as_str() {
-          "3x2x2" => vec![2, 1, 0],
-          "3x3x3" => vec![2, 1, 0],
+        let heights = match options.tunnel {
+          Tunnel::Tun3x2x2 | Tunnel::Tun3x3x3 => vec![2, 1, 0],
           _ => vec![1, 0],
         };
 
@@ -197,7 +224,7 @@ impl MinerModule {
                 bot.set_crouching(true);
               }
 
-              Self::look_at_block(bot, block_pos, options.look.clone()).await;
+              Self::look_at_block(bot, block_pos, &options.look).await;
 
               sleep!(randnum(100, 200));
 
@@ -273,10 +300,9 @@ impl MinerModule {
   }
 
   async fn start(bot: &Client, options: &MinerOptions) {
-    match options.mode.as_str() {
-      "default" => Self::default_mine(bot, &options).await,
-      "extended" => Self::extended_mine(bot, &options).await,
-      _ => {}
+    match options.mode {
+      Mode::Default => Self::default_mine(bot, &options).await,
+      Mode::Extended => Self::extended_mine(bot, &options).await,
     }
   }
 }
@@ -287,13 +313,13 @@ impl SalarixiModule<MinerOptions> for MinerModule {
   }
 
   async fn switch(&self, index: u8, options: MinerOptions) -> bool {
-    if options.state && !gettskact(&index, TaskName::Miner).await {
+    if options.state == 1 && !gettskact(&index, TaskName::Miner).await {
       let task_handle = tokio::spawn(async move {
         take_bot!(&index, async |bot| Self::start(bot, &options).await);
       });
 
       pushrtsk(&index, TaskName::Miner, task_handle).await;
-    } else if !options.state && gettskact(&index, TaskName::Miner).await {
+    } else if options.state == 0 && gettskact(&index, TaskName::Miner).await {
       killtsk(&index, TaskName::Miner).await;
 
       take_bot!(&index, async |bot| {

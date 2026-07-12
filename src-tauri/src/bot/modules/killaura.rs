@@ -2,6 +2,7 @@ use azalea::ecs::entity::Entity;
 use azalea::registry::builtin::ItemKind;
 use azalea::{prelude::*, SprintDirection};
 use serde::Deserialize;
+use serde_repr::{Deserialize_repr, Serialize_repr};
 
 use crate::bot::extensions::{BotDefaultExt, BotInventoryExt, BotMovementExt, BotRotationExt, EntityType};
 use crate::bot::systems::states::{getst, setmst, State, StateName};
@@ -15,36 +16,82 @@ struct Weapon {
   priority: u8,
 }
 
-pub struct KillauraModule;
+#[derive(Serialize_repr, Deserialize_repr)]
+#[repr(u8)]
+enum Behavior {
+  Moderate = 0,
+  Aggressive = 1,
+}
+
+#[derive(PartialEq, Serialize_repr, Deserialize_repr)]
+#[repr(u8)]
+enum Settings {
+  Adaptive = 0,
+  Manual = 1,
+}
+
+#[derive(Clone, PartialEq, Serialize_repr, Deserialize_repr)]
+#[repr(u8)]
+enum Target {
+  Player = 0,
+  Monster = 1,
+  Animal = 2,
+  Vehicle = 3,
+  Any = 4,
+  Custom = 5,
+}
+
+impl Target {
+  pub fn to_string(&self) -> String {
+    let str = match self {
+      Self::Player => "player",
+      Self::Monster => "monster",
+      Self::Animal => "animal",
+      Self::Vehicle => "vehicle",
+      Self::Any => "any",
+      Self::Custom => "custom",
+    };
+
+    str.to_string()
+  }
+}
+
+#[derive(PartialEq, Serialize_repr, Deserialize_repr)]
+#[repr(u8)]
+enum WeaponType {
+  Sword = 0,
+  Axe = 1,
+}
 
 #[derive(Deserialize)]
 pub struct KillauraOptions {
-  pub behavior: String,
-  pub settings: String,
-  pub target: String,
-  pub target_nickname: Option<String>,
-  pub weapon: String,
-  pub weapon_slot: Option<u8>,
-  pub attack_distance: Option<f64>,
-  pub delay: Option<u64>,
-  pub chase_distance: Option<f64>,
-  pub min_distance_to_target: Option<f64>,
-  pub use_auto_weapon: bool,
-  pub use_dodging: bool,
-  pub use_chase: bool,
-  pub use_critical: bool,
-  pub state: bool,
+  behavior: Behavior,
+  settings: Settings,
+  target: Target,
+  target_nickname: Option<String>,
+  weapon: WeaponType,
+  weapon_slot: Option<u8>,
+  attack_distance: Option<f64>,
+  delay: Option<u64>,
+  chase_distance: Option<f64>,
+  min_distance_to_target: Option<f64>,
+  use_auto_weapon: bool,
+  use_dodging: bool,
+  use_chase: bool,
+  use_critical: bool,
+  state: u8,
 }
 
-#[derive(Debug)]
 struct KillauraConfig {
-  target: String,
+  target: Target,
   weapon_slot: Option<u8>,
   attack_distance: f64,
   delay: u64,
   chase_distance: f64,
   min_distance_to_target: f64,
 }
+
+pub struct KillauraModule;
 
 impl KillauraModule {
   /// Метод создания модуля
@@ -54,7 +101,7 @@ impl KillauraModule {
 
   /// Метод создания конфига
   fn create_config(options: &KillauraOptions) -> KillauraConfig {
-    if options.settings.as_str() == "adaptive" {
+    if options.settings == Settings::Adaptive {
       KillauraConfig {
         target: options.target.clone(),
         weapon_slot: None,
@@ -78,14 +125,14 @@ impl KillauraModule {
   /// Метод поиска ближайшей сущности
   fn find_nearest_entity(
     bot: &Client,
-    target: String,
+    target: Target,
     target_nickname: Option<String>,
     max_distance: f64,
   ) -> Option<Entity> {
-    let target = if target == "custom" {
+    let target = if target == Target::Custom {
       target_nickname
     } else {
-      Some(target)
+      Some(target.to_string())
     };
 
     let Some(target) = target else {
@@ -96,14 +143,14 @@ impl KillauraModule {
   }
 
   /// Метод взятия оружия в руку
-  async fn take_weapon(bot: &Client, index: &u8, weapon: &String) {
+  async fn take_weapon(bot: &Client, index: &u8, weapon_type: &WeaponType) {
     let mut weapons = vec![];
 
     if let Some(menu) = bot.get_inventory_menu() {
       for (slot, item) in menu.slots().iter().enumerate() {
         if !item.is_empty() {
-          match weapon.as_str() {
-            "sword" => match item.kind() {
+          match weapon_type {
+            WeaponType::Sword => match item.kind() {
               ItemKind::WoodenSword => {
                 weapons.push(Weapon {
                   slot: Some(slot),
@@ -148,7 +195,7 @@ impl KillauraModule {
               }
               _ => {}
             },
-            "axe" => match item.kind() {
+            WeaponType::Axe => match item.kind() {
               ItemKind::WoodenAxe => {
                 weapons.push(Weapon {
                   slot: Some(slot),
@@ -193,7 +240,6 @@ impl KillauraModule {
               }
               _ => {}
             },
-            _ => {}
           }
         }
       }
@@ -235,7 +281,7 @@ impl KillauraModule {
   /// Метод включения преследования
   async fn start_chase(
     index: u8,
-    target: String,
+    target: Target,
     target_nickname: Option<String>,
     distance: f64,
     min_distance_to_target: f64,
@@ -275,7 +321,7 @@ impl KillauraModule {
   }
 
   /// Метод включения автоматической наводки
-  async fn start_aiming(index: u8, target: String, target_nickname: Option<String>, distance: f64) {
+  async fn start_aiming(index: u8, target: Target, target_nickname: Option<String>, distance: f64) {
     let extra_task = tokio::spawn(async move {
       loop {
         setmst(&index, StateName::Looking, true).await;
@@ -448,10 +494,9 @@ impl KillauraModule {
 
   /// Метод запуска киллауры
   async fn start(bot: &Client, index: u8, options: &KillauraOptions) {
-    match options.behavior.as_str() {
-      "moderate" => Self::moderate_killaura(bot, index, &options).await,
-      "aggressive" => Self::aggressive_killaura(bot, index, &options).await,
-      _ => {}
+    match options.behavior {
+      Behavior::Moderate => Self::moderate_killaura(bot, index, &options).await,
+      Behavior::Aggressive => Self::aggressive_killaura(bot, index, &options).await,
     }
   }
 }
@@ -462,13 +507,13 @@ impl SalarixiModule<KillauraOptions> for KillauraModule {
   }
 
   async fn switch(&self, index: u8, options: KillauraOptions) -> bool {
-    if options.state && !gettskact(&index, TaskName::Killaura).await {
+    if options.state == 1 && !gettskact(&index, TaskName::Killaura).await {
       let task_handle = tokio::spawn(async move {
         take_bot!(&index, async |bot| Self::start(bot, index, &options).await);
       });
 
       pushrtsk(&index, TaskName::Killaura, task_handle).await;
-    } else if !options.state && gettskact(&index, TaskName::Killaura).await {
+    } else if options.state == 0 && gettskact(&index, TaskName::Killaura).await {
       killtsk(&index, TaskName::Killaura).await;
 
       take_bot!(&index, async |bot| {

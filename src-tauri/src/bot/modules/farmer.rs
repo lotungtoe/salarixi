@@ -3,6 +3,7 @@ use azalea::prelude::*;
 use azalea::registry::builtin::{BlockKind, ItemKind};
 use azalea::Vec3;
 use serde::Deserialize;
+use serde_repr::{Deserialize_repr, Serialize_repr};
 
 use crate::bot::common::get_block_state;
 use crate::bot::extensions::{BotDefaultExt, BotInventoryExt, BotRotationExt};
@@ -17,15 +18,22 @@ struct Tool {
   priority: u8,
 }
 
-#[derive(Clone, Deserialize)]
-pub struct FarmerModule;
-
-#[derive(Clone, Deserialize)]
-pub struct FarmerOptions {
-  pub mode: String,
-  pub delay: Option<u64>,
-  pub state: bool,
+#[derive(PartialEq, Serialize_repr, Deserialize_repr)]
+#[repr(u8)]
+enum Mode {
+  Normal = 0,
+  Quick = 1,
+  Ultra = 2,
 }
+
+#[derive(Deserialize)]
+pub struct FarmerOptions {
+  mode: Mode,
+  delay: Option<u64>,
+  state: u8,
+}
+
+pub struct FarmerModule;
 
 impl FarmerModule {
   async fn auto_tool(bot: &Client, index: &u8) {
@@ -127,7 +135,7 @@ impl FarmerModule {
     false
   }
 
-  async fn fertilize_plant(bot: &Client, index: &u8, mode: &String) {
+  async fn fertilize_plant(bot: &Client, index: &u8, mode: &Mode) {
     let mut ferilizer_slot = None;
 
     if let Some(menu) = bot.get_inventory_menu() {
@@ -176,17 +184,15 @@ impl FarmerModule {
     false
   }
 
-  fn generate_delay(mode: &String) -> u64 {
-    if mode.as_str() == "normal" {
-      return randnum(100, 150);
-    } else if mode.as_str() == "quick" {
-      return 50;
-    } else {
-      return randnum(20, 30);
+  fn generate_delay(mode: &Mode) -> u64 {
+    match mode {
+      Mode::Normal => randnum(100, 150),
+      Mode::Quick => 50,
+      Mode::Ultra => randnum(20, 30),
     }
   }
 
-  async fn plow_block(bot: &Client, index: &u8, block_pos: BlockPos, mode: &String) {
+  async fn plow_block(bot: &Client, index: &u8, block_pos: BlockPos, mode: &Mode) {
     if let Some(state) = get_block_state(bot, block_pos) {
       Self::auto_tool(bot, index).await;
       sleep!(50);
@@ -231,7 +237,7 @@ impl FarmerModule {
         if Self::this_is_farmland_without_plant(bot, kind, block_pos) {
           bot.look_at_block(block_pos, true).await;
 
-          if options.mode.as_str() != "ultra" {
+          if options.mode != Mode::Ultra {
             sleep!(Self::generate_delay(&options.mode));
           }
 
@@ -266,7 +272,7 @@ impl FarmerModule {
               }
             }
 
-            if options.mode.as_str() != "ultra" {
+            if options.mode != Mode::Ultra {
               sleep!(Self::generate_delay(&options.mode));
             }
           } else {
@@ -321,13 +327,13 @@ impl SalarixiModule<FarmerOptions> for FarmerModule {
   }
 
   async fn switch(&self, index: u8, options: FarmerOptions) -> bool {
-    if options.state && !gettskact(&index, TaskName::Farmer).await {
+    if options.state == 1 && !gettskact(&index, TaskName::Farmer).await {
       let task_handle = tokio::spawn(async move {
         take_bot!(&index, async |bot| Self::start(bot, &index, &options).await);
       });
 
       pushrtsk(&index, TaskName::Farmer, task_handle).await;
-    } else if !options.state && gettskact(&index, TaskName::Farmer).await {
+    } else if options.state == 0 && gettskact(&index, TaskName::Farmer).await {
       killtsk(&index, TaskName::Farmer).await;
       setmst(&index, StateName::Looking, false).await;
       setmst(&index, StateName::Interacting, false).await;

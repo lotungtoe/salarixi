@@ -1,6 +1,8 @@
 use azalea::prelude::*;
 use azalea::WalkDirection;
 use serde::Deserialize;
+use serde_repr::Deserialize_repr;
+use serde_repr::Serialize_repr;
 
 use crate::bot::extensions::{go_to, BotMovementExt};
 use crate::bot::systems::tasks::{gettskact, killtsk, pushrtsk, TaskName};
@@ -9,18 +11,38 @@ use crate::other::tools::*;
 use crate::sleep;
 use crate::take_bot;
 
-pub struct MovementModule;
+#[derive(Serialize_repr, Deserialize_repr)]
+#[repr(u8)]
+enum Mode {
+  Default = 0,
+  Pathfinder = 1,
+}
+
+#[derive(Serialize_repr, Deserialize_repr)]
+#[repr(u8)]
+enum Direction {
+  Forward = 0,
+  Backward = 1,
+  Left = 2,
+  Right = 3,
+  ForwardLeft = 4,
+  ForwardRight = 5,
+  BackwardLeft = 6,
+  BackwardRight = 7,
+}
 
 #[derive(Deserialize)]
 pub struct MovementOptions {
-  pub mode: String,
-  pub direction: String,
-  pub use_sync: bool,
-  pub use_impulsiveness: bool,
-  pub x: Option<i32>,
-  pub z: Option<i32>,
-  pub state: bool,
+  mode: Mode,
+  direction: Direction,
+  use_sync: bool,
+  use_impulsiveness: bool,
+  x: Option<i32>,
+  z: Option<i32>,
+  state: u8,
 }
+
+pub struct MovementModule;
 
 impl MovementModule {
   pub fn new() -> Self {
@@ -34,16 +56,15 @@ impl MovementModule {
       }
 
       loop {
-        let direction = match options.direction.as_str() {
-          "forward" => WalkDirection::Forward,
-          "backward" => WalkDirection::Backward,
-          "left" => WalkDirection::Left,
-          "right" => WalkDirection::Right,
-          "forward-left" => WalkDirection::ForwardLeft,
-          "forward-right" => WalkDirection::ForwardRight,
-          "backward-left" => WalkDirection::BackwardLeft,
-          "backward-right" => WalkDirection::BackwardRight,
-          _ => return,
+        let direction = match options.direction {
+          Direction::Forward => WalkDirection::Forward,
+          Direction::Backward => WalkDirection::Backward,
+          Direction::Left => WalkDirection::Left,
+          Direction::Right => WalkDirection::Right,
+          Direction::ForwardLeft => WalkDirection::ForwardLeft,
+          Direction::ForwardRight => WalkDirection::ForwardRight,
+          Direction::BackwardLeft => WalkDirection::BackwardLeft,
+          Direction::BackwardRight => WalkDirection::BackwardRight,
         };
 
         bot.start_walking(index, direction).await;
@@ -61,16 +82,15 @@ impl MovementModule {
         sleep!(randnum(500, 2000));
       }
 
-      let direction = match options.direction.as_str() {
-        "forward" => WalkDirection::Forward,
-        "backward" => WalkDirection::Backward,
-        "left" => WalkDirection::Left,
-        "right" => WalkDirection::Right,
-        "forward-left" => WalkDirection::ForwardLeft,
-        "forward-right" => WalkDirection::ForwardRight,
-        "backward-left" => WalkDirection::BackwardLeft,
-        "backward-right" => WalkDirection::BackwardRight,
-        _ => return,
+      let direction = match options.direction {
+        Direction::Forward => WalkDirection::Forward,
+        Direction::Backward => WalkDirection::Backward,
+        Direction::Left => WalkDirection::Left,
+        Direction::Right => WalkDirection::Right,
+        Direction::ForwardLeft => WalkDirection::ForwardLeft,
+        Direction::ForwardRight => WalkDirection::ForwardRight,
+        Direction::BackwardLeft => WalkDirection::BackwardLeft,
+        Direction::BackwardRight => WalkDirection::BackwardRight,
       };
 
       bot.start_walking(index, direction).await;
@@ -90,10 +110,9 @@ impl MovementModule {
   }
 
   async fn start(bot: &Client, index: &u8, options: &MovementOptions) {
-    match options.mode.as_str() {
-      "default" => Self::default_move(bot, index, &options).await,
-      "pathfinder" => Self::pathfinder_move(*index, &options).await,
-      _ => {}
+    match options.mode {
+      Mode::Default => Self::default_move(bot, index, &options).await,
+      Mode::Pathfinder => Self::pathfinder_move(*index, &options).await,
     }
   }
 }
@@ -104,13 +123,13 @@ impl SalarixiModule<MovementOptions> for MovementModule {
   }
 
   async fn switch(&self, index: u8, options: MovementOptions) -> bool {
-    if options.state && !gettskact(&index, TaskName::Movement).await {
+    if options.state == 1 && !gettskact(&index, TaskName::Movement).await {
       let task_handle = tokio::spawn(async move {
         take_bot!(&index, async |bot| Self::start(bot, &index, &options).await);
       });
 
       pushrtsk(&index, TaskName::Movement, task_handle).await;
-    } else if !options.state && gettskact(&index, TaskName::Movement).await {
+    } else if options.state == 0 && gettskact(&index, TaskName::Movement).await {
       killtsk(&index, TaskName::Movement).await;
 
       take_bot!(&index, async |bot| {

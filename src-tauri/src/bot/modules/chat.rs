@@ -1,6 +1,7 @@
 use azalea::prelude::*;
 use regex::Regex;
 use serde::Deserialize;
+use serde_repr::{Deserialize_repr, Serialize_repr};
 
 use crate::bot::common::get_player_uuid;
 use crate::bot::extensions::BotDefaultExt;
@@ -13,22 +14,29 @@ use crate::bot::utils::radar::RADAR;
 use crate::other::tools::*;
 use crate::{sleep, take_bot};
 
-pub struct ChatModule;
+#[derive(PartialEq, Serialize_repr, Deserialize_repr)]
+#[repr(u8)]
+enum Mode {
+  Message = 0,
+  Spamming = 1,
+}
 
 #[derive(Deserialize)]
 pub struct ChatOptions {
-  pub mode: String,
-  pub message: String,
-  pub use_global_chat: bool,
-  pub use_text_mutation: bool,
-  pub use_sync: bool,
-  pub use_magic_text: bool,
-  pub use_bypass: bool,
-  pub use_anti_repetition: bool,
-  pub min_delay: Option<u64>,
-  pub max_delay: Option<u64>,
-  pub state: bool,
+  mode: Mode,
+  message: String,
+  use_global_chat: bool,
+  use_text_mutation: bool,
+  use_sync: bool,
+  use_magic_text: bool,
+  use_bypass: bool,
+  use_anti_repetition: bool,
+  min_delay: Option<u64>,
+  max_delay: Option<u64>,
+  state: u8,
 }
+
+pub struct ChatModule;
 
 impl ChatModule {
   fn create_magic_text(text: &str) -> String {
@@ -272,10 +280,9 @@ impl ChatModule {
   }
 
   async fn start(bot: &Client, index: &u8, options: &ChatOptions) {
-    match options.mode.as_str() {
-      "message" => Self::message(bot, index, options).await,
-      "spamming" => Self::spamming(bot, index, options).await,
-      _ => {}
+    match options.mode {
+      Mode::Message => Self::message(bot, index, options).await,
+      Mode::Spamming => Self::spamming(bot, index, options).await,
     }
   }
 }
@@ -286,7 +293,7 @@ impl SalarixiModule<ChatOptions> for ChatModule {
   }
 
   async fn switch(&self, index: u8, options: ChatOptions) -> bool {
-    let is_spamming = options.mode == "spamming";
+    let is_spamming = options.mode == Mode::Spamming;
 
     if !is_spamming {
       tokio::spawn(async move {
@@ -296,13 +303,13 @@ impl SalarixiModule<ChatOptions> for ChatModule {
       return true;
     }
 
-    if options.state && !gettskact(&index, TaskName::Spamming).await {
+    if options.state == 1 && !gettskact(&index, TaskName::Spamming).await {
       let task_handle = tokio::spawn(async move {
         take_bot!(&index, async |bot| Self::start(bot, &index, &options).await);
       });
 
       pushrtsk(&index, TaskName::Spamming, task_handle).await;
-    } else if !options.state && gettskact(&index, TaskName::Spamming).await {
+    } else if options.state == 0 && gettskact(&index, TaskName::Spamming).await {
       killtsk(&index, TaskName::Spamming).await;
     } else {
       return false;

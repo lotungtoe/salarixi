@@ -7,14 +7,14 @@ use crate::bot::traits::SalarixiModule;
 use crate::emit::*;
 use crate::take_bot;
 
-pub struct InventoryModule;
-
 #[derive(Deserialize)]
 pub struct InventoryOptions {
-  pub slot: Option<usize>,
-  pub target_slot: Option<usize>,
-  pub state: String,
+  slot: Option<usize>,
+  target_slot: Option<usize>,
+  state: u8,
 }
+
+pub struct InventoryModule;
 
 impl InventoryModule {
   pub fn new() -> Self {
@@ -22,37 +22,38 @@ impl InventoryModule {
   }
 
   pub async fn interact(bot: &Client, index: &u8, options: &InventoryOptions) {
-    if let Some(s) = options.slot {
-      if options.state.as_str() == "select" {
-        if s <= 8 {
-          bot.set_selected_hotbar_slot(s as u8);
+    let Some(slot) = options.slot else {
+      return;
+    };
+
+    match options.state {
+      0 => {
+        if slot <= 8 {
+          bot.set_selected_hotbar_slot(slot as u8);
         } else {
           if let Some(username) = INDEX_SYSTEM.username_by_index(index).await {
             emit_log(
-              format!("Бот {} не смог взять слот {} (неверный индекс слота)", username, s),
+              format!("Бот {} не смог взять слот {} (неверный индекс слота)", username, slot),
               "error",
             );
           }
         }
-      } else {
-        match options.state.as_str() {
-          "drop" => {
-            bot.inventory_click(index, s, ClickMode::DropAll, true).await;
-          }
-          "left-click" => {
-            bot.inventory_click(index, s, ClickMode::Left, true).await;
-          }
-          "right-click" => {
-            bot.inventory_click(index, s, ClickMode::Right, true).await;
-          }
-          "swap" => {
-            bot
-              .inventory_swap_click(index, s, if let Some(t) = options.target_slot { t } else { 0 }, true)
-              .await;
-          }
-          _ => {}
-        }
       }
+      1 => {
+        bot.inventory_click(index, slot, ClickMode::DropAll, true).await;
+      }
+      2 => {
+        bot.inventory_click(index, slot, ClickMode::Left, true).await;
+      }
+      3 => {
+        bot.inventory_click(index, slot, ClickMode::Right, true).await;
+      }
+      4 => {
+        bot
+          .inventory_swap_click(index, slot, if let Some(t) = options.target_slot { t } else { 0 }, true)
+          .await;
+      }
+      _ => {}
     }
   }
 }

@@ -2,6 +2,7 @@ use azalea::core::position::BlockPos;
 use azalea::prelude::*;
 use azalea::{Vec3, WalkDirection};
 use serde::Deserialize;
+use serde_repr::{Deserialize_repr, Serialize_repr};
 
 use crate::bot::common::{
   convert_hotbar_slot_to_inventory_slot, convert_inventory_slot_to_hotbar_slot, get_block_state, this_is_solid_block,
@@ -13,16 +14,25 @@ use crate::bot::traits::SalarixiModule;
 use crate::other::tools::*;
 use crate::{sleep, take_bot};
 
-pub struct ScaffoldModule;
+#[derive(Serialize_repr, Deserialize_repr)]
+#[repr(u8)]
+enum Mode {
+  NoobBridge = 0,
+  NinjaBridge = 1,
+  GodBridge = 2,
+  JumpBridge = 3,
+}
 
 #[derive(Deserialize)]
 pub struct ScaffoldOptions {
-  pub mode: String,
-  pub delay: Option<u64>,
-  pub min_gaze_degree_x: Option<f32>,
-  pub max_gaze_degree_x: Option<f32>,
-  pub state: bool,
+  mode: Mode,
+  delay: Option<u64>,
+  min_gaze_degree_x: Option<f32>,
+  max_gaze_degree_x: Option<f32>,
+  state: u8,
 }
+
+pub struct ScaffoldModule;
 
 impl ScaffoldModule {
   async fn take_block(bot: &Client, index: &u8) -> bool {
@@ -255,12 +265,11 @@ impl ScaffoldModule {
   async fn start(bot: &Client, index: u8, options: &ScaffoldOptions) {
     Self::go_back(index).await;
 
-    match options.mode.as_str() {
-      "noob-bridge" => Self::noob_bridge_scaffold(bot, &index, &options).await,
-      "ninja-bridge" => Self::ninja_bridge_scaffold(bot, &index, &options).await,
-      "god-bridge" => Self::god_bridge_scaffold(bot, &index, &options).await,
-      "jump-bridge" => Self::jump_bridge_scaffold(bot, &index, &options).await,
-      _ => {}
+    match options.mode {
+      Mode::NoobBridge => Self::noob_bridge_scaffold(bot, &index, &options).await,
+      Mode::NinjaBridge => Self::ninja_bridge_scaffold(bot, &index, &options).await,
+      Mode::GodBridge => Self::god_bridge_scaffold(bot, &index, &options).await,
+      Mode::JumpBridge => Self::jump_bridge_scaffold(bot, &index, &options).await,
     }
   }
 }
@@ -271,13 +280,13 @@ impl SalarixiModule<ScaffoldOptions> for ScaffoldModule {
   }
 
   async fn switch(&self, index: u8, options: ScaffoldOptions) -> bool {
-    if options.state && !gettskact(&index, TaskName::Scaffold).await {
+    if options.state == 1 && !gettskact(&index, TaskName::Scaffold).await {
       let task_handle = tokio::spawn(async move {
         take_bot!(&index, async |bot| Self::start(bot, index, &options).await);
       });
 
       pushrtsk(&index, TaskName::Scaffold, task_handle).await;
-    } else if !options.state && gettskact(&index, TaskName::Scaffold).await {
+    } else if options.state == 0 && gettskact(&index, TaskName::Scaffold).await {
       killtsk(&index, TaskName::Scaffold).await;
 
       take_bot!(&index, async |bot| {

@@ -185,13 +185,13 @@ async function stopBots(): Promise<void> {
 }
 
 /** Функция отправки данных в поток Rust для модулей управления */
-async function controlBots(name: string, state: boolean | string): Promise<void> {
+async function controlBots(name: string, state: number): Promise<void> {
   try {
     const elements = document.querySelectorAll(`[control="${name}"]`);
 
     let options: Record<string, any> = {};
 
-    elements.forEach(e => e.tagName.toLowerCase() === "select" ? options[(e as HTMLSelectElement).name] = (e as HTMLSelectElement).value : (e as HTMLInputElement).type === "checkbox" ? options[(e as HTMLInputElement).name] = (e as HTMLInputElement).checked : options[(e as HTMLInputElement).name] = (e as HTMLInputElement).type === "number" ? Number((e as HTMLInputElement).value) : (e as HTMLInputElement).value);
+    elements.forEach(e => e.tagName.toLowerCase() === "select" ? options[(e as HTMLSelectElement).name] = (e as HTMLSelectElement).selectedIndex : (e as HTMLInputElement).type === "checkbox" ? options[(e as HTMLInputElement).name] = (e as HTMLInputElement).checked : options[(e as HTMLInputElement).name] = (e as HTMLInputElement).type === "number" ? Number((e as HTMLInputElement).value) : (e as HTMLInputElement).value);
 
     const group = (document.getElementById("control-group") as HTMLInputElement).value.replace(" ", "");
 
@@ -241,27 +241,7 @@ function initGlobalElements(): void {
     });
   });
 
-  document.querySelectorAll<HTMLButtonElement>('[control-toggler="true"]').forEach(e => e.addEventListener("click", async () => { 
-    let state: boolean | string = false;
-    let attribute = e.getAttribute("state");
-
-    switch (attribute) {
-      case "true":
-        state = true;
-        break;
-      case "false":
-        state = false;
-        break;
-      case null:
-        state = false;
-        break;
-      default:
-        state = attribute;
-        break;
-    }
-
-    await controlBots(e.name, state);
-  }));
+  document.querySelectorAll<HTMLButtonElement>('[control-toggler="true"]').forEach(e => e.addEventListener("click", async () => await controlBots(e.name, Number(e.getAttribute("state")))));
 
   document.addEventListener("keydown", async (e) => {
     if (process === "sleep" || !quickTasksAllowed) return;

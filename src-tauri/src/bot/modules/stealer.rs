@@ -3,6 +3,8 @@ use azalea::core::position::BlockPos;
 use azalea::prelude::*;
 use azalea::Vec3;
 use serde::Deserialize;
+use serde_repr::Deserialize_repr;
+use serde_repr::Serialize_repr;
 
 use crate::bot::common::get_block_state;
 use crate::bot::extensions::BotMovementExt;
@@ -12,43 +14,41 @@ use crate::bot::traits::SalarixiModule;
 use crate::other::tools::*;
 use crate::{sleep, take_bot};
 
-pub struct StealerModule;
+#[derive(Serialize_repr, Deserialize_repr)]
+#[repr(u8)]
+enum Target {
+  Chest = 0,
+  Barrel = 1,
+  Shulker = 2,
+}
 
 #[derive(Deserialize)]
 pub struct StealerOptions {
-  pub target: String,
-  pub radius: Option<i32>,
-  pub delay: Option<u64>,
-  pub state: bool,
+  target: Target,
+  radius: Option<i32>,
+  delay: Option<u64>,
+  state: u8,
 }
+
+pub struct StealerModule;
 
 impl StealerModule {
   pub fn new() -> Self {
     Self
   }
 
-  fn check_block_id(block_id: u16, target: &String) -> bool {
-    match target.as_str() {
-      "chest" => {
-        return vec![3793, 3787, 3805, 3799].contains(&block_id);
-      }
-      "barrel" => {
-        return vec![20547, 20543, 20541, 20549, 20545].contains(&block_id);
-      }
-      "shulker" => {
-        return vec![
-          14666, 14672, 14678, 14720, 14756, 14714, 14762, 14744, 14702, 14696, 14708, 14750, 14684, 14726, 14738,
-          14732,
-        ]
-        .contains(&block_id);
-      }
-      _ => {}
+  fn check_block_id(block_id: u16, target: &Target) -> bool {
+    match target {
+      Target::Chest => vec![3793, 3787, 3805, 3799].contains(&block_id),
+      Target::Barrel => vec![20547, 20543, 20541, 20549, 20545].contains(&block_id),
+      Target::Shulker => vec![
+        14666, 14672, 14678, 14720, 14756, 14714, 14762, 14744, 14702, 14696, 14708, 14750, 14684, 14726, 14738, 14732,
+      ]
+      .contains(&block_id),
     }
-
-    false
   }
 
-  fn find_nearest_targets(bot: &Client, center: Vec3, target: &String, radius: i32) -> Vec<azalea::BlockPos> {
+  fn find_nearest_targets(bot: &Client, center: Vec3, target: &Target, radius: i32) -> Vec<azalea::BlockPos> {
     let mut positions = Vec::new();
 
     for x in -radius..=radius {
@@ -143,13 +143,13 @@ impl SalarixiModule<StealerOptions> for StealerModule {
   }
 
   async fn switch(&self, index: u8, options: StealerOptions) -> bool {
-    if options.state && !gettskact(&index, TaskName::Stealer).await {
+    if options.state == 1 && !gettskact(&index, TaskName::Stealer).await {
       let task_handle = tokio::spawn(async move {
         take_bot!(&index, async |bot| Self::start(bot, &index, &options).await);
       });
 
       pushrtsk(&index, TaskName::Stealer, task_handle).await;
-    } else if !options.state && gettskact(&index, TaskName::Stealer).await {
+    } else if options.state == 0 && gettskact(&index, TaskName::Stealer).await {
       killtsk(&index, TaskName::Stealer).await;
     } else {
       return false;

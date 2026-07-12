@@ -2,6 +2,7 @@ use std::time::Duration;
 
 use azalea::prelude::*;
 use serde::Deserialize;
+use serde_repr::{Deserialize_repr, Serialize_repr};
 use tokio::time::sleep;
 
 use crate::bot::extensions::BotDefaultExt;
@@ -10,15 +11,23 @@ use crate::bot::traits::SalarixiModule;
 use crate::other::tools::*;
 use crate::{sleep, take_bot};
 
-pub struct ActionModule;
+#[derive(Serialize_repr, Deserialize_repr)]
+#[repr(u8)]
+enum Action {
+  Jumping = 0,
+  Shifting = 1,
+  Waving = 2,
+}
 
 #[derive(Deserialize)]
 pub struct ActionOptions {
-  pub action: String,
-  pub use_sync: bool,
-  pub use_impulsiveness: bool,
-  pub state: bool,
+  action: Action,
+  use_sync: bool,
+  use_impulsiveness: bool,
+  state: u8,
 }
+
+pub struct ActionModule;
 
 impl ActionModule {
   async fn jumping(bot: &Client, options: &ActionOptions) {
@@ -87,11 +96,10 @@ impl ActionModule {
   }
 
   async fn start(bot: &Client, options: &ActionOptions) {
-    match options.action.as_str() {
-      "jumping" => Self::jumping(bot, options).await,
-      "shifting" => Self::shifting(bot, options).await,
-      "waving" => Self::waving(bot, options).await,
-      _ => {}
+    match options.action {
+      Action::Jumping => Self::jumping(bot, options).await,
+      Action::Shifting => Self::shifting(bot, options).await,
+      Action::Waving => Self::waving(bot, options).await,
     }
   }
 }
@@ -102,25 +110,24 @@ impl SalarixiModule<ActionOptions> for ActionModule {
   }
 
   async fn switch(&self, index: u8, options: ActionOptions) -> bool {
-    let task_name = match options.action.as_str() {
-      "jumping" => TaskName::Jumping,
-      "shifting" => TaskName::Shifting,
-      "waving" => TaskName::Waving,
-      _ => return false,
+    let task_name = match options.action {
+      Action::Jumping => TaskName::Jumping,
+      Action::Shifting => TaskName::Shifting,
+      Action::Waving => TaskName::Waving,
     };
 
-    if options.state && !gettskact(&index, task_name.clone()).await {
+    if options.state == 1 && !gettskact(&index, task_name.clone()).await {
       let root_task = tokio::spawn(async move {
         take_bot!(&index, async |bot| Self::start(bot, &options).await);
       });
 
       pushrtsk(&index, task_name, root_task).await;
-    } else if !options.state && gettskact(&index, task_name.clone()).await {
+    } else if options.state == 0 && gettskact(&index, task_name.clone()).await {
       killtsk(&index, task_name).await;
 
-      take_bot!(&index, async |bot| match options.action.as_str() {
-        "jumping" => bot.set_jumping(false),
-        "shifting" => bot.set_crouching(false),
+      take_bot!(&index, async |bot| match options.action {
+        Action::Jumping => bot.set_jumping(false),
+        Action::Shifting => bot.set_crouching(false),
         _ => {}
       });
     } else {

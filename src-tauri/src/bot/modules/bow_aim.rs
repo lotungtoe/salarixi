@@ -3,6 +3,7 @@ use azalea::protocol::packets::game::s_interact::InteractionHand;
 use azalea::registry::builtin::ItemKind;
 use azalea::Vec3;
 use serde::Deserialize;
+use serde_repr::{Deserialize_repr, Serialize_repr};
 
 use crate::bot::extensions::{BotDefaultExt, BotInteractExt, BotInventoryExt, EntityType};
 use crate::bot::systems::states::{getst, setmst, State, StateName};
@@ -11,16 +12,42 @@ use crate::bot::traits::SalarixiModule;
 use crate::other::tools::*;
 use crate::{sleep, take_bot};
 
-pub struct BowAimModule;
+#[derive(PartialEq, Serialize_repr, Deserialize_repr)]
+#[repr(u8)]
+enum Target {
+  Player = 0,
+  Monster = 1,
+  Animal = 2,
+  Vehicle = 3,
+  Any = 4,
+  Custom = 5,
+}
+
+impl Target {
+  pub fn to_string(&self) -> String {
+    let str = match self {
+      Self::Player => "player",
+      Self::Monster => "monster",
+      Self::Animal => "animal",
+      Self::Vehicle => "vehicle",
+      Self::Any => "any",
+      Self::Custom => "custom",
+    };
+
+    str.to_string()
+  }
+}
 
 #[derive(Deserialize)]
 pub struct BowAimOptions {
-  pub target: String,
-  pub target_nickname: Option<String>,
-  pub delay: Option<u64>,
-  pub max_distance: Option<f64>,
-  pub state: bool,
+  target: Target,
+  target_nickname: Option<String>,
+  delay: Option<u64>,
+  max_distance: Option<f64>,
+  state: u8,
 }
+
+pub struct BowAimModule;
 
 impl BowAimModule {
   pub fn new() -> Self {
@@ -118,10 +145,10 @@ impl BowAimModule {
   }
 
   async fn start(bot: &Client, index: &u8, options: &BowAimOptions) {
-    let target = if options.target.as_str() == "custom" {
+    let target = if options.target == Target::Custom {
       options.target_nickname.clone()
     } else {
-      Some(options.target.clone())
+      Some(options.target.to_string())
     };
 
     let Some(target) = target else {
@@ -143,13 +170,13 @@ impl SalarixiModule<BowAimOptions> for BowAimModule {
   }
 
   async fn switch(&self, index: u8, options: BowAimOptions) -> bool {
-    if options.state && !gettskact(&index, TaskName::BowAim).await {
+    if options.state == 1 && !gettskact(&index, TaskName::BowAim).await {
       let task_handle = tokio::spawn(async move {
         take_bot!(&index, async |bot| Self::start(bot, &index, &options).await);
       });
 
       pushrtsk(&index, TaskName::BowAim, task_handle).await;
-    } else if !options.state && gettskact(&index, TaskName::BowAim).await {
+    } else if options.state == 0 && gettskact(&index, TaskName::BowAim).await {
       killtsk(&index, TaskName::BowAim).await;
 
       take_bot!(&index, async |bot| {

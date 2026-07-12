@@ -6,6 +6,7 @@ use azalea::protocol::common::movements::MoveFlags;
 use azalea::protocol::packets::game::ServerboundMovePlayerPos;
 use azalea::Vec3;
 use serde::Deserialize;
+use serde_repr::{Deserialize_repr, Serialize_repr};
 
 use crate::bot::extensions::{BotDefaultExt, BotPhysicsExt};
 use crate::bot::systems::tasks::{gettskact, killtsk, pushrtsk, TaskName};
@@ -13,19 +14,42 @@ use crate::bot::traits::SalarixiModule;
 use crate::other::tools::*;
 use crate::{sleep, take_bot};
 
-pub struct FlightModule;
+#[derive(Serialize_repr, Deserialize_repr)]
+#[repr(u8)]
+enum Mode {
+  Vanilla = 0,
+  JumpFly = 1,
+  TeleportFly = 2,
+  BugFly = 3,
+}
+
+#[derive(PartialEq, Serialize_repr, Deserialize_repr)]
+#[repr(u8)]
+enum Settings {
+  Adaptive = 0,
+  Manual = 1,
+}
+
+#[derive(Serialize_repr, Deserialize_repr)]
+#[repr(u8)]
+enum AntiCheat {
+  Vulcan = 0,
+  Grim = 1,
+  Intave = 2,
+  None = 3,
+}
 
 #[derive(Deserialize)]
 pub struct FlightOptions {
-  pub mode: String,
-  pub settings: String,
-  pub anti_cheat: String,
-  pub min_delay: Option<u64>,
-  pub max_delay: Option<u64>,
-  pub min_change_y: Option<f64>,
-  pub max_change_y: Option<f64>,
-  pub use_ground_spoof: Option<String>,
-  pub state: bool,
+  mode: Mode,
+  settings: Settings,
+  anti_cheat: AntiCheat,
+  min_delay: Option<u64>,
+  max_delay: Option<u64>,
+  min_change_y: Option<f64>,
+  max_change_y: Option<f64>,
+  use_ground_spoof: Option<String>,
+  state: u8,
 }
 
 struct FlightConfig {
@@ -37,16 +61,18 @@ struct FlightConfig {
   use_jitter: bool,
 }
 
+pub struct FlightModule;
+
 impl FlightModule {
   pub fn new() -> Self {
     Self
   }
 
-  fn create_adaptive_config(anti_cheat: &str) -> FlightConfig {
+  fn create_adaptive_config(anti_cheat: &AntiCheat) -> FlightConfig {
     let config;
 
     match anti_cheat {
-      "vulcan" => {
+      AntiCheat::Vulcan => {
         config = FlightConfig {
           min_delay: 100,
           max_delay: 250,
@@ -56,7 +82,7 @@ impl FlightModule {
           use_jitter: true,
         };
       }
-      "intave" => {
+      AntiCheat::Intave => {
         config = FlightConfig {
           min_delay: 200,
           max_delay: 400,
@@ -66,7 +92,7 @@ impl FlightModule {
           use_jitter: true,
         };
       }
-      "grim" => {
+      AntiCheat::Grim => {
         config = FlightConfig {
           min_delay: 100,
           max_delay: 200,
@@ -76,7 +102,7 @@ impl FlightModule {
           use_jitter: false,
         };
       }
-      _ => {
+      AntiCheat::None => {
         config = FlightConfig {
           min_delay: 200,
           max_delay: 500,
@@ -104,8 +130,8 @@ impl FlightModule {
   }
 
   pub async fn vanilla_flight(bot: &Client, options: &FlightOptions) {
-    let config = if options.settings.as_str() == "adaptive" {
-      Self::create_adaptive_config(options.anti_cheat.as_str())
+    let config = if options.settings == Settings::Adaptive {
+      Self::create_adaptive_config(&options.anti_cheat)
     } else {
       FlightConfig {
         min_delay: options.min_delay.unwrap_or(200),
@@ -152,8 +178,8 @@ impl FlightModule {
   }
 
   pub async fn jump_flight(bot: &Client, options: &FlightOptions) {
-    let config = if options.settings.as_str() == "adaptive" {
-      Self::create_adaptive_config(options.anti_cheat.as_str())
+    let config = if options.settings == Settings::Adaptive {
+      Self::create_adaptive_config(&options.anti_cheat)
     } else {
       FlightConfig {
         min_delay: options.min_delay.unwrap_or(200),
@@ -221,8 +247,8 @@ impl FlightModule {
   }
 
   pub async fn teleport_flight(bot: &Client, options: &FlightOptions) {
-    let config = if options.settings.as_str() == "adaptive" {
-      Self::create_adaptive_config(options.anti_cheat.as_str())
+    let config = if options.settings == Settings::Adaptive {
+      Self::create_adaptive_config(&options.anti_cheat)
     } else {
       FlightConfig {
         min_delay: options.min_delay.unwrap_or(150),
@@ -281,8 +307,8 @@ impl FlightModule {
   }
 
   pub async fn bug_flight(bot: &Client, options: &FlightOptions) {
-    let config = if options.settings.as_str() == "adaptive" {
-      Self::create_adaptive_config(options.anti_cheat.as_str())
+    let config = if options.settings == Settings::Adaptive {
+      Self::create_adaptive_config(&options.anti_cheat)
     } else {
       FlightConfig {
         min_delay: options.min_delay.unwrap_or(200),
@@ -341,12 +367,11 @@ impl FlightModule {
   }
 
   async fn start(bot: &Client, options: &FlightOptions) {
-    match options.mode.as_str() {
-      "vanilla" => Self::vanilla_flight(bot, options).await,
-      "jump-fly" => Self::jump_flight(bot, options).await,
-      "teleport-fly" => Self::teleport_flight(bot, options).await,
-      "bug-fly" => Self::bug_flight(bot, options).await,
-      _ => {}
+    match options.mode {
+      Mode::Vanilla => Self::vanilla_flight(bot, options).await,
+      Mode::JumpFly => Self::jump_flight(bot, options).await,
+      Mode::TeleportFly => Self::teleport_flight(bot, options).await,
+      Mode::BugFly => Self::bug_flight(bot, options).await,
     }
   }
 }
@@ -357,13 +382,13 @@ impl SalarixiModule<FlightOptions> for FlightModule {
   }
 
   async fn switch(&self, index: u8, options: FlightOptions) -> bool {
-    if options.state && !gettskact(&index, TaskName::Flight).await {
+    if options.state == 1 && !gettskact(&index, TaskName::Flight).await {
       let task_handle = tokio::spawn(async move {
         take_bot!(&index, async |bot| Self::start(bot, &options).await);
       });
 
       pushrtsk(&index, TaskName::Flight, task_handle).await;
-    } else if !options.state && gettskact(&index, TaskName::Flight).await {
+    } else if options.state == 0 && gettskact(&index, TaskName::Flight).await {
       killtsk(&index, TaskName::Flight).await;
     } else {
       return false;
