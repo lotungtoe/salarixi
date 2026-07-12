@@ -2,7 +2,7 @@
 
 ## About
 
-**Salarixi** - A multifunctional, optimized, and simple tool for bottling in Minecraft. It has a lot of settings that can be quickly adjusted to your goals. This tool also offers a lot of features for managing bots, there are many separate management modules, scripting, and it is also unique for its optimized and fast monitoring capabilities (graphs, bot profiles, chats with bots), they allow you to filter data on the fly, manage specific bots.
+**Salarixi** - A feature-rich, multi-task, and lightweight tool for bottling in Minecraft. It has a lot of settings that can be quickly adjusted to your goals. This tool also offers a lot of features for managing bots, there are many separate management modules, scripting, and it is also unique for its optimized and fast monitoring capabilities (graphs, bot profiles, chats with bots), they allow you to filter data on the fly, manage specific bots.
 
 ---
 
@@ -11,12 +11,12 @@ Uses [azalea](https://github.com/azalea-rs/azalea) library as a base.
 ---
 
 > [!WARNING]
-> This client does not promise stability and good support on all operating systems. If you encounter any problems, please report them to the [issues](https://codeberg.org/nullclyze/salarixi/issues). If the message concerns an error or bug, it should include the client version, operating system, a clear description of the problem, and screenshots.
+> This client does not promise stability and good support on all operating systems. If you encounter any problems, please report them to the [issues](https://codeberg.org/nullclyze/salarixi/issues). If the message concerns an error or bug, it should include the client version, operating system, clear description of the problem, screenshots.
 
 ---
 
 > [!IMPORTANT]
-> This is just a fan project.
+> This is just a fun project.
 
 ## Social
 
