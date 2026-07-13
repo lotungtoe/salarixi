@@ -70,41 +70,6 @@ class AccountModule {
       }
     });
 
-    addAccountBtn.addEventListener("click", () => {
-      const usernameInput = document.getElementById("account-username") as HTMLInputElement;
-      const username = usernameInput.value;
-
-      const status = this.createAccountCard(username, {
-        creation_date: date("exact"),
-        initial_group: null,
-        password: null,
-        email: null,
-        proxy: null,
-        selected: false,
-      });
-
-      switch (status) {
-        case 0:
-          this.updateAccountCounter();
-          usernameInput.value = "";
-          logger.log(`Создан новый аккаунт "${username}"`, "system");
-          break;
-        case 1:
-          logger.log(`Не удалось создать аккаунт "${username}": Accounts with empty usernames are prohibited`, "warning");
-          break;
-        case 2:
-          logger.log(`Не удалось создать аккаунт "${username}": Account with this username already exists`, "warning");
-          break;
-        case 3:
-          logger.log(`Не удалось создать аккаунт "${username}": Number of generated accounts is out of limits (minimum 1, maximum 200)`, "warning");
-          break;
-      }
-
-      if (status !== 0) {
-        messages.message("Аккаунты", `Не удалось создать аккаунт "${username}"`);
-      }
-    });
-
     changeAllAccountsSelect.addEventListener("change", () => {
       let count = 0;
 
@@ -121,6 +86,7 @@ class AccountModule {
       }
     });
 
+    removeSelectedAccountsBtn.addEventListener("click", async () => await this.removeSelectedAccounts());
     openSelectedAccountsEditorBtn.addEventListener("click", () => selectedAccountsEditor.style.display = "flex");
     closeSelectedAccountsEditorBtn.addEventListener("click", () => selectedAccountsEditor.style.display = "none");
 
@@ -129,151 +95,10 @@ class AccountModule {
     selectedAccountsEmail.addEventListener("input", () => this.setValueForAllSelected("email", selectedAccountsEmail.value));
     selectedAccountsProxy.addEventListener("input", () => this.setValueForAllSelected("proxy", selectedAccountsProxy.value));
 
-    removeSelectedAccountsBtn.addEventListener("click", async () => {
-      let selectedCount = 0;
-      for (const [_, account] of this.accounts) account.selected ? selectedCount++ : null;
-
-      if (selectedCount === this.accounts.size) {
-        await this.clearAccounts();
-        return;
-      }
-
-      let removedCount = 0;
-      for (const [username, account] of this.accounts) {
-        if (!account.selected) continue;
-
-        this.accounts.delete(username);
-
-        document.getElementById(`account-editor-${username}`)?.remove();
-        document.getElementById(`account-card-${username}`)?.remove();
-
-        removedCount++;
-      }
-
-      this.noSelected = true;
-      this.changeSelectorsState();
-      this.updateAccountCounter();
-      this.updateSelectedAccountCounter();
-
-      messages.message("Аккаунты", `Удалено ${removedCount} аккаунтов`);
-      logger.log(`Удалено ${removedCount} аккаунтов`, "system");
-    });
-
-    importAccounts.addEventListener("click", async () => {
-      try {
-        const path = await open({
-          directory: false,
-          multiple: false,
-          filters: [{
-            name: "Accounts",
-            extensions: ["json"]
-          }]
-        });
-
-        if (!path) return;
-
-        this.clearAccounts();
-
-        const buffer = await readFile(path);
-
-        const decoder = new TextDecoder();
-        const accounts = JSON.parse(decoder.decode(buffer));
-
-        for (const username in accounts) {
-          const account = accounts[username];
-          if (!account) continue;
-
-          this.createAccountCard(username, {
-            creation_date: date("exact"),
-            initial_group: account["initial_group"],
-            password: account["password"],
-            email: account["email"],
-            proxy: account["proxy"],
-            selected: false,
-          });
-        } 
-        
-        this.updateAccountCounter();
-
-        messages.message("Импорт аккаунтов", `Аккаунты успешно импортированы`);
-      } catch (error) {
-        logger.log(`Ошибка импорта аккаунтов: ${error}`, "error");
-      }
-    });
-
-    exportAccounts.addEventListener("click", async () => {
-      try {
-        const directory = await open({
-          directory: true,
-          multiple: false
-        });
-
-        if (!directory) return;
-
-        const accounts: any = {};
-
-        for (const [username, account] of this.accounts) {
-          accounts[username] = {
-            initial_group: account.initial_group,
-            password: account.password,
-            email: account.email,
-            proxy: account.proxy,
-          };
-        }
-
-        const path = await join(directory, "salarixi.accounts.json");
-        let encoder = new TextEncoder();
-        let buffer = encoder.encode(JSON.stringify(accounts, null, 2));
-
-        await writeFile(path, buffer);
-
-        messages.message("Экспорт аккаунтов", `Аккаунты успешно экспортированы`);
-      } catch (error) {
-        logger.log(`Ошибка экспорта аккаунтов: ${error}`, "error");
-      }
-    });
-
-    generateAccountsBtn.addEventListener("click", () => {
-      const template = (document.getElementById("account-username-template") as HTMLInputElement).value;
-      const count = parseInt((document.getElementById("generated-account-count") as HTMLInputElement).value);
-
-      if (template === "") return;
-
-      if (count > 255 || count < 1) {
-        messages.message("Аккаунты", "Не удалось сгенерировать аккаунты");
-        logger.log(`Не удалось сгенерировать аккаунты: Number of generated accounts is out of limits (minimum 1, maximum 255)`, "warning");
-        return;
-      }
-
-      let generated = 0;
-
-      for (let i = 0; i < count; i++) {
-        let username = "";
-
-        for (let a = 0; a < 5; a++) {
-          const generatedUsername = this.generateUsername(i, template);
-          if (this.accounts.has(generatedUsername)) continue;
-          username = generatedUsername;
-          break;
-        }
-
-        const status = this.createAccountCard(username, {
-          creation_date: date("exact"),
-          initial_group: null,
-          password: null,
-          email: null,
-          proxy: null,
-          selected: false,
-        });
-
-        if (status === 0) generated++;
-      }
-
-      this.updateAccountCounter();
-
-      messages.message("Аккаунты", `Сгенерировано ${generated} аккаунтов`);
-      logger.log(`Сгенерировано ${generated} аккаунтов по шаблону "${template}"`, "system");
-    });
+    addAccountBtn.addEventListener("click", () => this.addAccount());
+    importAccounts.addEventListener("click", async () => await this.importAccounts());
+    exportAccounts.addEventListener("click", async () => await this.exportAccounts());
+    generateAccountsBtn.addEventListener("click", () => this.generateAccounts());
 
     this.watch();
   }
@@ -296,7 +121,14 @@ class AccountModule {
 
   /** Метод запуска цикла сохранения пользовательских аккаунтов */
   private watch(): void {
+    let latestSize = 0;
+
     setInterval(async () => {
+      // Нету смысла сохранять пустой JSON, поэтому такая проверка
+      if (this.accounts.size < 1 && latestSize > 0) {
+        return;
+      }
+
       let cleanAccounts: any = {};
 
       for (const [username, account] of this.accounts) {
@@ -309,7 +141,7 @@ class AccountModule {
         };
       }
 
-      const string = JSON.stringify(cleanAccounts);
+      const string = JSON.stringify(cleanAccounts, null, 2);
       const encoder = new TextEncoder();
       const encoded = encoder.encode(string);
 
@@ -318,7 +150,12 @@ class AccountModule {
         content: encoded,
       }) as CommandResult<null>;
 
-      if (result.error) logger.log(`Ошибка сохранения аккаунтов: ${result.error}`, "error");
+      if (result.error) {
+        logger.log(`Ошибка сохранения аккаунтов: ${result.error}`, "error");
+        return;
+      }
+
+      latestSize = this.accounts.size;
     }, 2000);
   }
 
@@ -402,6 +239,192 @@ class AccountModule {
     this.updateAccountCounter();
 
     logger.log(`Сохранённые аккаунты загружены (${accounts.length > 255 ? 255 : accounts.length} штук)`, "system");
+  }
+
+  /** Метод добавления аккаунта */
+  private addAccount(): void {
+    const usernameInput = document.getElementById("account-username") as HTMLInputElement;
+    const username = usernameInput.value;
+
+    const status = this.createAccountCard(username, {
+      creation_date: date("exact"),
+      initial_group: null,
+      password: null,
+      email: null,
+      proxy: null,
+      selected: false,
+    });
+
+    switch (status) {
+      case 0:
+        this.updateAccountCounter();
+        usernameInput.value = "";
+        logger.log(`Создан новый аккаунт "${username}"`, "system");
+        break;
+      case 1:
+        logger.log(`Не удалось создать аккаунт "${username}": Accounts with empty usernames are prohibited`, "warning");
+        break;
+      case 2:
+        logger.log(`Не удалось создать аккаунт "${username}": Account with this username already exists`, "warning");
+        break;
+      case 3:
+        logger.log(`Не удалось создать аккаунт "${username}": Number of generated accounts is out of limits (minimum 1, maximum 200)`, "warning");
+        break;
+    }
+
+    if (status !== 0) {
+      messages.message("Аккаунты", `Не удалось создать аккаунт "${username}"`);
+    }
+  }
+  
+  /** Метод удаления всех выбранных аккаунтов */
+  private async removeSelectedAccounts(): Promise<void> {
+    let selectedCount = 0;
+    for (const [_, account] of this.accounts) account.selected ? selectedCount++ : null;
+
+    if (selectedCount === this.accounts.size) {
+      await this.clearAccounts();
+      return;
+    }
+
+    let removedCount = 0;
+    for (const [username, account] of this.accounts) {
+      if (!account.selected) continue;
+
+      this.accounts.delete(username);
+
+      document.getElementById(`account-editor-${username}`)?.remove();
+      document.getElementById(`account-card-${username}`)?.remove();
+
+      removedCount++;
+    }
+
+    this.noSelected = true;
+    this.changeSelectorsState();
+    this.updateAccountCounter();
+    this.updateSelectedAccountCounter();
+
+    messages.message("Аккаунты", `Удалено ${removedCount} аккаунтов`);
+    logger.log(`Удалено ${removedCount} аккаунтов`, "system");
+  }
+
+  /** Метод импортировки аккаунтов */
+  private async importAccounts(): Promise<void> {
+    try {
+      const path = await open({
+        directory: false,
+        multiple: false,
+        filters: [{
+          name: "Accounts",
+          extensions: ["json"]
+        }]
+      });
+
+      if (!path) return;
+
+      this.clearAccounts();
+
+      const buffer = await readFile(path);
+
+      const decoder = new TextDecoder();
+      const accounts = JSON.parse(decoder.decode(buffer));
+
+      for (const username in accounts) {
+        const account = accounts[username];
+        if (!account) continue;
+
+        this.createAccountCard(username, {
+          creation_date: date("exact"),
+          initial_group: account["initial_group"],
+          password: account["password"],
+          email: account["email"],
+          proxy: account["proxy"],
+          selected: false,
+        });
+      } 
+      
+      this.updateAccountCounter();
+
+      messages.message("Импорт аккаунтов", `Аккаунты успешно импортированы`);
+    } catch (error) {
+      logger.log(`Ошибка импорта аккаунтов: ${error}`, "error");
+    }
+  }
+
+  /** Метод экспортировки аккаунтов */
+  private async exportAccounts(): Promise<void> {
+    try {
+      const directory = await open({
+        directory: true,
+        multiple: false
+      });
+
+      if (!directory) return;
+
+      const accounts: any = {};
+
+      for (const [username, account] of this.accounts) {
+        accounts[username] = {
+          initial_group: account.initial_group,
+          password: account.password,
+          email: account.email,
+          proxy: account.proxy,
+        };
+      }
+
+      const path = await join(directory, "salarixi.accounts.json");
+      let encoder = new TextEncoder();
+      let buffer = encoder.encode(JSON.stringify(accounts, null, 2));
+
+      await writeFile(path, buffer);
+
+      messages.message("Экспорт аккаунтов", `Аккаунты успешно экспортированы`);
+    } catch (error) {
+      logger.log(`Ошибка экспорта аккаунтов: ${error}`, "error");
+    }
+  }
+
+  /** Метод генерации аккаунтов по шаблону */
+  private generateAccounts(): void {
+    const template = (document.getElementById("account-username-template") as HTMLInputElement).value;
+    const count = parseInt((document.getElementById("generated-account-count") as HTMLInputElement).value);
+
+    if (template === "") return;
+
+    if (count > 255 || count < 1) {
+      messages.message("Аккаунты", "Не удалось сгенерировать аккаунты");
+      logger.log(`Не удалось сгенерировать аккаунты: Number of generated accounts is out of limits (minimum 1, maximum 255)`, "warning");
+      return;
+    }
+
+    let generated = 0;
+
+    for (let i = 0; i < count; i++) {
+      let username = "";
+
+      for (let a = 0; a < 5; a++) {
+        const generatedUsername = this.generateUsername(i, template);
+        if (this.accounts.has(generatedUsername)) continue;
+        username = generatedUsername;
+        break;
+      }
+
+      const status = this.createAccountCard(username, {
+        creation_date: date("exact"),
+        initial_group: null,
+        password: null,
+        email: null,
+        proxy: null,
+        selected: false,
+      });
+
+      if (status === 0) generated++;
+    }
+
+    this.updateAccountCounter();
+
+    messages.message("Аккаунты", `Сгенерировано ${generated} аккаунтов`);
+    logger.log(`Сгенерировано ${generated} аккаунтов по шаблону "${template}"`, "system");
   }
 
   /** Метод генерации юзернейма */
