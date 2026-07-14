@@ -3,7 +3,7 @@ export const plugins: Record<string, { name: string; enable: boolean; date: stri
   "instant-armor-equip": {
     name: "Instant Armor Equip",
     enable: false,
-    date: "04.07.2026"
+    date: "14.07.2026"
   },
   "auto-totem": {
     name: "Auto Totem",
@@ -13,7 +13,7 @@ export const plugins: Record<string, { name: string; enable: boolean; date: stri
   "auto-eat": {
     name: "Auto Eat",
     enable: false,
-    date: "04.07.2026"
+    date: "14.07.2026"
   },
   "potion-consumer": {
     name: "Potion Consumer",
