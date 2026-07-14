@@ -1,6 +1,7 @@
+use azalea::entity::ActiveEffects;
 use azalea::inventory::ItemStack;
 use azalea::protocol::packets::game::s_interact::InteractionHand;
-use azalea::registry::builtin::ItemKind;
+use azalea::registry::builtin::{ItemKind, MobEffect};
 
 use crate::bot::extensions::{BotDefaultExt, BotInteractExt, BotInventoryExt, BotMovementExt};
 use crate::bot::plugin_manager::PluginName;
@@ -23,51 +24,90 @@ impl AutoEatPlugin {
   async fn tick(&self, index: &u8) {
     let mut satiety = 20;
     let mut health = 20.0;
+    let mut active_effects = None;
 
     take_bot!(index, async |bot| {
       satiety = bot.get_satiety();
       health = bot.get_health();
+      active_effects = bot.get_component::<ActiveEffects>();
     });
 
-    if satiety < 20 || health < 15.0 {
-      let food_list = self.find_food_in_inventory(index).await;
+    if !self.need_to_eat(satiety, health, active_effects) {
+      return;
+    }
 
-      if let Some(best_food) = self.get_best_food(satiety, health, &food_list).await {
-        if getst(index, State::CanEating).await
-          && !getst(index, State::IsDrinking).await
-          && !getst(index, State::IsInteracting).await
-        {
-          let mut should_eat = true;
+    let food_list = self.find_food_in_inventory(index).await;
+    let Some(best_food) = self.get_best_food(satiety, health, &food_list).await else {
+      return;
+    };
 
-          if getst(index, State::IsAttacking).await {
-            should_eat = !(randchance(satiety as f64 / 20.0) && randchance(health as f64 / 20.0));
-          }
+    if !getst(index, State::CanEating).await {
+      return;
+    }
 
-          if should_eat {
-            setst(index, State::CanDrinking, false).await;
-            setst(index, State::CanInteracting, false).await;
-            setmst(index, StateName::Eating, true).await;
+    let mut should_eat = true;
 
-            self.start_eating(index, best_food.slot).await;
-            sleep!(50);
+    if getst(index, State::IsAttacking).await {
+      should_eat = !(randchance(satiety as f64 / 20.0) && randchance(health as f64 / 20.0));
+    }
 
-            setst(index, State::CanDrinking, true).await;
-            setst(index, State::CanInteracting, true).await;
-            setmst(index, StateName::Eating, false).await;
-          } else {
-            sleep!(1800);
-          }
+    if should_eat {
+      setst(index, State::CanDrinking, false).await;
+      setst(index, State::CanInteracting, false).await;
+      setmst(index, StateName::Eating, true).await;
+
+      self.start_eating(index, best_food.slot).await;
+      sleep!(50);
+
+      setst(index, State::CanDrinking, true).await;
+      setst(index, State::CanInteracting, true).await;
+      setmst(index, StateName::Eating, false).await;
+    } else {
+      sleep!(1800);
+    }
+  }
+
+  /// Метод проверки, нужно ли есть боту (опирается на здоровье, сытость, активные эффекты)
+  fn need_to_eat(&self, satiety: u32, health: f32, active_effects: Option<ActiveEffects>) -> bool {
+    if satiety >= 20 && health >= 15.0 {
+      return false;
+    }
+
+    if let Some(effects) = active_effects {
+      for (effect, data) in &effects.0 {
+        match effect {
+          MobEffect::Regeneration => {}
+          _ => continue,
+        }
+
+        // Думаю, здесь бессмысленно проверять время эффекта,
+        // всё равно следующий тик плагина вновь проверит активные
+        // эффекты и на их основе сделает корректный выбор
+        if (data.amplifier >= 1 && health >= 6.0) || (data.amplifier == 0 && health >= 12.0) {
+          return false;
+        }
+      }
+
+      for (effect, data) in &effects.0 {
+        match effect {
+          MobEffect::Saturation => {}
+          _ => continue,
+        }
+
+        if (data.amplifier >= 1 && satiety >= 4) || (data.amplifier == 0 && satiety >= 10) {
+          return false;
         }
       }
     }
+
+    true
   }
 
   /// Метод отправки пакета о кушание еды
   async fn start_eating(&self, index: &u8, slot: usize) {
     take_bot!(index, async |bot| {
       bot.freeze_move(index).await;
-      bot.take_item(index, slot, false).await;
-      sleep!(50);
+      bot.take_item(index, slot, true).await;
       bot.start_use_held_item(InteractionHand::MainHand);
     });
 
@@ -92,52 +132,54 @@ impl AutoEatPlugin {
         }
       }
 
-      if best_food.is_none() {
-        let desired_health_priority;
-        let desired_satiety_priority;
+      if best_food.is_some() {
+        return best_food;
+      }
 
-        if health < 20.0 && health >= 18.0 {
-          desired_health_priority = 0;
-        } else if health < 18.0 && health >= 15.0 {
-          desired_health_priority = 1;
-        } else if health < 15.0 && health >= 12.0 {
-          desired_health_priority = 2;
-        } else {
-          desired_health_priority = 3;
-        }
+      let desired_health_priority;
+      let desired_satiety_priority;
 
-        if satiety < 20 && satiety >= 18 {
-          desired_satiety_priority = 0;
-        } else if satiety < 18 && satiety >= 15 {
-          desired_satiety_priority = 1;
-        } else if satiety < 15 && satiety >= 12 {
-          desired_satiety_priority = 2;
-        } else {
-          desired_satiety_priority = 3;
-        }
+      if health < 20.0 && health >= 18.0 {
+        desired_health_priority = 0;
+      } else if health < 18.0 && health >= 15.0 {
+        desired_health_priority = 1;
+      } else if health < 15.0 && health >= 12.0 {
+        desired_health_priority = 2;
+      } else {
+        desired_health_priority = 3;
+      }
 
-        let mut current_priority;
+      if satiety < 20 && satiety >= 18 {
+        desired_satiety_priority = 0;
+      } else if satiety < 18 && satiety >= 15 {
+        desired_satiety_priority = 1;
+      } else if satiety < 15 && satiety >= 12 {
+        desired_satiety_priority = 2;
+      } else {
+        desired_satiety_priority = 3;
+      }
 
-        if desired_health_priority > desired_satiety_priority {
-          current_priority = desired_health_priority;
-        } else {
-          current_priority = (desired_health_priority + desired_satiety_priority) / 2;
-        }
+      let mut current_priority;
 
-        for attempt in 0..3 {
-          for food in food_list {
-            if food.priority == current_priority {
-              best_food = Some(*food);
-              break;
-            }
+      if desired_health_priority > desired_satiety_priority {
+        current_priority = desired_health_priority;
+      } else {
+        current_priority = (desired_health_priority + desired_satiety_priority) / 2;
+      }
+
+      for attempt in 0..3 {
+        for food in food_list {
+          if food.priority == current_priority {
+            best_food = Some(*food);
+            break;
           }
+        }
 
-          if attempt > 0 {
-            if current_priority + 1 <= 3 {
-              current_priority += 1;
-            } else {
-              current_priority -= 1;
-            }
+        if attempt > 0 {
+          if current_priority + 1 <= 3 {
+            current_priority += 1;
+          } else {
+            current_priority -= 1;
           }
         }
       }
