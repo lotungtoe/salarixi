@@ -27,7 +27,7 @@ struct Armor {
   priority: ArmorPriority,
 }
 
-/// Приоретет чар на броне
+/// Информация о приоретете брони
 #[derive(Default)]
 struct ArmorPriority {
   material_rank: u8,

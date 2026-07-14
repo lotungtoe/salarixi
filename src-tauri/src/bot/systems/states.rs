@@ -177,7 +177,7 @@ pub async fn setst(index: &u8, state: State, value: bool) {
   }
 }
 
-/// Вспомогательная функция взаимной установки значений для ```can``` и ```is``` состояний
+/// Вспомогательная функция взаимной установки значений для `can` и `is` состояний
 pub async fn setmst(index: &u8, state_name: StateName, current_value: bool) {
   let (is_state, can_state) = match state_name {
     StateName::Walking => (State::IsWalking, State::CanWalking),
