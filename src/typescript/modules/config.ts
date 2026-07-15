@@ -43,11 +43,17 @@ class ConfigModule {
     const configLoaded = await this.refreshConfigs();
     if (!configLoaded) await this.loadCurrentConfig();
 
-    setInterval(async () => await this.saveCurrentConfig(), 5000);
+    this.watch();
   }
 
-  /** Метод сохранения текущего конфига */
-  public async saveCurrentConfig(): Promise<void> {
+  /** Метод запуска цикла сохранения пользовательского конфига */
+  private watch(): void {
+    let selectedConfigChanged = false;
+    setInterval(async () => selectedConfigChanged = await this.saveCurrentConfig(selectedConfigChanged), 5000);
+  }
+
+  /** Метод сохранения текущего пользовательского конфига */
+  public async saveCurrentConfig(selectedConfigChanged: boolean): Promise<boolean> {
     const elements = document.querySelectorAll<HTMLElement>('[keep="true"]');
     const config: Record<string, ConfigValue> = {};
 
@@ -66,6 +72,24 @@ class ConfigModule {
       }
     });
 
+    if (!selectedConfigChanged) {
+      const selectedConfigFilename = localStorage.getItem("selected-config-filename");
+      if (selectedConfigFilename) {
+        const result = await invoke("read_file", { path: `configs/${selectedConfigFilename}` }) as CommandResult<number[]>;
+
+        if (result.data && result.data.length > 0) {
+          const decoder = new TextDecoder("utf-8");
+          const uint8arr = new Uint8Array(result.data);
+          const decoded = decoder.decode(uint8arr);
+
+          if (JSON.stringify(config) === JSON.stringify(JSON.parse(decoded))) {
+            localStorage.setItem("selected-config-changed", "true");
+            return true;
+          }
+        }
+      }
+    }
+
     const encoder = new TextEncoder();
     const encoded = encoder.encode(JSON.stringify(config));
     const content = Array.from(encoded);
@@ -76,6 +100,8 @@ class ConfigModule {
     }) as CommandResult<null>;
 
     if (result.error) logger.log(`Ошибка сохранения конфига: ${result.error}`, "error");
+
+    return false;
   }
 
   /** Метод установки значения для элемента */
@@ -116,6 +142,7 @@ class ConfigModule {
       if (!result.data) return false;
 
       const selectedConfigFilename = localStorage.getItem("selected-config-filename");
+      const selectedConfigChanged = Boolean(localStorage.getItem("selected-config-changed"));
 
       const decoder = new TextDecoder("utf-8");
       let loadedCount = 0;
@@ -132,7 +159,7 @@ class ConfigModule {
         const config = JSON.parse(decoded);
         if (!config) continue;
 
-        if (selectedConfigFilename === filename) {
+        if (selectedConfigFilename === filename && !selectedConfigChanged) {
           currentConfig = config;
           currentConfigFilename = filename;
         }
@@ -246,8 +273,10 @@ class ConfigModule {
       meta.selected = !meta.selected;
       tag.innerText = meta.selected ? "SELECTED" : "";
 
-      logger.log(`Конфиг "${filename}" успешно применён`, "system");
       localStorage.setItem("selected-config-filename", filename);
+      localStorage.removeItem("selected-config-changed");
+
+      logger.log(`Конфиг "${filename}" успешно применён`, "system");
     });
 
     this.configList.appendChild(card);
