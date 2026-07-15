@@ -17,7 +17,7 @@ interface ConfigMeta {
 /** Модуль управления пользовательской конфигурацией */
 class ConfigModule {
   private configList: HTMLDivElement | null = null;
-  private configs: Map<string, ConfigMeta> = new Map;
+  private configs: Map<string, ConfigMeta> = new Map();
 
   /** Метод инициализации конфигуратора */
   public async init(): Promise<void> {
