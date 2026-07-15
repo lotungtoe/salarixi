@@ -146,7 +146,7 @@ class AccountModule {
       const encoded = encoder.encode(string);
 
       const result = await invoke("save_file", {
-        filename: "accounts.json",
+        path: "accounts.json",
         content: encoded,
       }) as CommandResult<null>;
 
@@ -207,7 +207,7 @@ class AccountModule {
 
     this.accounts.clear();
     
-    const result = await invoke("remove_file", { filename: "accounts.json" }) as CommandResult<null>;
+    const result = await invoke("remove_file", { path: "accounts.json" }) as CommandResult<null>;
     if (result.error) logger.log(`Ошибка удаления файла "accounts.json": ${result.error}`, "error");
 
     this.noSelected = true;
@@ -218,7 +218,7 @@ class AccountModule {
 
   /** Метод загрузки сохранённых аккаунтов из локального хранилища */
   private async loadSavedAccounts(): Promise<void> {
-    const result = await invoke("read_file", { filename: "accounts.json" }) as CommandResult<number[]>;
+    const result = await invoke("read_file", { path: "accounts.json" }) as CommandResult<number[]>;
 
     if (result.error) {
       logger.log(`Ошибка загрузки контента из файла "accounts.json": ${result.error}`, "error");
@@ -372,7 +372,7 @@ class AccountModule {
         };
       }
 
-      const path = await join(directory, "salarixi.accounts.json");
+      const path = await join(directory, "accounts.json");
       let encoder = new TextEncoder();
       let buffer = encoder.encode(JSON.stringify(accounts, null, 2));
 

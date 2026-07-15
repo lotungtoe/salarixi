@@ -1629,7 +1629,6 @@ button svg {
   display: flex;
   width: 90%;
   margin-top: 100px;
-  margin-bottom: 50px;
   border-radius: 12px;
   justify-content: space-between;
   align-items: center;
@@ -2580,62 +2579,77 @@ button svg {
   color: var(--default-color);
 }
 
-.config-wrapper {
+.config-panel {
   display: flex;
-  width: 100%;
-  height: 430px;
-  margin-top: 15px;
-  gap: 50px;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
+  width: 100%;
+  margin-bottom: 20px;
 }
 
-.config-wrapper .card {
+.config-panel .input-with-button input {
+  width: 260px;
+}
+
+.config-panel .buttons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+}
+
+.config-panel .buttons .splitter {
+  display: flex;
+  height: 28px;
+  margin-left: 4px;
+  margin-right: 4px;
+  border-right: 1px solid var(--bright-border);
+}
+
+#config-list {
   display: flex;
   flex-direction: column;
-  width: 300px;
-  height: 350px;
+  justify-content: start;
+  align-items: center;
+  width: 100%;
+  overflow-y: auto;
   background: var(--secondary-bg);
   border: 1px solid var(--secondary-border);
   border-radius: 12px;
-  justify-content: center;
-  align-items: center;
-  gap: 40px;
-  transition: transform 0.12s ease;
 }
 
-.config-wrapper .card:hover {
-  transform: translateY(-10px);
-}
-
-.config-wrapper .card:hover svg,
-.config-wrapper .card:hover label {
-  color: var(--highlight-color);
-}
-
-.config-wrapper .card:active {
-  transform: translateY(0);
-}
-
-.config-wrapper .card svg {
+#config-list .card {
   display: flex;
-  flex-direction: column;
-  width: 100px;
-  height: 100px;
-  color: var(--dim-color);
-  transition: color 0.12s ease;
+  justify-content: flex-start;
+  align-items: center;
+  width: 100%;
+  padding: 0 12px;
+  min-height: 48px;
+  gap: 6px;
+  border-bottom: 1px solid var(--secondary-border);
 }
 
-.config-wrapper .card label {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+#config-list .card:hover {
+  background: var(--bright-bg);
+}
+
+#config-list .card:last-child {
+  border-bottom: none;
+}
+
+#config-list .card .filename,
+#config-list .card .tag {
   font-family: var(--global-font-family);
-  font-size: 20px;
+  font-size: 16px;
   font-weight: 600;
-  width: 90%;
-  color: var(--dim-color);
-  transition: color 0.12s ease;
+}
+
+#config-list .card .filename {
+  color: var(--default-color);
+}
+
+#config-list .card .tag {
+  color: var(--highlight-color);
 }
 
 .messages-wrapper {

@@ -2111,32 +2111,59 @@
     </div>
   </div>
 
-  <div class="main-wrapper centered" id="config-container" style="display: none;" global="true">
-    <div class="config-wrapper">
-      <div class="card" id="upload-config">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-download">
-          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-          <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" />
-          <path d="M7 11l5 5l5 -5" />
-          <path d="M12 4l0 12" />
-        </svg>
+  <div class="main-wrapper" id="config-container" style="display: none;" global="true">
+    <div class="config-panel">
+      <div class="input-with-button">
+        <input type="text" id="config-search-query" placeholder="my-config-123">
 
-        <label tt="upload-config">Загрузить конфиг</label>
+        <button class="min" id="search-configs">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-search">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <path d="M3 10a7 7 0 1 0 14 0a7 7 0 1 0 -14 0" />
+            <path d="M21 21l-6 -6" />
+          </svg>
+        </button>
       </div>
 
-      <div class="card" id="share-config">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-share">
-          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-          <path d="M3 12a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" />
-          <path d="M15 6a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" />
-          <path d="M15 18a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" />
-          <path d="M8.7 10.7l6.6 -3.4" />
-          <path d="M8.7 13.3l6.6 3.4" />
-        </svg>
+      <div class="buttons">
+        <button class="min" id="import-configs">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-download">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" />
+            <path d="M7 11l5 5l5 -5" />
+            <path d="M12 4l0 12" />
+          </svg>
+        </button>
 
-        <label tt="share-config">Поделиться конфигом</label>
+        <button class="min" id="export-current-config">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-share">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <path d="M3 12a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" />
+            <path d="M15 6a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" />
+            <path d="M15 18a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" />
+            <path d="M8.7 10.7l6.6 -3.4" />
+            <path d="M8.7 13.3l6.6 3.4" />
+          </svg>
+        </button>
+
+        <button class="min" id="refresh-configs">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-refresh">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4" />
+            <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4" />
+          </svg>
+        </button>
+
+        <button class="min" id="open-configs-directory">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-folder-open">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <path d="M5 19l2.757 -7.351a1 1 0 0 1 .936 -.649h12.307a1 1 0 0 1 .986 1.164l-.996 5.211a2 2 0 0 1 -1.964 1.625h-14.026a2 2 0 0 1 -2 -2v-11a2 2 0 0 1 2 -2h4l3 3h7a2 2 0 0 1 2 2v2" />
+          </svg>
+        </button>
       </div>
     </div>
+
+    <div id="config-list"></div>
   </div>
 
   <div class="main-wrapper centered" id="documentation-container" style="display: none;" global="true">

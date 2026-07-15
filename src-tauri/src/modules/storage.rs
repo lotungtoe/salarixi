@@ -1,11 +1,12 @@
 use std::fs;
+use std::process::Command;
 
 use crate::result::CommandResult;
 use crate::{failed, success};
 
 /// Команда удаления указанного файла из хранилища
 #[tauri::command]
-pub fn remove_file(filename: String) -> CommandResult<()> {
+pub fn remove_file(path: String) -> CommandResult<()> {
   let Some(home_dir) = dirs::home_dir() else {
     failed!("failed to get home directory");
   };
@@ -17,7 +18,7 @@ pub fn remove_file(filename: String) -> CommandResult<()> {
     }
   }
 
-  let target_path = salarixi_dir.join(filename);
+  let target_path = salarixi_dir.join(path);
   if !target_path.exists() {
     success!(());
   }
@@ -32,7 +33,7 @@ pub fn remove_file(filename: String) -> CommandResult<()> {
 
 /// Команда чтения указанного файла из хранилища
 #[tauri::command]
-pub fn read_file(filename: String) -> CommandResult<Vec<u8>> {
+pub fn read_file(path: String) -> CommandResult<Vec<u8>> {
   let Some(home_dir) = dirs::home_dir() else {
     failed!("failed to get home directory");
   };
@@ -44,7 +45,7 @@ pub fn read_file(filename: String) -> CommandResult<Vec<u8>> {
     }
   }
 
-  let target_path = salarixi_dir.join(filename);
+  let target_path = salarixi_dir.join(path);
   if !target_path.exists() {
     success!(Vec::new());
   }
@@ -59,7 +60,7 @@ pub fn read_file(filename: String) -> CommandResult<Vec<u8>> {
 
 /// Команда сохранения указанного файла в хранилище
 #[tauri::command]
-pub fn save_file(filename: String, content: Vec<u8>) -> CommandResult<()> {
+pub fn save_file(path: String, content: Vec<u8>) -> CommandResult<()> {
   let Some(home_dir) = dirs::home_dir() else {
     failed!("failed to get home directory");
   };
@@ -71,11 +72,48 @@ pub fn save_file(filename: String, content: Vec<u8>) -> CommandResult<()> {
     }
   }
 
-  let target_path = salarixi_dir.join(filename);
+  let target_path = salarixi_dir.join(path);
   match fs::write(target_path, &content) {
     Ok(_) => {}
     Err(e) => failed!("file write error: {}", e),
   };
+
+  success!(());
+}
+
+/// Команда открытия указанной директории хранилища
+#[tauri::command]
+pub fn open_directory(dir: String) -> CommandResult<()> {
+  let Some(home_dir) = dirs::home_dir() else {
+    failed!("failed to get home directory");
+  };
+
+  let salarixi_dir = home_dir.join(".salarixi");
+  if !salarixi_dir.exists() {
+    if fs::create_dir_all(&salarixi_dir).is_err() {
+      failed!("salarixi directory is missing");
+    }
+  }
+
+  let target_path = salarixi_dir.join(&dir);
+
+  if cfg!(target_os = "windows") {
+    match Command::new("explorer").arg(&target_path).spawn() {
+      Ok(_) => {}
+      Err(e) => failed!("error opening directory \"{}\" in storage: {}", dir, e),
+    }
+  } else if cfg!(target_os = "linux") {
+    match Command::new("xdg-open").arg(&target_path).spawn() {
+      Ok(_) => {}
+      Err(e) => failed!("error opening directory \"{}\" in storage: {}", dir, e),
+    }
+  }
+  if cfg!(target_os = "macos") {
+    match Command::new("open").arg(&target_path).spawn() {
+      Ok(_) => {}
+      Err(e) => failed!("error opening directory \"{}\" in storage: {}", dir, e),
+    }
+  }
 
   success!(());
 }
