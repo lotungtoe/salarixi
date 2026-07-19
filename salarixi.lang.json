@@ -991,6 +991,138 @@
       }
     },
     {
+      "versions": "1.1.1",
+      "tag": "country-ru",
+      "lang": {
+        "ru": "Россия",
+        "en": "Russia",
+        "tr": "Rusya",
+        "ja": "ロシア",
+        "zh": "俄羅斯"
+      }
+    },
+    {
+      "versions": "1.1.1",
+      "tag": "country-us",
+      "lang": {
+        "ru": "США",
+        "en": "United States",
+        "tr": "Amerika Birleşik Devletleri",
+        "ja": "アメリカ合衆国",
+        "zh": "美國"
+      }
+    },
+    {
+      "versions": "1.1.1",
+      "tag": "country-cn",
+      "lang": {
+        "ru": "Китай",
+        "en": "China",
+        "tr": "Çin",
+        "ja": "中国",
+        "zh": "中國"
+      }
+    },
+    {
+      "versions": "1.1.1",
+      "tag": "country-fr",
+      "lang": {
+        "ru": "Франция",
+        "en": "France",
+        "tr": "Fransa",
+        "ja": "フランス",
+        "zh": "法國"
+      }
+    },
+    {
+      "versions": "1.1.1",
+      "tag": "country-de",
+      "lang": {
+        "ru": "Германия",
+        "en": "Germany",
+        "tr": "Almanya",
+        "ja": "ドイツ",
+        "zh": "德國"
+      }
+    },
+    {
+      "versions": "1.1.1",
+      "tag": "country-jp",
+      "lang": {
+        "ru": "Япония",
+        "en": "Japan",
+        "tr": "Japonya",
+        "ja": "日本",
+        "zh": "日本"
+      }
+    },
+    {
+      "versions": "1.1.1",
+      "tag": "country-br",
+      "lang": {
+        "ru": "Бразилия",
+        "en": "Brazil",
+        "tr": "Brezilya",
+        "ja": "ブラジル",
+        "zh": "巴西"
+      }
+    },
+    {
+      "versions": "1.1.1",
+      "tag": "country-ua",
+      "lang": {
+        "ru": "Украина",
+        "en": "Ukraine",
+        "tr": "Ukrayna",
+        "ja": "ウクライナ",
+        "zh": "烏克蘭"
+      }
+    },
+    {
+      "versions": "1.1.1",
+      "tag": "country-nl",
+      "lang": {
+        "ru": "Нидерланды",
+        "en": "Netherlands",
+        "tr": "Hollanda",
+        "ja": "オランダ",
+        "zh": "荷蘭"
+      }
+    },
+    {
+      "versions": "1.1.1",
+      "tag": "country-ca",
+      "lang": {
+        "ru": "Канада",
+        "en": "Canada",
+        "tr": "Kanada",
+        "ja": "カナダ",
+        "zh": "加拿大"
+      }
+    },
+    {
+      "versions": "1.1.1",
+      "tag": "country-id",
+      "lang": {
+        "ru": "Индонезия",
+        "en": "Indonesia",
+        "tr": "Endonezya",
+        "ja": "インドネシア",
+        "zh": "印尼"
+      }
+    },
+    {
+      "versions": "1.1.1",
+      "tag": "country-th",
+      "lang": {
+        "ru": "Таиланд",
+        "en": "Thailand",
+        "tr": "Tayland",
+        "ja": "タイ",
+        "zh": "泰國"
+      }
+    },
+    {
       "versions": "1.1.0:1.1.1",
       "tag": "port",
       "lang": {
