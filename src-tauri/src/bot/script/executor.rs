@@ -343,6 +343,16 @@ impl ScriptExecutor {
     }
   }
 
+  fn pathfinder_activity(code: i16) -> Dynamic {
+    if code != -1 {
+      if let Some(bot) = REGISTRY_SYSTEM.get_bot(&(code as u8)) {
+        return Dynamic::from_bool(!bot.is_goto_target_reached());
+      }
+    }
+
+    Dynamic::from_bool(false)
+  }
+
   fn stop_move(code: i16) {
     tokio::spawn(async move {
       if code == -1 {
@@ -930,6 +940,10 @@ impl ScriptExecutor {
       .register_fn("stop_pathfinder", {
         let su = su.clone();
         move |mu: &str| Self::stop_pathfinder(generate_code(&su, mu))
+      })
+      .register_fn("pathfinder_activity", {
+        let su = su.clone();
+        move |mu: &str| Self::pathfinder_activity(generate_code(&su, mu))
       });
 
     engine
