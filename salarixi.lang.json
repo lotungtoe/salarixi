@@ -2091,7 +2091,7 @@
       }
     },
     {
-      "versions": "x",
+      "versions": "1.1.1",
       "tag": "start-use",
       "lang": {
         "ru": "Использовать",
@@ -2102,7 +2102,7 @@
       }
     },
     {
-      "versions": "x",
+      "versions": "1.1.1",
       "tag": "release-use",
       "lang": {
         "ru": "Завершить",
