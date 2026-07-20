@@ -134,29 +134,29 @@ impl BotInventoryExt for Client {
   }
 
   async fn stop_interacting_with_inventory(&self, index: &u8) {
+    setmst(index, StateName::Interacting, false).await;
+
     self.unfreeze_move(index).await;
 
     setst(index, State::CanEating, true).await;
     setst(index, State::CanDrinking, true).await;
     setst(index, State::CanAttacking, true).await;
-
-    setmst(index, StateName::Interacting, false).await;
   }
 
   async fn take_item(&self, index: &u8, source_slot: usize, lock: bool) {
-    if lock {
-      if !getst(index, State::CanInteracting).await {
-        return;
-      }
-
-      self.start_interacting_with_inventory(index).await;
-    }
-
     if let Some(hotbar_slot) = convert_inventory_slot_to_hotbar_slot(source_slot) {
       if self.get_selected_slot() != hotbar_slot {
         self.set_selected_hotbar_slot(hotbar_slot);
       }
     } else {
+      if lock {
+        if !getst(index, State::CanInteracting).await {
+          return;
+        }
+
+        self.start_interacting_with_inventory(index).await;
+      }
+
       if let Some(empty_slot) = self.find_empty_slot_in_invenotry() {
         self
           .inventory_swap_click(index, source_slot, empty_slot as usize, false)
@@ -183,10 +183,10 @@ impl BotInventoryExt for Client {
           self.set_selected_hotbar_slot(hotbar_slot);
         }
       }
-    }
 
-    if lock {
-      self.stop_interacting_with_inventory(index).await;
+      if lock {
+        self.stop_interacting_with_inventory(index).await;
+      }
     }
   }
 

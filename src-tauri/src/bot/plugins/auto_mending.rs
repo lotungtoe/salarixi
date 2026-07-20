@@ -1,10 +1,9 @@
 use azalea::inventory::components::{Damage, Enchantments, MaxDamage};
 use azalea::inventory::ItemStack;
 use azalea::prelude::*;
-use azalea::protocol::packets::game::s_interact::InteractionHand;
 use azalea::registry::builtin::ItemKind;
 
-use crate::bot::extensions::{BotInteractExt, BotInventoryExt};
+use crate::bot::extensions::BotInventoryExt;
 use crate::bot::plugin_manager::PluginName;
 use crate::bot::systems::states::{getst, setmst, State, StateName};
 use crate::bot::traits::SalarixiPlugin;
@@ -101,7 +100,7 @@ impl AutoMendingPlugin {
               sleep!(randnum(150, 200));
             }
 
-            bot.start_use_held_item(InteractionHand::MainHand);
+            bot.start_use_item();
           });
         } else {
           setmst(index, StateName::Interacting, false).await;

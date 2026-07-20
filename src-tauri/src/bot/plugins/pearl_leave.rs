@@ -1,10 +1,9 @@
 use std::time::Duration;
 
 use azalea::prelude::*;
-use azalea::protocol::packets::game::s_interact::InteractionHand;
 use azalea::registry::builtin::ItemKind;
 
-use crate::bot::extensions::{BotDefaultExt, BotInteractExt, BotInventoryExt};
+use crate::bot::extensions::{BotDefaultExt, BotInventoryExt};
 use crate::bot::plugin_manager::PluginName;
 use crate::bot::systems::states::{getst, setmst, State, StateName};
 use crate::bot::traits::SalarixiPlugin;
@@ -87,7 +86,7 @@ impl PearlLeavePlugin {
     setmst(index, StateName::Interacting, true).await;
 
     take_bot!(index, async |bot| {
-      bot.start_use_held_item(InteractionHand::MainHand);
+      bot.start_use_item();
     });
 
     setmst(index, StateName::Interacting, false).await;

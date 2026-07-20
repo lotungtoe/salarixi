@@ -1,7 +1,7 @@
 use azalea::Client;
 use serde::Deserialize;
 
-use crate::bot::extensions::{BotInventoryExt, ClickMode};
+use crate::bot::extensions::{BotInteractExt, BotInventoryExt, ClickMode};
 use crate::bot::systems::index::INDEX_SYSTEM;
 use crate::bot::traits::SalarixiModule;
 use crate::emit::*;
@@ -52,6 +52,12 @@ impl InventoryModule {
         bot
           .inventory_swap_click(index, slot, if let Some(t) = options.target_slot { t } else { 0 }, true)
           .await;
+      }
+      5 => {
+        bot.start_use_item();
+      }
+      6 => {
+        bot.release_use_item();
       }
       _ => {}
     }

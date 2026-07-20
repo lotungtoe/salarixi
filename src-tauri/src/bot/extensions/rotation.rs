@@ -5,16 +5,39 @@ use azalea::Vec3;
 use bevy_ecs::entity::Entity;
 
 use crate::bot::extensions::BotDefaultExt;
+use crate::bot::systems::states::setst;
+use crate::bot::systems::states::{getst, setmst, State, StateName};
 use crate::other::tools::{randchance, randnum};
 use crate::sleep;
 
 pub trait BotRotationExt {
-  fn look_at_entity(&self, entity: Entity, with_eye_height: bool);
-  async fn look_at_block(&self, block_pos: BlockPos, sloppy: bool);
+  fn look_at_entity(
+    &self,
+    index: &u8,
+    entity: Entity,
+    with_eye_height: bool,
+    lock: bool,
+  ) -> impl std::future::Future<Output = ()> + Send + Sync;
+  fn look_at_block(
+    &self,
+    index: &u8,
+    block_pos: BlockPos,
+    sloppy: bool,
+    lock: bool,
+  ) -> impl std::future::Future<Output = ()> + Send + Sync;
 }
 
 impl BotRotationExt for Client {
-  fn look_at_entity(&self, entity: Entity, with_eye_height: bool) {
+  async fn look_at_entity(&self, index: &u8, entity: Entity, with_eye_height: bool, lock: bool) {
+    if lock {
+      if !getst(index, State::CanLooking).await {
+        return;
+      }
+
+      setst(index, State::CanInteracting, false).await;
+      setmst(index, StateName::Looking, true).await;
+    }
+
     let mut entity_pos = self.get_entity_position(entity);
 
     if with_eye_height {
@@ -26,9 +49,23 @@ impl BotRotationExt for Client {
       y: entity_pos.y,
       z: entity_pos.z,
     });
+
+    if lock {
+      setmst(index, StateName::Looking, false).await;
+      setst(index, State::CanInteracting, true).await;
+    }
   }
 
-  async fn look_at_block(&self, block_pos: BlockPos, sloppy: bool) {
+  async fn look_at_block(&self, index: &u8, block_pos: BlockPos, sloppy: bool, lock: bool) {
+    if lock {
+      if !getst(index, State::CanLooking).await {
+        return;
+      }
+
+      setst(index, State::CanInteracting, false).await;
+      setmst(index, StateName::Looking, true).await;
+    }
+
     let center = block_pos.center();
 
     if sloppy && randchance(0.4) {
@@ -48,5 +85,10 @@ impl BotRotationExt for Client {
       y: center.y,
       z: center.z,
     });
+
+    if lock {
+      setmst(index, StateName::Looking, false).await;
+      setst(index, State::CanInteracting, true).await;
+    }
   }
 }

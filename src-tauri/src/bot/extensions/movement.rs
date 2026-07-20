@@ -24,36 +24,32 @@ pub trait BotMovementExt {
 
 impl BotMovementExt for Client {
   async fn start_walking(&self, index: &u8, direction: WalkDirection) {
-    if getst(index, State::CanWalking).await
-      && !getst(index, State::IsEating).await
-      && !getst(index, State::IsDrinking).await
-      && !getst(index, State::IsInteracting).await
-    {
+    if getst(index, State::CanWalking).await {
+      setmst(index, StateName::Walking, true).await;
+
       self.ecs.lock().write_message(StartWalkEvent {
         entity: self.entity,
         direction: direction,
       });
-
-      setmst(index, StateName::Walking, true).await;
     }
   }
 
   async fn start_sprinting(&self, index: &u8, direction: SprintDirection) {
-    if getst(index, State::CanSprinting).await
-      && !getst(index, State::IsEating).await
-      && !getst(index, State::IsDrinking).await
-      && !getst(index, State::IsInteracting).await
-    {
+    if getst(index, State::CanSprinting).await {
+      setmst(index, StateName::Sprinting, true).await;
+
       self.ecs.lock().write_message(StartSprintEvent {
         entity: self.entity,
         direction: direction,
       });
-
-      setmst(index, StateName::Sprinting, true).await;
     }
   }
 
   async fn stop_move(&self, index: &u8) {
+    if !getst(index, State::IsWalking).await && !getst(index, State::IsSprinting).await {
+      return;
+    }
+
     self.ecs.lock().write_message(StartWalkEvent {
       entity: self.entity,
       direction: WalkDirection::None,
@@ -92,6 +88,9 @@ pub fn go_to(index: u8, x: i32, z: i32) {
       setmst(&index, StateName::Looking, true).await;
       setmst(&index, StateName::Sprinting, true).await;
       setmst(&index, StateName::Walking, true).await;
+      setst(&index, State::CanEating, false).await;
+      setst(&index, State::CanDrinking, false).await;
+      setst(&index, State::CanInteracting, false).await;
 
       let goal = XZGoal { x: x, z: z };
       let opts = PathfinderOpts::new()
@@ -105,6 +104,9 @@ pub fn go_to(index: u8, x: i32, z: i32) {
       setmst(&index, StateName::Looking, false).await;
       setmst(&index, StateName::Sprinting, false).await;
       setmst(&index, StateName::Walking, false).await;
+      setst(&index, State::CanEating, true).await;
+      setst(&index, State::CanDrinking, true).await;
+      setst(&index, State::CanInteracting, true).await;
     });
   });
 }

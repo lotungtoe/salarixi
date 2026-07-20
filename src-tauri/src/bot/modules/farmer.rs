@@ -7,7 +7,7 @@ use serde_repr::{Deserialize_repr, Serialize_repr};
 
 use crate::bot::common::get_block_state;
 use crate::bot::extensions::{BotDefaultExt, BotInventoryExt, BotRotationExt};
-use crate::bot::systems::states::{getst, setmst, State, StateName};
+use crate::bot::systems::states::{getst, setmst, setst, State, StateName};
 use crate::bot::systems::tasks::{gettskact, killtsk, pushrtsk, TaskName};
 use crate::bot::traits::SalarixiModule;
 use crate::other::tools::*;
@@ -225,67 +225,74 @@ impl FarmerModule {
   }
 
   async fn interact_with_block(bot: &Client, index: &u8, block_pos: BlockPos, options: &FarmerOptions) {
-    if !getst(index, State::IsEating).await
-      && !getst(index, State::IsDrinking).await
-      && getst(index, State::CanInteracting).await
-    {
-      if let Some(state) = get_block_state(bot, block_pos) {
-        setmst(index, StateName::Interacting, true).await;
+    if !getst(index, State::CanInteracting).await {
+      return;
+    }
 
-        let kind = BlockKind::from(state);
+    let Some(state) = get_block_state(bot, block_pos) else {
+      return;
+    };
 
-        if Self::this_is_farmland_without_plant(bot, kind, block_pos) {
-          bot.look_at_block(block_pos, true).await;
+    setst(index, State::CanAttacking, false).await;
+    setst(index, State::CanDrinking, false).await;
+    setst(index, State::CanEating, false).await;
+    setmst(index, StateName::Interacting, true).await;
 
-          if options.mode != Mode::Ultra {
-            sleep!(Self::generate_delay(&options.mode));
-          }
+    let kind = BlockKind::from(state);
 
-          if Self::take_plant(bot, index).await {
-            sleep!(Self::generate_delay(&options.mode));
-            bot.start_use_item();
-            sleep!(Self::generate_delay(&options.mode));
-          }
+    if Self::this_is_farmland_without_plant(bot, kind, block_pos) {
+      bot.look_at_block(index, block_pos, true, true).await;
+
+      if options.mode != Mode::Ultra {
+        sleep!(Self::generate_delay(&options.mode));
+      }
+
+      if Self::take_plant(bot, index).await {
+        sleep!(Self::generate_delay(&options.mode));
+        bot.start_use_item();
+        sleep!(Self::generate_delay(&options.mode));
+      }
+    } else {
+      if Self::this_is_plant(kind) {
+        bot.look_at_block(index, block_pos, true, true).await;
+
+        sleep!(Self::generate_delay(&options.mode));
+
+        if Self::this_is_grown_plant(state.id()) {
+          Self::auto_tool(bot, index).await;
+          sleep!(Self::generate_delay(&options.mode));
+          bot.mine(block_pos).await;
+          sleep!(50);
         } else {
-          if Self::this_is_plant(kind) {
-            bot.look_at_block(block_pos, true).await;
+          Self::fertilize_plant(bot, index, &options.mode).await;
 
-            sleep!(Self::generate_delay(&options.mode));
+          if let Some(new_state) = get_block_state(bot, block_pos) {
+            sleep!(50);
 
-            if Self::this_is_grown_plant(state.id()) {
+            if Self::this_is_grown_plant(new_state.id()) {
               Self::auto_tool(bot, index).await;
               sleep!(Self::generate_delay(&options.mode));
               bot.mine(block_pos).await;
               sleep!(50);
-            } else {
-              Self::fertilize_plant(bot, index, &options.mode).await;
-
-              if let Some(new_state) = get_block_state(bot, block_pos) {
-                sleep!(50);
-
-                if Self::this_is_grown_plant(new_state.id()) {
-                  Self::auto_tool(bot, index).await;
-                  sleep!(Self::generate_delay(&options.mode));
-                  bot.mine(block_pos).await;
-                  sleep!(50);
-                }
-              }
-            }
-
-            if options.mode != Mode::Ultra {
-              sleep!(Self::generate_delay(&options.mode));
-            }
-          } else {
-            if Self::block_can_plowed(bot, kind, block_pos) {
-              bot.look_at_block(block_pos, true).await;
-              Self::plow_block(bot, index, block_pos, &options.mode).await;
             }
           }
         }
 
-        setmst(index, StateName::Interacting, false).await;
+        if options.mode != Mode::Ultra {
+          sleep!(Self::generate_delay(&options.mode));
+        }
+      } else {
+        if Self::block_can_plowed(bot, kind, block_pos) {
+          bot.look_at_block(index, block_pos, true, true).await;
+          Self::plow_block(bot, index, block_pos, &options.mode).await;
+        }
       }
     }
+
+    setmst(index, StateName::Interacting, false).await;
+    setst(index, State::CanAttacking, true).await;
+    setst(index, State::CanDrinking, true).await;
+    setst(index, State::CanEating, true).await;
   }
 
   async fn start(bot: &Client, index: &u8, options: &FarmerOptions) {

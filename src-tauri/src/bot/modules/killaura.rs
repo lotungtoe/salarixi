@@ -4,7 +4,9 @@ use azalea::{prelude::*, SprintDirection};
 use serde::Deserialize;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 
-use crate::bot::extensions::{BotDefaultExt, BotInventoryExt, BotMovementExt, BotRotationExt, EntityType};
+use crate::bot::extensions::{
+  BotDefaultExt, BotInteractExt, BotInventoryExt, BotMovementExt, BotRotationExt, EntityType,
+};
 use crate::bot::systems::states::{getst, setmst, State, StateName};
 use crate::bot::systems::tasks::{gettskact, killtsk, pushetsk, pushrtsk, TaskName};
 use crate::bot::traits::SalarixiModule;
@@ -295,8 +297,7 @@ impl KillauraModule {
             if eye_pos.distance_to(bot.get_entity_position(entity)) > min_distance_to_target {
               bot.start_jumping();
               bot.start_sprinting(&index, SprintDirection::Forward).await;
-
-              bot.look_at_entity(entity, true);
+              bot.look_at_entity(&index, entity, true, true).await;
             } else {
               bot.stop_jumping();
 
@@ -324,17 +325,22 @@ impl KillauraModule {
   async fn start_aiming(index: u8, target: Target, target_nickname: Option<String>, distance: f64) {
     let extra_task = tokio::spawn(async move {
       loop {
+        if !getst(&index, State::CanLooking).await {
+          sleep!(100);
+          continue;
+        }
+
         setmst(&index, StateName::Looking, true).await;
 
         take_bot!(&index, async |bot| {
           if let Some(entity) = Self::find_nearest_entity(&bot, target.clone(), target_nickname.clone(), distance) {
-            bot.look_at_entity(entity, false);
+            bot.look_at_entity(&index, entity, false, false).await;
           }
         });
 
-        sleep!(randnum(50, 100));
-
         setmst(&index, StateName::Looking, false).await;
+
+        sleep!(randnum(50, 100));
       }
     });
 
@@ -369,51 +375,41 @@ impl KillauraModule {
     }
 
     loop {
-      if getst(&index, State::CanAttacking).await
-        && !getst(&index, State::IsInteracting).await
-        && !getst(&index, State::IsEating).await
-        && !getst(&index, State::IsDrinking).await
-      {
-        if let Some(entity) = Self::find_nearest_entity(
-          bot,
-          options.target.clone(),
-          options.target_nickname.clone(),
-          config.attack_distance,
-        ) {
-          setmst(&index, StateName::Attacking, true).await;
-
-          if options.use_auto_weapon {
-            Self::take_weapon(bot, &index, &options.weapon).await;
-          } else {
-            if let Some(slot) = config.weapon_slot {
-              if slot <= 8 {
-                bot.set_selected_hotbar_slot(slot);
-              } else {
-                Self::take_weapon(bot, &index, &options.weapon).await;
-              }
+      if let Some(entity) = Self::find_nearest_entity(
+        bot,
+        options.target.clone(),
+        options.target_nickname.clone(),
+        config.attack_distance,
+      ) {
+        if options.use_auto_weapon {
+          Self::take_weapon(bot, &index, &options.weapon).await;
+        } else {
+          if let Some(slot) = config.weapon_slot {
+            if slot <= 8 {
+              bot.set_selected_hotbar_slot(slot);
             } else {
               Self::take_weapon(bot, &index, &options.weapon).await;
             }
-          }
-
-          if options.use_critical {
-            bot.jump();
-
-            sleep!(randnum(500, 600));
-
-            if let Some(e) = Self::find_nearest_entity(
-              bot,
-              options.target.clone(),
-              options.target_nickname.clone(),
-              config.attack_distance,
-            ) {
-              bot.attack(e);
-            }
           } else {
-            bot.attack(entity);
+            Self::take_weapon(bot, &index, &options.weapon).await;
           }
+        }
 
-          setmst(&index, StateName::Attacking, false).await;
+        if options.use_critical {
+          bot.jump();
+
+          sleep!(randnum(500, 600));
+
+          if let Some(e) = Self::find_nearest_entity(
+            bot,
+            options.target.clone(),
+            options.target_nickname.clone(),
+            config.attack_distance,
+          ) {
+            bot.attack_entity(&index, e).await;
+          }
+        } else {
+          bot.attack_entity(&index, entity).await;
         }
       }
 
@@ -441,50 +437,41 @@ impl KillauraModule {
     }
 
     loop {
-      if getst(&index, State::CanAttacking).await
-        && !getst(&index, State::IsInteracting).await
-        && !getst(&index, State::IsEating).await
-        && !getst(&index, State::IsDrinking).await
-      {
-        if let Some(entity) = Self::find_nearest_entity(
-          bot,
-          options.target.clone(),
-          options.target_nickname.clone(),
-          config.attack_distance,
-        ) {
-          setmst(&index, StateName::Attacking, true).await;
-
-          if options.use_auto_weapon {
-            Self::take_weapon(bot, &index, &options.weapon).await;
-          } else {
-            if let Some(slot) = config.weapon_slot {
-              if slot <= 8 {
-                bot.set_selected_hotbar_slot(slot);
-              } else {
-                Self::take_weapon(bot, &index, &options.weapon).await;
-              }
+      if let Some(entity) = Self::find_nearest_entity(
+        bot,
+        options.target.clone(),
+        options.target_nickname.clone(),
+        config.attack_distance,
+      ) {
+        if options.use_auto_weapon {
+          Self::take_weapon(bot, &index, &options.weapon).await;
+        } else {
+          if let Some(slot) = config.weapon_slot {
+            if slot <= 8 {
+              bot.set_selected_hotbar_slot(slot);
             } else {
               Self::take_weapon(bot, &index, &options.weapon).await;
             }
-          }
-
-          if options.use_critical {
-            bot.jump();
-            sleep!(randnum(500, 600));
-
-            if let Some(e) = Self::find_nearest_entity(
-              bot,
-              options.target.clone(),
-              options.target_nickname.clone(),
-              config.attack_distance,
-            ) {
-              bot.attack(e);
-            }
           } else {
-            bot.attack(entity);
+            Self::take_weapon(bot, &index, &options.weapon).await;
           }
+        }
 
-          setmst(&index, StateName::Attacking, false).await;
+        if options.use_critical {
+          bot.jump();
+
+          sleep!(randnum(500, 600));
+
+          if let Some(e) = Self::find_nearest_entity(
+            bot,
+            options.target.clone(),
+            options.target_nickname.clone(),
+            config.attack_distance,
+          ) {
+            bot.attack_entity(&index, e).await;
+          }
+        } else {
+          bot.attack_entity(&index, entity).await;
         }
       }
 

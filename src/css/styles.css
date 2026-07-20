@@ -855,7 +855,6 @@ button.min:disabled:active {
 }
 
 button.toggler {
-  width: 110px;
   min-width: 110px;
 }
 

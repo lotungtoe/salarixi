@@ -1,11 +1,11 @@
 use azalea::entity::ActiveEffects;
 use azalea::inventory::ItemStack;
-use azalea::protocol::packets::game::s_interact::InteractionHand;
 use azalea::registry::builtin::{ItemKind, MobEffect};
 
-use crate::bot::extensions::{BotDefaultExt, BotInteractExt, BotInventoryExt, BotMovementExt};
+use crate::bot::extensions::{BotDefaultExt, BotInventoryExt, BotMovementExt};
 use crate::bot::plugin_manager::PluginName;
 use crate::bot::systems::states::{getst, setmst, setst, State, StateName};
+use crate::bot::systems::tasks::{gettskact, TaskName};
 use crate::bot::traits::SalarixiPlugin;
 use crate::bot::PLUGINS;
 use crate::other::tools::randchance;
@@ -47,21 +47,12 @@ impl AutoEatPlugin {
 
     let mut should_eat = true;
 
-    if getst(index, State::IsAttacking).await {
+    if gettskact(index, TaskName::Killaura).await || gettskact(index, TaskName::BowAim).await {
       should_eat = !(randchance(satiety as f64 / 20.0) && randchance(health as f64 / 20.0));
     }
 
     if should_eat {
-      setst(index, State::CanDrinking, false).await;
-      setst(index, State::CanInteracting, false).await;
-      setmst(index, StateName::Eating, true).await;
-
       self.start_eating(index, best_food.slot).await;
-      sleep!(50);
-
-      setst(index, State::CanDrinking, true).await;
-      setst(index, State::CanInteracting, true).await;
-      setmst(index, StateName::Eating, false).await;
     } else {
       sleep!(1800);
     }
@@ -105,10 +96,14 @@ impl AutoEatPlugin {
 
   /// Метод отправки пакета о кушание еды
   async fn start_eating(&self, index: &u8, slot: usize) {
+    setst(index, State::CanDrinking, false).await;
+    setst(index, State::CanInteracting, false).await;
+    setmst(index, StateName::Eating, true).await;
+
     take_bot!(index, async |bot| {
       bot.freeze_move(index).await;
       bot.take_item(index, slot, true).await;
-      bot.start_use_held_item(InteractionHand::MainHand);
+      bot.start_use_item();
     });
 
     sleep!(1800);
@@ -116,6 +111,10 @@ impl AutoEatPlugin {
     take_bot!(index, async |bot| {
       bot.unfreeze_move(index).await;
     });
+
+    setmst(index, StateName::Eating, false).await;
+    setst(index, State::CanDrinking, true).await;
+    setst(index, State::CanInteracting, true).await;
   }
 
   /// Метод получения лучшей еды из списка

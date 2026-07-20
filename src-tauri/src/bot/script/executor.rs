@@ -490,29 +490,31 @@ impl ScriptExecutor {
   }
 
   fn attack(code: i16, target: String, distance: f64, look_at_target: bool) {
-    if code == -1 {
-      PROFILE_SYSTEM.try_get_all_connected().keys().for_each(|index| {
-        if let Some(bot) = REGISTRY_SYSTEM.get_bot(index) {
-          if let Some(entity) = bot.find_nearest_entity(EntityType::from(target.clone()), distance) {
+    tokio::spawn(async move {
+      if code == -1 {
+        for index in PROFILE_SYSTEM.try_get_all_connected().keys() {
+          if let Some(bot) = REGISTRY_SYSTEM.get_bot(index) {
+            if let Some(entity) = bot.find_nearest_entity(EntityType::from(target.clone()), distance) {
+              if look_at_target {
+                bot.look_at_entity(index, entity, false, true).await;
+              }
+
+              bot.attack(entity);
+            }
+          }
+        }
+      } else {
+        if let Some(bot) = REGISTRY_SYSTEM.get_bot(&(code as u8)) {
+          if let Some(entity) = bot.find_nearest_entity(EntityType::from(target), distance) {
             if look_at_target {
-              bot.look_at_entity(entity, false);
+              bot.look_at_entity(&(code as u8), entity, false, true).await;
             }
 
             bot.attack(entity);
           }
         }
-      });
-    } else {
-      if let Some(bot) = REGISTRY_SYSTEM.get_bot(&(code as u8)) {
-        if let Some(entity) = bot.find_nearest_entity(EntityType::from(target), distance) {
-          if look_at_target {
-            bot.look_at_entity(entity, false);
-          }
-
-          bot.attack(entity);
-        }
       }
-    }
+    });
   }
 
   fn start_use_item(code: i16, hand: &str) {
@@ -525,12 +527,12 @@ impl ScriptExecutor {
     if code == -1 {
       PROFILE_SYSTEM.try_get_all_connected().keys().for_each(|index| {
         REGISTRY_SYSTEM.get_bot(index).map(|bot| {
-          bot.start_use_held_item(interaction_hand);
+          bot.start_use_item_by(interaction_hand);
         });
       });
     } else {
       REGISTRY_SYSTEM.get_bot(&(code as u8)).map(|bot| {
-        bot.start_use_held_item(interaction_hand);
+        bot.start_use_item_by(interaction_hand);
       });
     }
   }
@@ -539,12 +541,12 @@ impl ScriptExecutor {
     if code == -1 {
       PROFILE_SYSTEM.try_get_all_connected().keys().for_each(|index| {
         REGISTRY_SYSTEM.get_bot(index).map(|bot| {
-          bot.release_use_held_item();
+          bot.release_use_item();
         });
       });
     } else {
       REGISTRY_SYSTEM.get_bot(&(code as u8)).map(|bot| {
-        bot.release_use_held_item();
+        bot.release_use_item();
       });
     }
   }

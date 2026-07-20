@@ -1174,15 +1174,17 @@
             <label tt="mode:">Режим:</label>
             <select id="module_inventory_select_mode" control="inventory" name="mode" keep="true" trigger>
               <option value="basic" tt="basic">Базовый</option>
+              <option value="interaction" tt="interaction">Взаимодействие</option>
               <option value="swap" tt="swap">Перемещение</option>
-              <option disabled tt="interaction">Взаимодействие</option>
             </select>
           </div>
 
           <div class="input-wrap">
-            <div class="form-input">
-              <label for="module_inventory_option_slot-index" class="text" tt="slot-index">Индекс слота</label>
-              <input type="number" control="inventory" id="module_inventory_option_slot-index" placeholder="0" name="slot" keep="true">
+            <div class="hidden-wrapper input" id="inventory-basic-input-container" style="display: flex;">
+              <div class="form-input">
+                <label for="module_inventory_option_slot-index" class="text" tt="slot-index">Индекс слота</label>
+                <input type="number" control="inventory" id="module_inventory_option_slot-index" placeholder="0" name="slot" keep="true">
+              </div>
             </div>
 
             <div class="hidden-wrapper input" id="inventory-swap-input-container">
@@ -1193,8 +1195,8 @@
             </div>
           </div>
 
-          <div id="inventory-basic-btn-container" style="flex-direction: column;">
-            <div class="btn-group-flex" style="margin-top: 25px;">
+          <div id="inventory-basic-btn-container" style="flex-direction: column; margin-top: 25px;">
+            <div class="btn-group-flex">
               <button class="toggler" control-toggler="true" name="inventory" state="0" tt="select">Выбрать</button>
               <button class="toggler" control-toggler="true" name="inventory" state="1" tt="drop">Выбросить</button>
             </div>
@@ -1205,9 +1207,16 @@
             </div>
           </div>
 
-          <div id="inventory-swap-btn-container" style="display: none;">
-            <div class="btn-group-flex" style="margin-top: 25px;">
+          <div id="inventory-swap-btn-container" style="display: none; margin-top: 25px;">
+            <div class="btn-group-flex">
               <button class="toggler" control-toggler="true" name="inventory" state="4" tt="move">Переместить</button>
+            </div>
+          </div>
+
+          <div id="inventory-interaction-btn-container" style="display: none;">
+            <div class="btn-group-flex">
+              <button class="toggler" control-toggler="true" name="inventory" state="5" tt="start-use" style="min-width: 130px;">Использовать</button>
+              <button class="toggler" control-toggler="true" name="inventory" state="6" tt="release-use" style="min-width: 130px;">Завершить</button>
             </div>
           </div>
         </div>

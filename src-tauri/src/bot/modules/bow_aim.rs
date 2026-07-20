@@ -1,5 +1,4 @@
 use azalea::prelude::*;
-use azalea::protocol::packets::game::s_interact::InteractionHand;
 use azalea::registry::builtin::ItemKind;
 use azalea::Vec3;
 use serde::Deserialize;
@@ -111,7 +110,7 @@ impl BowAimModule {
 
         sleep!(50);
 
-        bot.start_use_held_item(InteractionHand::MainHand);
+        bot.start_use_item();
 
         sleep!(randnum(900, 1100));
 
@@ -137,7 +136,7 @@ impl BowAimModule {
           sleep!(50);
         }
 
-        bot.release_use_held_item();
+        bot.release_use_item();
 
         setmst(index, StateName::Interacting, false).await;
       }
@@ -180,7 +179,7 @@ impl SalarixiModule<BowAimOptions> for BowAimModule {
       killtsk(&index, TaskName::BowAim).await;
 
       take_bot!(&index, async |bot| {
-        bot.release_use_held_item();
+        bot.release_use_item();
       });
 
       setmst(&index, StateName::Looking, false).await;

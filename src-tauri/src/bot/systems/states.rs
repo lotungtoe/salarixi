@@ -1,11 +1,12 @@
 use hashbrown::HashMap;
 use once_cell::sync::Lazy;
-use std::sync::atomic::{AtomicU16, Ordering};
 use tokio::sync::RwLock;
 
 use crate::emit::emit_log;
 
 pub static STATE_SYSTEM: Lazy<StateSystem> = Lazy::new(|| StateSystem::new());
+
+const DEFAULT_STATES: [u8; 14] = [1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0];
 
 /// Состояние бота
 pub enum State {
@@ -59,7 +60,7 @@ impl State {
   }
 
   /// Метод получени индекса состояния
-  pub fn index(&self) -> u8 {
+  pub fn index(&self) -> usize {
     match self {
       Self::CanWalking => 0,
       Self::CanSprinting => 1,
@@ -80,44 +81,26 @@ impl State {
 }
 
 /// Структура состояний бота
-pub struct States {
-  pub mask: AtomicU16,
-}
+pub struct States([u8; 14]);
 
 impl States {
   /// Метод создания состояний по умолчанию
   pub fn new() -> Self {
-    Self {
-      mask: AtomicU16::new(0x7F),
-    }
+    Self(DEFAULT_STATES)
   }
 
   /// Метод получения значения указанного состояния
   pub fn get(&self, state: State) -> bool {
-    let mask = self.mask.load(Ordering::SeqCst);
-    (mask >> state.index()) & 1 == 1
+    if let Some(b) = self.0.get(state.index()) {
+      return *b == 1;
+    }
+
+    false
   }
 
   /// Метод установки значения для указанного состояния
   pub fn set(&mut self, state: State, value: bool) {
-    let index = state.index();
-
-    loop {
-      let mask = self.mask.load(Ordering::SeqCst);
-      let new_mask = if value {
-        mask | (1 << index)
-      } else {
-        mask & !(1 << index)
-      };
-
-      match self
-        .mask
-        .compare_exchange(mask, new_mask, Ordering::SeqCst, Ordering::SeqCst)
-      {
-        Ok(_) => break,
-        Err(_) => continue,
-      }
-    }
+    self.0[state.index()] = if value == true { 1 } else { 0 };
   }
 }
 
@@ -149,7 +132,7 @@ impl StateSystem {
   pub async fn reset(&self, index: &u8) {
     let mut guard = self.map.write().await;
     if let Some(s) = guard.get_mut(index) {
-      s.mask.store(0x7F, Ordering::SeqCst);
+      s.0 = DEFAULT_STATES;
     }
   }
 

@@ -96,7 +96,7 @@ impl AutoShieldPlugin {
     setst(index, State::CanDrinking, false).await;
 
     take_bot!(index, async |bot| {
-      bot.start_use_held_item(InteractionHand::OffHand);
+      bot.start_use_item_by(InteractionHand::OffHand);
     });
 
     let mut danger_entity_exists = true;
@@ -108,7 +108,7 @@ impl AutoShieldPlugin {
 
       take_bot!(index, async |bot| {
         if let Some(e) = self.get_nearest_dangerous_entity(bot) {
-          bot.look_at_entity(e, true);
+          bot.look_at_entity(index, e, true, true).await;
         } else {
           danger_entity_exists = false;
         }
@@ -118,7 +118,7 @@ impl AutoShieldPlugin {
     }
 
     take_bot!(index, async |bot| {
-      bot.release_use_held_item();
+      bot.release_use_item();
     });
 
     setmst(index, StateName::Looking, false).await;

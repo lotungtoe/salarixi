@@ -2091,6 +2091,28 @@
       }
     },
     {
+      "versions": "x",
+      "tag": "start-use",
+      "lang": {
+        "ru": "Использовать",
+        "en": "Start Use",
+        "tr": "Kullanmak",
+        "ja": "使用を開始する",
+        "zh": "開始使用"
+      }
+    },
+    {
+      "versions": "x",
+      "tag": "release-use",
+      "lang": {
+        "ru": "Завершить",
+        "en": "Release Use",
+        "tr": "Sona ermek",
+        "ja": "使用を中止する",
+        "zh": "停止使用"
+      }
+    },
+    {
       "versions": "1.1.0:1.1.1",
       "tag": "default",
       "lang": {

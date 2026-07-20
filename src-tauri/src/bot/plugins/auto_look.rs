@@ -20,7 +20,7 @@ impl AutoLookPlugin {
         }
 
         if let Some(entity) = bot.find_nearest_entity(EntityType::Any, 14.0) {
-          bot.look_at_entity(entity, true);
+          bot.look_at_entity(index, entity, true, true).await;
         }
       });
 

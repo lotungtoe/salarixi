@@ -202,19 +202,31 @@ export function replenishTriggerRegistry(): void {
   });
 
   triggerRegistry.register("module_inventory_select_mode", "select", (current: HTMLSelectElement) => {
+    const basicInputContainer = document.getElementById("inventory-basic-input-container") as HTMLElement;
     const basicBtnContainer = document.getElementById("inventory-basic-btn-container") as HTMLElement;
     const swapInputContainer = document.getElementById("inventory-swap-input-container") as HTMLElement;
     const swapBtnContainer = document.getElementById("inventory-swap-btn-container") as HTMLElement;
+    const interactionBtnContainer = document.getElementById("inventory-interaction-btn-container") as HTMLElement;
 
     if (current.value === "basic") {
       basicBtnContainer.style.display = "flex";
+      basicInputContainer.style.display = "flex";
       swapInputContainer.style.display = "none";
       swapBtnContainer.style.display = "none";
+      interactionBtnContainer.style.display = "none";
     } else if (current.value === "swap") {
       swapInputContainer.style.display = "flex";
       swapBtnContainer.style.display = "flex";
+      basicInputContainer.style.display = "flex";
       basicBtnContainer.style.display = "none";
-    } 
+      interactionBtnContainer.style.display = "none";
+    } else if (current.value === "interaction") {
+      swapInputContainer.style.display = "none";
+      swapBtnContainer.style.display = "none";
+      basicInputContainer.style.display = "none";
+      basicBtnContainer.style.display = "none";
+      interactionBtnContainer.style.display = "flex";
+    }
   });
 
   triggerRegistry.register("module_movement_select_mode", "select", (current: HTMLSelectElement) => {
