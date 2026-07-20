@@ -4,6 +4,8 @@ use std::sync::atomic::{AtomicBool, AtomicU8, Ordering};
 use azalea::bot::BotClientExt;
 use azalea::prelude::PathfinderClientExt;
 use azalea::protocol::packets::game::s_interact::InteractionHand;
+use azalea::registry::builtin::BlockKind;
+use azalea::registry::Registry;
 use azalea::{BlockPos, SprintDirection, Vec3, WalkDirection};
 use once_cell::sync::Lazy;
 use rhai::{Dynamic, Engine, EvalAltResult, Map};
@@ -425,11 +427,13 @@ impl ScriptExecutor {
     }
   }
 
-  fn get_block(code: i16, x: i32, y: i32, z: i32) -> Dynamic {
+  fn get_block_id(code: i16, x: i32, y: i32, z: i32) -> Dynamic {
     if code != -1 {
       if let Some(bot) = REGISTRY_SYSTEM.get_bot(&(code as u8)) {
         if let Some(state) = bot.world().read().get_block_state(BlockPos::new(x, y, z)) {
-          return Dynamic::from_int(state.id() as i64);
+          if let Some(kind) = BlockKind::from_u32(state.id() as u32) {
+            return Dynamic::from_str(&kind.to_string()).unwrap();
+          }
         }
       }
     }
@@ -951,9 +955,9 @@ impl ScriptExecutor {
         let su = su.clone();
         move |mu: &str, x: i64, y: i64, z: i64| Self::place_block(generate_code(&su, mu), x as i32, y as i32, z as i32)
       })
-      .register_fn("get_block", {
+      .register_fn("get_block_id", {
         let su = su.clone();
-        move |mu: &str, x: i64, y: i64, z: i64| Self::get_block(generate_code(&su, mu), x as i32, y as i32, z as i32)
+        move |mu: &str, x: i64, y: i64, z: i64| Self::get_block_id(generate_code(&su, mu), x as i32, y as i32, z as i32)
       })
       .register_fn("look_at", {
         let su = su.clone();
