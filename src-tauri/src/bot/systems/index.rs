@@ -29,9 +29,18 @@ impl IndexSystem {
     guard.len() as u8 - 1
   }
 
-  /// Метод юзернейма по индексу
+  /// Метод получения юзернейма по индексу
   pub async fn username_by_index(&self, index: &u8) -> Option<String> {
     self.map.read().await.get(*index as usize).map(|s| s.clone())
+  }
+
+  /// Метод попытки получения юзернейма по индексу
+  pub fn get_username_by_index(&self, index: &u8) -> Option<String> {
+    if let Ok(guard) = self.map.try_read() {
+      return guard.get(*index as usize).map(|s| s.clone());
+    }
+
+    None
   }
 
   /// Метод получения индекса по юзернейму

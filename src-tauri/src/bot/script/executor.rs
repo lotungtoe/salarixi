@@ -13,7 +13,7 @@ use tokio::sync::RwLock;
 use crate::bot::common::convert_hotbar_slot_to_inventory_slot;
 use crate::bot::extensions::{
   go_to, BotDefaultExt, BotInteractExt, BotInventoryExt, BotMovementExt, BotPhysicsExt, BotRotationExt, ClickMode,
-  EntityType,
+  EntityType, ItemMeta,
 };
 use crate::bot::systems::index::INDEX_SYSTEM;
 use crate::bot::systems::profile::PROFILE_SYSTEM;
@@ -68,9 +68,9 @@ fn create_dynamic_vec(x: f64, y: f64, z: f64) -> Dynamic {
 
 /// Функция создания динамичного профиля
 fn create_dynamic_profile(index: &u8) -> Dynamic {
-  let mut map = Map::new();
-
   if let Some(profile) = PROFILE_SYSTEM.try_get(index) {
+    let mut map = Map::new();
+
     map.insert("ping".into(), Dynamic::from_int(profile.ping as i64));
     map.insert("captcha_caught".into(), Dynamic::from_bool(profile.captcha_caught));
     map.insert("registered".into(), Dynamic::from_bool(profile.registered));
@@ -85,9 +85,42 @@ fn create_dynamic_profile(index: &u8) -> Dynamic {
     if let Some(email) = profile.email {
       map.insert("email".into(), Dynamic::from_str(email.as_str()).unwrap());
     }
+
+    return Dynamic::from_map(map);
   }
 
-  Dynamic::from_map(map)
+  Dynamic::ZERO
+}
+
+/// Функция создания динамических метаданных предмета
+fn create_dynamic_item_meta(meta: Option<ItemMeta>, slot: Option<i64>) -> Dynamic {
+  if let Some(m) = meta {
+    let mut map = Map::new();
+
+    map.insert("kind".into(), Dynamic::from_str(&m.kind).unwrap());
+    map.insert("count".into(), Dynamic::from_int(m.count as i64));
+    map.insert(
+      "current_durability".into(),
+      Dynamic::from_int(m.current_durability as i64),
+    );
+    map.insert("max_durability".into(), Dynamic::from_int(m.max_durability as i64));
+
+    let mut dynamic_enchantments = Vec::new();
+    for enchantment in m.enchantments {
+      dynamic_enchantments.push(Dynamic::from(enchantment));
+    }
+
+    map.insert("enchantments".into(), Dynamic::from_array(dynamic_enchantments));
+
+    // Данное поле будет доступным только при использовании функций `inv_extract_by` и `inv_extract_all`
+    if let Some(s) = slot {
+      map.insert("slot".into(), Dynamic::from_int(s));
+    }
+
+    return Dynamic::from_map(map);
+  }
+
+  Dynamic::ZERO
 }
 
 pub struct ScriptExecutor;
@@ -384,6 +417,18 @@ impl ScriptExecutor {
     }
   }
 
+  fn get_block(code: i16, x: i32, y: i32, z: i32) -> Dynamic {
+    if code != -1 {
+      if let Some(bot) = REGISTRY_SYSTEM.get_bot(&(code as u8)) {
+        if let Some(state) = bot.world().read().get_block_state(BlockPos::new(x, y, z)) {
+          return Dynamic::from_int(state.id() as i64);
+        }
+      }
+    }
+
+    Dynamic::ZERO
+  }
+
   fn drop_selected_item(code: i16, lock: bool) {
     tokio::spawn(async move {
       if code == -1 {
@@ -473,6 +518,63 @@ impl ScriptExecutor {
         }
       }
     });
+  }
+
+  fn inv_extract_all(code: i16) -> Dynamic {
+    if code != -1 {
+      if let Some(bot) = REGISTRY_SYSTEM.get_bot(&(code as u8)) {
+        let mut items_meta = Vec::new();
+
+        let Some(menu) = bot.get_inventory_menu() else {
+          return Dynamic::ZERO;
+        };
+
+        for (slot, item) in menu.slots().iter().enumerate() {
+          let meta = bot.extract_item_meta(&item);
+          let dynamic_meta = create_dynamic_item_meta(meta, Some(slot as i64));
+
+          if !dynamic_meta.is_int() {
+            items_meta.push(dynamic_meta);
+          }
+        }
+
+        return Dynamic::from_array(items_meta);
+      }
+    }
+
+    Dynamic::ZERO
+  }
+
+  fn inv_extract_by_slot(code: i16, slot: usize) -> Dynamic {
+    if code != -1 {
+      if let Some(bot) = REGISTRY_SYSTEM.get_bot(&(code as u8)) {
+        let Some(item) = bot.get_item_by_slot(slot) else {
+          return Dynamic::ZERO;
+        };
+
+        let meta = bot.extract_item_meta(&item);
+
+        return create_dynamic_item_meta(meta, None);
+      }
+    }
+
+    Dynamic::ZERO
+  }
+
+  fn inv_extract_by_name(code: i16, name: &str) -> Dynamic {
+    if code != -1 {
+      if let Some(bot) = REGISTRY_SYSTEM.get_bot(&(code as u8)) {
+        let Some((slot, item)) = bot.get_item_by_name(name.to_string()) else {
+          return Dynamic::ZERO;
+        };
+
+        let meta = bot.extract_item_meta(&item);
+
+        return create_dynamic_item_meta(meta, Some(slot as i64));
+      }
+    }
+
+    Dynamic::ZERO
   }
 
   fn set_selected_slot(code: i16, slot: u8) {
@@ -757,6 +859,13 @@ impl ScriptExecutor {
 
     if !su.is_empty() {
       engine
+        .register_fn("current_bot_username", move || {
+          if let Some(username) = INDEX_SYSTEM.get_username_by_index(&si) {
+            Dynamic::from_str(&username).unwrap()
+          } else {
+            Dynamic::ZERO
+          }
+        })
         .register_fn("current_bot_id", move || {
           REGISTRY_SYSTEM.get_bot(&si).map(|b| b.id().0 as i64).unwrap_or(0)
         })
@@ -867,6 +976,10 @@ impl ScriptExecutor {
         let su = su.clone();
         move |mu: &str, x: i64, y: i64, z: i64| Self::place_block(generate_code(&su, mu), x as i32, y as i32, z as i32)
       })
+      .register_fn("get_block", {
+        let su = su.clone();
+        move |mu: &str, x: i64, y: i64, z: i64| Self::get_block(generate_code(&su, mu), x as i32, y as i32, z as i32)
+      })
       .register_fn("look_at", {
         let su = su.clone();
         move |mu: &str, x: f64, y: f64, z: f64| Self::look_at(generate_code(&su, mu), x, y, z)
@@ -900,6 +1013,18 @@ impl ScriptExecutor {
       .register_fn("set_selected_slot", {
         let su = su.clone();
         move |mu: &str, slot: i64| Self::set_selected_slot(generate_code(&su, mu), slot as u8)
+      })
+      .register_fn("inv_extract_all", {
+        let su = su.clone();
+        move |mu: &str| Self::inv_extract_all(generate_code(&su, mu))
+      })
+      .register_fn("inv_extract_by_slot", {
+        let su = su.clone();
+        move |mu: &str, slot: i64| Self::inv_extract_by_slot(generate_code(&su, mu), slot as usize)
+      })
+      .register_fn("inv_extract_by_name", {
+        let su = su.clone();
+        move |mu: &str, name: &str| Self::inv_extract_by_name(generate_code(&su, mu), name)
       });
 
     engine

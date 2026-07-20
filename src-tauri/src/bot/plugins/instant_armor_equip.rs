@@ -1,4 +1,3 @@
-use azalea::inventory::components::{Damage, Enchantments, MaxDamage};
 use azalea::inventory::ItemStack;
 use azalea::prelude::*;
 use azalea::registry::builtin::ItemKind;
@@ -373,45 +372,37 @@ impl InstantArmorEquipPlugin {
   fn extract_armor_info(&self, bot: &Client, item: &ItemStack, slot: usize) -> Option<Armor> {
     let mut armor = self.is_armor(item, slot)?;
 
-    if let Some(max_durability) = item.get_component::<MaxDamage>() {
-      armor.priority.max_durability = max_durability.amount;
+    let Some(meta) = bot.extract_item_meta(item) else {
+      return None;
+    };
 
-      if let Some(damage) = item.get_component::<Damage>() {
-        armor.priority.current_durability = max_durability.amount - damage.amount;
+    armor.priority.max_durability = meta.max_durability;
+    armor.priority.current_durability = meta.current_durability;
+
+    for (id, level) in &meta.enchantments {
+      let id_str = id.as_str();
+
+      let priority = match id_str {
+        "minecraft:protection" => Some(&mut armor.priority.protection),
+        "minecraft:blast_protection" => Some(&mut armor.priority.blast_protection),
+        "minecraft:fire_protection" => Some(&mut armor.priority.fire_protection),
+        "minecraft:projectile_protection" => Some(&mut armor.priority.projectile_protection),
+        "minecraft:feather_falling" => Some(&mut armor.priority.feather_falling),
+        "minecraft:aqua_affinity" => Some(&mut armor.priority.aqua_affinity),
+        "minecraft:unbreaking" => Some(&mut armor.priority.unbreaking),
+        _ => None,
+      };
+
+      if let Some(p) = priority {
+        *p = *level;
       }
-    }
 
-    if let Some(enchantments) = item.get_component::<Enchantments>() {
-      for (enchantment, level) in &enchantments.levels {
-        let Some(id) = bot.resolve_registry_name(enchantment) else {
-          continue;
-        };
+      if id_str == "minecraft:mending" {
+        armor.priority.has_mending = true;
+      }
 
-        let id_string = id.to_string();
-        let id_str = id_string.as_str();
-
-        let priority = match id_str {
-          "minecraft:protection" => Some(&mut armor.priority.protection),
-          "minecraft:blast_protection" => Some(&mut armor.priority.blast_protection),
-          "minecraft:fire_protection" => Some(&mut armor.priority.fire_protection),
-          "minecraft:projectile_protection" => Some(&mut armor.priority.projectile_protection),
-          "minecraft:feather_falling" => Some(&mut armor.priority.feather_falling),
-          "minecraft:aqua_affinity" => Some(&mut armor.priority.aqua_affinity),
-          "minecraft:unbreaking" => Some(&mut armor.priority.unbreaking),
-          _ => None,
-        };
-
-        if let Some(p) = priority {
-          *p = *level;
-        }
-
-        if id_str == "minecraft:mending" {
-          armor.priority.has_mending = true;
-        }
-
-        if id_str == "minecraft:binding_curse" {
-          armor.priority.has_binding_curse = true;
-        }
+      if id_str == "minecraft:binding_curse" {
+        armor.priority.has_binding_curse = true;
       }
     }
 

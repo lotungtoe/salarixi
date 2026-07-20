@@ -2,9 +2,9 @@ use azalea::container::ContainerHandleRef;
 use azalea::core::direction::Direction;
 use azalea::core::position::BlockPos;
 use azalea::entity::inventory::Inventory;
-use azalea::inventory::components::ItemName;
+use azalea::inventory::components::{Damage, Enchantments, ItemName, MaxDamage};
 use azalea::inventory::operations::ThrowClick;
-use azalea::inventory::Menu;
+use azalea::inventory::{ItemStack, Menu};
 use azalea::prelude::*;
 use azalea::protocol::packets::game::s_player_action::Action;
 use azalea::protocol::packets::game::ServerboundPlayerAction;
@@ -16,11 +16,23 @@ use crate::bot::systems::states::{getst, setmst, setst, State, StateName};
 use crate::other::tools::randnum;
 use crate::sleep;
 
+/// Структура метаданных предмета
+pub struct ItemMeta {
+  pub kind: String,
+  pub count: i32,
+  pub current_durability: i32,
+  pub max_durability: i32,
+  pub enchantments: Vec<(String, i32)>,
+}
+
 pub trait BotInventoryExt {
   fn get_selected_slot(&self) -> u8;
   fn get_current_inventory(&self) -> Option<ContainerHandleRef>;
   fn get_inventory_menu(&self) -> Option<Menu>;
+  fn get_item_by_slot(&self, slot: usize) -> Option<ItemStack>;
+  fn get_item_by_name(&self, name: String) -> Option<(usize, ItemStack)>;
   fn find_empty_slot_in_invenotry(&self) -> Option<usize>;
+  fn extract_item_meta(&self, item: &ItemStack) -> Option<ItemMeta>;
   fn start_interacting_with_inventory(&self, index: &u8) -> impl std::future::Future<Output = ()> + Send + Sync;
   fn stop_interacting_with_inventory(&self, index: &u8) -> impl std::future::Future<Output = ()> + Send + Sync;
   fn move_item_to_offhand(&self, kind: ItemKind) -> impl std::future::Future<Output = ()> + Send + Sync;
@@ -107,6 +119,32 @@ impl BotInventoryExt for Client {
     None
   }
 
+  fn get_item_by_name(&self, name: String) -> Option<(usize, ItemStack)> {
+    let Some(menu) = self.get_inventory_menu() else {
+      return None;
+    };
+
+    for (slot, item) in menu.slots().iter().enumerate() {
+      let Some(item_name) = item.get_component::<ItemName>() else {
+        continue;
+      };
+
+      if item_name.name.to_string() == name {
+        return Some((slot, item.clone()));
+      }
+    }
+
+    None
+  }
+
+  fn get_item_by_slot(&self, slot: usize) -> Option<ItemStack> {
+    let Some(menu) = self.get_inventory_menu() else {
+      return None;
+    };
+
+    menu.slot(slot).cloned()
+  }
+
   fn find_empty_slot_in_invenotry(&self) -> Option<usize> {
     let Some(menu) = self.get_inventory_menu() else {
       return None;
@@ -121,6 +159,36 @@ impl BotInventoryExt for Client {
     }
 
     None
+  }
+
+  fn extract_item_meta(&self, item: &ItemStack) -> Option<ItemMeta> {
+    let mut meta = ItemMeta {
+      kind: item.kind().to_string(),
+      count: item.count(),
+      current_durability: -1,
+      max_durability: -1,
+      enchantments: Vec::new(),
+    };
+
+    if let Some(max_durability) = item.get_component::<MaxDamage>() {
+      meta.max_durability = max_durability.amount;
+
+      if let Some(damage) = item.get_component::<Damage>() {
+        meta.current_durability = max_durability.amount - damage.amount;
+      }
+    }
+
+    if let Some(enchantments) = item.get_component::<Enchantments>() {
+      for (enchantment, level) in &enchantments.levels {
+        let Some(id) = self.resolve_registry_name(enchantment) else {
+          continue;
+        };
+
+        meta.enchantments.push((id.to_string(), *level));
+      }
+    }
+
+    Some(meta)
   }
 
   async fn start_interacting_with_inventory(&self, index: &u8) {
@@ -282,19 +350,8 @@ impl BotInventoryExt for Client {
   }
 
   async fn inventory_click_on(&self, index: &u8, name: &str, mode: ClickMode, lock: bool) {
-    let string_name = name.to_string();
-
-    if let Some(menu) = self.get_inventory_menu() {
-      for (slot, item) in menu.slots().iter().enumerate() {
-        let Some(item_name) = item.get_component::<ItemName>() else {
-          continue;
-        };
-
-        if item_name.name.to_string() == string_name {
-          self.inventory_click(index, slot, mode, lock).await;
-          break;
-        }
-      }
+    if let Some((slot, _)) = self.get_item_by_name(name.to_string()) {
+      self.inventory_click(index, slot, mode, lock).await;
     }
   }
 
