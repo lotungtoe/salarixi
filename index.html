@@ -1784,36 +1784,41 @@
     </div>
   </div>
 
-  <div class="main-wrapper centered" id="script-container" style="display: none;" global="true">
-    <div class="scripting-layout">
-      <div class="script-editor-wrapper">
-        <div class="script-editor-header">
-          <span class="editor-title" tt="script-for-bots">Сценарий для ботов</span>
+  <div class="main-wrapper" id="script-container" style="display: none;" global="true">
+    <div class="script-editor-wrapper">
+      <div class="editor-container">
+        <div class="line-counter" id="line-counter">1</div>
+        <textarea id="user-script" class="editor" keep="true" public="false" placeholder="// let username = current_bot_username();"></textarea>
+      </div>
 
-          <div class="editor-controls">
-            <button class="green" id="execute-script">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-player-play">
-                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                <path d="M7 4v16l13 -8l-13 -8" />
-              </svg>
-              <span tt="execute">Выполнить</span>
-            </button>
+      <div class="controls">
+        <button id="execute-script">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-player-play">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <path d="M7 4v16l13 -8l-13 -8" />
+          </svg>
+          <span tt="execute">Выполнить</span>
+        </button>
 
-            <button class="red" id="stop-script">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-player-pause">
-                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                <path d="M6 6a1 1 0 0 1 1 -1h2a1 1 0 0 1 1 1v12a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1l0 -12" />
-                <path d="M14 6a1 1 0 0 1 1 -1h2a1 1 0 0 1 1 1v12a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1l0 -12" />
-              </svg>
-              <span tt="stop">Остановить</span>
-            </button>
-          </div>
-        </div>
+        <button id="execute-script-separately">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-switch-2">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <path d="M3 17h5l1.67 -2.386m3.66 -5.227l1.67 -2.387h6" />
+            <path d="M18 4l3 3l-3 3" />
+            <path d="M3 7h5l7 10h6" />
+            <path d="M18 20l3 -3l-3 -3" />
+          </svg>
+          <span tt="execute-separately">Выполнить отдельно</span>
+        </button>
 
-        <div class="script-editor-container">
-          <div class="line-counter" id="line-counter">1</div>
-          <textarea id="user-script" class="script-editor" keep="true" public="false" placeholder="// Напишите ваш скрипт здесь..."></textarea>
-        </div>
+        <button id="stop-script">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-player-pause">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <path d="M6 6a1 1 0 0 1 1 -1h2a1 1 0 0 1 1 1v12a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1l0 -12" />
+            <path d="M14 6a1 1 0 0 1 1 -1h2a1 1 0 0 1 1 1v12a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1l0 -12" />
+          </svg>
+          <span tt="stop">Остановить</span>
+        </button>
       </div>
     </div>
   </div>

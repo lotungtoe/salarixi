@@ -178,18 +178,30 @@ pub async fn quick_task(name: String) {
 
 /// Команда выполнения пользовательского скрипта
 #[tauri::command]
-pub async fn execute_script(script: String) {
+pub async fn execute_script(script: String, separately: bool) {
   if process_is_active() {
-    // Здесь не нужен определённый юзернейм бота, ибо
-    // пользователь сам в своём сценарии их указывает в функциях
-    SCRIPT_EXECUTOR.execute(String::new(), 0, script);
+    if separately {
+      for (index, _) in PROFILE_SYSTEM.get_all_connected().await {
+        let Some(username) = INDEX_SYSTEM.username_by_index(&index).await else {
+          continue;
+        };
+
+        let script_clone = script.clone();
+
+        tokio::spawn(async move {
+          SCRIPT_EXECUTOR.execute(username, index, script_clone);
+        });
+      }
+    } else {
+      SCRIPT_EXECUTOR.execute(String::new(), 0, script);
+    }
   }
 }
 
 /// Команда остановки пользовательского скрипта
 #[tauri::command]
 pub async fn stop_script() {
-  SCRIPT_EXECUTOR.stop().await;
+  SCRIPT_EXECUTOR.stop();
 }
 
 /// Команда открытия URL в браузере

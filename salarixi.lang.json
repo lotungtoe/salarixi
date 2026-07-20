@@ -1596,6 +1596,17 @@
       }
     },
     {
+      "versions": "1.1.1",
+      "tag": "execute-separately",
+      "lang": {
+        "ru": "Выполнить отдельно",
+        "en": "Execute Separately",
+        "tr": "Ayrı olarak yürütün",
+        "ja": "別々に実行する",
+        "zh": "分別執行"
+      }
+    },
+    {
       "versions": "1.1.0:1.1.1",
       "tag": "interface-section-global",
       "lang": {

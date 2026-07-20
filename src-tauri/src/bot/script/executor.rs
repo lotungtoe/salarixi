@@ -1,14 +1,12 @@
 use std::str::FromStr;
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU8, Ordering};
 
 use azalea::bot::BotClientExt;
 use azalea::prelude::PathfinderClientExt;
 use azalea::protocol::packets::game::s_interact::InteractionHand;
 use azalea::{BlockPos, SprintDirection, Vec3, WalkDirection};
-use hashbrown::HashMap;
 use once_cell::sync::Lazy;
 use rhai::{Dynamic, Engine, EvalAltResult, Map};
-use tokio::sync::RwLock;
 
 use crate::bot::common::convert_hotbar_slot_to_inventory_slot;
 use crate::bot::extensions::{
@@ -25,7 +23,7 @@ use crate::other::webhook::*;
 
 pub static SCRIPT_EXECUTOR: Lazy<ScriptExecutor> = Lazy::new(|| ScriptExecutor::new());
 
-static EXECUTOR_STATES: Lazy<RwLock<HashMap<String, ()>>> = Lazy::new(|| RwLock::new(HashMap::new()));
+static PARALLEL_EXECUTORS_COUNT: Lazy<AtomicU8> = Lazy::new(|| AtomicU8::new(0));
 static EXECUTOR_GLOBAL_STATE: Lazy<AtomicBool> = Lazy::new(|| AtomicBool::new(false));
 
 /// Функция генерации кода
@@ -655,43 +653,10 @@ impl ScriptExecutor {
 
   /// Метод исполнения пользовательского сценария
   pub fn execute(&self, su: String, si: u8, script: String) {
-    let mut states = match EXECUTOR_STATES.try_write() {
-      Ok(g) => g,
-      Err(_) => {
-        if su.is_empty() {
-          emit_msg("Сценарий", "Не удалось выполнить сценарий");
-          emit_log(
-            "Не выполнить запустить сценарий: States are currently occupied",
-            "warning",
-          );
-        } else {
-          emit_msg("Сценарий", format!("Не удалось выполнить сценарий для {}", su));
-          emit_log(
-            format!(
-              "Не выполнить запустить сценарий для {}: States are currently occupied",
-              su
-            ),
-            "warning",
-          );
-        }
-
-        return;
-      }
-    };
-
     if su.is_empty() {
-      if !states.is_empty() || EXECUTOR_GLOBAL_STATE.load(Ordering::SeqCst) {
+      if PARALLEL_EXECUTORS_COUNT.load(Ordering::SeqCst) > 0 || EXECUTOR_GLOBAL_STATE.load(Ordering::SeqCst) {
         emit_msg("Сценарий", "Не удалось выполнить сценарий");
         emit_log("Не выполнить запустить сценарий: Script is already running", "warning");
-        return;
-      }
-    } else {
-      if states.contains_key(&su) {
-        emit_msg("Сценарий", format!("Не удалось выполнить сценарий для {}", su));
-        emit_log(
-          format!("Не выполнить запустить сценарий для {}: Script is already running", su),
-          "warning",
-        );
         return;
       }
     }
@@ -699,10 +664,8 @@ impl ScriptExecutor {
     if su.is_empty() {
       EXECUTOR_GLOBAL_STATE.store(true, Ordering::SeqCst);
     } else {
-      states.insert(su.clone(), ());
+      PARALLEL_EXECUTORS_COUNT.fetch_add(1, Ordering::SeqCst);
     }
-
-    drop(states);
 
     let mut engine = Engine::new();
 
@@ -717,10 +680,8 @@ impl ScriptExecutor {
           return Some(Dynamic::UNIT);
         }
       } else {
-        if let Ok(states) = EXECUTOR_STATES.try_read() {
-          if !states.contains_key(&su_clone) {
-            return Some(Dynamic::UNIT);
-          }
+        if PARALLEL_EXECUTORS_COUNT.load(Ordering::SeqCst) < 1 {
+          return Some(Dynamic::UNIT);
         }
       }
 
@@ -1099,15 +1060,13 @@ impl ScriptExecutor {
     if su.is_empty() {
       EXECUTOR_GLOBAL_STATE.store(false, Ordering::SeqCst);
     } else {
-      if let Ok(mut states) = EXECUTOR_STATES.try_write() {
-        states.remove(&su);
-      }
+      PARALLEL_EXECUTORS_COUNT.fetch_sub(1, Ordering::SeqCst);
     }
   }
 
   /// Метод остановки процесса исполнения пользовательского сценария
-  pub async fn stop(&self) {
+  pub fn stop(&self) {
     EXECUTOR_GLOBAL_STATE.store(false, Ordering::SeqCst);
-    EXECUTOR_STATES.write().await.clear();
+    PARALLEL_EXECUTORS_COUNT.store(0, Ordering::SeqCst);
   }
 }

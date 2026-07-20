@@ -1317,58 +1317,17 @@ button svg {
   color: var(--input-placeholder);
 }
 
-.scripting-layout {
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  max-width: 700px;
-  width: 100%;
-}
-
 .script-editor-wrapper {
   display: flex;
   flex-direction: column;
-  width: 100%;
-  gap: 12px;
-}
-
-.script-editor-header {
-  display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
   width: 100%;
+  height: 100%;
+  gap: 30px;
 }
 
-.editor-title {
-  display: flex;
-  position: relative;
-  font-family: var(--global-font-family);
-  font-size: 16px;
-  font-weight: 500;
-  color: var(--default-color);
-  padding: 4px 12px;
-  margin-left: 4px;
-}
-
-.editor-title::before {
-  content: "";
-  position: absolute;
-  top: 3px;
-  bottom: 3px;
-  left: 0;
-  width: 3px;
-  height: auto;
-  background: var(--highlight-color);
-  box-shadow: 0 0 10px var(--highlight-color);
-  border-radius: 50%;
-}
-
-.editor-controls {
-  display: flex;
-  gap: 8px;
-}
-
-.script-editor-container {
+.script-editor-wrapper .editor-container {
   display: flex;
   width: 100%;
   height: 430px;
@@ -1380,7 +1339,7 @@ button svg {
   padding: 10px 0;
 }
 
-.line-counter {
+.script-editor-wrapper .editor-container .line-counter {
   display: flex;
   flex-direction: column;
   min-width: 60px;
@@ -1396,7 +1355,7 @@ button svg {
   overflow: hidden;
 }
 
-.script-editor {
+.script-editor-wrapper .editor-container .editor {
   width: 100%;
   height: 100%;
   background: transparent;
@@ -1410,11 +1369,36 @@ button svg {
   resize: none;
   white-space: pre;
   overflow-wrap: normal;
-  overflow-y: auto;
+  overflow: auto;
 }
 
-.script-editor::-webkit-scrollbar {
-  display: none;
+.script-editor-wrapper .editor-container .editor::-webkit-scrollbar { 
+  display: flex;
+  height: 6px;
+  width: 6px;
+  background: var(--scrollbar-bg);
+}
+
+.script-editor-wrapper .editor-container .editor::-webkit-scrollbar-thumb { 
+  background: var(--scrollbar-thumb-bg);
+  width: 4px;
+  border-radius: 6px;
+}
+
+.script-editor-wrapper .editor-container .editor::-webkit-scrollbar-thumb:hover { 
+  background: var(--scrollbar-thumb-hover-bg);
+}
+
+.script-editor-wrapper .editor-container .editor::-webkit-scrollbar-corner { 
+  background: var(--scrollbar-bg);
+}
+
+.script-editor-wrapper .controls {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
 }
 
 .anti-captcha-wrapper {

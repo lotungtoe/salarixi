@@ -37,7 +37,8 @@ class ScriptModule {
 		this.editor.addEventListener("input", () => this.updateLineCounter());
 		this.editor.addEventListener("scroll", () => this.lineCounter && this.editor ? this.lineCounter.scrollTop = this.editor.scrollTop : null);
 
-		document.getElementById("execute-script")?.addEventListener("click", async () => await this.execute());
+		document.getElementById("execute-script")?.addEventListener("click", async () => await this.execute(false));
+		document.getElementById("execute-script-separately")?.addEventListener("click", async () => await this.execute(true));
   	document.getElementById("stop-script")?.addEventListener("click", async () => await this.stop());
 
 		this.updateLineCounter();
@@ -53,12 +54,12 @@ class ScriptModule {
 	}
 
 	/** Метод исполнения пользовательского сценария */
-	private async execute(): Promise<void> {
+	private async execute(separately: boolean): Promise<void> {
 		try {
 			if (!this.editor) return;
 			const script = this.editor.value;
 			if (script === "") return;
-			await invoke("execute_script", { script: script });
+			await invoke("execute_script", { script: script, separately: separately });
 		} catch (error) {
 			logger.log(`Ошибка выполнения скрипта: ${error}`, "error");
 		}
