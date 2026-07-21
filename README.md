@@ -18,6 +18,18 @@ Uses [azalea](https://github.com/azalea-rs/azalea) library as a base.
 > [!IMPORTANT]
 > This is just a fun project.
 
+## Philosophy
+
+1. **Minimalism:** When developing this client, i don't try to solve every possible problem in this scope, i only address the "critical" part. This doesn't mean i'm covering up my laziness in implementing features, it means i'm trying to get rid of unnecessary, unused cruft.
+
+2. **Lightweight:** The client doesn't carry hundreds of different dependencies, which would entail numerous unused sections of code. Every implementation in the client is, or will be, optimized in some way. This point can be considered a branch of **Minimalism**, as it directly impacts **Lightweight**.
+
+3. **Flexibility:** This isn't just another "customizable client" refrain. It means that any client functionality that can be customized should be configurable by the average user. Unfortunately, there's currently an exception - plugins (even before they were added to the client, they were planned to be unconfigurable). I'm working on it.
+
+4. **Uniqueness:** I try to elevate this project by incorporating my own unique solutions and ideas, which sometimes just pop into my head. Sometimes these solutions are ridiculous, but sometimes they solve real problems. And i try to minimize the use of other people's solutions. This doesn't mean "reinventing the wheel" - i certainly won't write Rust from scratch. What I mean is that I don't borrow solutions from other people's projects that might be poorly designed or unsuitable for my architecture.
+
+5. **Non-AI:** I don't mean to insult LLM's with this point. I'm saying that the aggressive use of AI in any project is a recipe for disaster. If a thousand lines of code were written by an AI, and a human can't explain the logic behind it, ask it to fix something - do you think it will? Of course not. So why didn't the same AI fix it? It's simple: AI writes terrible code one way or another (whether on the frontend or the backend), which is riddled with hidden errors. Unable to fix them, it will struggle to rewrite its own flawed architecture. And it won't succeed, it will simply destroy all the logic with its convoluted and irrelevant decisions.
+
 ## Social
 
 - [Telegram](https://t.me/+sXNq1tAwOsFmMGMy) - Our official Telegram channel, where we publish client news and upcoming plans
