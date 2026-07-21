@@ -40,12 +40,10 @@ class ScriptModule {
 		document.getElementById("execute-script")?.addEventListener("click", async () => await this.execute(false));
 		document.getElementById("execute-script-separately")?.addEventListener("click", async () => await this.execute(true));
   	document.getElementById("stop-script")?.addEventListener("click", async () => await this.stop());
-
-		this.updateLineCounter();
 	}
 
 	/** Метод обновления счётчика строк */
-	private updateLineCounter(): void {
+	public updateLineCounter(): void {
 		if (!this.editor || !this.lineCounter) return;
 		const lines = this.editor.value.split("\n").length;
 		let numbers = "";

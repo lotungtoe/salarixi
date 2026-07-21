@@ -399,6 +399,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     await listenEvents();
 
     await configModule.init();
+
+    scriptModule.updateLineCounter();
+
     await accountModule.init();
     await monitoringModule.init();
     await captchaModule.init();
