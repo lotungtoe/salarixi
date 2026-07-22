@@ -66,17 +66,17 @@ impl EmitManager {
 }
 
 /// Вспомогательная функция отправки лога
-pub fn emit_log(text: impl Into<String>, class: &str) {
+pub fn emit_log(text: impl Into<String>, class: impl Into<String>) {
   EMIT_MANAGER.send_event(EmitEvent::Log {
     text: text.into(),
-    class: class.to_string(),
+    class: class.into(),
   });
 }
 
 /// Вспомогательная функция отправки сообщения
-pub fn emit_msg(name: &str, content: impl Into<String>) {
+pub fn emit_msg(name: impl Into<String>, content: impl Into<String>) {
   EMIT_MANAGER.send_event(EmitEvent::Message {
-    name: name.to_string(),
+    name: name.into(),
     content: content.into(),
   });
 }
