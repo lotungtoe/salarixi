@@ -96,9 +96,45 @@ pub fn load_configs() -> CommandResult<HashMap<String, Vec<u8>>> {
   success!(configs);
 }
 
-/// Команда создания публичного конфига
+/// Команда экспорта публичного конфига
 #[tauri::command]
-pub fn create_public_config(directory: String) -> CommandResult<String> {
+pub fn export_config(directory: String, content: Vec<u8>) -> CommandResult<String> {
+  let config_dir = PathBuf::from(directory);
+  let mut config_filename = "config.json".to_string();
+
+  if let Ok(entries) = config_dir.read_dir() {
+    let mut exist_filenames = Vec::new();
+    for entry in entries {
+      if let Ok(e) = entry {
+        let entry_filename = e.file_name();
+
+        if let Some(str) = entry_filename.to_str() {
+          exist_filenames.push(str.to_string());
+        }
+      }
+    }
+
+    for _ in 0..100 {
+      let current_filename = format!("config_{}", randstr(CharClass::Multi, 8));
+      if !exist_filenames.contains(&current_filename) {
+        config_filename = format!("{}.json", current_filename);
+        break;
+      }
+    }
+  }
+
+  let config_path = config_dir.join(&config_filename);
+  match fs::write(config_path, &content) {
+    Ok(_) => {}
+    Err(e) => failed!("config export error: {}", e),
+  };
+
+  success!(config_filename);
+}
+
+/// Команда архивации конфига
+#[tauri::command]
+pub fn archive_config(content: Vec<u8>) -> CommandResult<String> {
   let Some(home_dir) = dirs::home_dir() else {
     failed!("failed to get home directory");
   };
@@ -110,20 +146,41 @@ pub fn create_public_config(directory: String) -> CommandResult<String> {
     }
   }
 
-  let config_path = salarixi_dir.join("current_config.json");
-  let bytes = match fs::read(config_path) {
-    Ok(b) => b,
-    Err(e) => failed!("current config read error: {}", e),
-  };
+  let configs_dir = salarixi_dir.join("configs");
+  if !configs_dir.exists() {
+    if fs::create_dir_all(&configs_dir).is_err() {
+      failed!("configs directory is missing");
+    }
+  }
 
-  let filename = format!("config_{}.json", randstr(CharClass::Numeric, 4));
+  let mut config_filename = "archive_config.json".to_string();
 
-  let config_dir = PathBuf::from(directory);
-  let public_config_path = config_dir.join(&filename);
-  match fs::write(public_config_path, &bytes) {
+  if let Ok(entries) = configs_dir.read_dir() {
+    let mut exist_filenames = Vec::new();
+    for entry in entries {
+      if let Ok(e) = entry {
+        let entry_filename = e.file_name();
+
+        if let Some(str) = entry_filename.to_str() {
+          exist_filenames.push(str.to_string());
+        }
+      }
+    }
+
+    for _ in 0..100 {
+      let current_filename = format!("config_{}", randstr(CharClass::Multi, 8));
+      if !exist_filenames.contains(&current_filename) {
+        config_filename = format!("{}.json", current_filename);
+        break;
+      }
+    }
+  }
+
+  let target_path = configs_dir.join(&config_filename);
+  match fs::write(&target_path, &content) {
     Ok(_) => {}
-    Err(e) => failed!("error creating public config: {}", e),
+    Err(e) => failed!("config save error: {}", e),
   };
 
-  success!(filename);
+  success!(config_filename);
 }

@@ -295,17 +295,17 @@
     <div class="column-wrap">
       <div class="form-input small">
         <label for="settings_option_address" class="text" tt="server-address">Адрес сервера</label>
-        <input type="text" id="settings_option_address" key="address" default="localhost" placeholder="127.0.0.1:25565" autocomplete="off" keep="true" launch-option>
+        <input type="text" id="settings_option_address" key="address" default="localhost" placeholder="127.0.0.1:25565" autocomplete="off" keep launch-option>
       </div> 
     
       <div class="form-input small" id="settings-option-bots-count-container">
         <label for="settings_option_bots-count" class="text" tt="bots-count">Кол-во ботов</label>
-        <input type="number" id="settings_option_bots-count" key="bots_count" default="3" placeholder="20" autocomplete="off" keep="true" launch-option>
+        <input type="number" id="settings_option_bots-count" key="bots_count" default="3" placeholder="20" autocomplete="off" keep launch-option>
       </div>
 
       <div class="form-input small">
         <label for="settings_option_join-delay" class="text" tt="join-delay">Задержка подключений</label>
-        <input type="number" id="settings_option_join-delay" key="join_delay" default="4500" placeholder="3000" autocomplete="off" keep="true" launch-option>
+        <input type="number" id="settings_option_join-delay" key="join_delay" default="4500" placeholder="3000" autocomplete="off" keep launch-option>
       </div>
     </div>
 
@@ -332,7 +332,7 @@
         <div class="column-wrap" style="gap: 10px; margin-bottom: 10px;">
           <div class="custom-select between">
             <label tt="nickname-type:">Никнейм:</label>
-            <select id="settings_select_nickname-type" key="nickname_type" keep="true" trigger launch-option>
+            <select id="settings_select_nickname-type" key="nickname_type" keep trigger launch-option>
               <option value="legit" selected tt="nickname-legit">Легитный</option>
               <option value="random" tt="nickname-random">Случайный</option>
               <option value="custom" tt="nickname-custom">Кастомный</option>
@@ -341,7 +341,7 @@
 
           <div class="custom-select between">
             <label tt="password-type:">Пароль:</label>
-            <select id="settings_select_password-type" key="password_type" keep="true" trigger launch-option>
+            <select id="settings_select_password-type" key="password_type" keep trigger launch-option>
               <option value="without" tt="without-password">Без пароля</option>
               <option value="legit" tt="password-legit" selected>Легитный</option>
               <option value="random" selected tt="password-random">Случайный</option>
@@ -351,7 +351,7 @@
 
           <div class="custom-select between">
             <label tt="email-type:">Эл. почта:</label>
-            <select id="settings_select_email-type" key="email_type" keep="true" trigger launch-option>
+            <select id="settings_select_email-type" key="email_type" keep trigger launch-option>
               <option value="without" tt="without-email" selected>Без почты</option>
               <option value="random" selected tt="email-random">Случайная</option>
             </select>
@@ -360,12 +360,12 @@
 
         <div class="form-input" id="custom-nickname-template-container" style="display: none;">
           <label for="settings_option_nickname-template" class="text" tt="nickname-template">Шаблон никнейма</label>
-          <input type="text" id="settings_option_nickname-template" placeholder="player_#m#m" value="player_#m#m" keep="true" key="nickname_template" default="player_#m#m" launch-option>
+          <input type="text" id="settings_option_nickname-template" placeholder="player_#m#m" value="player_#m#m" keep key="nickname_template" default="player_#m#m" launch-option>
         </div>
 
         <div class="form-input" id="custom-password-template-container" style="display: none;">
           <label for="settings_option_password-template" class="text" tt="password-template">Шаблон пароля</label>
-          <input type="text" id="settings_option_password-template" placeholder="#m#l#m#n" value="#m#l#m#n" keep="true" key="password_template" default="#m#l#m#n" launch-option>
+          <input type="text" id="settings_option_password-template" placeholder="#m#l#m#n" value="#m#l#m#n" keep key="password_template" default="#m#l#m#n" launch-option>
         </div>
     
         <div class="hidden" id="auto-register-input-container">
@@ -375,7 +375,7 @@
 
           <div class="custom-select" style="margin-top: 10px; margin-bottom: 10px;">
             <label tt="mode:">Режим:</label>
-            <select id="settings_select_register-mode" key="register_mode" keep="true" trigger launch-option>
+            <select id="settings_select_register-mode" key="register_mode" keep trigger launch-option>
               <option value="default" selected tt="mode-default">Обычный</option>
               <option value="trigger" tt="mode-trigger">Триггер</option>
             </select>
@@ -383,27 +383,27 @@
 
           <div class="form-input">
             <label for="settings_option_register-command" class="text" tt="register-command">Команда регистрации</label>
-            <input type="text" id="settings_option_register-command" placeholder="/register" value="/register" keep="true" key="register_command" default="/register" launch-option>
+            <input type="text" id="settings_option_register-command" placeholder="/register" value="/register" keep key="register_command" default="/register" launch-option>
           </div>
 
           <div class="form-input">
             <label for="settings_option_register-template" class="text" tt="register-template">Шаблон регистрации</label>
-            <input type="text" id="settings_option_register-template" placeholder="$cmd $pass" value="$cmd $pass" keep="true" key="register_template" default="$cmd $pass" launch-option>
+            <input type="text" id="settings_option_register-template" placeholder="$cmd $pass" value="$cmd $pass" keep key="register_template" default="$cmd $pass" launch-option>
           </div>
 
           <div class="form-input" id="register-min-delay-container">
             <label for="settings_option_register-min-delay" class="text" tt="min-delay">Задержка (минимум)</label>
-            <input type="number" id="settings_option_register-min-delay" placeholder="2000" value="2000" keep="true" key="register_min_delay" default="2000" launch-option>
+            <input type="number" id="settings_option_register-min-delay" placeholder="2000" value="2000" keep key="register_min_delay" default="2000" launch-option>
           </div>
 
           <div class="form-input" id="register-max-delay-container">
             <label for="settings_option_register-max-delay" class="text" tt="max-delay">Задержка (максимум)</label>
-            <input type="number" id="settings_option_register-max-delay" placeholder="5000" value="5000" keep="true" key="register_max_delay" default="5000" launch-option>
+            <input type="number" id="settings_option_register-max-delay" placeholder="5000" value="5000" keep key="register_max_delay" default="5000" launch-option>
           </div>
 
           <div class="form-input" id="register-trigger-container" style="display: none;">
             <label for="settings_option_register-trigger" class="text" tt="trigger-message">Триггер (сообщение)</label>
-            <input type="text" id="settings_option_register-trigger" placeholder="зарегистрируйтесь" value="зарегистрируйтесь" keep="true" key="register_trigger" default="зарегистрируйтесь" launch-option>
+            <input type="text" id="settings_option_register-trigger" placeholder="зарегистрируйтесь" value="зарегистрируйтесь" keep key="register_trigger" default="зарегистрируйтесь" launch-option>
           </div>
         </div>
 
@@ -414,7 +414,7 @@
 
           <div class="custom-select" style="margin-top: 10px; margin-bottom: 10px;">
             <label tt="mode:">Режим:</label>
-            <select id="settings_select_login-mode" key="login_mode" keep="true" trigger launch-option>
+            <select id="settings_select_login-mode" key="login_mode" keep trigger launch-option>
               <option value="default" selected tt="mode-default">Обычный</option>
               <option value="trigger" tt="mode-trigger">Триггер</option>
             </select>
@@ -422,27 +422,27 @@
 
           <div class="form-input">
             <label for="settings_option_login-command" class="text" tt="login-command">Команда логина</label>
-            <input type="text" id="settings_option_login-command" placeholder="/login" value="/login" keep="true" key="login_command" default="/login" launch-option>
+            <input type="text" id="settings_option_login-command" placeholder="/login" value="/login" keep key="login_command" default="/login" launch-option>
           </div>
 
           <div class="form-input">
             <label for="settings_option_login-template" class="text" tt="login-template">Шаблон логина</label>
-            <input type="text" id="settings_option_login-template" placeholder="$cmd $pass" value="$cmd $pass" keep="true" key="login_template" default="$cmd $pass" launch-option>
+            <input type="text" id="settings_option_login-template" placeholder="$cmd $pass" value="$cmd $pass" keep key="login_template" default="$cmd $pass" launch-option>
           </div>
 
           <div class="form-input" id="login-min-delay-container">
             <label for="settings_option_login-min-delay" class="text" tt="min-delay">Задержка (минимум)</label>
-            <input type="number" id="settings_option_login-min-delay" placeholder="2000" value="2000" keep="true" key="login_min_delay" default="2000" launch-option>
+            <input type="number" id="settings_option_login-min-delay" placeholder="2000" value="2000" keep key="login_min_delay" default="2000" launch-option>
           </div>
 
           <div class="form-input" id="login-max-delay-container">
             <label for="settings_option_login-max-delay" class="text" tt="max-delay">Задержка (максимум)</label>
-            <input type="number" id="settings_option_login-max-delay" placeholder="3000" value="3000" keep="true" key="login_max_delay" default="3000" launch-option>
+            <input type="number" id="settings_option_login-max-delay" placeholder="3000" value="3000" keep key="login_max_delay" default="3000" launch-option>
           </div>
 
           <div class="form-input" id="login-trigger-container" style="display: none;">
             <label for="settings_option_login-trigger" class="text" tt="trigger-message">Триггер (сообщение)</label>
-            <input type="text" id="settings_option_login-trigger" placeholder="авторизируйтесь" value="авторизируйтесь" keep="true" key="login_trigger" default="авторизируйтесь" launch-option>
+            <input type="text" id="settings_option_login-trigger" placeholder="авторизируйтесь" value="авторизируйтесь" keep key="login_trigger" default="авторизируйтесь" launch-option>
           </div>
         </div>
 
@@ -453,7 +453,7 @@
 
           <div class="form-input">
             <label for="settings_option_rejoin-delay" class="text" tt="rejoin-delay">Задержка переподключения</label>
-            <input type="number" id="settings_option_rejoin-delay" placeholder="4000" value="4000" keep="true" key="rejoin_delay" default="4000" launch-option>
+            <input type="number" id="settings_option_rejoin-delay" placeholder="4000" value="4000" keep key="rejoin_delay" default="4000" launch-option>
           </div>
         </div>
 
@@ -463,12 +463,12 @@
 
         <div class="form-input">
           <label for="monitoring_option_update-frequency" class="text" tt="update-frequency">Частота обновлений</label>
-          <input type="number" id="monitoring_option_update-frequency" placeholder="1800" value="1800" keep="true">
+          <input type="number" id="monitoring_option_update-frequency" placeholder="1800" value="1800" keep>
         </div>
 
         <div class="form-input">
           <label for="monitoring_option_chat-history-length" class="text" tt="chat-history-length">Длина истории чата</label>
-          <input type="number" id="monitoring_option_chat-history-length" placeholder="50" value="50" keep="true">
+          <input type="number" id="monitoring_option_chat-history-length" placeholder="50" value="50" keep>
         </div>
 
         <div class="spliter">
@@ -477,31 +477,31 @@
 
         <div class="form-input">
           <label for="settings_option_view-distance" class="text" tt="view-distance">Дистанция прогрузки</label>
-          <input type="number" id="settings_option_view-distance" placeholder="8" value="8" keep="true" key="view_distance" default="8" launch-option>
+          <input type="number" id="settings_option_view-distance" placeholder="8" value="8" keep key="view_distance" default="8" launch-option>
         </div>
 
         <div class="form-input">
           <label for="settings_option_humanoid-arm" class="text" tt="dominant-hand">Ведущая рука</label>
-          <input type="text" id="settings_option_humanoid-arm" placeholder="left / right" value="right" keep="true" key="humanoid_arm" launch-option>
+          <input type="text" id="settings_option_humanoid-arm" placeholder="left / right" value="right" keep key="humanoid_arm" launch-option>
         </div>
       </div>
 
       <div class="settings-column right">
         <div class="checkbox-group">
           <label class="checkbox-container">
-            <input type="checkbox" id="settings_chbx_use-auto-register" keep="true" key="use_auto_register" trigger launch-option checked>
+            <input type="checkbox" id="settings_chbx_use-auto-register" keep key="use_auto_register" trigger launch-option checked>
             <span class="checkmark"></span>
             <span tt="use-auto-register">Использовать Auto-Register</span>
           </label>
 
           <label class="checkbox-container">
-            <input type="checkbox" id="settings_chbx_use-auto-login" keep="true" key="use_auto_login" trigger launch-option>
+            <input type="checkbox" id="settings_chbx_use-auto-login" keep key="use_auto_login" trigger launch-option>
             <span class="checkmark"></span>
             <span tt="use-auto-login">Использовать Auto-Login</span>
           </label>
 
           <label class="checkbox-container">
-            <input type="checkbox" id="settings_chbx_use-double-auth" keep="true" key="use_double_auth" launch-option>
+            <input type="checkbox" id="settings_chbx_use-double-auth" keep key="use_double_auth" launch-option>
             <span class="checkmark"></span>
             <span tt="use-double-auth">Использовать Double-Auth</span>
           </label>
@@ -509,31 +509,31 @@
           <div class="horizontal-spliter"></div>
 
           <label class="checkbox-container">
-            <input type="checkbox" id="settings_chbx_use-auto-rejoin" keep="true" key="use_auto_rejoin" trigger launch-option checked>
+            <input type="checkbox" id="settings_chbx_use-auto-rejoin" keep key="use_auto_rejoin" trigger launch-option checked>
             <span class="checkmark"></span>
             <span tt="use-auto-rejoin">Использовать Auto-Rejoin</span>
           </label>
 
           <label class="checkbox-container">
-            <input type="checkbox" id="settings_chbx_use-auto-respawn" keep="true" key="use_auto_respawn" launch-option checked>
+            <input type="checkbox" id="settings_chbx_use-auto-respawn" keep key="use_auto_respawn" launch-option checked>
             <span class="checkmark"></span>
             <span tt="use-auto-respawn">Использовать Auto-Respawn</span>
           </label>
 
           <label class="checkbox-container">
-            <input type="checkbox" id="settings_chbx_use-accept-rp" keep="true" key="use_accept_rp" launch-option checked>
+            <input type="checkbox" id="settings_chbx_use-accept-rp" keep key="use_accept_rp" launch-option checked>
             <span class="checkmark"></span>
             <span tt="use-accept-rp">Использовать Accept-RP</span>
           </label>
 
           <label class="checkbox-container">
-            <input type="checkbox" id="settings_chbx_use-pathfinder" keep="true" key="use_pathfinder" launch-option checked>
+            <input type="checkbox" id="settings_chbx_use-pathfinder" keep key="use_pathfinder" launch-option checked>
             <span class="checkmark"></span>
             <span tt="use-pathfinder">Использовать Pathfinder</span>
           </label>
 
           <label class="checkbox-container">
-            <input type="checkbox" id="settings_chbx_use-auto-script" keep="true" key="use_auto_script" launch-option>
+            <input type="checkbox" id="settings_chbx_use-auto-script" keep key="use_auto_script" launch-option>
             <span class="checkmark"></span>
             <span tt="use-auto-script">Использовать Auto-Script</span>
           </label>
@@ -541,19 +541,19 @@
           <div class="horizontal-spliter"></div>
 
           <label class="checkbox-container">
-            <input type="checkbox" id="settings_chbx_use-proxy" keep="true" key="use_proxy" trigger launch-option>
+            <input type="checkbox" id="settings_chbx_use-proxy" keep key="use_proxy" trigger launch-option>
             <span class="checkmark"></span>
             <span tt="use-proxy">Использовать прокси</span>
           </label>
 
           <label class="checkbox-container">
-            <input type="checkbox" id="settings_chbx_use-anti-captcha" keep="true" key="use_anti_captcha" launch-option>
+            <input type="checkbox" id="settings_chbx_use-anti-captcha" keep key="use_anti_captcha" launch-option>
             <span class="checkmark"></span>
             <span tt="use-anti-captcha">Использовать анти-капчу</span>
           </label>
 
           <label class="checkbox-container">
-            <input type="checkbox" id="settings_chbx_use-webhook" keep="true" key="use_webhook" launch-option>
+            <input type="checkbox" id="settings_chbx_use-webhook" keep key="use_webhook" launch-option>
             <span class="checkmark"></span>
             <span tt="use-webhook">Использовать вебхук</span>
           </label>
@@ -561,7 +561,7 @@
           <div class="horizontal-spliter"></div>
 
           <label class="checkbox-container">
-            <input type="checkbox" id="settings_chbx_use-accounts" keep="true" key="use_accounts" trigger launch-option>
+            <input type="checkbox" id="settings_chbx_use-accounts" keep key="use_accounts" trigger launch-option>
             <span class="checkmark"></span>
             <span tt="use-accounts">Использовать аккаунты</span>
           </label>
@@ -598,8 +598,8 @@
         </div>
 
         <div class="input-with-button" id="generation-account-panel" style="display: none;">
-          <input type="text" id="account-username-template" placeholder="username template" style="max-width: 170px; min-width: 170px;" keep="true" public="false">
-          <input type="number" id="generated-account-count" placeholder="count" style="max-width: 80px; min-width: 80px;" keep="true" public="false">
+          <input type="text" id="account-username-template" placeholder="username template" style="max-width: 170px; min-width: 170px;" keep private>
+          <input type="number" id="generated-account-count" placeholder="count" style="max-width: 80px; min-width: 80px;" keep private>
 
           <button class="min" id="generate-accounts">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-wand">
@@ -738,7 +738,7 @@
         <div class="pretty-textarea" aria-labelledby="ta-label">
           <div class="frame">
             <label id="ta-label" class="label" tt="proxy-list">Список прокси</label>
-            <textarea id="proxy-list" placeholder="Введите список прокси..." keep="true" key="proxy_list" public="false" launch-option></textarea>
+            <textarea id="proxy-list" placeholder="Введите список прокси..." keep key="proxy_list" private launch-option></textarea>
           </div>
         </div>
       </div>
@@ -773,7 +773,7 @@
           <div class="column-wrap" style="gap: 6px;">
             <div class="custom-select between">
               <label tt="algorithm:">Алгоритм:</label>
-              <select id="proxy-finder_select_algorithm" keep="true" trigger>
+              <select id="proxy-finder_select_algorithm" keep trigger>
                 <option value="trusted" selected>Trusted</option>
                 <option value="untrusted">Untrusted</option>
                 <option value="mixed">Mixed</option>
@@ -782,7 +782,7 @@
 
             <div class="custom-select between">
               <label tt="country:">Страна:</label>
-              <select id="proxy-finder_select_country" keep="true">
+              <select id="proxy-finder_select_country" keep>
                 <option value="any" tt="country-any">Любая</option>
                 <option value="ru" tt="country-ru">Россия</option>
                 <option value="us" tt="country-us">США</option>
@@ -801,7 +801,7 @@
 
             <div class="custom-select between">
               <label tt="port:">Порт:</label>
-              <select id="proxy-finder_select_port" keep="true">
+              <select id="proxy-finder_select_port" keep>
                 <option value="any" tt="port-any">Любой</option>
                 <option value="4145">4145</option>
                 <option value="1080">1080</option>
@@ -815,7 +815,7 @@
 
             <div class="custom-select between">
               <label tt="count:">Кол-во:</label>
-              <select id="proxy-finder_select_count" keep="true">
+              <select id="proxy-finder_select_count" keep>
                 <option value="20">20</option>
                 <option value="50">50</option>
                 <option value="100">100</option>
@@ -860,7 +860,7 @@
       <div class="column-wrap" style="gap: 6px; width: max-content;">
         <div class="custom-select between">
           <label tt="captcha-type:">Тип капчи:</label>
-          <select id="captcha-bypass_select_captcha-type" section="captcha_bypass" key="captcha_type" keep="true" trigger launch-option>
+          <select id="captcha-bypass_select_captcha-type" section="captcha_bypass" key="captcha_type" keep trigger launch-option>
             <option value="web">Web</option>
             <option value="map">Map</option>
           </select>
@@ -869,7 +869,7 @@
         <div id="anti-map-captha-selects-container" style="display: none; flex-direction: column; gap: 6px;">
           <div class="custom-select between">
             <label tt="captcha-solve-mode:">Режим:</label>
-            <select id="captcha-bypass_select_solve-mode" section="captcha_bypass" key="solve_mode" keep="true" trigger launch-option>
+            <select id="captcha-bypass_select_solve-mode" section="captcha_bypass" key="solve_mode" keep trigger launch-option>
               <option value="manual" tt="manual-mode">Ручной</option>
               <option value="auto" tt="auto-mode">Авто</option>
             </select>
@@ -877,14 +877,14 @@
 
           <div class="custom-select between" id="anti-map-captcha-select-api-service-container">
             <label tt="api-service:">API сервис:</label>
-            <select id="captcha-bypass_select_captcha-service" section="captcha_bypass" key="api_service" keep="true" launch-option>
+            <select id="captcha-bypass_select_captcha-service" section="captcha_bypass" key="api_service" keep launch-option>
               <option value="2captcha">2Captcha</option>
             </select>
           </div>
           
           <div class="custom-select between">
             <label tt="captcha-subtype:">Подтип капчи:</label>
-            <select id="captcha-bypass_select_captcha-subtype" section="captcha_bypass" key="captcha_subtype" keep="true" trigger launch-option>
+            <select id="captcha-bypass_select_captcha-subtype" section="captcha_bypass" key="captcha_subtype" keep trigger launch-option>
               <option value="inventory">Inventory</option>
               <option value="frame">Frame</option>
             </select>
@@ -895,29 +895,29 @@
       <div class="options" id="anti-web-captcha-options">
         <div class="form-input">
           <label for="captcha-bypass_web_regex" class="text" tt="captcha-regex">Регулярное выражение</label>
-          <input type="text" id="captcha-bypass_web_regex" placeholder="https?://[^\s]+" value="https?://[^\s]+" keep="true" section="captcha_bypass" key="regex" default="https?://[^\s]+" launch-option>
+          <input type="text" id="captcha-bypass_web_regex" placeholder="https?://[^\s]+" value="https?://[^\s]+" keep section="captcha_bypass" key="regex" default="https?://[^\s]+" launch-option>
         </div>
 
         <div class="form-input">
           <label for="captcha-bypass_web_required-url-part" class="text" tt="captcha-url-part">Обязательная часть ссылки</label>
-          <input type="text" id="captcha-bypass_web_required-url-part" placeholder="anti-bot" keep="true" section="captcha_bypass" key="required_url_part" launch-option>
+          <input type="text" id="captcha-bypass_web_required-url-part" placeholder="anti-bot" keep section="captcha_bypass" key="required_url_part" launch-option>
         </div>
       </div>
 
       <div class="options" id="anti-map-captcha-options" style="display: none;">
         <div class="form-input" id="anti-map-captcha-number-of-columns-container">
           <label for="captcha-bypass_map_number-of-columns" class="text" tt="number-of-columns">Количество коллон</label>
-          <input type="number" id="captcha-bypass_map_number-of-columns" placeholder="4" value="4" keep="true" section="captcha_bypass" key="number_of_columns" default="4" launch-option>
+          <input type="number" id="captcha-bypass_map_number-of-columns" placeholder="4" value="4" keep section="captcha_bypass" key="number_of_columns" default="4" launch-option>
         </div>
 
         <div class="form-input" id="anti-map-captcha-number-of-rows-container">
           <label for="captcha-bypass_map_number-of-rows" class="text" tt="number-of-rows">Количество рядов</label>
-          <input type="number" id="captcha-bypass_map_number-of-rows" placeholder="3" value="3" keep="true" section="captcha_bypass" key="number_of_rows" default="3" launch-option>
+          <input type="number" id="captcha-bypass_map_number-of-rows" placeholder="3" value="3" keep section="captcha_bypass" key="number_of_rows" default="3" launch-option>
         </div>
 
         <div class="form-input" id="anti-map-captcha-api-key-container">
           <label for="captcha-bypass_web_map-captcha-api-key" class="text" tt="api-key">API ключ</label>
-          <input type="text" id="captcha-bypass_map-captcha-api-key" placeholder="u72ks-73ujhd-8j3j3j83-jdu73hrhf" keep="true" public="false" section="captcha_bypass" key="api_key" launch-option>
+          <input type="text" id="captcha-bypass_map-captcha-api-key" placeholder="u72ks-73ujhd-8j3j3j83-jdu73hrhf" keep private section="captcha_bypass" key="api_key" launch-option>
         </div>
       </div>
     </div>
@@ -930,24 +930,24 @@
   <div class="main-wrapper" id="webhook-container" style="display: none;" global="true">
     <div class="form-input">
       <label for="webhook_url" class="text" tt="webhook-link">Ссылка</label>
-      <input type="text" id="webhook_url" placeholder="https://discord.com/api/webhooks/..." keep="true" section="webhook" key="url" public="false" launch-option>
+      <input type="text" id="webhook_url" placeholder="https://discord.com/api/webhooks/..." keep section="webhook" key="url" private launch-option>
     </div>
 
     <div class="checkbox-group webhook-options">
       <label class="checkbox-container">
-        <input type="checkbox" id="webhook_send-information" keep="true" section="webhook" key="send_information" public="false" launch-option>
+        <input type="checkbox" id="webhook_send-information" keep section="webhook" key="send_information" private launch-option>
         <span class="checkmark"></span>
         <span tt="webhook-information">Информация</span>
       </label>
 
       <label class="checkbox-container">
-        <input type="checkbox" id="webhook_send-data" keep="true" section="webhook" public="false" key="send_data" launch-option>
+        <input type="checkbox" id="webhook_send-data" keep section="webhook" private key="send_data" launch-option>
         <span class="checkmark"></span>
         <span tt="webhook-data">Данные</span>
       </label>
 
       <label class="checkbox-container">
-        <input type="checkbox" id="webhook_send-actions" keep="true" section="webhook" public="false" key="send_actions" launch-option>
+        <input type="checkbox" id="webhook_send-actions" keep section="webhook" private key="send_actions" launch-option>
         <span class="checkmark"></span>
         <span tt="webhook-actions">Действия</span>
       </label>
@@ -1042,7 +1042,7 @@
         <div class="wrap left">
           <div class="custom-select">
             <label tt="mode:">Режим:</label>
-            <select id="module_chat_select_mode" control="chat" name="mode" keep="true" trigger>
+            <select id="module_chat_select_mode" control="chat" name="mode" keep trigger>
               <option value="message" tt="message">Сообщение</option>
               <option value="spamming" tt="spamming">Спамминг</option>
             </select>
@@ -1051,18 +1051,18 @@
           <div class="input-wrap">
             <div class="form-input">
               <label for="module_chat_option_message" class="text" tt="message">Сообщение</label>
-              <input type="text" control="chat" name="message" id="module_chat_option_message" placeholder="Привет, мир!" keep="true">
+              <input type="text" control="chat" name="message" id="module_chat_option_message" placeholder="Привет, мир!" keep>
             </div>
 
             <div class="hidden-wrapper input" id="chat-spamming-input-container">
               <div class="form-input">
                 <label for="module_chat_option_spamming-min-delay" class="text" tt="min-delay">Задержка (минимум)</label>
-                <input type="number" control="chat" name="min_delay" id="module_chat_option_spamming-min-delay" placeholder="2000" value="2000" keep="true">
+                <input type="number" control="chat" name="min_delay" id="module_chat_option_spamming-min-delay" placeholder="2000" value="2000" keep>
               </div>
 
               <div class="form-input">
                 <label for="module_chat_option_spamming-max-delay" class="text" tt="max-delay">Задержка (максимум)</label>
-                <input type="number" control="chat" name="max_delay" id="module_chat_option_spamming-max-delay" placeholder="4000" value="4000" keep="true">
+                <input type="number" control="chat" name="max_delay" id="module_chat_option_spamming-max-delay" placeholder="4000" value="4000" keep>
               </div>
             </div>
           </div>
@@ -1082,7 +1082,7 @@
         <div class="wrap right">
           <div class="checkbox-group">
             <label class="checkbox-container">
-              <input type="checkbox" control="chat" name="use_sync" id="module_chat_chbx_use-sync" keep="true" checked>
+              <input type="checkbox" control="chat" name="use_sync" id="module_chat_chbx_use-sync" keep checked>
               <span class="checkmark"></span>
               <span tt="sync">Синхронность</span>
             </label>
@@ -1090,7 +1090,7 @@
             <div class="horizontal-spliter"></div>
 
             <label class="checkbox-container">
-              <input type="checkbox" control="chat" name="use_global_chat" id="module_chat_chbx_use-global-chat" keep="true">
+              <input type="checkbox" control="chat" name="use_global_chat" id="module_chat_chbx_use-global-chat" keep>
               <span class="checkmark"></span>
               <span tt="global-chat">Глобальный чат</span>
             </label>
@@ -1098,13 +1098,13 @@
             <div class="horizontal-spliter"></div>
 
             <label class="checkbox-container">
-              <input type="checkbox" control="chat" name="use_text_mutation" id="module_chat_chbx_use-text-mutation" keep="true" checked>
+              <input type="checkbox" control="chat" name="use_text_mutation" id="module_chat_chbx_use-text-mutation" keep checked>
               <span class="checkmark"></span>
               <span tt="text-mutation">Мутация текста</span>
             </label>
 
             <label class="checkbox-container">
-              <input type="checkbox" control="chat" name="use_magic_text" id="module_chat_chbx_use-magic-text" keep="true">
+              <input type="checkbox" control="chat" name="use_magic_text" id="module_chat_chbx_use-magic-text" keep>
               <span class="checkmark"></span>
               <span tt="magic-text">Магический текст</span>
             </label>
@@ -1113,13 +1113,13 @@
               <div class="horizontal-spliter"></div>
 
               <label class="checkbox-container">
-                <input type="checkbox" control="chat" name="use_anti_repetition" id="module_chat_chbx_use-anti-repetition" keep="true">
+                <input type="checkbox" control="chat" name="use_anti_repetition" id="module_chat_chbx_use-anti-repetition" keep>
                 <span class="checkmark"></span>
                 <span tt="anti-repetition">Анти-Повтор</span>
               </label>
 
               <label class="checkbox-container">
-                <input type="checkbox" control="chat" name="use_bypass" id="module_chat_chbx_bypass" keep="true">
+                <input type="checkbox" control="chat" name="use_bypass" id="module_chat_chbx_bypass" keep>
                 <span class="checkmark"></span>
                 <span tt="bypass">Обход</span>
               </label>
@@ -1134,7 +1134,7 @@
         <div class="wrap left">
           <div class="custom-select">
             <label tt="action:">Действие:</label>
-            <select id="module_action_select_action" control="action" name="action" keep="true">
+            <select id="module_action_select_action" control="action" name="action" keep>
               <option value="jumping" tt="jumping">Джампинг</option>
               <option value="shifting" tt="shifting">Шифтинг</option>
               <option value="waving" tt="waving">Махание рукой</option>
@@ -1150,7 +1150,7 @@
         <div class="wrap right">
           <div class="checkbox-group">
             <label class="checkbox-container">
-              <input type="checkbox" control="action" name="use_sync" id="module_action_chbx_use-sync" keep="true" checked>
+              <input type="checkbox" control="action" name="use_sync" id="module_action_chbx_use-sync" keep checked>
               <span class="checkmark"></span>
               <span tt="sync">Синхронность</span>
             </label>
@@ -1158,7 +1158,7 @@
             <div class="horizontal-spliter"></div>
 
             <label class="checkbox-container">
-              <input type="checkbox" control="action" name="use_impulsiveness" id="module_action_chbx_use-impulsiveness" keep="true" checked>
+              <input type="checkbox" control="action" name="use_impulsiveness" id="module_action_chbx_use-impulsiveness" keep checked>
               <span class="checkmark"></span>
               <span tt="impulsiveness">Импульсивность</span>
             </label>
@@ -1172,7 +1172,7 @@
         <div class="wrap left">
           <div class="custom-select">
             <label tt="mode:">Режим:</label>
-            <select id="module_inventory_select_mode" control="inventory" name="mode" keep="true" trigger>
+            <select id="module_inventory_select_mode" control="inventory" name="mode" keep trigger>
               <option value="basic" tt="basic">Базовый</option>
               <option value="interaction" tt="interaction">Взаимодействие</option>
               <option value="swap" tt="swap">Перемещение</option>
@@ -1183,14 +1183,14 @@
             <div class="hidden-wrapper input" id="inventory-basic-input-container" style="display: flex;">
               <div class="form-input">
                 <label for="module_inventory_option_slot-index" class="text" tt="slot-index">Индекс слота</label>
-                <input type="number" control="inventory" id="module_inventory_option_slot-index" placeholder="0" name="slot" keep="true">
+                <input type="number" control="inventory" id="module_inventory_option_slot-index" placeholder="0" name="slot" keep>
               </div>
             </div>
 
             <div class="hidden-wrapper input" id="inventory-swap-input-container">
               <div class="form-input">
                 <label for="module_inventory_option_target-slot-index" class="text" tt="target-slot">Заменить на</label>
-                <input type="number" control="inventory" id="module_inventory_option_target-slot-index" placeholder="0" name="target_slot" keep="true">
+                <input type="number" control="inventory" id="module_inventory_option_target-slot-index" placeholder="0" name="target_slot" keep>
               </div>
             </div>
           </div>
@@ -1229,7 +1229,7 @@
           <div class="column-wrap" style="gap: 6px;">
             <div class="custom-select between">
               <label tt="mode:">Режим:</label>
-              <select id="module_movement_select_mode" control="movement" name="mode" keep="true" trigger>
+              <select id="module_movement_select_mode" control="movement" name="mode" keep trigger>
                 <option value="default" tt="default">Обычный</option>
                 <option value="pathfinder" tt="pathfinder">Pathfinder</option>
               </select>
@@ -1237,7 +1237,7 @@
 
             <div class="custom-select between" id="select-movement-direction-container">
               <label tt="direction:">Движение:</label>
-              <select id="module_movement_select_movement-direction" control="movement" name="direction" keep="true">
+              <select id="module_movement_select_movement-direction" control="movement" name="direction" keep>
                 <option value="forward" tt="forward">Вперёд</option>
                 <option value="backward" tt="backward">Назад</option>
                 <option value="left" tt="left">Влево</option>
@@ -1254,12 +1254,12 @@
             <div class="hidden-wrapper input" id="movement-pathfinder-input-container">
               <div class="form-input">
                 <label for="module_movement_option_goal-x" class="text" tt="coord-x">Координата X</label>
-                <input type="number" control="movement" id="module_movement_option_goal-x" placeholder="504" name="x" keep="true">
+                <input type="number" control="movement" id="module_movement_option_goal-x" placeholder="504" name="x" keep>
               </div>
 
               <div class="form-input">
                 <label for="module_movement_option_goal-z" class="text" tt="coord-z">Координата Z</label>
-                <input type="number" control="movement" id="module_movement_option_goal-z" placeholder="233" name="z" keep="true">
+                <input type="number" control="movement" id="module_movement_option_goal-z" placeholder="233" name="z" keep>
               </div>
             </div>
           </div>
@@ -1273,7 +1273,7 @@
         <div class="wrap right">
           <div class="checkbox-group">
             <label class="checkbox-container">
-              <input type="checkbox" control="movement" id="module_movement_chbx_use-sync" name="use_sync" keep="true">
+              <input type="checkbox" control="movement" id="module_movement_chbx_use-sync" name="use_sync" keep>
               <span class="checkmark"></span>
               <span tt="sync">Синхронность</span>
             </label>
@@ -1282,7 +1282,7 @@
               <div class="horizontal-spliter"></div>
 
               <label class="checkbox-container">
-                <input type="checkbox" control="movement" id="module_movement_chbx_use-impulsiveness" name="use_impulsiveness" keep="true">
+                <input type="checkbox" control="movement" id="module_movement_chbx_use-impulsiveness" name="use_impulsiveness" keep>
                 <span class="checkmark"></span>
                 <span tt="impulsiveness">Импульсивность</span>
               </label>
@@ -1297,7 +1297,7 @@
         <div class="wrap left">
           <div class="custom-select">
             <label tt="mode:">Режим:</label>
-            <select id="module_anti-afk_select_mode" control="anti-afk" name="mode" keep="true">
+            <select id="module_anti-afk_select_mode" control="anti-afk" name="mode" keep>
               <option value="minimal" tt="minimal">Минимальный</option>
               <option value="normal" tt="normal">Нормальный</option>
               <option value="advanced" tt="advanced">Продвинутый</option>
@@ -1307,12 +1307,12 @@
           <div class="input-wrap">
             <div class="form-input">
               <label for="module_anti-afk_option_min-delay" class="text" tt="min-delay">Задержка (минимум)</label>
-              <input type="number" control="anti-afk" id="module_anti-afk_option_min-delay" placeholder="1000" value="1000" name="min_delay" keep="true">
+              <input type="number" control="anti-afk" id="module_anti-afk_option_min-delay" placeholder="1000" value="1000" name="min_delay" keep>
             </div>
 
             <div class="form-input">
               <label for="module_anti-afk_option_max-delay" class="text" tt="max-delay">Задержка (максимум)</label>
-              <input type="number" control="anti-afk" id="module_anti-afk_option_max-delay" placeholder="2500" value="2500" name="max_delay" keep="true">
+              <input type="number" control="anti-afk" id="module_anti-afk_option_max-delay" placeholder="2500" value="2500" name="max_delay" keep>
             </div>
           </div>
 
@@ -1329,7 +1329,7 @@
         <div class="wrap left">
           <div class="custom-select">
             <label tt="mode:">Режим:</label>
-            <select id="module_stalker_select_mode" control="stalker" name="mode" keep="true">
+            <select id="module_stalker_select_mode" control="stalker" name="mode" keep>
               <option value="default" tt="default">Обычный</option>
               <option value="advanced" tt="advanced">Продвинутый</option>
             </select>
@@ -1338,17 +1338,17 @@
           <div class="input-wrap">
             <div class="form-input">
               <label for="module_stalker_option_target-nickname" class="text" tt="target-nickname">Никнейм цели</label>
-              <input type="text" control="stalker" id="module_stalker_option_target-nickname" placeholder="player_123" name="target_nickname" keep="true">
+              <input type="text" control="stalker" id="module_stalker_option_target-nickname" placeholder="player_123" name="target_nickname" keep>
             </div>
 
             <div class="form-input">
               <label for="module_stalker_option_min-distance" class="text" tt="min-distance">Минимальная дистанция</label>
-              <input type="number" control="stalker" id="module_stalker_option_min-distance" placeholder="6" value="6" name="min_distance" keep="true">
+              <input type="number" control="stalker" id="module_stalker_option_min-distance" placeholder="6" value="6" name="min_distance" keep>
             </div>
 
             <div class="form-input">
               <label for="module_stalker_option_max-distance" class="text" tt="max-distance">Максимальная дистанция</label>
-              <input type="number" control="stalker" id="module_stalker_option_max-distance" placeholder="100" value="100" name="max_distance" keep="true">
+              <input type="number" control="stalker" id="module_stalker_option_max-distance" placeholder="100" value="100" name="max_distance" keep>
             </div>
           </div>
 
@@ -1366,7 +1366,7 @@
           <div class="column-wrap" style="gap: 6px;">
             <div class="custom-select between">
               <label tt="mode:">Режим:</label>
-              <select id="module_flight_select_mode" control="flight" name="mode" keep="true">
+              <select id="module_flight_select_mode" control="flight" name="mode" keep>
                 <option value="vanilla" tt="vanilla">Vanilla</option>
                 <option value="jump-fly" tt="jump-fly">Jump-Fly</option>
                 <option value="teleport-fly" tt="teleport-fly">Teleport-Fly</option>
@@ -1376,7 +1376,7 @@
 
             <div class="custom-select between">
               <label tt="settings:">Настройки:</label>
-              <select id="module_flight_select_settings" control="flight" name="settings" keep="true" trigger>
+              <select id="module_flight_select_settings" control="flight" name="settings" keep trigger>
                 <option value="adaptive" tt="adaptive-settings">Адаптивные</option>
                 <option value="manual" tt="manual-settings">Ручные</option>
               </select>
@@ -1384,7 +1384,7 @@
 
             <div class="custom-select between" id="flight-select-anti-cheat-container">
               <label tt="anti-cheat:">Анти-чит:</label>
-              <select id="module_flight_select_anti-cheat" control="flight" name="anti_cheat" keep="true">
+              <select id="module_flight_select_anti-cheat" control="flight" name="anti_cheat" keep>
                 <option value="vulcan">Vulcan</option>
                 <option value="grim">Grim</option>
                 <option value="intave">Intave</option>
@@ -1397,27 +1397,27 @@
             <div class="hidden-wrapper input" id="flight-manual-settings-container">
               <div class="form-input">
                 <label for="module_flight_option_min-delay" class="text" tt="min-delay">Задержка (минимум)</label>
-                <input type="number" control="flight" id="module_flight_option_min-delay" placeholder="100" value="100" name="min_delay" keep="true">
+                <input type="number" control="flight" id="module_flight_option_min-delay" placeholder="100" value="100" name="min_delay" keep>
               </div>
 
               <div class="form-input">
                 <label for="module_flight_option_max-delay" class="text" tt="max-delay">Задержка (максимум)</label>
-                <input type="number" control="flight" id="module_flight_option_max-delay" placeholder="200" value="200" name="max_delay" keep="true">
+                <input type="number" control="flight" id="module_flight_option_max-delay" placeholder="200" value="200" name="max_delay" keep>
               </div>
 
               <div class="form-input">
                 <label for="module_flight_option_min-change-y" class="text" tt="min-change-y">Изменение по Y (минимум)</label>
-                <input type="number" control="flight" id="module_flight_option_min-change-y" placeholder="0.15" value="0.15" name="min_change_y" keep="true">
+                <input type="number" control="flight" id="module_flight_option_min-change-y" placeholder="0.15" value="0.15" name="min_change_y" keep>
               </div>
 
               <div class="form-input">
                 <label for="module_flight_option_max-change-y" class="text" tt="max-change-y">Изменение по Y (максимум)</label>
-                <input type="number" control="flight" id="module_flight_option_max-change-y" placeholder="0.28" value="0.28" name="max_change_y" keep="true">
+                <input type="number" control="flight" id="module_flight_option_max-change-y" placeholder="0.28" value="0.28" name="max_change_y" keep>
               </div>
 
               <div class="form-input">
                 <label for="module_flight_option_use-ground-spoof" class="text" tt="use-ground-spoof">Использовать Ground-Spoof</label>
-                <input type="text" control="flight" id="module_flight_option_use-ground-spoof" placeholder="true / false" value="true" name="use_ground_spoof" keep="true">
+                <input type="text" control="flight" id="module_flight_option_use-ground-spoof" placeholder="true / false" value="true" name="use_ground_spoof" keep>
               </div>
             </div>
           </div>
@@ -1436,7 +1436,7 @@
           <div class="column-wrap" style="gap: 6px;">
             <div class="custom-select between">
               <label tt="behavior:">Поведение:</label>
-              <select id="module_killaura_select_behavior" control="killaura" name="behavior" keep="true">
+              <select id="module_killaura_select_behavior" control="killaura" name="behavior" keep>
                 <option value="moderate" tt="moderate">Умеренное</option>
                 <option value="aggressive" tt="aggressive">Агрессивное</option>
               </select>
@@ -1444,7 +1444,7 @@
 
             <div class="custom-select between">
               <label tt="settings:">Настройки:</label>
-              <select id="module_killaura_select_settings" control="killaura" name="settings" keep="true" trigger>
+              <select id="module_killaura_select_settings" control="killaura" name="settings" keep trigger>
                 <option value="adaptive" tt="adaptive-settings">Адаптивные</option>
                 <option value="manual" tt="manual-settings">Ручные</option>
               </select>
@@ -1452,7 +1452,7 @@
 
             <div class="custom-select between">
               <label tt="target:">Цель:</label>
-              <select id="module_killaura_select_target" control="killaura" name="target" keep="true" trigger>
+              <select id="module_killaura_select_target" control="killaura" name="target" keep trigger>
                 <option value="player" tt="player">Игрок</option>
                 <option value="monster" tt="monster">Монстр</option>
                 <option value="animal" tt="animal">Животное</option>
@@ -1464,7 +1464,7 @@
 
             <div class="custom-select between" id="select-killaura-weapon-container">
               <label tt="weapon:">Оружие:</label>
-              <select id="module_killaura_select_weapon" control="killaura" name="weapon" keep="true">
+              <select id="module_killaura_select_weapon" control="killaura" name="weapon" keep>
                 <option value="sword" tt="sword">Меч</option>
                 <option value="axe" tt="axe">Топор</option>
               </select>
@@ -1475,38 +1475,38 @@
             <div class="hidden-wrapper input" id="killaura-custom-goal-input-container">
               <div class="form-input">
                 <label for="module_killaura_option_target-nickname" class="text" tt="target-nickname">Никнейм цели</label>
-                <input type="text" control="killaura" id="module_killaura_option_target-nickname" placeholder="player_123" name="target_nickname" keep="true">
+                <input type="text" control="killaura" id="module_killaura_option_target-nickname" placeholder="player_123" name="target_nickname" keep>
               </div>
             </div>
 
             <div class="hidden-wrapper input" id="killaura-weapon-slot-container">
               <div class="form-input">
                 <label for="module_killaura_option_slot" class="text" tt="weapon-slot">Слот с оружием</label>
-                <input type="number" control="killaura" id="module_killaura_option_slot" placeholder="0" name="slot" keep="true">
+                <input type="number" control="killaura" id="module_killaura_option_slot" placeholder="0" name="slot" keep>
               </div>
             </div>
 
             <div class="hidden-wrapper input" id="killaura-manual-settings-container">
               <div class="form-input">
                 <label for="module_killaura_option_attack-distance" class="text" tt="attack-distance">Дистанция атаки</label>
-                <input type="number" control="killaura" id="module_killaura_option_attack-distance" placeholder="3.1" value="3.1" name="attack_distance" keep="true">
+                <input type="number" control="killaura" id="module_killaura_option_attack-distance" placeholder="3.1" value="3.1" name="attack_distance" keep>
               </div>
 
               <div class="form-input">
                 <label for="module_killaura_option_delay" class="text" tt="delay">Задержка</label>
-                <input type="number" control="killaura" id="module_killaura_option_delay" placeholder="500" value="500" name="delay" keep="true">
+                <input type="number" control="killaura" id="module_killaura_option_delay" placeholder="500" value="500" name="delay" keep>
               </div>
             </div>
 
             <div class="hidden-wrapper input" id="killaura-chase-settings-container">
               <div class="form-input">
                 <label for="module_killaura_option_chase-distance" class="text" tt="max-chase-distance">Макс. дистанция преследования</label>
-                <input type="number" control="killaura" id="module_killaura_option_chase-distance" placeholder="10.0" value="10.0" name="chase_distance" keep="true">
+                <input type="number" control="killaura" id="module_killaura_option_chase-distance" placeholder="10.0" value="10.0" name="chase_distance" keep>
               </div>
 
               <div class="form-input">
                 <label for="module_killaura_option_min-distance-to-target" class="text" tt="min-chase-distance">Мин. дистанция преследования</label>
-                <input type="number" control="killaura" id="module_killaura_option_min-distance-to-target" placeholder="3.0" value="3.0" name="min_distance_to_target" keep="true">
+                <input type="number" control="killaura" id="module_killaura_option_min-distance-to-target" placeholder="3.0" value="3.0" name="min_distance_to_target" keep>
               </div>
             </div>
           </div>
@@ -1520,7 +1520,7 @@
         <div class="wrap right">
           <div class="checkbox-group">
             <label class="checkbox-container">
-              <input type="checkbox" control="killaura" id="module_killaura_chbx_use-auto-weapon" name="use_auto_weapon" keep="true" trigger checked>
+              <input type="checkbox" control="killaura" id="module_killaura_chbx_use-auto-weapon" name="use_auto_weapon" keep trigger checked>
               <span class="checkmark"></span>
               <span tt="auto-weapon">Авто оружие</span>
             </label>
@@ -1528,13 +1528,13 @@
             <div class="horizontal-spliter"></div>
 
             <label class="checkbox-container">
-              <input type="checkbox" control="killaura" id="module_killaura_chbx_use-dodging" name="use_dodging" keep="true">
+              <input type="checkbox" control="killaura" id="module_killaura_chbx_use-dodging" name="use_dodging" keep>
               <span class="checkmark"></span>
               <span tt="dodging">Доджинг</span>
             </label>
 
             <label class="checkbox-container">
-              <input type="checkbox" control="killaura" id="module_killaura_chbx_use-chase" name="use_chase" keep="true" trigger>
+              <input type="checkbox" control="killaura" id="module_killaura_chbx_use-chase" name="use_chase" keep trigger>
               <span class="checkmark"></span>
               <span tt="chase">Преследование</span>
             </label>
@@ -1542,7 +1542,7 @@
             <div class="horizontal-spliter"></div>
 
             <label class="checkbox-container">
-              <input type="checkbox" control="killaura" id="module_killaura_chbx_use-critical" name="use_critical" keep="true">
+              <input type="checkbox" control="killaura" id="module_killaura_chbx_use-critical" name="use_critical" keep>
               <span class="checkmark"></span>
               <span tt="critical-hits">Критические удары</span>
             </label>
@@ -1556,7 +1556,7 @@
         <div class="wrap left">
           <div class="custom-select">
             <label tt="mode:">Режим:</label>
-            <select id="module_scaffold_select_mode" control="scaffold" name="mode" keep="true">
+            <select id="module_scaffold_select_mode" control="scaffold" name="mode" keep>
               <option value="noob-bridge" tt="noob-bridge">Noob Bridge</option>
               <option value="ninja-bridge" selected tt="ninja-bridge">Ninja Bridge</option>
               <option value="god-bridge" tt="god-bridge">God Bridge</option>
@@ -1567,17 +1567,17 @@
           <div class="input-wrap">
             <div class="form-input">
               <label for="module_scaffold_option_delay" class="text" tt="delay">Задержка</label>
-              <input type="number" control="scaffold" id="module_scaffold_option_delay" placeholder="25" value="25" name="delay" keep="true">
+              <input type="number" control="scaffold" id="module_scaffold_option_delay" placeholder="25" value="25" name="delay" keep>
             </div>
 
             <div class="form-input">
               <label for="module_scaffold_option_min-gaze-degree-x" class="text" tt="min-gaze-x">Взгляд по X (минимум)</label>
-              <input type="number" control="scaffold" id="module_scaffold_option_min-gaze-degree-x" placeholder="80.0" value="80.0" name="min_gaze_degree_x" keep="true">
+              <input type="number" control="scaffold" id="module_scaffold_option_min-gaze-degree-x" placeholder="80.0" value="80.0" name="min_gaze_degree_x" keep>
             </div>
 
             <div class="form-input">
               <label for="module_scaffold_option_max-gaze-degree-x" class="text" tt="max-gaze-x">Взгляд по X (максимум)</label>
-              <input type="number" control="scaffold" id="module_scaffold_option_max-gaze-degree-x" placeholder="83.0" value="83.0" name="max_gaze_degree_x" keep="true">
+              <input type="number" control="scaffold" id="module_scaffold_option_max-gaze-degree-x" placeholder="83.0" value="83.0" name="max_gaze_degree_x" keep>
             </div>
           </div>
 
@@ -1594,7 +1594,7 @@
         <div class="wrap left">
           <div class="custom-select">
             <label tt="mode:">Режим:</label>
-            <select id="module_anti-fall_select_mode" control="anti-fall" name="mode" keep="true">
+            <select id="module_anti-fall_select_mode" control="anti-fall" name="mode" keep>
               <option value="hovering" tt="hovering">Hovering</option>
               <option value="teleport" tt="teleport">Teleport</option>
               <option value="water-drop" tt="water-drop">Water-Drop</option>
@@ -1605,17 +1605,17 @@
           <div class="input-wrap">
             <div class="form-input">
               <label for="module_anti-fall_option_distance-to-ground" class="text" tt="trigger-distance">Триггер (расстояние до земли)</label>
-              <input type="number" control="anti-fall" id="module_anti-fall_option_distance-to-ground" placeholder="4" value="4" name="distance_to_ground" keep="true">
+              <input type="number" control="anti-fall" id="module_anti-fall_option_distance-to-ground" placeholder="4" value="4" name="distance_to_ground" keep>
             </div>
 
             <div class="form-input">
               <label for="module_anti-fall_option_fall-velocity" class="text" tt="trigger-velocity">Триггер (скорость падения)</label>
-              <input type="number" control="anti-fall" id="module_anti-fall_option_fall-velocity" placeholder="-0.5" value="-0.5" name="fall_velocity" keep="true">
+              <input type="number" control="anti-fall" id="module_anti-fall_option_fall-velocity" placeholder="-0.5" value="-0.5" name="fall_velocity" keep>
             </div>
 
             <div class="form-input">
               <label for="module_anti-fall_option_delay" class="text" tt="delay">Задержка</label>
-              <input type="number" control="anti-fall" id="module_anti-fall_option_delay" placeholder="50" value="50" name="delay" keep="true">
+              <input type="number" control="anti-fall" id="module_anti-fall_option_delay" placeholder="50" value="50" name="delay" keep>
             </div>
           </div>
 
@@ -1632,7 +1632,7 @@
         <div class="wrap left">
           <div class="custom-select">
             <label tt="target:">Цель:</label>
-            <select id="module_bow-aim_select_target" control="bow-aim" name="target" keep="true" trigger>
+            <select id="module_bow-aim_select_target" control="bow-aim" name="target" keep trigger>
               <option value="player" tt="player">Игрок</option>
               <option value="monster" tt="monster">Монстр</option>
               <option value="animal" tt="animal">Животное</option>
@@ -1645,18 +1645,18 @@
             <div class="hidden-wrapper input" id="bow-aim-custom-goal-input-container">
               <div class="form-input">
                 <label for="module_bow-aim_option_target-nickname" class="text" tt="target-nickname">Никнейм цели</label>
-                <input type="text" control="bow-aim" id="module_bow-aim_option_target-nickname" placeholder="player_123" name="target_nickname" keep="true">
+                <input type="text" control="bow-aim" id="module_bow-aim_option_target-nickname" placeholder="player_123" name="target_nickname" keep>
               </div>
             </div>
 
             <div class="form-input">
               <label for="module_bow-aim_option_delay" class="text" tt="delay">Задержка</label>
-              <input type="number" control="bow-aim" id="module_bow-aim_option_delay" placeholder="50" value="50" name="delay" keep="true">
+              <input type="number" control="bow-aim" id="module_bow-aim_option_delay" placeholder="50" value="50" name="delay" keep>
             </div>
 
             <div class="form-input">
               <label for="module_bow-aim_option_max-distance" class="text" tt="max-distance">Максимальная дистанция</label>
-              <input type="number" control="bow-aim" id="module_bow-aim_option_max-distance" placeholder="70" value="70" name="max_distance" keep="true">
+              <input type="number" control="bow-aim" id="module_bow-aim_option_max-distance" placeholder="70" value="70" name="max_distance" keep>
             </div>
           </div>
 
@@ -1673,7 +1673,7 @@
         <div class="wrap left">
           <div class="custom-select">
             <label tt="target:">Цель:</label>
-            <select id="module_stealer_select_target" control="stealer" name="target" keep="true">
+            <select id="module_stealer_select_target" control="stealer" name="target" keep>
               <option value="chest" tt="chest">Сундук</option>
               <option value="barrel" tt="barrel">Бочка</option>
               <option value="shulker" tt="shulker">Шалкер</option>
@@ -1683,12 +1683,12 @@
           <div class="input-wrap">
             <div class="form-input">
               <label for="module_stealer_option_radius" class="text" tt="interaction-radius">Радиус взаимодействия</label>
-              <input type="number" control="stealer" id="module_stealer_option_radius" placeholder="5" value="5" name="radius" keep="true">
+              <input type="number" control="stealer" id="module_stealer_option_radius" placeholder="5" value="5" name="radius" keep>
             </div>
 
             <div class="form-input">
               <label for="module_stealer_option_delay" class="text" tt="delay">Задержка</label>
-              <input type="number" control="stealer" id="module_stealer_option_delay" placeholder="1000" value="1000" name="delay" keep="true">
+              <input type="number" control="stealer" id="module_stealer_option_delay" placeholder="1000" value="1000" name="delay" keep>
             </div>
           </div>
 
@@ -1706,7 +1706,7 @@
           <div class="column-wrap" style="width: max-content; gap: 6px;">
             <div class="custom-select between">
               <label tt="mode:">Режим:</label>
-              <select id="module_miner_select_mode" control="miner" name="mode" keep="true" trigger>
+              <select id="module_miner_select_mode" control="miner" name="mode" keep trigger>
                 <option value="default" tt="default">Обычный</option>
                 <option value="extended" tt="extended">Расширенный</option>
               </select>
@@ -1714,7 +1714,7 @@
 
             <div class="custom-select between" id="miner-tunnel-select-container" style="display: none;">
               <label tt="tunnel:">Тунель:</label>
-              <select id="module_miner_select_tunnel" control="miner" name="tunnel" keep="true">
+              <select id="module_miner_select_tunnel" control="miner" name="tunnel" keep>
                 <option value="2x2x2">2x2x2</option>
                 <option value="3x2x2">3x2x2</option>
                 <option value="2x3x3">2x3x3</option>
@@ -1724,7 +1724,7 @@
 
             <div class="custom-select between" id="miner-look-select-container" style="display: none;">
               <label tt="look:">Поворот:</label>
-              <select id="module_miner_select_look" control="miner" name="look" keep="true">
+              <select id="module_miner_select_look" control="miner" name="look" keep>
                 <option value="smooth" tt="smooth">Плавный</option>
                 <option value="cutting" tt="cutting">Резкий</option>
               </select>
@@ -1734,17 +1734,17 @@
           <div class="input-wrap">
             <div class="form-input">
               <label for="module_miner_option_direction-x" class="text" tt="direction-y">Направление взгляда по Y</label>
-              <input type="number" control="miner" id="module_miner_option_direction-x" placeholder="0" name="direction_x" keep="true">
+              <input type="number" control="miner" id="module_miner_option_direction-x" placeholder="0" name="direction_x" keep>
             </div>
 
             <div class="form-input">
               <label for="module_miner_option_slot" class="text" tt="tool-slot">Слот с инструментом</label>
-              <input type="number" control="miner" id="module_miner_option_slot" placeholder="0-8" name="slot" keep="true">
+              <input type="number" control="miner" id="module_miner_option_slot" placeholder="0-8" name="slot" keep>
             </div>
 
             <div class="form-input">
               <label for="module_miner_option_delay" class="text" tt="delay">Задержка</label>
-              <input type="number" control="miner" id="module_miner_option_delay" placeholder="200" name="delay" keep="true">
+              <input type="number" control="miner" id="module_miner_option_delay" placeholder="200" name="delay" keep>
             </div>
           </div>
 
@@ -1761,7 +1761,7 @@
         <div class="wrap left">
           <div class="custom-select" id="farmer-mode-select-container">
             <label tt="mode:">Режим:</label>
-            <select id="module_farmer_select_mode" control="farmer" name="mode" keep="true">
+            <select id="module_farmer_select_mode" control="farmer" name="mode" keep>
               <option value="normal" tt="normal">Нормальный</option>
               <option value="quick" tt="quick">Быстрый</option>
               <option value="ultra" tt="ultra">Ультра</option>
@@ -1771,7 +1771,7 @@
           <div class="input-wrap">
             <div class="form-input">
               <label for="module_farmer_option_delay" class="text" tt="delay">Задержка</label>
-              <input type="number" control="farmer" id="module_farmer_option_delay" placeholder="100" name="delay" keep="true">
+              <input type="number" control="farmer" id="module_farmer_option_delay" placeholder="100" name="delay" keep>
             </div>
           </div>
 
@@ -1788,7 +1788,7 @@
     <div class="script-editor-wrapper">
       <div class="editor-container">
         <div class="line-counter" id="line-counter">1</div>
-        <textarea id="user-script" class="editor" keep="true" public="false" placeholder="// let username = current_bot_username();"></textarea>
+        <textarea id="user-script" class="editor" keep private placeholder="// let username = current_bot_username();"></textarea>
       </div>
 
       <div class="controls">
@@ -1849,9 +1849,9 @@
     <div class="ping-wrapper">
       <div style="display: flex; gap: 10px; justify-content: center; align-items: center;">
         <div class="input-with-button" style="margin-top: 10px;">
-          <input type="text" id="ping-server-address" placeholder="mineblaze.net" keep="true" public="false">
+          <input type="text" id="ping-server-address" placeholder="mineblaze.net" keep private>
 
-          <button id="ping-server">
+          <button class="min" id="ping-server">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-activity">
               <path stroke="none" d="M0 0h24v24H0z" fill="none" />
               <path d="M3 12h4l3 8l4 -16l3 8h4" />
@@ -1935,12 +1935,12 @@
       <div class="auto-save-settings">
         <div class="form-input">
           <label for="radar_option_path" class="text" tt="radar-full-path">Полный путь</label>
-          <input type="text" id="radar_option_path" placeholder="/home/User/MyFolder/" keep="true" public="false">
+          <input type="text" id="radar_option_path" placeholder="/home/User/MyFolder/" keep private>
         </div>
 
         <div class="form-input">
           <label for="radar_option_filename" class="text" tt="radar-file-name">Имя файла</label>
-          <input type="text" id="radar_option_filename" placeholder="radar_#t" value="radar_#t" keep="true" public="false">
+          <input type="text" id="radar_option_filename" placeholder="radar_#t" value="radar_#t" keep private>
         </div>
 
         <div style="display: flex; width: max-content; margin-top: 20px; justify-content: left; align-items: start; padding-left: 5px;">
@@ -1963,19 +1963,19 @@
     <div class="log-options-wrap">
       <div class="checkbox-group">
         <label class="checkbox-container">
-          <input type="checkbox" id="journal_chbx_show-system-logs" keep="true" trigger checked>
+          <input type="checkbox" id="journal_chbx_show-system-logs" keep trigger checked>
           <span class="checkmark"></span>
           <span tt="journal-system-logs">Системные логи</span>
         </label>
 
         <label class="checkbox-container">
-          <input type="checkbox" id="journal_chbx_show-extended-logs" keep="true" trigger>
+          <input type="checkbox" id="journal_chbx_show-extended-logs" keep trigger>
           <span class="checkmark"></span>
           <span tt="journal-extended-logs">Расширенные логи</span>
         </label>
 
         <label class="checkbox-container">
-          <input type="checkbox" id="journal_chbx_auto-scroll" keep="true">
+          <input type="checkbox" id="journal_chbx_auto-scroll" keep>
           <span class="checkmark"></span>
           <span tt="journal-auto-scroll">Авто скролл</span>
         </label>
@@ -2004,7 +2004,7 @@
             <div class="column-wrap" style="width: max-content; gap: 6px;">
               <div class="custom-select between">
                 <label tt="interface-particles:">Партиклы:</label>
-                <select id="interface_select_particles" style="width: 150px;" keep="true" trigger>
+                <select id="interface_select_particles" style="width: 150px;" keep trigger>
                   <option value="enable" tt="enable">Включить</option>
                   <option value="disable" tt="disable">Выключить</option>
                 </select>
@@ -2012,7 +2012,7 @@
 
               <div class="custom-select between">
                 <label tt="interface-font:">Шрифт:</label>
-                <select id="interface_select_global-font-family" style="width: 170px;" keep="true" trigger>
+                <select id="interface_select_global-font-family" style="width: 170px;" keep trigger>
                   <option value="inter">Inter</option>
                   <option value="jetbrains-mono">JetBrains Mono</option>
                   <option value="segoe-ui">Segoe UI</option>
@@ -2021,7 +2021,7 @@
 
               <div class="custom-select between">
                 <label tt="interface-messages:">Сообщения:</label>
-                <select id="interface_select_show-messages" style="width: 150px;" keep="true" trigger>
+                <select id="interface_select_show-messages" style="width: 150px;" keep trigger>
                   <option value="show" tt="interface-show">Показать</option>
                   <option value="hide" tt="interface-hide">Скрыть</option>
                 </select>
@@ -2029,12 +2029,12 @@
 
               <div class="custom-select between">
                 <label tt="interface-language:">Язык:</label>
-                <select id="interface_select_language" style="width: 150px;" keep="true"></select>
+                <select id="interface_select_language" style="width: 150px;" keep></select>
               </div>
 
               <div class="custom-select between">
                 <label>Discord RPC:</label>
-                <select id="interface_select_discord-rpc" style="width: 150px;" keep="true" trigger>
+                <select id="interface_select_discord-rpc" style="width: 150px;" keep trigger>
                   <option value="enable" tt="enable">Включить</option>
                   <option value="disable" tt="disable">Выключить</option>
                 </select>
@@ -2050,7 +2050,7 @@
             <div class="column-wrap" style="width: max-content; gap: 6px;">
               <div class="custom-select between">
                 <label tt="interface-icons:">Иконки:</label>
-                <select id="interface_select_show-panel-icons" style="width: 150px;" keep="true" trigger>
+                <select id="interface_select_show-panel-icons" style="width: 150px;" keep trigger>
                   <option value="show" tt="interface-show">Показать</option>
                   <option value="hide" tt="interface-hide">Скрыть</option>
                 </select>
@@ -2058,7 +2058,7 @@
 
               <div class="custom-select between">
                 <label tt="interface-font:">Шрифт:</label>
-                <select id="interface_select_panel-font-family" style="width: 170px;" keep="true" trigger>
+                <select id="interface_select_panel-font-family" style="width: 170px;" keep trigger>
                   <option value="inter">Inter</option>
                   <option value="jetbrains-mono">JetBrains Mono</option>
                   <option value="segoe-ui">Segoe UI</option>
@@ -2069,7 +2069,7 @@
 
               <div class="custom-select between">
                 <label tt="interface-font-size:">Размер шрифта:</label>
-                <select id="interface_select_panel-font-size" style="width: 100px;" keep="true" trigger>
+                <select id="interface_select_panel-font-size" style="width: 100px;" keep trigger>
                   <option value="14px">14px</option>
                   <option value="15px" selected>15px</option>
                   <option value="16px">16px</option>
@@ -2080,7 +2080,7 @@
 
               <div class="custom-select between">
                 <label tt="interface-internal-gap:">Внутренний отступ:</label>
-                <select id="interface_select_panel-internal-gap" style="width: 100px;" keep="true" trigger>
+                <select id="interface_select_panel-internal-gap" style="width: 100px;" keep trigger>
                   <option value="2px">2px</option>
                   <option value="4px">4px</option>
                   <option value="6px" selected>6px</option>
@@ -2091,7 +2091,7 @@
 
               <div class="custom-select between">
                 <label tt="interface-separators:">Разделители:</label>
-                <select id="interface_select_panel-separators" style="width: 140px;" keep="true" trigger>
+                <select id="interface_select_panel-separators" style="width: 140px;" keep trigger>
                   <option value="show" tt="interface-show">Показать</option>
                   <option value="hide" tt="interface-hide">Скрыть</option>
                 </select>
@@ -2130,7 +2130,7 @@
       <div class="input-with-button">
         <input type="text" id="config-search-query" placeholder="my-config-123">
 
-        <button class="min" id="search-configs">
+        <button class="min" disabled>
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-search">
             <path stroke="none" d="M0 0h24v24H0z" fill="none" />
             <path d="M3 10a7 7 0 1 0 14 0a7 7 0 1 0 -14 0" />
@@ -2149,6 +2149,8 @@
           </svg>
         </button>
 
+        <div class="splitter"></div>
+
         <button class="min" id="export-current-config">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-share">
             <path stroke="none" d="M0 0h24v24H0z" fill="none" />
@@ -2159,6 +2161,17 @@
             <path d="M8.7 13.3l6.6 3.4" />
           </svg>
         </button>
+
+        <button class="min" id="archive-current-config">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-archive">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <path d="M3 6a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2" />
+            <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+            <path d="M10 12l4 0" />
+          </svg>
+        </button>
+
+        <div class="splitter"></div>
 
         <button class="min" id="refresh-configs">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-refresh">

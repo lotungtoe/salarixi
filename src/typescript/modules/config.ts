@@ -9,15 +9,10 @@ import { invoke } from "@tauri-apps/api/core";
 /** Тип значения поля конфигурации */
 type ConfigValue = string | number | boolean | null;
 
-/** Метаданные конфига */
-interface ConfigMeta {
-  selected: boolean;
-}
-
 /** Модуль управления пользовательской конфигурацией */
 class ConfigModule {
   private configList: HTMLDivElement | null = null;
-  private configs: Map<string, ConfigMeta> = new Map();
+  private configs: Map<string, boolean> = new Map();
 
   /** Метод инициализации конфигуратора */
   public async init(): Promise<void> {
@@ -30,10 +25,11 @@ class ConfigModule {
     }
 
     const configSearchQuery = document.getElementById("config-search-query") as HTMLInputElement;
-    document.getElementById("search-configs")?.addEventListener("click", () => this.searchConfigs(configSearchQuery.value));
+    configSearchQuery.addEventListener("input", () => this.searchConfigs(configSearchQuery.value));
 
     document.getElementById("import-configs")?.addEventListener("click", async () => await this.importConfigs());
     document.getElementById("export-current-config")?.addEventListener("click", async () => await this.exportCurrentConfig());
+    document.getElementById("archive-current-config")?.addEventListener("click", async () => await this.archiveCurrentConfig());
     document.getElementById("refresh-configs")?.addEventListener("click", async () => await this.refreshConfigs());
     document.getElementById("open-configs-directory")?.addEventListener("click", async () => {
       const result = await invoke("open_directory", { dir: "configs" }) as CommandResult<null>;
@@ -47,17 +43,16 @@ class ConfigModule {
   }
 
   /** Метод запуска цикла сохранения пользовательского конфига */
-  private watch(): void {
-    let selectedConfigChanged = false;
-    setInterval(async () => selectedConfigChanged = await this.saveCurrentConfig(selectedConfigChanged), 5000);
-  }
+  private watch = (): number => setInterval(async () => await this.saveCurrentConfig(), 5000);
 
-  /** Метод сохранения текущего пользовательского конфига */
-  public async saveCurrentConfig(selectedConfigChanged: boolean): Promise<boolean> {
-    const elements = document.querySelectorAll<HTMLElement>('[keep="true"]');
+  /** Метод сбора текущего конфига */
+  private collectCurrentConfig(pub: boolean): string {
+    const elements = document.querySelectorAll<HTMLElement>("[keep]");
     const config: Record<string, ConfigValue> = {};
 
     elements.forEach(e => {
+      if (pub && e.getAttribute("private") !== null) return;
+
       const id = e.id.replaceAll("_", ".");
 
       if (e.tagName.toLocaleLowerCase() === "input") {
@@ -72,26 +67,39 @@ class ConfigModule {
       }
     });
 
-    if (!selectedConfigChanged) {
-      const selectedConfigFilename = localStorage.getItem("selected-config-filename");
-      if (selectedConfigFilename) {
-        const result = await invoke("read_file", { path: `configs/${selectedConfigFilename}` }) as CommandResult<number[]>;
+    return JSON.stringify(config, null, 2);
+  }
 
-        if (result.data && result.data.length > 0) {
-          const decoder = new TextDecoder("utf-8");
-          const uint8arr = new Uint8Array(result.data);
-          const decoded = decoder.decode(uint8arr);
+  /** Метод сохранения текущего пользовательского конфига */
+  public async saveCurrentConfig(): Promise<boolean> {
+    const config = this.collectCurrentConfig(false);
 
-          if (JSON.stringify(config) === JSON.stringify(JSON.parse(decoded))) {
-            localStorage.setItem("selected-config-changed", "true");
-            return true;
-          }
+    const selectedConfigFilename = localStorage.getItem("selected-config-filename");
+    if (selectedConfigFilename) {
+      const result = await invoke("read_file", { path: `configs/${selectedConfigFilename}` }) as CommandResult<number[]>;
+
+      if (result.data && result.data.length > 0) {
+        const decoder = new TextDecoder("utf-8");
+        const uint8arr = new Uint8Array(result.data);
+        const decoded = decoder.decode(uint8arr);
+
+        if (JSON.stringify(config) !== JSON.stringify(decoded)) {
+          localStorage.setItem("selected-config-changed", "true");
+        } else {
+          // Эта ветка по факту сильно ни на что не влияет, но по логике
+          // здесь должно быть удалено поле "selected-config-changed" из
+          // локального хранилища. Таким образом если пользователь изменит
+          // импортированный конфиг и снова всё приведёт в исходный вид, будет
+          // загружаться тот же импортированный конфиг, а не текущий. Даже
+          // если это убрать - ничего не поменяется.
+          localStorage.removeItem("selected-config-changed");
+          return true;
         }
       }
     }
 
     const encoder = new TextEncoder();
-    const encoded = encoder.encode(JSON.stringify(config));
+    const encoded = encoder.encode(config);
     const content = Array.from(encoded);
 
     const result = await invoke("save_file", {
@@ -132,6 +140,8 @@ class ConfigModule {
     try {
       if (this.configList) this.configList.innerHTML = "";
 
+      logger.log("Загрузка сохранённых конфигов...", "system");
+
       const result = await invoke("load_configs") as CommandResult<Record<string, number[]>>;
 
       if (result.error) {
@@ -142,7 +152,7 @@ class ConfigModule {
       if (!result.data) return false;
 
       const selectedConfigFilename = localStorage.getItem("selected-config-filename");
-      const selectedConfigChanged = Boolean(localStorage.getItem("selected-config-changed"));
+      const selectedConfigChanged = localStorage.getItem("selected-config-changed") !== null;
 
       const decoder = new TextDecoder("utf-8");
       let loadedCount = 0;
@@ -169,7 +179,12 @@ class ConfigModule {
         loadedCount++;
       }
 
-      if (loadedCount > 0) logger.log(`Сохранённые конфиги успешно загружены (${loadedCount} штук)`, "system");
+      if (loadedCount > 0) {
+        logger.log(`Сохранённые конфиги успешно загружены (${loadedCount} штук)`, "system");
+        this.searchConfigs((document.getElementById("config-search-query") as HTMLInputElement).value);
+      } else {
+        logger.log("Сохранённые конфиги отсутствуют", "system");
+      }
 
       if (currentConfig && currentConfigFilename) {
         for (const [id, value] of Object.entries<ConfigValue>(currentConfig)) this.setValue(id, value);
@@ -219,9 +234,7 @@ class ConfigModule {
   private createConfigCard(filename: string, selected: boolean): void {
     if (!this.configList) return;
 
-    this.configs.set(filename, {
-      selected: selected,
-    });
+    this.configs.set(filename, selected);
 
     const card = document.createElement("div");
     card.className = "card";
@@ -232,12 +245,9 @@ class ConfigModule {
 
     card.addEventListener("click", async () => {
       if (localStorage.getItem("selected-config-filename") === filename) return;
-  
+
       const tag = card.querySelector<HTMLLabelElement>(".tag");
       if (!tag) return;
-
-      const meta = this.configs.get(filename);
-      if (!meta) return;
 
       const result = await invoke("read_file", { path: `configs/${filename}` }) as CommandResult<number[]>;
 
@@ -256,22 +266,20 @@ class ConfigModule {
         if (!t) continue;
         t.innerText = "";
 
-        const meta = this.configs.get(f.innerText);
-        if (!meta) continue;
-        meta.selected = false;
+        this.configs.set(f.innerText, false);
       }
 
       const decoder = new TextDecoder("utf-8");
       const uint8arr = new Uint8Array(result.data);
       const decoded = decoder.decode(uint8arr);
-      const parsed = JSON.parse(decoded);
-      const config = parsed["options"] ?? parsed["settings"] ?? parsed["config"] ?? parsed["cfg"] ?? parsed["content"] ?? parsed;
+      const config = JSON.parse(decoded);
 
       for (const [id, value] of Object.entries<ConfigValue>(config)) this.setValue(id, value);
       triggerRegistry.triggerAll();
 
-      meta.selected = !meta.selected;
-      tag.innerText = meta.selected ? "SELECTED" : "";
+      const current = this.configs.get(filename);
+      tag.innerText = !current ? "SELECTED" : "";
+      this.configs.set(filename, !current);
 
       localStorage.setItem("selected-config-filename", filename);
       localStorage.removeItem("selected-config-changed");
@@ -297,7 +305,7 @@ class ConfigModule {
       if (!paths || paths.length < 1) return;
 
       let imported = 0; 
-      
+
       for (const path of paths) {
         const filename = path.split(/[\\/]/).pop();
         if (!filename) continue;
@@ -313,10 +321,11 @@ class ConfigModule {
         if (result.error) {
           logger.log(`Ошибка сохранения конфига "${filename}": ${result.error}`, "error");
         } else {
-          this.createConfigCard(filename, false);
           imported++;
         }
       }
+
+      await this.refreshConfigs();
 
       messages.message("Конфиг", `Импортировано ${imported} конфигов`);
     } catch (err) {
@@ -334,31 +343,66 @@ class ConfigModule {
 
       if (!directory) return;
 
-      const result = await invoke("create_public_config", { directory: directory }) as CommandResult<string>;
+      const config = this.collectCurrentConfig(true);
+      const encoder = new TextEncoder();
+      const encoded = encoder.encode(config);
+      const content = Array.from(encoded);
+
+      const result = await invoke("export_config", {
+        directory: directory,
+        content: content,
+      }) as CommandResult<string>;
 
       if (result.error) {
-        logger.log(`Ошибка создания публичного конфига в ${directory}: ${result.error}`, "error");
-        messages.message("Конфиг", `Ошибка создания публичного конфига в ${directory}`);
+        logger.log(`Ошибка экспорта текущего конфига в ${directory}: ${result.error}`, "error");
+        messages.message("Конфиг", `Ошибка экспорта конфига в ${directory}`);
         return;
       }
 
-      messages.message("Конфиг", `Публичный конфиг успешно сохранён в файл ${result.data}`);
+      if (result.data) {
+        logger.log(`Публичный конфиг "${result.data}" успешно сохранён в директорию ${directory}`, "system");
+        messages.message("Конфиг", `Публичный конфиг успешно сохранён в файл ${result.data}`);
+      }
     } catch (err) {
-      logger.log(`Не удалось поделиться конфигом: ${err}`, "error");
+      logger.log(`Ошибка экспорта публичного конфига: ${err}`, "error");
+    }
+  }
+
+  /** Метод архивации текущего пользовательского конфига */
+  public async archiveCurrentConfig(): Promise<void> {
+    try {
+      const config = this.collectCurrentConfig(false);
+      const encoder = new TextEncoder();
+      const encoded = encoder.encode(config);
+      const content = Array.from(encoded);
+
+      const result = await invoke("archive_config", { content: content }) as CommandResult<string>;
+
+      if (result.error) {
+        logger.log(`Ошибка архивации текущего конфига: ${result.error}`, "error");
+        return;
+      }
+
+      if (result.data) {
+        logger.log(`Текущий конфиг успешно архивирован в файл "${result.data}"`, "system");
+        await this.refreshConfigs();
+      }
+    } catch (err) {
+      logger.log(`Ошибка архивации текущего конфига: ${err}`, "error");
     }
   }
 
   /** Метод поиска конфига */
   private searchConfigs(query: string): void {
     const cards = document.querySelectorAll<HTMLDivElement>("#config-list .card");
-    
+
     if (query === "") {
       cards.forEach(card => card.style.display = "flex");
     } else {
       cards.forEach(card => {
         const filename = card.querySelector<HTMLLabelElement>(".filename");
         if (!filename) return;
-        card.style.display = filename.innerText.includes(query) ? "flex" : "none";
+        card.style.display = filename.innerText.toLowerCase().includes(query.toLowerCase()) ? "flex" : "none";
       });
     }
   }

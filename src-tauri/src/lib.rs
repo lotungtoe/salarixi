@@ -9,7 +9,7 @@ mod result;
 use commands::*;
 use emit::emit_event_loop;
 use modules::cache::{extract_cache_meta, load_cache, save_cache};
-use modules::config::{create_public_config, initialize_configs_dir, load_configs};
+use modules::config::{archive_config, export_config, initialize_configs_dir, load_configs};
 use modules::proxy::{check_proxies, collect_proxies};
 use modules::storage::{open_directory, read_file, remove_file, save_file};
 
@@ -59,7 +59,8 @@ pub fn run() {
       load_cache,
       initialize_configs_dir,
       load_configs,
-      create_public_config,
+      export_config,
+      archive_config,
       read_file,
       save_file,
       remove_file,

@@ -335,7 +335,7 @@ function initTitleBar(): void {
   (document.getElementById("title-version") as HTMLElement).innerText = `v${currentClientVersion}`;
   (document.getElementById("window-minimize") as HTMLButtonElement).addEventListener("click", async () => await getCurrentWindow().minimize());
   (document.getElementById("window-close") as HTMLButtonElement).addEventListener("click", async () => {
-    await configModule.saveCurrentConfig(false);
+    await configModule.saveCurrentConfig();
     await invoke("exit");
   });
 }

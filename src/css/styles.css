@@ -777,8 +777,7 @@ input::-webkit-inner-spin-button {
 
 .input-with-button {
   display: flex;
-  width: auto;
-  height: 40px;
+  height: auto;
   background: var(--input-bg);
   border: 1px solid var(--input-border);
   border-radius: var(--input-border-radius);
@@ -787,7 +786,6 @@ input::-webkit-inner-spin-button {
 .input-with-button input {
   padding-top: 0;
   padding-bottom: 0;
-  height: 100%;
   background: transparent;
   border: none;
   border-right: 1px solid var(--input-border);
@@ -795,12 +793,25 @@ input::-webkit-inner-spin-button {
   border-top-right-radius: 0;
 }
 
-.input-with-button button {
-  height: 100%;
+.input-with-button button.min {
   background: transparent;
   border: none;
   border-bottom-left-radius: 0;
   border-top-left-radius: 0;
+}
+
+.input-with-button button.min:hover {
+  background: var(--button-hover-bg);
+}
+
+.input-with-button button.min:disabled,
+.input-with-button button.min:disabled:hover,
+.input-with-button button.min:disabled:active {
+  border: none;
+  cursor: default;
+  background: var(--button-bg);
+  border-radius: var(--button-border-radius);
+  color: var(--button-color);
 }
 
 p {
@@ -835,19 +846,10 @@ button.min {
   width: auto;
 }
 
-button.min:disabled {
+button:disabled,
+button:disabled:hover,
+button:disabled:active {
   cursor: not-allowed;
-  color: var(--dim-color);
-}
-
-button.min:disabled:hover {
-  border: 1px solid var(--button-border);
-  background: var(--button-bg);
-  border-radius: var(--button-border-radius);
-  color: var(--dim-color);
-}
-
-button.min:disabled:active {
   border: 1px solid var(--button-border);
   background: var(--button-bg);
   border-radius: var(--button-border-radius);
@@ -2583,7 +2585,7 @@ button svg {
 
 .config-panel .buttons .splitter {
   display: flex;
-  height: 28px;
+  height: 24px;
   margin-left: 4px;
   margin-right: 4px;
   border-right: 1px solid var(--bright-border);
