@@ -2593,11 +2593,11 @@ button svg {
 
 #config-list {
   display: grid;
-  grid-template-columns: auto auto auto;
+  grid-template-columns: 1fr 1fr 1fr;
   justify-content: center;
   align-items: center;
-  width: 100%;
   overflow-y: auto;
+  width: 98%;
   gap: 15px;
 }
 
