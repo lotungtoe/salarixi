@@ -112,7 +112,7 @@ fn create_dynamic_item_meta(meta: Option<ItemMeta>, slot: Option<i64>) -> Dynami
 
     map.insert("enchantments".into(), Dynamic::from_array(dynamic_enchantments));
 
-    // Данное поле будет доступным только при использовании функций `inv_extract_by` и `inv_extract_all`
+    // Данное поле будет доступным только при использовании функций `inv_extract_by_name` и `inv_extract_all`
     if let Some(s) = slot {
       map.insert("slot".into(), Dynamic::from_int(s));
     }
