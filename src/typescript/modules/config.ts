@@ -242,6 +242,8 @@ class ConfigModule {
       <label class="filename">${filename}</label>
     `;
 
+    selected ? card.classList.add("selected") : card.classList.remove("selected");
+
     card.addEventListener("click", async () => {
       if (localStorage.getItem("selected-config-filename") === filename) return;
 
