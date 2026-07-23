@@ -20,9 +20,8 @@ class TranslatorModule {
 
       const data = result.data;
       const langs = data["languages"] ?? data["langs"] ?? data["translations"];
-      const translation = data["data"] ?? data["translation"] ?? data["list"] ?? data["map"] ?? data["array"];
 
-      if (!langs || !translation) {
+      if (!langs) {
         logger.log("Ошибка загрузки перевода: information is corrupted or missing", "error");
         return;
       }
@@ -42,8 +41,8 @@ class TranslatorModule {
       const selectedLang = localStorage.getItem("language");
       if (selectedLang) langSelect.selectedIndex = parseInt(selectedLang);
 
-      langSelect.addEventListener("change", async () => await this.translate(langSelect.value, langSelect.selectedIndex, translation));
-      if (langSelect.value !== "ru") await this.translate(langSelect.value, langSelect.selectedIndex, translation);
+      langSelect.addEventListener("change", async () => await this.translate(langSelect.value, langSelect.selectedIndex));
+      if (langSelect.value !== "ru") await this.translate(langSelect.value, langSelect.selectedIndex);
 
       logger.log(`Перевод загружен (размер ${result.size})`, "system");
     } catch (error) {
@@ -52,8 +51,28 @@ class TranslatorModule {
   }
 
   /** Метод перевода текста на другой язык */
-  private async translate(targetLanguage: string, selectedIndex: number, translation: any): Promise<void> {
+  private async translate(targetLanguage: string, selectedIndex: number): Promise<void> {
     try {
+      // Здесь лучше принудительно читать файл с кэшем перевода, ведь если у пользователя не будет
+      // интернета и при этом кэш будет устаревшим - он не сможет воспользоваться переводом.
+      const result = await invoke("read_file", { path: "cache/translation.json" }) as CommandResult<number[]>;
+
+      if (result.error || !result.data) {
+        logger.log(`Ошибка перевода: ${result.error}`, "error");
+        return;
+      }
+
+      const decoder = new TextDecoder("utf-8");
+      const uint8arr = Uint8Array.from(result.data);
+      const decoded = decoder.decode(uint8arr);
+      const parsed = JSON.parse(decoded);
+      const translation = parsed["data"] ?? parsed["translation"] ?? parsed["list"] ?? parsed["map"] ?? parsed["array"];
+
+      if (!translation) {
+        logger.log("Ошибка перевода: information is corrupted or missing", "error");
+        return;
+      }
+  
       const isDevMode = await invoke("is_dev_mode") as boolean;
       let filteredTranslation = [];
 
@@ -68,8 +87,6 @@ class TranslatorModule {
         // 2. 1.0.0:1.8.5 (с 1.0.0 по 1.8.5 включительно)
         // 3. 1.0.0:1.8.5+1.9.1:2.4.3 (с 1.0.0 по 1.8.5 включительно и с 1.9.1 по 2.4.3 включительно)
         // 4. 1.0.0:1.8.5+1.9.1 (с 1.0.0 по 1.8.5 включительно и 1.9.1)
-        // 5. 0.0.0 (текущая dev-версия без явного идентификатора)
-        // 6. 1.0.0:0.0.0 (с 1.0.0 по текущую dev-версию включительно)
 
         const fragments = String(versions).split("+");
 

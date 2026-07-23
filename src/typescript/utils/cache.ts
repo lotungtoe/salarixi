@@ -10,6 +10,25 @@ export enum TimeType {
   Hours,
 }
 
+/** Структура данных результата функции `getCacheOrNew` */
+interface CacheOrNewResult<T> {
+  data: T | null;
+  size: string;
+}
+
+/** Структура данных результата функции загрузки кэша */
+export interface LcfResult {
+  data: any;
+  expired: boolean;
+  incompatible: boolean;
+}
+
+/** Структура данных результата функции загрузки актуальной информации */
+export interface LnfResult {
+  data: any;
+  error: string | null;
+}
+
 /** Функция проверки даты, истекла та или нет */
 function isDataExpired(
   saveDateString: string,
@@ -78,33 +97,14 @@ export async function loadCache(name: string, filename: string, maxStorageValue:
     };
   }
 
-  const uint8 = new Uint8Array(result2.data);
+  const uint8arr = new Uint8Array(result2.data);
   const decoder = new TextDecoder("utf-8");
-  const cacheStr = decoder.decode(uint8);
+  const cacheStr = decoder.decode(uint8arr);
 
   return {
     data: cacheStr,
     error: isDataExpired(result1.data, maxStorageValue, timeType) ? "expired" : null,
   };
-}
-
-/** Структура данных результата функции `getCacheOrNew` */
-interface CacheOrNewResult<T> {
-  data: T | null;
-  size: string;
-}
-
-/** Структура данных результата функции загрузки кэша */
-export interface LcfResult {
-  data: any;
-  expired: boolean;
-  incompatible: boolean;
-}
-
-/** Структура данных результата функции загрузки актуальной информации */
-export interface LnfResult {
-  data: any;
-  error: string | null;
 }
 
 /** Вспомогательная функция конвертации данных в строку */
