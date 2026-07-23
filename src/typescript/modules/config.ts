@@ -240,14 +240,10 @@ class ConfigModule {
     card.className = "card";
     card.innerHTML = `
       <label class="filename">${filename}</label>
-      <label class="tag">${selected ? "SELECTED" : ""}</label>
     `;
 
     card.addEventListener("click", async () => {
       if (localStorage.getItem("selected-config-filename") === filename) return;
-
-      const tag = card.querySelector<HTMLLabelElement>(".tag");
-      if (!tag) return;
 
       const result = await invoke("read_file", { path: `configs/${filename}` }) as CommandResult<number[]>;
 
@@ -258,14 +254,10 @@ class ConfigModule {
 
       if (!result.data || result.data.length < 1) return;
 
-      for (const header of document.querySelectorAll<HTMLDivElement>("#config-list .card")) {
-        const f = header.querySelector<HTMLLabelElement>(".filename");
+      for (const c of document.querySelectorAll<HTMLDivElement>("#config-list .card")) {
+        const f = c.querySelector<HTMLLabelElement>(".filename");
         if (!f || f.innerText === filename) continue;
-
-        const t = header.querySelector<HTMLLabelElement>(".tag");
-        if (!t) continue;
-        t.innerText = "";
-
+        c.classList.remove("selected")
         this.configs.set(f.innerText, false);
       }
 
@@ -278,7 +270,7 @@ class ConfigModule {
       triggerRegistry.triggerAll();
 
       const current = this.configs.get(filename);
-      tag.innerText = !current ? "SELECTED" : "";
+      current ? card.classList.remove("selected") : card.classList.add("selected");
       this.configs.set(filename, !current);
 
       localStorage.setItem("selected-config-filename", filename);

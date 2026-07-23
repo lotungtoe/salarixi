@@ -2569,7 +2569,7 @@ button svg {
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  margin-bottom: 20px;
+  margin-bottom: 40px;
 }
 
 .config-panel .input-with-button input {
@@ -2592,49 +2592,45 @@ button svg {
 }
 
 #config-list {
-  display: flex;
-  flex-direction: column;
-  justify-content: start;
+  display: grid;
+  grid-template-columns: auto auto auto;
+  justify-content: center;
   align-items: center;
   width: 100%;
   overflow-y: auto;
+  gap: 15px;
+}
+
+#config-list .card {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 20px 12px;
+  gap: 6px;
   background: var(--secondary-bg);
   border: 1px solid var(--secondary-border);
   border-radius: 12px;
 }
 
-#config-list .card {
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  width: 100%;
-  padding: 0 12px;
-  min-height: 48px;
-  gap: 6px;
-  border-bottom: 1px solid var(--secondary-border);
+#config-list .card.selected {
+  background: var(--bright-bg);
+  border-color: var(--bright-border);
+}
+
+#config-list .card.selected .filename {
+  color: var(--highlight-color);
 }
 
 #config-list .card:hover {
   background: var(--bright-bg);
 }
 
-#config-list .card:last-child {
-  border-bottom: none;
-}
-
-#config-list .card .filename,
-#config-list .card .tag {
-  font-family: var(--global-font-family);
-  font-size: 16px;
-  font-weight: 600;
-}
-
 #config-list .card .filename {
   color: var(--default-color);
-}
-
-#config-list .card .tag {
-  color: var(--highlight-color);
+  font-family: var(--global-font-family);
+  font-size: 18px;
+  font-weight: 600;
 }
 
 .messages-wrapper {
