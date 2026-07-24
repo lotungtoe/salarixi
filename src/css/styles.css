@@ -2601,7 +2601,7 @@ button svg {
   gap: 15px;
 }
 
-#config-list .card {
+#config-list div {
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -2611,26 +2611,20 @@ button svg {
   background: var(--secondary-bg);
   border: 1px solid var(--secondary-border);
   border-radius: 12px;
-}
-
-#config-list .card.selected {
-  background: var(--bright-bg);
-  border-color: var(--bright-border);
-}
-
-#config-list .card.selected .filename {
-  color: var(--highlight-color);
-}
-
-#config-list .card:hover {
-  background: var(--bright-bg);
-}
-
-#config-list .card .filename {
   color: var(--default-color);
   font-family: var(--global-font-family);
   font-size: 18px;
   font-weight: 600;
+}
+
+#config-list div.selected {
+  background: var(--bright-bg);
+  border-color: var(--bright-border);
+  color: var(--highlight-color);
+}
+
+#config-list div:hover {
+  background: var(--bright-bg);
 }
 
 .messages-wrapper {

@@ -234,17 +234,16 @@ class ConfigModule {
   private createConfigCard(filename: string, selected: boolean): void {
     if (!this.configList) return;
 
-    this.configs.set(filename, selected);
+    const configName = filename.slice(0, filename.length - 5);
 
-    const card = document.createElement("div");
-    card.className = "card";
-    card.innerHTML = `
-      <label class="filename">${filename}</label>
-    `;
+    this.configs.set(configName, selected);
 
-    selected ? card.classList.add("selected") : card.classList.remove("selected");
+    const configCard = document.createElement("div");
+    configCard.innerHTML = configName;
 
-    card.addEventListener("click", async () => {
+    selected ? configCard.classList.add("selected") : configCard.classList.remove("selected");
+
+    configCard.addEventListener("click", async () => {
       if (localStorage.getItem("selected-config-filename") === filename) return;
 
       const result = await invoke("read_file", { path: `configs/${filename}` }) as CommandResult<number[]>;
@@ -256,11 +255,10 @@ class ConfigModule {
 
       if (!result.data || result.data.length < 1) return;
 
-      for (const c of document.querySelectorAll<HTMLDivElement>("#config-list .card")) {
-        const f = c.querySelector<HTMLLabelElement>(".filename");
-        if (!f || f.innerText === filename) continue;
-        c.classList.remove("selected")
-        this.configs.set(f.innerText, false);
+      for (const c of document.querySelectorAll<HTMLDivElement>("#config-list div")) {
+        if (c.innerText === configName) continue;
+        c.classList.remove("selected");
+        this.configs.set(c.innerText, false);
       }
 
       const decoder = new TextDecoder("utf-8");
@@ -271,9 +269,9 @@ class ConfigModule {
       for (const [id, value] of Object.entries<ConfigValue>(config)) this.setValue(id, value);
       triggerRegistry.triggerAll();
 
-      const current = this.configs.get(filename);
-      current ? card.classList.remove("selected") : card.classList.add("selected");
-      this.configs.set(filename, !current);
+      const current = this.configs.get(configName);
+      current ? configCard.classList.remove("selected") : configCard.classList.add("selected");
+      this.configs.set(configName, !current);
 
       localStorage.setItem("selected-config-filename", filename);
       localStorage.removeItem("selected-config-changed");
@@ -281,7 +279,7 @@ class ConfigModule {
       logger.log(`Конфиг "${filename}" успешно применён`, "system");
     });
 
-    this.configList.appendChild(card);
+    this.configList.appendChild(configCard);
   }
 
   /** Метод импорта сторонних конфигов */
@@ -388,16 +386,12 @@ class ConfigModule {
 
   /** Метод поиска конфига */
   private searchConfigs(query: string): void {
-    const cards = document.querySelectorAll<HTMLDivElement>("#config-list .card");
+    const cards = document.querySelectorAll<HTMLDivElement>("#config-list div");
 
     if (query === "") {
-      cards.forEach(card => card.style.display = "flex");
+      cards.forEach(c => c.style.display = "flex");
     } else {
-      cards.forEach(card => {
-        const filename = card.querySelector<HTMLLabelElement>(".filename");
-        if (!filename) return;
-        card.style.display = filename.innerText.toLowerCase().includes(query.toLowerCase()) ? "flex" : "none";
-      });
+      cards.forEach(c => c.style.display = c.innerText.toLowerCase().includes(query.toLowerCase()) ? "flex" : "none");
     }
   }
 }
