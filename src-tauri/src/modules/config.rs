@@ -1,5 +1,4 @@
 use std::fs;
-use std::os::unix::ffi::OsStrExt;
 use std::path::PathBuf;
 
 use hashbrown::HashMap;
@@ -84,7 +83,11 @@ pub fn load_configs() -> CommandResult<HashMap<String, Vec<u8>>> {
     }
 
     let os_filename = entry.file_name();
-    let filename = String::from_utf8_lossy(os_filename.as_bytes());
+    let Some(str_filename) = os_filename.to_str() else {
+      continue;
+    };
+    let filename = str_filename.to_string();
+
     let content = match fs::read(path) {
       Ok(c) => c,
       Err(_) => continue,
