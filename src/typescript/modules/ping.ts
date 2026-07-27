@@ -34,9 +34,7 @@ class PingModule {
 			}) as ServerInformation;
 
       const pingInfo = document.getElementById("ping-info") as HTMLElement;
-      
       pingInfo.innerHTML = "";
-      pingInfo.style.display = "none";
 
       const card = document.createElement("div");
       card.className = "card";
@@ -44,35 +42,27 @@ class PingModule {
       const removeBtnId = `remove-ping-card-${generateId()}`;
       
       card.innerHTML = `
-        <div class="panel">
-          <div class="address">${address}</div>
-
-          <button class="min" id="${removeBtnId}">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-x">
-              <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-              <path d="M18 6l-12 12" />
-              <path d="M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-
-        <div class="head">
-          <img class="icon" src="${result.server_icon}" draggable="false">
-
-          <div class="spliter"></div>
-
-          <div class="text">
-            <p>${result.description}</p>
-
-            <div class="spliter"></div>
-
+        <img class="icon" src="${result.server_icon}" draggable="false">
+        <div class="text">
+          <label>${result.description}</label>
+          <div>
             <p>Игроки: ${result.players_online} / ${result.players_max}</p>
+            <p>Версия сервера: ${result.server_version}</p>
             <p>IP-адрес: ${result.ip_address}</p>
             <p>Версия протокола: ${result.protocol_version}</p>
-            <p>Версия сервера: ${result.server_version}</p>
           </div>
         </div>
+
+        <button class="min" id="${removeBtnId}">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <path d="M18 6l-12 12" />
+            <path d="M6 6l12 12" />
+          </svg>
+        </button>
       `;
+
+      pingInfo.appendChild(card);
 
       const listOfPlayers = document.createElement("div");
       listOfPlayers.className = "list";
@@ -86,7 +76,7 @@ class PingModule {
 
         element.innerHTML = `
           <p class="username">Никнейм</p>
-          <div class="spliter"></div>
+          <div class="splitter"></div>
           <p class="uuid">UUID</p>
         `;
 
@@ -98,29 +88,26 @@ class PingModule {
 
           el.innerHTML = `
             <p class="username">${player.username}</p>
-            <div class="spliter"></div>
+            <div class="splitter"></div>
             <p class="uuid">${player.uuid}</>
           `;
 
           listOfPlayers.appendChild(el);
         }
 
-        card.appendChild(listOfPlayers);
+        pingInfo.appendChild(listOfPlayers);
       } else {
         const header = document.createElement("div");
         header.className = "header";
         header.innerText = "Не удалось получить список игроков";
-        card.appendChild(header);
+        pingInfo.appendChild(header);
       }
 
-      pingInfo.appendChild(card);
-
       document.getElementById(removeBtnId)?.addEventListener("click", () => {
+        card.remove();
+        listOfPlayers.remove();
         pingInfo.innerHTML = "";
-        pingInfo.style.display = "none";
       });
-
-      pingInfo.style.display = "flex";
 		} catch (error) {
 			logger.log(`Ошибка пингования сервера: ${error}`, "error");
 		}
