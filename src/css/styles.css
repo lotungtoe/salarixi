@@ -23,6 +23,11 @@
   --hover-bg: #3b3b3b50;
   --hover-border: #555555;
 
+  --process-inactive-color: #d1d415;
+  --process-active-color: #13d40c;
+  --process-launching-color: #858585;
+  --process-stopping-color: #858585;
+
   --cover-bg: #111111;
   --cover-border: #292929;
   --cover-bg-blur: 0;
@@ -176,11 +181,32 @@ body {
   padding-left: 10px;
 }
 
-.title-bar .right #play-time {
+.title-bar .right .labels {
+  display: flex; 
+  gap: 4px;
+  justify-content: center;
+  align-items: center;
   color: var(--muted-color);
   font-family: var(--global-font-family);
   font-size: 14px;
   font-weight: 500;
+}
+
+.title-bar .right .labels .splitter {
+  border-left: 1px solid var(--primary-border);
+  height: 35px;
+  margin-left: 6px;
+  margin-right: 6px;
+}
+
+.title-bar .right .labels #play-time {
+  text-align: center;
+  min-width: 46px;
+}
+
+.title-bar .right .labels #process-status {
+  text-align: center;
+  color: var(--process-inactive-color);
 }
 
 .title-bar .right .controls {

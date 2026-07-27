@@ -3,7 +3,7 @@ import { listen } from "@tauri-apps/api/event";
 
 import { logger } from "../utils/logger";
 import { date } from "../utils/date";
-import { process } from "../main";
+import { processActivity } from "../main";
 
 /** Структура информации о боте */
 interface BotProfile {
@@ -99,7 +99,7 @@ class MonitoringModule {
       let isFirst = true;
 
       const interval = setInterval(async () => {
-        if (process === "sleep") {
+        if (!processActivity) {
           clearInterval(interval);
           return;
         }

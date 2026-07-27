@@ -2,7 +2,7 @@ import { invoke } from "@tauri-apps/api/core";
 
 import { logger } from "../utils/logger";
 import { plugins } from "../common/structs";
-import { process } from "../main";
+import { processActivity } from "../main";
 import { loadCacheOrNew, LcfResult, LnfResult, loadCache, saveCache, TimeType } from "../utils/cache";
 
 /** Модуль загрузки и управления плагинами */
@@ -16,7 +16,7 @@ class PluginModule {
 
   /** Метод обновления и сохранения состояния плагина (включен / выключен) */
   private updatePluginState(id: string, state: boolean): void {
-    if (process !== "sleep") {
+    if (processActivity) {
       logger.log(`Не удалось изменить состояние плагина ${id}: Plugin states can only be changed before startup`, "warning");
       return;
     }

@@ -76,13 +76,18 @@ async fn process_spawn(bot: Client) {
     return;
   };
 
-  REGISTRY_SYSTEM.register_bot(index, bot);
+  if !REGISTRY_SYSTEM.bots.contains_key(&index) {
+    REGISTRY_SYSTEM.register_bot(index, bot);
+  }
+
   TASK_SYSTEM.register(index).await;
   STATE_SYSTEM.register(index).await;
 
   REGISTRY_SYSTEM.send_event(RegistryEvent::LoadPlugins { index: index });
 
   PROFILE_SYSTEM.set_status(&index, BotStatus::Connected).await;
+
+  emit_cbc(PROFILE_SYSTEM.get_connected_count().await as u8);
 
   let Some(opts) = current_options().await else {
     return;
@@ -150,14 +155,14 @@ async fn process_disconnect(bot: Client, text: Option<FormattedText>) {
 
   sleep!(2000);
 
-  REGISTRY_SYSTEM.remove_bot(&index).await;
-
   PROFILE_SYSTEM.set_bool(&index, "logined", false).await;
   PROFILE_SYSTEM.set_bool(&index, "captcha_caught", false).await;
   STATE_SYSTEM.reset(&index).await;
   TASK_SYSTEM.remove(&index).await;
 
   PROFILE_SYSTEM.set_status(&index, BotStatus::Disconnected).await;
+
+  emit_cbc(PROFILE_SYSTEM.get_connected_count().await as u8);
 
   if let Some(t) = text {
     if let Some(options) = current_options().await {

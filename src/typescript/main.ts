@@ -35,7 +35,12 @@ Chart.defaults.font.weight = "normal";
 
 export const currentClientVersion = "1.1.1";
 
-export let process: "active" | "sleep" = "sleep";
+let stopping = false;
+let botsWereFullyConnected = false;
+let totalBots = 0;
+let connectedBots = 0;
+
+export let processActivity: boolean = false;
 export let quickTasksAllowed: boolean = true;
 
 const pressedKeys: { [x: string]: boolean } = {
@@ -64,7 +69,36 @@ export let globalWrappers: Array<{ id: string; el: HTMLElement }> = [];
 export let controlWrappers: Array<{ id: string; el: HTMLElement }> = [];
 export let latestControlWrapper: HTMLElement | null = null;
 
-/** Функция задания значения для ```quickTasksAllowed``` */
+/** Функция обновления отображаемого статуса процесса */
+function updateProcessStatus(): void {
+	const processStatus = document.getElementById("process-status");
+  if (!processStatus) return;
+
+	if (stopping) {
+		processStatus.innerText = `stopping ${connectedBots} bots...`;
+		processStatus.style.color = "var(--process-stopping-color)";
+		return;
+	}
+
+  if (processActivity) {
+    if (!botsWereFullyConnected && connectedBots === totalBots) {
+			botsWereFullyConnected = true;
+		}
+
+		if (botsWereFullyConnected) {
+			processStatus.innerText = `active (${connectedBots}/${totalBots} bots)`;
+			processStatus.style.color = "var(--process-active-color)";
+		} else {
+			processStatus.innerText = `launching (${connectedBots}/${totalBots} bots)...`;
+			processStatus.style.color = "var(--process-launching-color)";
+		}
+  } else {
+		processStatus.innerText = "inactive";
+		processStatus.style.color = "var(--process-inactive-color)";
+  }
+}
+
+/** Функция изменения значения `quickTasksAllowed` */
 export function setQuickTasksAllowed(value: boolean): void {
   quickTasksAllowed = value;
 }
@@ -115,16 +149,24 @@ async function startBots(): Promise<void> {
       }
     });
 
-    const botsCount = options.basic.bots_count as number;
-    if (botsCount > 255 || botsCount < 1) {
-      messages.message("Cистема", "Невозможно запустить ботов");
-      logger.log("Невозможно запустить ботов: Number of simultaneously launching bots cannot be less than 1 and more than 255", "warning");
-      return;
-    }
-
+		options.accounts = accountModule.getAccounts();
     options.basic["script"] = options.basic.use_auto_script ? (document.getElementById("user-script") as HTMLTextAreaElement).value : null;
 
-    options.accounts = accountModule.getAccounts();
+		let currentLaunchCount = 0;
+
+		if (options.basic.use_accounts) {
+			for (const _ in options.accounts) currentLaunchCount++;
+		} else {
+			currentLaunchCount = options.basic.bots_count as number;
+		}
+
+		if (currentLaunchCount > 255 || currentLaunchCount < 1) {
+			messages.message("Cистема", "Невозможно запустить ботов");
+			logger.log("Невозможно запустить ботов: Number of simultaneously launching bots cannot be less than 1 and more than 255", "warning");
+			return;
+		}
+
+		totalBots = currentLaunchCount;
 
     for (const name in plugins) options.plugins[name.replaceAll("-", "_")] = plugins[name].enable;
 
@@ -137,10 +179,10 @@ async function startBots(): Promise<void> {
     const bytes = new TextEncoder().encode(optionsStr);
 
     const success = await invoke("launch_bots", { options: bytes }) as boolean;
-
     if (!success) return;
 
-    process = "active";
+		processActivity = true;
+		updateProcessStatus();
 
     logger.log("Включение рантайм модулей...", "system");
 
@@ -163,13 +205,28 @@ async function startBots(): Promise<void> {
 
 /** Функция остановки ботов */
 async function stopBots(): Promise<void> {
+	if (stopping) return;
+
   logger.log("Остановка ботов...", "info");
+
+	stopping = true;
+	updateProcessStatus();
 
   try {
     const success = await invoke("stop_bots") as boolean;
-    if (!success) return;
 
-    process = "sleep";
+    if (!success) {
+			updateProcessStatus();
+			return;
+		}
+
+		processActivity = false;
+		botsWereFullyConnected = false;
+		totalBots = 0;
+		connectedBots = 0;
+		stopping = false;
+
+		updateProcessStatus();
 
     logger.log("Выключение рантайм модулей...", "system");
 
@@ -244,7 +301,7 @@ function initGlobalElements(): void {
   document.querySelectorAll<HTMLButtonElement>('[control-toggler="true"]').forEach(e => e.addEventListener("click", async () => await controlBots(e.name, Number(e.getAttribute("state")))));
 
   document.addEventListener("keydown", async (e) => {
-    if (process === "sleep" || !quickTasksAllowed) return;
+    if (!processActivity || !quickTasksAllowed) return;
     const key = e.key.toLowerCase();
     for (const k in pressedKeys) key === k ? pressedKeys[key] = true : null;
     if (pressedKeys.shift && pressedKeys.i && pressedKeys.c) {
@@ -285,7 +342,7 @@ function initGlobalElements(): void {
   });
 
   document.addEventListener("keyup", (e) => {
-    if (process === "sleep") return;
+    if (!processActivity) return;
     const key = e.key.toLowerCase();
     for (const k in pressedKeys) key === k ? pressedKeys[key] = false : null;
   }); 
@@ -347,7 +404,7 @@ async function listenEvents(): Promise<void> {
       const payload = event.payload as { text: string; class: string; };
       logger.log(payload.text, payload.class);
     } catch (error) {
-      logger.log(`Ошибка принятие log-события: ${error}`, "error");
+      logger.log(`Ошибка принятие события "log": ${error}`, "error");
     }
   });
 
@@ -356,7 +413,17 @@ async function listenEvents(): Promise<void> {
       const payload = event.payload as { name: string; content: string; };
       messages.message(payload.name, payload.content);
     } catch (error) {
-      logger.log(`Ошибка принятие message-события: ${error}`, "error");
+      logger.log(`Ошибка принятие события "message": ${error}`, "error");
+    }
+  });
+
+	await listen("connected-bots-count", (event) => {
+    try {
+      const payload = event.payload as { count: number; };
+			connectedBots = payload.count;
+			updateProcessStatus();
+    } catch (error) {
+      logger.log(`Ошибка принятие события "connected-bots-count": ${error}`, "error");
     }
   });
 }

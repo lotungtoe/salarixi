@@ -12,6 +12,11 @@ pub struct LogPayload {
 }
 
 #[derive(Serialize, Clone)]
+pub struct ConnectedBotsPayload {
+  pub count: u8,
+}
+
+#[derive(Serialize, Clone)]
 pub struct MessagePayload {
   pub name: String,
   pub content: String,
@@ -43,6 +48,7 @@ pub struct EmitManager {
 pub enum EmitEvent {
   Log { text: String, class: String },
   Message { name: String, content: String },
+  ConnectedBots { count: u8 },
   Optional(OptionalEmitEvent),
 }
 
@@ -81,6 +87,11 @@ pub fn emit_msg(name: impl Into<String>, content: impl Into<String>) {
   });
 }
 
+/// Вспомогательная функция отправки количества подключённых ботов
+pub fn emit_cbc(count: u8) {
+  EMIT_MANAGER.send_event(EmitEvent::ConnectedBots { count });
+}
+
 /// Вспомогательная функция отправки дополнительных событий
 pub fn send_optional_event(event: OptionalEmitEvent) {
   match event {
@@ -106,6 +117,9 @@ pub async fn emit_event_loop(handle: AppHandle) {
       }
       EmitEvent::Message { name, content } => {
         let _ = handle.emit("message", MessagePayload { name, content });
+      }
+      EmitEvent::ConnectedBots { count } => {
+        let _ = handle.emit("connected-bots-count", ConnectedBotsPayload { count });
       }
       EmitEvent::Optional(optional_event) => match optional_event {
         OptionalEmitEvent::Chat(payload) => {
