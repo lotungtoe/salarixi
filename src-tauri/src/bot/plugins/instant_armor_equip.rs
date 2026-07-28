@@ -1,6 +1,7 @@
 use azalea::inventory::ItemStack;
 use azalea::prelude::*;
 use azalea::registry::builtin::ItemKind;
+use azalea::world::InstanceName;
 
 use crate::bot::extensions::{BotInventoryExt, BotPhysicsExt, ClickMode};
 use crate::bot::plugin_manager::PluginName;
@@ -8,7 +9,6 @@ use crate::bot::traits::SalarixiPlugin;
 use crate::bot::PLUGINS;
 use crate::{sleep, take_bot};
 
-/// Часть брони
 #[derive(Default, PartialEq)]
 pub enum ArmorPart {
   Helmet,
@@ -18,7 +18,6 @@ pub enum ArmorPart {
   Boots,
 }
 
-/// Структура информации об элементе брони
 #[derive(Default)]
 struct Armor {
   part: ArmorPart,
@@ -26,7 +25,6 @@ struct Armor {
   priority: ArmorPriority,
 }
 
-/// Информация о приоретете брони
 #[derive(Default)]
 struct ArmorPriority {
   material_rank: u8,
@@ -34,16 +32,25 @@ struct ArmorPriority {
   current_durability: i32,
   has_mending: bool,
   has_binding_curse: bool,
+  enchantments: ArmorEnchantments,
+}
+
+#[derive(Default)]
+struct ArmorEnchantments {
   unbreaking: i32,
   protection: i32,
   aqua_affinity: i32,
+  depth_strider: i32,
+  respiration: i32,
+  soul_speed: i32,
+  swift_sneak: i32,
+  thorns: i32,
   feather_falling: i32,
   blast_protection: i32,
   projectile_protection: i32,
   fire_protection: i32,
 }
 
-/// Структура полного набора брони
 struct ArmorSet {
   helmet: Option<Armor>,
   chestplate: Option<Armor>,
@@ -56,9 +63,9 @@ pub struct InstantArmorEquipPlugin;
 impl InstantArmorEquipPlugin {
   /// Метод обработки тика
   async fn tick(&self, index: &u8) {
-    take_bot!(index, async |bot| {
-      let mut armors = vec![];
+    let mut armors = vec![];
 
+    take_bot!(index, async |bot| {
       let Some(menu) = bot.get_inventory_menu() else {
         return;
       };
@@ -70,11 +77,14 @@ impl InstantArmorEquipPlugin {
           }
         }
       }
+    });
 
-      if armors.is_empty() {
-        return;
-      }
+    if armors.is_empty() {
+      sleep!(1000);
+      return;
+    }
 
+    take_bot!(index, async |bot| {
       let armor_set = self.get_best_armor_set(bot, armors);
 
       if let Some(helmet) = armor_set.helmet {
@@ -379,29 +389,36 @@ impl InstantArmorEquipPlugin {
     armor.priority.max_durability = meta.max_durability;
     armor.priority.current_durability = meta.current_durability;
 
-    for (id, level) in &meta.enchantments {
-      let id_str = id.as_str();
+    for (id, l) in &meta.enchantments {
+      let name = &id[10..];
 
-      let priority = match id_str {
-        "minecraft:protection" => Some(&mut armor.priority.protection),
-        "minecraft:blast_protection" => Some(&mut armor.priority.blast_protection),
-        "minecraft:fire_protection" => Some(&mut armor.priority.fire_protection),
-        "minecraft:projectile_protection" => Some(&mut armor.priority.projectile_protection),
-        "minecraft:feather_falling" => Some(&mut armor.priority.feather_falling),
-        "minecraft:aqua_affinity" => Some(&mut armor.priority.aqua_affinity),
-        "minecraft:unbreaking" => Some(&mut armor.priority.unbreaking),
+      // println!("Armor enchantment name ({}): {}", bot.username(), name);
+
+      let current_level = match name {
+        "protection" => Some(&mut armor.priority.enchantments.protection),
+        "blast_protection" => Some(&mut armor.priority.enchantments.blast_protection),
+        "fire_protection" => Some(&mut armor.priority.enchantments.fire_protection),
+        "projectile_protection" => Some(&mut armor.priority.enchantments.projectile_protection),
+        "feather_falling" => Some(&mut armor.priority.enchantments.feather_falling),
+        "aqua_affinity" => Some(&mut armor.priority.enchantments.aqua_affinity),
+        "depth_strider" => Some(&mut armor.priority.enchantments.depth_strider),
+        "respiration" => Some(&mut armor.priority.enchantments.respiration),
+        "soul_speed" => Some(&mut armor.priority.enchantments.soul_speed),
+        "swift_sneak" => Some(&mut armor.priority.enchantments.swift_sneak),
+        "thorns" => Some(&mut armor.priority.enchantments.thorns),
+        "unbreaking" => Some(&mut armor.priority.enchantments.unbreaking),
         _ => None,
       };
 
-      if let Some(p) = priority {
-        *p = *level;
+      if let Some(level) = current_level {
+        *level = *l;
       }
 
-      if id_str == "minecraft:mending" {
+      if name == "mending" {
         armor.priority.has_mending = true;
       }
 
-      if id_str == "minecraft:binding_curse" {
+      if name == "binding_curse" {
         armor.priority.has_binding_curse = true;
       }
     }
@@ -518,22 +535,34 @@ impl InstantArmorEquipPlugin {
     }
 
     let choice_by_durability = self.compare_armors_by_durability(armor_one, armor_two);
-    let (choice_by_enchantments, enchantment_difference) = self.compare_armors_by_enchantments(armor_one, armor_two);
+    let (choice_by_enchantments, enchantment_difference) =
+      self.compare_armors_by_enchantments(bot, armor_one, armor_two);
 
     if enchantment_difference <= 8 {
       if let Some(physics) = bot.get_physics() {
+        let enchantments_one = &armor_one.priority.enchantments;
+        let enchantments_two = &armor_two.priority.enchantments;
+
         if physics.is_in_lava() {
-          if armor_one.priority.fire_protection > armor_two.priority.fire_protection {
+          if enchantments_one.fire_protection > enchantments_two.fire_protection {
             return 0;
-          } else if armor_two.priority.fire_protection > armor_one.priority.fire_protection {
+          } else if enchantments_two.fire_protection > enchantments_one.fire_protection {
             return 1;
           }
         }
 
         if physics.is_in_water() {
-          if armor_one.priority.aqua_affinity > armor_two.priority.aqua_affinity {
+          if enchantments_one.respiration > enchantments_two.respiration {
             return 0;
-          } else if armor_two.priority.aqua_affinity > armor_one.priority.aqua_affinity {
+          } else if enchantments_two.respiration > enchantments_one.respiration {
+            return 1;
+          } else if enchantments_one.respiration >= 1 {
+            return 0;
+          } else if enchantments_two.respiration >= 1 {
+            return 1;
+          } else if enchantments_one.aqua_affinity > enchantments_two.aqua_affinity {
+            return 0;
+          } else if enchantments_two.aqua_affinity > enchantments_one.aqua_affinity {
             return 1;
           }
         }
@@ -591,7 +620,7 @@ impl InstantArmorEquipPlugin {
   }
 
   /// Метод сравнения элементов брони по чарам (возвращает выбор и разницу баллов)
-  fn compare_armors_by_enchantments(&self, armor_one: &Armor, armor_two: &Armor) -> (u8, i32) {
+  fn compare_armors_by_enchantments(&self, bot: &Client, armor_one: &Armor, armor_two: &Armor) -> (u8, i32) {
     let mut points_one = 0;
     let mut points_two = 0;
 
@@ -599,33 +628,57 @@ impl InstantArmorEquipPlugin {
       points_one += 1;
     }
 
-    points_one += armor_one.priority.aqua_affinity;
-    points_one += armor_one.priority.blast_protection;
-    points_one += armor_one.priority.fire_protection;
-    points_one += armor_one.priority.feather_falling;
-    points_one += armor_one.priority.projectile_protection;
-    points_one += armor_one.priority.unbreaking;
+    let enchantments_one = &armor_one.priority.enchantments;
 
-    if armor_one.priority.protection > 0 {
+    points_one += enchantments_one.blast_protection;
+    points_one += enchantments_one.fire_protection;
+    points_one += enchantments_one.feather_falling;
+    points_one += enchantments_one.projectile_protection;
+    points_one += enchantments_one.thorns;
+    points_one += enchantments_one.swift_sneak;
+    points_one += enchantments_one.unbreaking;
+
+    if enchantments_one.protection > 0 {
       // Эта чара является универсальной и как по мне самой лучшей для брони,
       // поэтому стоит дать дополнительный бал, чтобы бот ставил в приоретет
       // не "Fire Protection 4", а "Protection 4" и так далее
-      points_one += armor_one.priority.protection + 1;
+      points_one += enchantments_one.protection + 1;
     }
 
     if armor_two.priority.has_mending {
       points_two += 1;
     }
 
-    points_two += armor_two.priority.aqua_affinity;
-    points_two += armor_two.priority.blast_protection;
-    points_two += armor_two.priority.fire_protection;
-    points_two += armor_two.priority.feather_falling;
-    points_two += armor_two.priority.projectile_protection;
-    points_two += armor_two.priority.unbreaking;
+    let enchantments_two = &armor_two.priority.enchantments;
 
-    if armor_two.priority.protection > 0 {
-      points_two += armor_two.priority.protection + 1;
+    points_two += enchantments_two.blast_protection;
+    points_two += enchantments_two.fire_protection;
+    points_two += enchantments_two.feather_falling;
+    points_two += enchantments_two.projectile_protection;
+    points_two += enchantments_two.thorns;
+    points_two += enchantments_two.swift_sneak;
+    points_two += enchantments_two.unbreaking;
+
+    if enchantments_two.protection > 0 {
+      points_two += enchantments_two.protection + 1;
+    }
+
+    let dimension = if let Some(instance) = bot.get_component::<InstanceName>() {
+      Some(instance.0.to_string())
+    } else {
+      None
+    };
+
+    if dimension == Some("minecraft:the_nether".to_string()) {
+      points_one += enchantments_one.soul_speed;
+      points_two += enchantments_two.soul_speed;
+    } else {
+      points_one += enchantments_one.aqua_affinity;
+      points_one += enchantments_one.depth_strider;
+      points_one += enchantments_one.respiration;
+      points_two += enchantments_two.aqua_affinity;
+      points_two += enchantments_two.depth_strider;
+      points_two += enchantments_two.respiration;
     }
 
     // Если на броне есть чара "проклятье несъёмности", то необходимо уменьшить баллы на 80%
