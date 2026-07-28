@@ -13,7 +13,7 @@ export const plugins: Record<string, { name: string; enable: boolean; date: stri
   "auto-eat": {
     name: "Auto Eat",
     enable: false,
-    date: "14.07.2026"
+    date: "28.07.2026"
   },
   "potion-consumer": {
     name: "Potion Consumer",
