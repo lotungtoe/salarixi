@@ -23,6 +23,8 @@
   --hover-bg: #3b3b3b50;
   --hover-border: #555555;
 
+  --chart-bar-bg: #13812b;
+
   --process-inactive-color: #d1d415;
   --process-active-color: #13d40c;
   --process-launching-color: #858585;
@@ -181,30 +183,54 @@ body {
   padding-left: 10px;
 }
 
-.title-bar .right .labels {
+.title-bar .right .info {
   display: flex; 
   gap: 4px;
   justify-content: center;
   align-items: center;
   color: var(--muted-color);
   font-family: var(--global-font-family);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
 }
 
-.title-bar .right .labels .splitter {
+.title-bar .right .info .splitter {
   border-left: 1px solid var(--primary-border);
   height: 35px;
   margin-left: 6px;
   margin-right: 6px;
 }
 
-.title-bar .right .labels #play-time {
+.title-bar .right .info #play-time {
   text-align: center;
   min-width: 46px;
+  font-size: 14px;
 }
 
-.title-bar .right .labels #process-status {
+.title-bar .right .info .chart-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+  min-width: 170px;
+}
+
+.title-bar .right .info .chart-wrapper .chart {
+  width: 80px;
+  height: 20px;
+  display: flex;
+  align-items: flex-end;
+  gap: 0;
+}
+
+.title-bar .right .info .chart-wrapper .chart .bar {
+  width: 1px;
+  height: 0;
+  background: var(--chart-bar-bg);
+  border-radius: 0;
+}
+
+.title-bar .right .info #process-status {
   text-align: center;
   color: var(--process-inactive-color);
 }
@@ -1740,16 +1766,6 @@ button svg {
 .highlight {
   color: var(--highlight-color);
   font-weight: 600;
-}
-
-.chart-wrapper {
-  display: flex;
-  flex-direction: column;
-  justify-content: start;
-  align-items: center;
-  width: 80%;
-  height: 100%;
-  gap: 40px;
 }
 
 .monitoring-wrapper {

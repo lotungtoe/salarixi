@@ -3,6 +3,7 @@ use std::time::Duration;
 
 use hashbrown::HashMap;
 use serde::Deserialize;
+use systemstat::Platform;
 
 use crate::bot::functions::{disconnect_bot, reset_bot, send_message_from_bot};
 use crate::bot::script::SCRIPT_EXECUTOR;
@@ -17,6 +18,7 @@ use crate::launch::process::{current_options, process_is_active};
 use crate::launch::runner::{launch_bots_on_server, stop_bots_and_destroy_data};
 use crate::other::discord_rpc::DISCORD_RPC;
 use crate::other::webhook::send_webhook;
+use crate::sleep;
 
 /// Команда запуска ботов
 #[tauri::command]
@@ -143,11 +145,27 @@ pub async fn follow_radar_target(x: i32, z: i32) {
   RADAR.follow(x, z).await;
 }
 
-/// Команда получения используемой памяти
+/// Команда получения использования RAM
 #[tauri::command]
-pub async fn get_memory_usage() -> f64 {
+pub async fn get_ram_usage() -> f64 {
   if let Some(usage) = memory_stats::memory_stats() {
     return (usage.physical_mem as f64 / 1024.0) / 1024.0;
+  }
+
+  0.0
+}
+
+/// Команда получения использования CPU
+#[tauri::command]
+pub async fn get_cpu_usage() -> f32 {
+  let system = systemstat::System::new();
+
+  if let Ok(cpu) = system.cpu_load_aggregate() {
+    sleep!(1000);
+
+    if let Ok(load) = cpu.done() {
+      return load.user * 100.0;
+    }
   }
 
   0.0

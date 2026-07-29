@@ -12,7 +12,7 @@ import { switchControlWrapper, switchGlobalWrapper } from "./utils/switchers";
 import { configModule } from "./modules/config";
 import { accountModule } from "./modules/account";
 import { proxyModule } from "./modules/proxy";
-import { graphicModule } from "./modules/graphic";
+import { chartModule } from "./modules/chart";
 import { scriptModule } from "./modules/script";
 import { monitoringModule } from "./modules/monitoring";
 import { captchaModule } from "./modules/captcha";
@@ -186,8 +186,6 @@ async function startBots(): Promise<void> {
 
     logger.log("Включение рантайм модулей...", "system");
 
-    graphicModule.enable();
-
     monitoringModule.maxChatHistoryLength = parseInt((document.getElementById("monitoring_option_chat-history-length") as HTMLInputElement).value || "50");
 
     monitoringModule.enable(parseInt((document.getElementById("monitoring_option_update-frequency") as HTMLInputElement).value || "1800"));
@@ -230,7 +228,6 @@ async function stopBots(): Promise<void> {
 
     logger.log("Выключение рантайм модулей...", "system");
 
-    graphicModule.disable();
     monitoringModule.disable();
     captchaModule.disable();
     radarModule.disable();
@@ -428,7 +425,6 @@ async function listenEvents(): Promise<void> {
   });
 }
 
-// Слушатель события DOMContent у document (#1, синхронный)
 document.addEventListener("DOMContentLoaded", () => {
   initTitleBar();
 
@@ -450,7 +446,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     enableParticles();
 
-    graphicModule.init();
+    chartModule.init();
     radarModule.init();
     scriptModule.init();
     pingModule.init();
@@ -460,7 +456,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-// Слушатель события DOMContent у document (#2, асинхронный)
 document.addEventListener("DOMContentLoaded", async () => {
   try {
     await listenEvents();

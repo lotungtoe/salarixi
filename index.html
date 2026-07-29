@@ -11,16 +11,26 @@
   
 <body>
   <div data-tauri-drag-region class="title-bar">
-    <div class="left">
-      <label>salarixi client</label>
-      <label id="title-version"></label>
+    <div data-tauri-drag-region class="left">
+      <label data-tauri-drag-region>salarixi client</label>
+      <label data-tauri-drag-region id="title-version"></label>
     </div>
 
     <div data-tauri-drag-region class="right">
-      <div class="labels">
-        <label id="play-time">00:00</label>
+      <div class="info">
+        <label data-tauri-drag-region id="play-time">00:00</label>
         <div class="splitter"></div>
-        <label id="process-status">inactive</label>
+        <div class="chart-wrapper">
+          <label><span>RAM</span> (<span id="current-ram-usage">?</span>):</label>
+          <div data-tauri-drag-region class="chart" id="ram-usage-chart"></div>
+        </div>
+        <div class="splitter"></div>
+        <div class="chart-wrapper">
+          <label><span>CPU</span> (<span id="current-cpu-usage">?</span>):</label>
+          <div data-tauri-drag-region class="chart" id="cpu-usage-chart"></div>
+        </div>
+        <div class="splitter"></div>
+        <label data-tauri-drag-region id="process-status">inactive</label>
       </div>
 
       <div class="controls">
@@ -174,15 +184,6 @@
         <path d="M18 19a2 2 0 0 0 2 -2v-4l1 -1l-1 -1v-4a2 2 0 0 0 -2 -2" />
       </svg>
       <span class="text" tt="script">Сценарий</span>
-    </button>
-
-    <button class="pretty-btn" id="graphic" path="graphic-container">
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-chart-line">
-        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-        <path d="M4 19l16 0" />
-        <path d="M4 15l4 -6l4 2l4 -5l4 4" />
-      </svg>
-      <span class="text" tt="graphic">График</span>
     </button>
 
     <button class="pretty-btn" id="monitoring" path="monitoring-container">
@@ -1834,15 +1835,6 @@
 
     <div class="monitoring-wrapper" id="bot-cards-container" style="display: none;"></div>
     <div id="bot-wrappers-container"></div>
-  </div>
-
-  <div class="main-wrapper centered" id="graphic-container" style="display: none;" global="true">
-    <h1 class="info-text" id="graphic-status-text">Данные отсутствуют</h1>
-
-    <div class="chart-wrapper" style="display: none;">
-      <canvas id="graphic-active-bots" width="600" height="220"></canvas>
-      <canvas id="graphic-memory-usage" width="600" height="220"></canvas>
-    </div>
   </div>
 
   <div class="main-wrapper centered" id="analysis-container" style="display: none;" global="true">
