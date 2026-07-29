@@ -22,7 +22,7 @@ pub struct RegistrySystem {
 
 #[derive(Clone)]
 pub enum RegistryEvent {
-  LoadPlugins {
+  ActivatePlugins {
     index: u8,
   },
   ControlModules {
@@ -67,12 +67,6 @@ impl RegistrySystem {
     self.bots.insert(index, Arc::new(bot));
   }
 
-  /// Метод удаления бота из реестра
-  pub async fn remove_bot(&self, index: &u8) -> Option<Client> {
-    let (_, cell) = self.bots.remove(index)?;
-    Some((*cell).clone())
-  }
-
   /// Метод получения бота по юзернейму
   pub fn get_bot(&self, index: &u8) -> Option<Arc<Client>> {
     self.bots.get(index).map(|cell| cell.clone())
@@ -111,7 +105,7 @@ pub async fn registry_event_loop() {
 
   while let Ok(event) = rx.recv().await {
     match event {
-      RegistryEvent::LoadPlugins { index } => {
+      RegistryEvent::ActivatePlugins { index } => {
         if let Some(opts) = current_options().await {
           PLUGINS.activate_for(index, opts.plugins).await;
         }

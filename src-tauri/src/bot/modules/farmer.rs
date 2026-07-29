@@ -103,7 +103,7 @@ impl FarmerModule {
     }
 
     if let Some(slot) = best_tool.slot {
-      bot.take_item(index, slot, true).await;
+      bot.take_item(index, slot, false).await;
     }
   }
 
@@ -150,7 +150,7 @@ impl FarmerModule {
     }
 
     if let Some(slot) = ferilizer_slot {
-      bot.take_item(index, slot, true).await;
+      bot.take_item(index, slot, false).await;
 
       for _ in 0..=4 {
         sleep!(Self::generate_delay(mode));
@@ -177,7 +177,7 @@ impl FarmerModule {
     }
 
     if let Some(slot) = plant_slot {
-      bot.take_item(index, slot, true).await;
+      bot.take_item(index, slot, false).await;
       return true;
     }
 
@@ -241,7 +241,7 @@ impl FarmerModule {
     let kind = BlockKind::from(state);
 
     if Self::this_is_farmland_without_plant(bot, kind, block_pos) {
-      bot.look_at_block(index, block_pos, true, true).await;
+      bot.look_at_block(block_pos, true).await;
 
       if options.mode != Mode::Ultra {
         sleep!(Self::generate_delay(&options.mode));
@@ -254,7 +254,7 @@ impl FarmerModule {
       }
     } else {
       if Self::this_is_plant(kind) {
-        bot.look_at_block(index, block_pos, true, true).await;
+        bot.look_at_block(block_pos, true).await;
 
         sleep!(Self::generate_delay(&options.mode));
 
@@ -283,7 +283,7 @@ impl FarmerModule {
         }
       } else {
         if Self::block_can_plowed(bot, kind, block_pos) {
-          bot.look_at_block(index, block_pos, true, true).await;
+          bot.look_at_block(block_pos, true).await;
           Self::plow_block(bot, index, block_pos, &options.mode).await;
         }
       }

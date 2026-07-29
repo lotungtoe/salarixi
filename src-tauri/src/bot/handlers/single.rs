@@ -83,7 +83,7 @@ async fn process_spawn(bot: Client) {
   TASK_SYSTEM.register(index).await;
   STATE_SYSTEM.register(index).await;
 
-  REGISTRY_SYSTEM.send_event(RegistryEvent::LoadPlugins { index: index });
+  REGISTRY_SYSTEM.send_event(RegistryEvent::ActivatePlugins { index: index });
 
   PROFILE_SYSTEM.set_status(&index, BotStatus::Connected).await;
 

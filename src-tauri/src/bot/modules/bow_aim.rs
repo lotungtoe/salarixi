@@ -67,80 +67,94 @@ impl BowAimModule {
 
   async fn aiming(index: u8, target: String, distance: f64) {
     let extra_task = tokio::spawn(async move {
-      take_bot!(&index, async |bot| {
+      loop {
         if !getst(&index, State::CanLooking).await {
-          return;
+          sleep!(200);
+          continue;
         }
 
-        setmst(&index, StateName::Looking, true).await;
+        let mut nearest_entity_exist = false;
 
-        loop {
-          if !gettskact(&index, TaskName::BowAim).await {
-            break;
-          }
-
+        take_bot!(&index, async |bot| {
           if let Some(entity) = bot.find_nearest_entity(EntityType::from(target.clone()), distance) {
-            let target_pos = bot.get_entity_position(entity);
+            nearest_entity_exist = true;
 
+            let dest_pos = bot.get_entity_position(entity);
+
+            setmst(&index, StateName::Looking, true).await;
+            sleep!(randnum(50, 100));
             bot.look_at(Vec3::new(
-              target_pos.x,
-              target_pos.y + bot.get_entity_eye_height(entity),
-              target_pos.z,
+              dest_pos.x,
+              dest_pos.y + bot.get_entity_eye_height(entity),
+              dest_pos.z,
             ));
+            sleep!(randnum(50, 100));
+            setmst(&index, StateName::Looking, false).await;
           }
+        });
 
-          sleep!(50);
+        if !nearest_entity_exist {
+          sleep!(200);
         }
-      });
+      }
     });
 
     pushetsk(&index, TaskName::BowAim, extra_task).await;
   }
 
   async fn shoot(bot: &Client, index: &u8, target: String, distance: f64) {
-    if getst(index, State::CanInteracting).await
-      && !getst(index, State::IsEating).await
-      && !getst(index, State::IsDrinking).await
-      && !getst(index, State::IsAttacking).await
-    {
-      if let Some(slot) = Self::find_bow_in_inventory(bot) {
-        setmst(index, StateName::Interacting, true).await;
+    if !getst(index, State::CanInteracting).await {
+      return;
+    }
 
-        bot.take_item(index, slot, true).await;
+    let Some(bow_slot) = Self::find_bow_in_inventory(bot) else {
+      return;
+    };
 
-        sleep!(50);
+    let mut bow_picked = false;
 
-        bot.start_use_item();
-
-        sleep!(randnum(900, 1100));
-
-        if let Some(entity) = bot.find_nearest_entity(EntityType::from(target), distance) {
-          let target_pos = bot.get_entity_position(entity);
-
-          let distance = bot.eye_pos().distance_to(target_pos);
-
-          bot.look_at(Vec3::new(target_pos.x, target_pos.y + distance * 0.16, target_pos.z));
-
-          if distance > 50.0 {
-            bot.jump();
-
-            sleep!(100);
-
-            let target_pos = bot.get_entity_position(entity);
-
-            let distance = bot.eye_pos().distance_to(target_pos);
-
-            bot.look_at(Vec3::new(target_pos.x, target_pos.y + distance * 0.12, target_pos.z));
-          }
-
-          sleep!(50);
+    if gettskact(index, TaskName::Killaura).await && bow_slot != 45 {
+      if let Some(item) = bot.get_item_by_slot(45) {
+        if item.is_empty() {
+          bot.inventory_swap_click(index, bow_slot, 45, true).await;
+          bow_picked = true;
         }
-
-        bot.release_use_item();
-
-        setmst(index, StateName::Interacting, false).await;
       }
     }
+
+    if !bow_picked {
+      bot.take_item(index, bow_slot, true).await;
+    }
+
+    setmst(index, StateName::Interacting, true).await;
+
+    bot.start_use_item();
+
+    sleep!(randnum(900, 1100));
+
+    if let Some(entity) = bot.find_nearest_entity(EntityType::from(target), distance) {
+      let dest_pos = bot.get_entity_position(entity);
+      let distance = bot.eye_pos().distance_to(dest_pos);
+
+      bot.look_at(Vec3::new(dest_pos.x, dest_pos.y + distance * 0.16, dest_pos.z));
+
+      if distance > 50.0 {
+        bot.jump();
+
+        sleep!(100);
+
+        let dest_pos = bot.get_entity_position(entity);
+        let distance = bot.eye_pos().distance_to(dest_pos);
+
+        bot.look_at(Vec3::new(dest_pos.x, dest_pos.y + distance * 0.12, dest_pos.z));
+      }
+
+      sleep!(50);
+    }
+
+    bot.release_use_item();
+
+    setmst(index, StateName::Interacting, false).await;
   }
 
   async fn start(bot: &Client, index: &u8, options: &BowAimOptions) {
@@ -150,14 +164,14 @@ impl BowAimModule {
       Some(options.target.to_string())
     };
 
-    let Some(target) = target else {
+    let Some(t) = target else {
       return;
     };
 
-    Self::aiming(*index, target.clone(), options.max_distance.unwrap_or(70.0)).await;
+    Self::aiming(*index, t.clone(), options.max_distance.unwrap_or(70.0)).await;
 
     loop {
-      Self::shoot(bot, index, target.clone(), options.max_distance.unwrap_or(70.0)).await;
+      Self::shoot(bot, index, t.clone(), options.max_distance.unwrap_or(70.0)).await;
       sleep!(options.delay.unwrap_or(50));
     }
   }

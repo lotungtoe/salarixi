@@ -8,7 +8,7 @@ export const plugins: Record<string, { name: string; enable: boolean; date: stri
   "auto-totem": {
     name: "Auto Totem",
     enable: false,
-    date: "04.07.2026"
+    date: "29.07.2026"
   },
   "auto-eat": {
     name: "Auto Eat",
@@ -23,12 +23,12 @@ export const plugins: Record<string, { name: string; enable: boolean; date: stri
   "auto-look": {
     name: "Auto Look",
     enable: false,
-    date: "04.07.2026"
+    date: "29.07.2026"
   },
   "auto-shield": {
     name: "Auto Shield",
     enable: false,
-    date: "04.07.2026"
+    date: "29.07.2026"
   },
   "auto-mending": {
     name: "Auto Mending",

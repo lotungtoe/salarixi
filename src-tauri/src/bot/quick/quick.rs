@@ -37,7 +37,7 @@ impl QuickTaskManager {
           "clear-inventory" => {
             if let Some(menu) = bot.get_inventory_menu() {
               for (slot, _) in menu.slots().iter().enumerate() {
-                bot.inventory_click(&index, slot, ClickMode::DropAll, true).await;
+                bot.inventory_click(&index, slot, ClickMode::DropAll, false).await;
               }
             }
           }

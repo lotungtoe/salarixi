@@ -18,6 +18,7 @@ impl AutoTotemPlugin {
 
       if let Some(offhand_item) = menu.slot(45) {
         if !offhand_item.is_empty() && offhand_item.kind() != ItemKind::Shield {
+          sleep!(300);
           return;
         }
       }
@@ -31,6 +32,7 @@ impl AutoTotemPlugin {
           bot
             .inventory_move_item(index, ItemKind::TotemOfUndying, slot, 45, true)
             .await;
+          sleep!(800);
         }
       }
     });

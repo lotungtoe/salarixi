@@ -610,7 +610,7 @@ impl ScriptExecutor {
           if let Some(bot) = REGISTRY_SYSTEM.get_bot(index) {
             if let Some(entity) = bot.find_nearest_entity(EntityType::from(target.clone()), distance) {
               if look_at_target {
-                bot.look_at_entity(index, entity, false, true).await;
+                bot.look_at_entity(entity, false);
               }
 
               bot.attack(entity);
@@ -621,7 +621,7 @@ impl ScriptExecutor {
         if let Some(bot) = REGISTRY_SYSTEM.get_bot(&(code as u8)) {
           if let Some(entity) = bot.find_nearest_entity(EntityType::from(target), distance) {
             if look_at_target {
-              bot.look_at_entity(&(code as u8), entity, false, true).await;
+              bot.look_at_entity(entity, false);
             }
 
             bot.attack(entity);

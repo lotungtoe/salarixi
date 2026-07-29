@@ -89,11 +89,11 @@ impl AutoShieldPlugin {
       return;
     }
 
-    setmst(index, StateName::Looking, true).await;
-    setmst(index, StateName::Interacting, true).await;
     setst(index, State::CanAttacking, false).await;
     setst(index, State::CanEating, false).await;
     setst(index, State::CanDrinking, false).await;
+    setmst(index, StateName::Looking, true).await;
+    setmst(index, StateName::Interacting, true).await;
 
     take_bot!(index, async |bot| {
       bot.start_use_item_by(InteractionHand::OffHand);
@@ -108,7 +108,7 @@ impl AutoShieldPlugin {
 
       take_bot!(index, async |bot| {
         if let Some(e) = self.get_nearest_dangerous_entity(bot) {
-          bot.look_at_entity(index, e, true, true).await;
+          bot.look_at_entity(e, true);
         } else {
           danger_entity_exists = false;
         }
