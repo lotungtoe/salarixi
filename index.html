@@ -20,12 +20,12 @@
       <div class="info">
         <label data-tauri-drag-region id="play-time">00:00</label>
         <div class="splitter"></div>
-        <div class="chart-wrapper">
+        <div class="chart-wrapper ram">
           <label><span>RAM</span> (<span id="current-ram-usage">?</span>):</label>
           <div data-tauri-drag-region class="chart" id="ram-usage-chart"></div>
         </div>
         <div class="splitter"></div>
-        <div class="chart-wrapper">
+        <div class="chart-wrapper cpu">
           <label><span>CPU</span> (<span id="current-cpu-usage">?</span>):</label>
           <div data-tauri-drag-region class="chart" id="cpu-usage-chart"></div>
         </div>
@@ -68,6 +68,143 @@
         ПРЕДУПРЕЖДЕНИЕ: Мы не заставляем вас срочно обновить данный клиент, мы лишь предлагаем более оптимизированную и универсальную версию!
         Выбор комфортной версии никак не ограничен.
       </div>
+    </div>
+  </div>
+
+  <div class="client-settings-wrapper">
+    <button class="min" id="close-client-settings">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-x">
+        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+        <path d="M18 6l-12 12" />
+        <path d="M6 6l12 12" />
+      </svg>
+    </button>
+
+    <div class="settings">
+      <div class="section">
+        <div class="header" tt="interface-section-global">Глобальные</div>
+
+        <div class="options">
+          <div class="column-wrap" style="width: max-content; gap: 6px;">
+            <div class="custom-select between">
+              <label tt="interface-particles:">Партиклы:</label>
+              <select id="interface_select_particles" style="width: 150px;" keep trigger>
+                <option value="enable" tt="enable">Включить</option>
+                <option value="disable" tt="disable" selected>Выключить</option>
+              </select>
+            </div>
+
+            <div class="custom-select between">
+              <label tt="interface-font:">Шрифт:</label>
+              <select id="interface_select_global-font-family" style="width: 170px;" keep trigger>
+                <option value="inter">Inter</option>
+                <option value="jetbrains-mono">JetBrains Mono</option>
+                <option value="segoe-ui">Segoe UI</option>
+              </select>
+            </div>
+
+            <div class="custom-select between">
+              <label tt="interface-messages:">Сообщения:</label>
+              <select id="interface_select_show-messages" style="width: 150px;" keep trigger>
+                <option value="show" tt="interface-show">Показать</option>
+                <option value="hide" tt="interface-hide">Скрыть</option>
+              </select>
+            </div>
+
+            <div class="custom-select between">
+              <label tt="interface-language:">Язык:</label>
+              <select id="interface_select_language" style="width: 150px;" keep></select>
+            </div>
+
+            <div class="custom-select between">
+              <label>Discord RPC:</label>
+              <select id="interface_select_discord-rpc" style="width: 150px;" keep trigger>
+                <option value="enable" tt="enable">Включить</option>
+                <option value="disable" tt="disable" selected>Выключить</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="header" tt="interface-section-panel">Панель</div>
+
+        <div class="options">
+          <div class="column-wrap" style="width: max-content; gap: 6px;">
+            <div class="custom-select between">
+              <label tt="interface-icons:">Иконки:</label>
+              <select id="interface_select_show-panel-icons" style="width: 150px;" keep trigger>
+                <option value="show" tt="interface-show">Показать</option>
+                <option value="hide" tt="interface-hide">Скрыть</option>
+              </select>
+            </div>
+
+            <div class="custom-select between">
+              <label tt="interface-font:">Шрифт:</label>
+              <select id="interface_select_panel-font-family" style="width: 170px;" keep trigger>
+                <option value="inter">Inter</option>
+                <option value="jetbrains-mono">JetBrains Mono</option>
+                <option value="segoe-ui">Segoe UI</option>
+                <option value="courier-new">Courier New</option>
+                <option value="trebuchet-ms">Trebuchet MS</option>
+              </select>
+            </div>
+
+            <div class="custom-select between">
+              <label tt="interface-font-size:">Размер шрифта:</label>
+              <select id="interface_select_panel-font-size" style="width: 100px;" keep trigger>
+                <option value="14px">14px</option>
+                <option value="15px" selected>15px</option>
+                <option value="16px">16px</option>
+                <option value="17px">17px</option>
+                <option value="18px">18px</option>
+              </select>
+            </div>
+
+            <div class="custom-select between">
+              <label tt="interface-internal-gap:">Внутренний отступ:</label>
+              <select id="interface_select_panel-internal-gap" style="width: 100px;" keep trigger>
+                <option value="2px">2px</option>
+                <option value="4px">4px</option>
+                <option value="6px" selected>6px</option>
+                <option value="8px">8px</option>
+                <option value="10px">10px</option>
+              </select>
+            </div>
+
+            <div class="custom-select between">
+              <label tt="interface-separators:">Разделители:</label>
+              <select id="interface_select_panel-separators" style="width: 140px;" keep trigger>
+                <option value="show" tt="interface-show">Показать</option>
+                <option value="hide" tt="interface-hide">Скрыть</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stylekit-panel">
+      <div class="stylekit">
+        <label tt="stylekit:">Набор стилей:</label>
+        <label id="current-stylekit">DEFAULT</label>
+      </div>
+
+      <button class="min" id="select-stylekit">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-folder-open">
+          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+          <path d="M5 19l2.757 -7.351a1 1 0 0 1 .936 -.649h12.307a1 1 0 0 1 .986 1.164l-.996 5.211a2 2 0 0 1 -1.964 1.625h-14.026a2 2 0 0 1 -2 -2v-11a2 2 0 0 1 2 -2h4l3 3h7a2 2 0 0 1 2 2v2" />
+        </svg>
+      </button>
+
+      <button class="min" id="reset-stylekit">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-reload">
+          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+          <path d="M19.933 13.041a8 8 0 1 1 -9.925 -8.788c3.899 -1 7.935 1.007 9.425 4.747" />
+          <path d="M20 4v5h-5" />
+        </svg>
+      </button>
     </div>
   </div>
 
@@ -131,22 +268,6 @@
       <span class="text" tt="proxy">Прокси</span>
     </button>
 
-    <button class="pretty-btn" id="anti-captcha" path="anti-captcha-container">
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-bug">
-        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-        <path d="M9 9v-1a3 3 0 0 1 6 0v1" />
-        <path d="M8 9h8a6 6 0 0 1 1 3v3a5 5 0 0 1 -10 0v-3a6 6 0 0 1 1 -3" />
-        <path d="M3 13l4 0" />
-        <path d="M17 13l4 0" />
-        <path d="M12 20l0 -6" />
-        <path d="M4 19l3.35 -2" />
-        <path d="M20 19l-3.35 -2" />
-        <path d="M4 7l3.75 2.4" />
-        <path d="M20 7l-3.75 2.4" />
-      </svg>
-      <span class="text" tt="anti-captcha">Анти-Капча</span>
-    </button>
-
     <button class="pretty-btn" id="webhook" path="webhook-container">
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-webhook">
         <path stroke="none" d="M0 0h24v24H0z" fill="none" />
@@ -157,7 +278,7 @@
       <span class="text" tt="webhook">Вебхук</span>
     </button>
 
-    <div class="split"></div>
+    <div class="splitter"></div>
 
     <button class="pretty-btn" id="control" path="control-container">
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-device-gamepad-2">
@@ -205,6 +326,24 @@
       <span class="text" tt="analysis">Анализ</span>
     </button>
 
+    <div class="splitter"></div>
+
+    <button class="pretty-btn" id="anti-captcha" path="anti-captcha-container">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-bug">
+        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+        <path d="M9 9v-1a3 3 0 0 1 6 0v1" />
+        <path d="M8 9h8a6 6 0 0 1 1 3v3a5 5 0 0 1 -10 0v-3a6 6 0 0 1 1 -3" />
+        <path d="M3 13l4 0" />
+        <path d="M17 13l4 0" />
+        <path d="M12 20l0 -6" />
+        <path d="M4 19l3.35 -2" />
+        <path d="M20 19l-3.35 -2" />
+        <path d="M4 7l3.75 2.4" />
+        <path d="M20 7l-3.75 2.4" />
+      </svg>
+      <span class="text" tt="anti-captcha">Анти-Капча</span>
+    </button>
+
     <button class="pretty-btn" id="ping" path="ping-container">
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-activity">
         <path stroke="none" d="M0 0h24v24H0z" fill="none" />
@@ -224,7 +363,7 @@
       <span class="text" tt="radar">Радар</span>
     </button>
 
-    <div class="split"></div>
+    <div class="splitter"></div>
 
     <button class="pretty-btn" id="journal" path="journal-container">
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-news">
@@ -235,22 +374,6 @@
         <path d="M8 16l4 0" />
       </svg>
       <span class="text" tt="journal">Журнал</span>
-    </button>
-
-    <button class="pretty-btn" id="interface" path="interface-container">
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-adjustments">
-        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-        <path d="M4 10a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
-        <path d="M6 4v4" />
-        <path d="M6 12v8" />
-        <path d="M10 16a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
-        <path d="M12 4v10" />
-        <path d="M12 18v2" />
-        <path d="M16 7a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
-        <path d="M18 4v1" />
-        <path d="M18 9v11" />
-      </svg>
-      <span class="text" tt="interface">Интерфейс</span>
     </button>
 
     <button class="pretty-btn" id="config" path="config-container">
@@ -269,7 +392,7 @@
       <span class="text" tt="config">Конфиг</span>
     </button>
 
-    <div class="split"></div>
+    <div class="splitter"></div>
 
     <button class="pretty-btn" id="documentation" path="documentation-container">
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-book">
@@ -325,6 +448,21 @@
         <button class="fixed" id="clear" tt="clear">Очистить</button>
       </div>
     </div>
+
+    <button class="min" id="open-client-settings">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-adjustments">
+        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+        <path d="M4 10a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+        <path d="M6 4v4" />
+        <path d="M6 12v8" />
+        <path d="M10 16a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+        <path d="M12 4v10" />
+        <path d="M12 18v2" />
+        <path d="M16 7a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+        <path d="M18 4v1" />
+        <path d="M18 9v11" />
+      </svg>
+    </button>
   </div>
 
   <div class="main-wrapper centered" id="settings-container" style="display: none;" global="true">
@@ -1987,137 +2125,6 @@
           <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" />
         </svg>
       </button>
-    </div>
-  </div>
-
-  <div class="main-wrapper centered" id="interface-container" style="display: none;" global="true">
-    <div class="interface-settings-wrapper">
-      <div class="settings">
-        <div class="section">
-          <div class="header" tt="interface-section-global">Глобальные</div>
-
-          <div class="options">
-            <div class="column-wrap" style="width: max-content; gap: 6px;">
-              <div class="custom-select between">
-                <label tt="interface-particles:">Партиклы:</label>
-                <select id="interface_select_particles" style="width: 150px;" keep trigger>
-                  <option value="enable" tt="enable">Включить</option>
-                  <option value="disable" tt="disable">Выключить</option>
-                </select>
-              </div>
-
-              <div class="custom-select between">
-                <label tt="interface-font:">Шрифт:</label>
-                <select id="interface_select_global-font-family" style="width: 170px;" keep trigger>
-                  <option value="inter">Inter</option>
-                  <option value="jetbrains-mono">JetBrains Mono</option>
-                  <option value="segoe-ui">Segoe UI</option>
-                </select>
-              </div>
-
-              <div class="custom-select between">
-                <label tt="interface-messages:">Сообщения:</label>
-                <select id="interface_select_show-messages" style="width: 150px;" keep trigger>
-                  <option value="show" tt="interface-show">Показать</option>
-                  <option value="hide" tt="interface-hide">Скрыть</option>
-                </select>
-              </div>
-
-              <div class="custom-select between">
-                <label tt="interface-language:">Язык:</label>
-                <select id="interface_select_language" style="width: 150px;" keep></select>
-              </div>
-
-              <div class="custom-select between">
-                <label>Discord RPC:</label>
-                <select id="interface_select_discord-rpc" style="width: 150px;" keep trigger>
-                  <option value="enable" tt="enable">Включить</option>
-                  <option value="disable" tt="disable" selected>Выключить</option>
-                </select>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="section">
-          <div class="header" tt="interface-section-panel">Панель</div>
-
-          <div class="options">
-            <div class="column-wrap" style="width: max-content; gap: 6px;">
-              <div class="custom-select between">
-                <label tt="interface-icons:">Иконки:</label>
-                <select id="interface_select_show-panel-icons" style="width: 150px;" keep trigger>
-                  <option value="show" tt="interface-show">Показать</option>
-                  <option value="hide" tt="interface-hide">Скрыть</option>
-                </select>
-              </div>
-
-              <div class="custom-select between">
-                <label tt="interface-font:">Шрифт:</label>
-                <select id="interface_select_panel-font-family" style="width: 170px;" keep trigger>
-                  <option value="inter">Inter</option>
-                  <option value="jetbrains-mono">JetBrains Mono</option>
-                  <option value="segoe-ui">Segoe UI</option>
-                  <option value="courier-new">Courier New</option>
-                  <option value="trebuchet-ms">Trebuchet MS</option>
-                </select>
-              </div>
-
-              <div class="custom-select between">
-                <label tt="interface-font-size:">Размер шрифта:</label>
-                <select id="interface_select_panel-font-size" style="width: 100px;" keep trigger>
-                  <option value="14px">14px</option>
-                  <option value="15px" selected>15px</option>
-                  <option value="16px">16px</option>
-                  <option value="17px">17px</option>
-                  <option value="18px">18px</option>
-                </select>
-              </div>
-
-              <div class="custom-select between">
-                <label tt="interface-internal-gap:">Внутренний отступ:</label>
-                <select id="interface_select_panel-internal-gap" style="width: 100px;" keep trigger>
-                  <option value="2px">2px</option>
-                  <option value="4px">4px</option>
-                  <option value="6px" selected>6px</option>
-                  <option value="8px">8px</option>
-                  <option value="10px">10px</option>
-                </select>
-              </div>
-
-              <div class="custom-select between">
-                <label tt="interface-separators:">Разделители:</label>
-                <select id="interface_select_panel-separators" style="width: 140px;" keep trigger>
-                  <option value="show" tt="interface-show">Показать</option>
-                  <option value="hide" tt="interface-hide">Скрыть</option>
-                </select>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="stylekit-panel">
-        <div class="stylekit">
-          <label tt="stylekit:">Набор стилей:</label>
-          <label id="current-stylekit">DEFAULT</label>
-        </div>
-
-        <button class="min" id="select-stylekit">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-folder-open">
-            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-            <path d="M5 19l2.757 -7.351a1 1 0 0 1 .936 -.649h12.307a1 1 0 0 1 .986 1.164l-.996 5.211a2 2 0 0 1 -1.964 1.625h-14.026a2 2 0 0 1 -2 -2v-11a2 2 0 0 1 2 -2h4l3 3h7a2 2 0 0 1 2 2v2" />
-          </svg>
-        </button>
-
-        <button class="min" id="reset-stylekit">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-reload">
-            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-            <path d="M19.933 13.041a8 8 0 1 1 -9.925 -8.788c3.899 -1 7.935 1.007 9.425 4.747" />
-            <path d="M20 4v5h-5" />
-          </svg>
-        </button>
-      </div>
     </div>
   </div>
 

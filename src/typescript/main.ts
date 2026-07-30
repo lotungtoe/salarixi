@@ -369,6 +369,12 @@ function initGlobalElements(): void {
     (document.getElementById("settings_option_bots-count") as HTMLInputElement).value = "";
     (document.getElementById("settings_option_join-delay") as HTMLInputElement).value = "";
   });
+
+  const clientSettingsContainer = document.querySelector<HTMLDivElement>(".client-settings-wrapper");
+	if (!clientSettingsContainer) return;
+
+  document.getElementById("open-client-settings")?.addEventListener("click", () => clientSettingsContainer.style.display = "flex");
+	document.getElementById("close-client-settings")?.addEventListener("click", () => clientSettingsContainer.style.display = "none");
 }
 
 /** Функция добавления открывающейся ссылки для определённого события элемента */
