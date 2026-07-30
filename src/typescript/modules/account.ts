@@ -103,11 +103,13 @@ class AccountModule {
     this.watch();
   }
 
-  /** Метод получения всех существующих аккаунтов (без лишних полей) */
-  public getAccounts(): Record<string, any> {
+  /** Метод получения всех выбранных аккаунтов без лишних полей */
+  public getSelectedAccounts(): Record<string, any> {
     let cleanAccounts: any = {};
 
     for (const [username, account] of this.accounts) {
+      if (!account.selected) continue;
+
       cleanAccounts[username] = {
         initial_group: account.initial_group,
         password: account.password,

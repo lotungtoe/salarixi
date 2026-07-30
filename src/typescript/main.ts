@@ -149,7 +149,7 @@ async function startBots(): Promise<void> {
       }
     });
 
-		options.accounts = accountModule.getAccounts();
+		options.accounts = accountModule.getSelectedAccounts();
     options.basic["script"] = options.basic.use_auto_script ? (document.getElementById("user-script") as HTMLTextAreaElement).value : null;
 
 		let currentLaunchCount = 0;
