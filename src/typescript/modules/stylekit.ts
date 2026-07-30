@@ -23,6 +23,7 @@ class StylekitModule {
     "bright-border": "#474747",
     "hover-bg": "#3b3b3b50",
     "hover-border": "#555555",
+    "chart-bar-bg": "#13812b",
     "process-inactive-color": "#d1d415",
     "process-active-color": "#13d40c",
     "process-launching-color": "#858585",
