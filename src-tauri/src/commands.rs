@@ -273,7 +273,7 @@ pub async fn set_discord_rpc(version: String, state: bool) {
 }
 
 #[tauri::command]
-pub async fn start_network_scanning(range: String, task_count: u8, target_port: u32, timeout: u64) {
+pub async fn start_network_scanning(range: String, task_count: usize, target_port: u32, timeout: u64) {
   start_scanning(range, task_count, target_port, timeout).await;
 }
 

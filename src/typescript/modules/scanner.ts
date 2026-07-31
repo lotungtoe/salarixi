@@ -6,6 +6,8 @@ import { logger } from "../utils/logger";
 interface ServerMeta {
 	address: string;
 	icon: string | null;
+	onlinePlayers: number;
+	maxPlayers: number;
 	version: number;
 }
 
@@ -78,7 +80,10 @@ class ScannerModule {
 		card.innerHTML = `
 			${meta.icon ? `<img src=\"${meta.icon}\" draggable="false">` : ""}
 			<div class="info">
-				<label class="ip">${meta.address}</label>
+				<label class="header">
+          <span class="ip">${meta.address}</span>
+          <span class="players">(${meta.onlinePlayers}/${meta.maxPlayers})</span>
+        </label>
 				<label class="version">${meta.version}</label>
 			</div>
 		`;

@@ -1,5 +1,5 @@
 use std::net::Ipv4Addr;
-use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::sync::Arc;
 use std::time::Duration;
 
@@ -14,9 +14,12 @@ static SCANNER_ROOT_TASK: Lazy<RwLock<Option<JoinHandle<()>>>> = Lazy::new(|| Rw
 static SCANNER_EXTRA_TASKS: Lazy<RwLock<Vec<JoinHandle<()>>>> = Lazy::new(|| RwLock::new(Vec::new()));
 
 #[derive(Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ServerMeta {
   address: String,
   icon: Option<String>,
+  online_players: i32,
+  max_players: i32,
   version: String,
 }
 
@@ -88,7 +91,7 @@ fn parse_ip_range(range: &str) -> Vec<String> {
 }
 
 /// Функция сканирования сети на наличие Minecraft серверов
-pub async fn start_scanning(range: String, task_count: u8, target_port: u32, timeout: u64) {
+pub async fn start_scanning(range: String, task_count: usize, target_port: u32, timeout: u64) {
   let mut extra_tasks = SCANNER_EXTRA_TASKS.write().await;
   extra_tasks.iter().for_each(|t| t.abort());
   extra_tasks.clear();
@@ -112,14 +115,21 @@ pub async fn start_scanning(range: String, task_count: u8, target_port: u32, tim
   let scanner_task = tokio::spawn(async move {
     let hosts = Arc::new(RwLock::new(parsed));
     let servers = Arc::new(AtomicUsize::new(0));
+    let status_reset = Arc::new(AtomicBool::new(false));
 
     for _ in 0..task_count {
       let hosts_clone = hosts.clone();
       let servers_clone = servers.clone();
+      let status_reset_clone = status_reset.clone();
       let task = tokio::spawn(async move {
         loop {
           let mut hosts_guard = hosts_clone.write().await;
           if hosts_guard.len() < 1 {
+            if !status_reset_clone.load(Ordering::SeqCst) {
+              EMIT_MANAGER.emit(EmitEvent::SetScannerStatus(0));
+              status_reset_clone.store(true, Ordering::SeqCst);
+            }
+
             break;
           }
 
@@ -137,6 +147,8 @@ pub async fn start_scanning(range: String, task_count: u8, target_port: u32, tim
             let meta = ServerMeta {
               address: target_addr,
               icon: data.favicon,
+              online_players: data.players.online,
+              max_players: data.players.max,
               version: data.version.name,
             };
 
@@ -173,7 +185,5 @@ pub async fn stop_scanning() {
 
   *SCANNER_ROOT_TASK.write().await = None;
 
-  EMIT_MANAGER.emit(EmitEvent::ScannerHostsScanned(0, 0));
-  EMIT_MANAGER.emit(EmitEvent::ScannerServersFound(0));
   EMIT_MANAGER.emit(EmitEvent::SetScannerStatus(0));
 }
