@@ -1,9 +1,9 @@
-import { currentClientVersion } from "../main";
+import { CLIENT_VERSION } from "../version";
 
 /** Функция сравнения текущей версии с указанной по системе SemVer */
 export function isVersionNewer(version: string): boolean {
 	const [nmajor, nminor, npatch] = parseVersion(version);
-	const [cmajor, cminor, cpatch] = parseVersion(currentClientVersion);
+	const [cmajor, cminor, cpatch] = parseVersion(CLIENT_VERSION);
 
 	if (nmajor === -1 || nminor === -1 || npatch === -1 || cmajor === -1 || cminor === -1 || cpatch === -1) return false;
 

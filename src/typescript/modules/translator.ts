@@ -1,7 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import { logger } from "../utils/logger";
 
-import { currentClientVersion } from "../main";
+import { CLIENT_VERSION } from "../version";
 import { isVersionNewer } from "../utils/semver";
 import { loadCacheOrNew, LcfResult, LnfResult, loadCache, saveCache, TimeType } from "../utils/cache";
 
@@ -100,15 +100,15 @@ class TranslatorModule {
 						break;
 					}
 
-					if (!maximum && minimum && minimum === currentClientVersion) {
+					if (!maximum && minimum && minimum === CLIENT_VERSION) {
 						filteredTranslation.push(piece);
 						break;
 					}
 
 					if (
-						minimum && (minimum === currentClientVersion || !isVersionNewer(minimum))
+						minimum && (minimum === CLIENT_VERSION || !isVersionNewer(minimum))
 						&&
-						maximum && (maximum === currentClientVersion || isVersionNewer(maximum))
+						maximum && (maximum === CLIENT_VERSION || isVersionNewer(maximum))
 					) {
 						filteredTranslation.push(piece);
 						break;

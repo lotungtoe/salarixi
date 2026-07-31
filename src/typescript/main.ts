@@ -27,14 +27,13 @@ import { infoModule } from "./modules/info";
 import { updaterModule } from "./modules/updater";
 import { stylekitModule } from "./modules/stylekit";
 import { scannerModule } from "./modules/scanner";
+import { CLIENT_VERSION } from "./version";
 
 Chart.register(...registerables);
 
 Chart.defaults.font.family = "'Inter', sans-serif";
 Chart.defaults.font.size = 13;
 Chart.defaults.font.weight = "normal";
-
-export const currentClientVersion = "1.1.1";
 
 let stopping = false;
 let botsWereFullyConnected = false;
@@ -393,7 +392,7 @@ export function addOpeningUrlTo(id: string, event: string, url: string): void {
 
 /** Вспомогательная функция инициализации титул бара */
 function initTitleBar(): void {
-	(document.getElementById("title-version") as HTMLElement).innerText = `v${currentClientVersion}`;
+	(document.getElementById("title-version") as HTMLElement).innerText = `v${CLIENT_VERSION}`;
 	(document.getElementById("window-minimize") as HTMLButtonElement).addEventListener("click", async () => await getCurrentWindow().minimize());
 	(document.getElementById("window-close") as HTMLButtonElement).addEventListener("click", async () => {
 		await configModule.saveCurrentConfig();
@@ -437,7 +436,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	logger.init();
 	messages.init();
 
-	logger.log(`Клиент запущен, версия ${currentClientVersion}`, "info");
+	logger.log(`Клиент запущен, версия ${CLIENT_VERSION}`, "info");
 
 	try {
 		timerModule.init();
@@ -480,8 +479,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 		const selectDiscordRpcMode = document.getElementById("interface_select_discord-rpc") as HTMLSelectElement;
 
-		selectDiscordRpcMode.addEventListener("change", async () => await invoke("set_discord_rpc", { version: currentClientVersion, state: selectDiscordRpcMode.value === "enable" }));
-		await invoke("set_discord_rpc", { version: currentClientVersion, state: selectDiscordRpcMode.value === "enable" });
+		selectDiscordRpcMode.addEventListener("change", async () => await invoke("set_discord_rpc", { version: CLIENT_VERSION, state: selectDiscordRpcMode.value === "enable" }));
+		await invoke("set_discord_rpc", { version: CLIENT_VERSION, state: selectDiscordRpcMode.value === "enable" });
 
 		updaterModule.init();
 	} catch (error) {

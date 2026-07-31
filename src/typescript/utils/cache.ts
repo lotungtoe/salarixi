@@ -2,7 +2,7 @@ import { invoke } from "@tauri-apps/api/core";
 
 import { getStringSize } from "./size";
 import { date } from "./date";
-import { currentClientVersion } from "../main";
+import { CLIENT_VERSION } from "../version";
 
 /** Тип времени */
 export enum TimeType {
@@ -65,7 +65,7 @@ export async function saveCache(cache: string, filename: string): Promise<Comman
 	return await invoke("save_cache", {
 		cache: Array.from(uint8),
 		filename: filename,
-		clientVersion: currentClientVersion,
+		clientVersion: CLIENT_VERSION,
 		date: `${date("exact")}-${date("common")}`,
 	});
 }
@@ -81,7 +81,7 @@ export async function loadCache(name: string, filename: string, maxStorageValue:
 		};
 	}
 
-	if (result1.data.split(" ")[0] !== currentClientVersion) {
+	if (result1.data.split(" ")[0] !== CLIENT_VERSION) {
 		return {
 			data: null,
 			error: "incompatible",
