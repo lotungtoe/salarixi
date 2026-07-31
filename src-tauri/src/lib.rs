@@ -1,3 +1,5 @@
+#![feature(ip_as_octets)]
+
 mod bot;
 mod commands;
 mod emit;
@@ -66,6 +68,8 @@ pub fn run() {
       save_file,
       remove_file,
       open_directory,
+      start_network_scanning,
+      stop_network_scanning,
     ])
     .run(tauri::generate_context!())
     .expect("error while running client");

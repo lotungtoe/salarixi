@@ -8,6 +8,7 @@ import { logger } from "./utils/logger";
 import { messages } from "./utils/message";
 import { enableParticles } from "./effects/particles";
 import { switchControlWrapper, switchGlobalWrapper } from "./utils/switchers";
+import { replenishTriggerRegistry } from "./trigger/replenish";
 
 import { configModule } from "./modules/config";
 import { accountModule } from "./modules/account";
@@ -25,7 +26,7 @@ import { docsModule } from "./modules/docs";
 import { infoModule } from "./modules/info";
 import { updaterModule } from "./modules/updater";
 import { stylekitModule } from "./modules/stylekit";
-import { replenishTriggerRegistry } from "./trigger/replenish";
+import { scannerModule } from "./modules/scanner";
 
 Chart.register(...registerables);
 
@@ -474,6 +475,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     await monitoringModule.init();
     await captchaModule.init();
     await proxyModule.init();
+    await scannerModule.init();
     await translatorModule.init();
     await pluginModule.init();
     await docsModule.init();

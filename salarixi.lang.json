@@ -155,6 +155,17 @@
       }
     },
     {
+      "versions": "1.1.1",
+      "tag": "scanner",
+      "lang": {
+      "ru": "Сканер",
+      "en": "Scanner",
+      "tr": "Tarayıcı",
+      "ja": "スキャナー",
+      "zh": "掃描器"
+      }
+    },
+    {
       "versions": "1.1.0:1.1.1",
       "tag": "radar",
       "lang": {
@@ -3155,6 +3166,94 @@
         "tr": "YASAL UYARI: Bu istemciyi hemen güncellemenizi zorunlu tutmuyoruz; sadece daha optimize edilmiş ve çok yönlü bir sürüm sunuyoruz! En uygun sürümü seçme özgürlüğünüz tamamen sınırsızdır.",
         "ja": "免責事項：このクライアントをすぐにアップデートする必要はありません。より最適化され、多機能なバージョンを提供しているだけです。最も便利なバージョンを選択する権利は完全に無制限です。",
         "zh": "免責聲明：我們不會強制您立即更新此客戶端；我們只是提供一個更優化、更全面的版本！您可以完全自由地選擇最方便的版本。"
+      }
+    },
+    {
+      "versions": "1.1.1",
+      "tag": "cidr",
+      "lang": {
+      "ru": "Диапазон (CIDR)",
+      "en": "CIDR range",
+      "tr": "CIDR aralığı",
+      "ja": "CIDR範囲",
+      "zh": "CIDR 范围"
+      }
+    },
+    {
+      "versions": "1.1.1",
+      "tag": "task-count",
+      "lang": {
+        "ru": "Количество задач",
+        "en": "Task count",
+        "tr": "Görev sayısı",
+        "ja": "タスク数",
+        "zh": "任务数量"
+      }
+    },
+    {
+      "versions": "1.1.1",
+      "tag": "target-port",
+      "lang": {
+        "ru": "Целевой порт",
+        "en": "Target port",
+        "tr": "Hedef bağlantı noktası",
+        "ja": "ターゲットポート",
+        "zh": "目标端口"
+      }
+    },
+    {
+      "versions": "1.1.1",
+      "tag": "timeout-ms",
+      "lang": {
+        "ru": "Таймаут (мс)",
+        "en": "Timeout (ms)",
+        "tr": "Zaman aşımı (ms)",
+        "ja": "タイムアウト (ms)",
+        "zh": "超时时间（毫秒）"
+      }
+    },
+    {
+      "versions": "1.1.1",
+      "tag": "scan",
+      "lang": {
+        "ru": "Сканировать",
+        "en": "Scan",
+        "tr": "Tara",
+        "ja": "スキャン",
+        "zh": "扫描"
+      }
+    },
+    {
+      "versions": "1.1.1",
+      "tag": "status",
+      "lang": {
+        "ru": "Статус",
+        "en": "Status",
+        "tr": "Durum",
+        "ja": "ステータス",
+        "zh": "状态"
+      }
+    },
+    {
+      "versions": "1.1.1",
+      "tag": "hosts-scanned",
+      "lang": {
+        "ru": "Хостов просканировано",
+        "en": "Hosts scanned",
+        "tr": "Taranan ana bilgisayarlar",
+        "ja": "スキャンしたホスト数",
+        "zh": "已扫描的主机数"
+      }
+    },
+    {
+    "versions": "1.1.1",
+      "tag": "servers-found",
+      "lang": {
+        "ru": "Найдено серверов",
+        "en": "Servers found",
+        "tr": "Bulunan sunucular",
+        "ja": "見つかったサーバー数",
+        "zh": "找到的服务器数"
       }
     }
   ]

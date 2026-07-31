@@ -344,6 +344,20 @@
       <span class="text" tt="anti-captcha">Анти-Капча</span>
     </button>
 
+    <button class="pretty-btn" id="scanner" path="scanner-container">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-world-search">
+        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+        <path d="M21 12a9 9 0 1 0 -9 9" />
+        <path d="M3.6 9h16.8" />
+        <path d="M3.6 15h7.9" />
+        <path d="M11.5 3a17 17 0 0 0 0 18" />
+        <path d="M12.5 3a16.984 16.984 0 0 1 2.574 8.62" />
+        <path d="M15 18a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" />
+        <path d="M20.2 20.2l1.8 1.8" />
+      </svg>
+      <span class="text" tt="scanner">Сканер</span>
+    </button>
+
     <button class="pretty-btn" id="ping" path="ping-container">
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-activity">
         <path stroke="none" d="M0 0h24v24H0z" fill="none" />
@@ -1977,6 +1991,66 @@
 
   <div class="main-wrapper centered" id="analysis-container" style="display: none;" global="true">
     <h1 class="info-text" tt="info-text">Данный раздел не работает</h1>
+  </div>
+
+  <div class="main-wrapper" id="scanner-container" style="display: none;" global="true">
+    <div class="scanner-wrapper">
+      <div class="panel">
+        <div class="inputs">
+          <div class="form-input">
+            <label class="text" tt="cidr">Диапазон (CIDR)</label>
+            <input type="text" id="scanner-ip-range" placeholder="172.16.0.1/12" keep private>
+          </div>
+
+          <div class="form-input">
+            <label class="text" tt="task-count">Количество задач</label>
+            <input type="number" id="scanner-task-count" placeholder="1-100" value="10" keep private>
+          </div>
+
+          <div class="form-input">
+            <label class="text" tt="target-port">Целевой порт</label>
+            <input type="number" id="scanner-target-port" placeholder="25565" value="25565" keep private>
+          </div>
+
+          <div class="form-input">
+            <label class="text" tt="timeout-ms">Таймаут (мс)</label>
+            <input type="number" id="scanner-timeout" placeholder="8000" value="8000" keep private>
+          </div>
+        </div>
+
+        <div class="buttons">
+          <button id="start-network-scanning">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-world-search">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+              <path d="M21 12a9 9 0 1 0 -9 9" />
+              <path d="M3.6 9h16.8" />
+              <path d="M3.6 15h7.9" />
+              <path d="M11.5 3a17 17 0 0 0 0 18" />
+              <path d="M12.5 3a16.984 16.984 0 0 1 2.574 8.62" />
+              <path d="M15 18a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" />
+              <path d="M20.2 20.2l1.8 1.8" />
+            </svg>
+            <span tt="scan">Сканировать</span>
+          </button>
+
+          <button id="stop-network-scanning">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-square">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+              <path d="M3 5a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-14" />
+            </svg>
+            <span tt="stop">Остановить</span>
+          </button>
+        </div>
+
+        <div class="info">
+          <label><span tt="status:">Статус:</span><span class="value" id="scanner-status">inactive</span></label>
+          <label><span tt="hosts-scanned:">Хостов просканировано:</span><span class="value" id="scanner-hosts-scanned">0/0</span></label>
+          <label><span tt="servers-found:">Найдено серверов:</span><span class="value" id="scanner-servers-found">0</span></label>
+        </div>
+      </div>
+
+      <div id="scanner-server-list"></div>
+    </div>
   </div>
 
   <div class="main-wrapper" id="ping-container" style="display: none;" global="true">

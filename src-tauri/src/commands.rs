@@ -12,6 +12,7 @@ use crate::bot::systems::profile::{Profile, PROFILE_SYSTEM};
 use crate::bot::systems::registry::{RegistryEvent, REGISTRY_SYSTEM};
 use crate::bot::utils::ping::{ping_server, ServerInformation};
 use crate::bot::utils::radar::{RadarInfo, RADAR};
+use crate::bot::utils::scanner::{start_scanning, stop_scanning};
 use crate::emit::{emit_log, emit_msg};
 use crate::launch::options::LaunchOptions;
 use crate::launch::process::{current_options, process_is_active};
@@ -20,7 +21,6 @@ use crate::other::discord_rpc::DISCORD_RPC;
 use crate::other::webhook::send_webhook;
 use crate::sleep;
 
-/// Команда запуска ботов
 #[tauri::command]
 pub async fn launch_bots(options: Vec<u8>) -> bool {
   let parsed_options: LaunchOptions = match serde_json::from_slice(&options) {
@@ -31,13 +31,11 @@ pub async fn launch_bots(options: Vec<u8>) -> bool {
   launch_bots_on_server(parsed_options).await
 }
 
-/// Команда остановки ботов
 #[tauri::command]
 pub async fn stop_bots() -> bool {
   stop_bots_and_destroy_data().await
 }
 
-/// Команда получения профилей ботов
 #[tauri::command]
 pub async fn get_bot_profiles() -> HashMap<String, Profile> {
   let mut profiles = HashMap::new();
@@ -67,7 +65,6 @@ struct DisconnectBotCommand {
   username: String,
 }
 
-/// Команда выполнения быстрой операции
 #[tauri::command]
 pub async fn quick_operation(operation: String, options: serde_json::Value) {
   match operation.as_str() {
@@ -99,7 +96,6 @@ pub async fn quick_operation(operation: String, options: serde_json::Value) {
   }
 }
 
-/// Команда установки группы указанному боту
 #[tauri::command]
 pub async fn set_group(username: String, group: String) {
   if let Some(index) = INDEX_SYSTEM.index_by_username(&username).await {
@@ -107,13 +103,11 @@ pub async fn set_group(username: String, group: String) {
   }
 }
 
-/// Команда получения количества активных ботов
 #[tauri::command]
 pub async fn get_active_bots_count() -> i32 {
   PROFILE_SYSTEM.get_connected_count().await as i32
 }
 
-/// Команда управления ботами
 #[tauri::command]
 pub async fn control_bots(name: String, options: serde_json::Value, group: String) {
   if process_is_active() {
@@ -121,31 +115,26 @@ pub async fn control_bots(name: String, options: serde_json::Value, group: Strin
   }
 }
 
-/// Команда пингования сервера
 #[tauri::command]
 pub async fn get_server_info(address: String) -> ServerInformation {
   ping_server(address).await
 }
 
-/// Команда получения данных радара
 #[tauri::command]
 pub async fn get_radar_data(target: String) -> Option<RadarInfo> {
   RADAR.find_target(target).await
 }
 
-/// Команда сохранения данных радара
 #[tauri::command]
 pub async fn save_radar_data(target: String, path: String, filename: String, x: f64, y: f64, z: f64) {
   RADAR.save_data(target, path, filename, x, y, z);
 }
 
-/// Команда преследования цели радара
 #[tauri::command]
 pub async fn follow_radar_target(x: i32, z: i32) {
   RADAR.follow(x, z).await;
 }
 
-/// Команда получения использования RAM
 #[tauri::command]
 pub async fn get_ram_usage() -> f64 {
   if let Some(usage) = memory_stats::memory_stats() {
@@ -155,7 +144,6 @@ pub async fn get_ram_usage() -> f64 {
   0.0
 }
 
-/// Команда получения использования CPU
 #[tauri::command]
 pub async fn get_cpu_usage() -> f32 {
   let system = systemstat::System::new();
@@ -171,7 +159,6 @@ pub async fn get_cpu_usage() -> f32 {
   0.0
 }
 
-/// Команда выполнения быстрой задачи
 #[tauri::command]
 pub async fn quick_task(name: String) {
   if let Some(opts) = current_options().await {
@@ -194,7 +181,6 @@ pub async fn quick_task(name: String) {
   REGISTRY_SYSTEM.send_event(RegistryEvent::QuickTask { name });
 }
 
-/// Команда выполнения пользовательского скрипта
 #[tauri::command]
 pub async fn execute_script(script: String, separately: bool) {
   if process_is_active() {
@@ -216,19 +202,16 @@ pub async fn execute_script(script: String, separately: bool) {
   }
 }
 
-/// Команда остановки пользовательского скрипта
 #[tauri::command]
 pub async fn stop_script() {
   SCRIPT_EXECUTOR.stop();
 }
 
-/// Команда открытия URL в браузере
 #[tauri::command]
 pub async fn open_url(url: String) {
   let _ = open::that(url);
 }
 
-/// Команда скачивания JSON-контента
 #[tauri::command]
 pub async fn download_json(url: String) -> Option<serde_json::Value> {
   let client = reqwest::Client::new();
@@ -248,7 +231,6 @@ pub async fn download_json(url: String) -> Option<serde_json::Value> {
   resp.json().await.ok()
 }
 
-/// Команда скачивания TEXT-контента
 #[tauri::command]
 pub async fn download_text(url: String) -> Option<String> {
   let client = reqwest::Client::new();
@@ -262,7 +244,6 @@ pub async fn download_text(url: String) -> Option<String> {
   resp.text().await.ok()
 }
 
-/// Команда чтения небольшого текстового файла
 #[tauri::command]
 pub fn read_text_file(path: String) -> Vec<u8> {
   match fs::read(&path) {
@@ -271,20 +252,17 @@ pub fn read_text_file(path: String) -> Vec<u8> {
   }
 }
 
-/// Команда остановки главного процесса
 #[tauri::command]
 pub fn exit() {
   std::process::exit(0x0);
 }
 
-/// Команда проверки, запущен ли клиент в режиме разработки
 #[tauri::command]
 pub fn is_dev_mode() -> bool {
   let dev_flag = "dev".to_string();
   std::env::args().collect::<Vec<String>>().contains(&dev_flag)
 }
 
-/// Команда задания статуса Discord RPC
 #[tauri::command]
 pub async fn set_discord_rpc(version: String, state: bool) {
   if state {
@@ -292,4 +270,14 @@ pub async fn set_discord_rpc(version: String, state: bool) {
   } else {
     DISCORD_RPC.write().await.disable();
   }
+}
+
+#[tauri::command]
+pub async fn start_network_scanning(range: String, task_count: u8, target_port: u32, timeout: u64) {
+  start_scanning(range, task_count, target_port, timeout).await;
+}
+
+#[tauri::command]
+pub async fn stop_network_scanning() {
+  stop_scanning().await;
 }

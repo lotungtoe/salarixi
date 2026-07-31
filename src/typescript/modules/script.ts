@@ -5,13 +5,8 @@ import { setQuickTasksAllowed } from "../main";
 
 /** Модуль управления пользовательским сценарием */
 class ScriptModule {
-	private editor: HTMLTextAreaElement | null;
-	private lineCounter: HTMLDivElement | null; 
-	
-	constructor() {
-		this.editor = null;
-		this.lineCounter = null;
-	}
+	private editor: HTMLTextAreaElement | null = null;
+	private lineCounter: HTMLDivElement | null = null;
 
 	/** Метод инициализации функций, связанных с скриптингом */
 	public init(): void {

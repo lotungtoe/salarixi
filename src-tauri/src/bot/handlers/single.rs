@@ -190,7 +190,7 @@ async fn process_chat_message(bot: Client, packet: ChatPacket) {
     return;
   };
 
-  send_optional_event(OptionalEmitEvent::Chat(ChatEventPayload {
+  EMIT_MANAGER.emit(EmitEvent::BotChat(ChatEventPayload {
     receiver: username.clone(),
     message: packet.message().to_html(),
   }));
@@ -220,7 +220,7 @@ async fn process_chat_message(bot: Client, packet: ChatPacket) {
           "info",
         );
 
-        send_optional_event(OptionalEmitEvent::AntiWebCaptcha(AntiWebCaptchaEventPayload {
+        EMIT_MANAGER.emit(EmitEvent::AntiWebCaptcha(AntiWebCaptchaEventPayload {
           captcha_url: url,
           username: username.clone(),
         }));
@@ -334,7 +334,7 @@ async fn process_packet(bot: Client, packet: Arc<ClientboundGamePacket>) {
               if options.captcha_bypass.solve_mode == "auto" {
                 MAP_CAPTCHA_BYPASS.solve_captcha(username.clone(), combined_base64, options.captcha_bypass);
               } else {
-                send_optional_event(OptionalEmitEvent::AntiMapCaptcha(AntiMapCaptchaEventPayload {
+                EMIT_MANAGER.emit(EmitEvent::AntiMapCaptcha(AntiMapCaptchaEventPayload {
                   base64_code: combined_base64,
                   username: username.to_string(),
                 }));
@@ -364,7 +364,7 @@ async fn process_packet(bot: Client, packet: Arc<ClientboundGamePacket>) {
             if options.captcha_bypass.solve_mode == "auto" {
               MAP_CAPTCHA_BYPASS.solve_captcha(username, base64_code, options.captcha_bypass);
             } else {
-              send_optional_event(OptionalEmitEvent::AntiMapCaptcha(AntiMapCaptchaEventPayload {
+              EMIT_MANAGER.emit(EmitEvent::AntiMapCaptcha(AntiMapCaptchaEventPayload {
                 base64_code,
                 username: username.to_string(),
               }));

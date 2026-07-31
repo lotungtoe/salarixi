@@ -3,6 +3,8 @@ use serde::Serialize;
 use tauri::{AppHandle, Emitter};
 use tokio::sync::broadcast;
 
+use crate::bot::utils::scanner::ServerMeta;
+
 pub static EMIT_MANAGER: Lazy<EmitManager> = Lazy::new(|| EmitManager::new());
 
 #[derive(Serialize, Clone)]
@@ -49,31 +51,30 @@ pub enum EmitEvent {
   Log { text: String, class: String },
   Message { name: String, content: String },
   ConnectedBots { count: u8 },
-  Optional(OptionalEmitEvent),
-}
-
-#[derive(Clone)]
-pub enum OptionalEmitEvent {
-  Chat(ChatEventPayload),
+  BotChat(ChatEventPayload),
   AntiWebCaptcha(AntiWebCaptchaEventPayload),
   AntiMapCaptcha(AntiMapCaptchaEventPayload),
+  PushScannedServer(ServerMeta),
+  SetScannerStatus(u8),
+  ScannerHostsScanned(usize, usize),
+  ScannerServersFound(usize),
 }
 
 impl EmitManager {
   pub fn new() -> Self {
-    let (tx, _) = broadcast::channel(1000);
+    let (tx, _) = broadcast::channel(255);
 
     Self { events: tx }
   }
 
-  pub fn send_event(&self, event: EmitEvent) {
+  pub fn emit(&self, event: EmitEvent) {
     let _ = self.events.send(event);
   }
 }
 
 /// Вспомогательная функция отправки лога
 pub fn emit_log(text: impl Into<String>, class: impl Into<String>) {
-  EMIT_MANAGER.send_event(EmitEvent::Log {
+  EMIT_MANAGER.emit(EmitEvent::Log {
     text: text.into(),
     class: class.into(),
   });
@@ -81,7 +82,7 @@ pub fn emit_log(text: impl Into<String>, class: impl Into<String>) {
 
 /// Вспомогательная функция отправки сообщения
 pub fn emit_msg(name: impl Into<String>, content: impl Into<String>) {
-  EMIT_MANAGER.send_event(EmitEvent::Message {
+  EMIT_MANAGER.emit(EmitEvent::Message {
     name: name.into(),
     content: content.into(),
   });
@@ -89,22 +90,7 @@ pub fn emit_msg(name: impl Into<String>, content: impl Into<String>) {
 
 /// Вспомогательная функция отправки количества подключённых ботов
 pub fn emit_cbc(count: u8) {
-  EMIT_MANAGER.send_event(EmitEvent::ConnectedBots { count });
-}
-
-/// Вспомогательная функция отправки дополнительных событий
-pub fn send_optional_event(event: OptionalEmitEvent) {
-  match event {
-    OptionalEmitEvent::Chat(payload) => {
-      EMIT_MANAGER.send_event(EmitEvent::Optional(OptionalEmitEvent::Chat(payload)));
-    }
-    OptionalEmitEvent::AntiWebCaptcha(payload) => {
-      EMIT_MANAGER.send_event(EmitEvent::Optional(OptionalEmitEvent::AntiWebCaptcha(payload)));
-    }
-    OptionalEmitEvent::AntiMapCaptcha(payload) => {
-      EMIT_MANAGER.send_event(EmitEvent::Optional(OptionalEmitEvent::AntiMapCaptcha(payload)));
-    }
-  }
+  EMIT_MANAGER.emit(EmitEvent::ConnectedBots { count });
 }
 
 pub async fn emit_event_loop(handle: AppHandle) {
@@ -121,27 +107,27 @@ pub async fn emit_event_loop(handle: AppHandle) {
       EmitEvent::ConnectedBots { count } => {
         let _ = handle.emit("connected-bots-count", ConnectedBotsPayload { count });
       }
-      EmitEvent::Optional(optional_event) => match optional_event {
-        OptionalEmitEvent::Chat(payload) => {
-          let _ = handle.emit("chat-message", payload);
-        }
-        OptionalEmitEvent::AntiWebCaptcha(payload) => {
-          let _ = handle.emit("anti-web-captcha", payload);
-        }
-        OptionalEmitEvent::AntiMapCaptcha(payload) => {
-          let _ = handle.emit("anti-map-captcha", payload);
-        }
-      },
+      EmitEvent::BotChat(payload) => {
+        let _ = handle.emit("chat-message", payload);
+      }
+      EmitEvent::AntiWebCaptcha(payload) => {
+        let _ = handle.emit("anti-web-captcha", payload);
+      }
+      EmitEvent::AntiMapCaptcha(payload) => {
+        let _ = handle.emit("anti-map-captcha", payload);
+      }
+      EmitEvent::PushScannedServer(meta) => {
+        let _ = handle.emit("scanner:push-server", meta);
+      }
+      EmitEvent::SetScannerStatus(status) => {
+        let _ = handle.emit("scanner:status", status);
+      }
+      EmitEvent::ScannerHostsScanned(current, total) => {
+        let _ = handle.emit("scanner:hosts-scanned", [current, total]);
+      }
+      EmitEvent::ScannerServersFound(count) => {
+        let _ = handle.emit("scanner:servers-found", count);
+      }
     }
   }
 }
-
-/*
-/// Вспомогательная функция отправки чего-то
-pub fn emit_something<'e, P>(app: &AppHandle, event: impl Into<&'e str>, payload: P)
-where
-  P: Serialize + Clone,
-{
-  let _ = app.emit(event.into(), payload);
-}
-*/
