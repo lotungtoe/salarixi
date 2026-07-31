@@ -5,98 +5,98 @@ import { logger } from "../utils/logger";
 
 /** Структура данных капчи */
 interface Captcha {
-  type: "web" | "map";
-  data: {
-    url: string | null;
-    base64: string | null;
-  }
+	type: "web" | "map";
+	data: {
+		url: string | null;
+		base64: string | null;
+	}
 }
 
 /** Модуль управления обходом капч */
 class CaptchaModule {
-  private settings: HTMLElement | null = null;
-  private cards: HTMLElement | null = null;
-  private wrappers: HTMLElement | null = null;
+	private settings: HTMLElement | null = null;
+	private cards: HTMLElement | null = null;
+	private wrappers: HTMLElement | null = null;
 
-  /** Метод инициализации функций, связанных с обходом капчи */
-  public async init(): Promise<void> {
-    this.settings = document.getElementById("anti-captcha-settings");
-    this.cards = document.getElementById("anti-captcha-cards");
-    this.wrappers = document.getElementById("anti-captcha-wrappers");
+	/** Метод инициализации функций, связанных с обходом капчи */
+	public async init(): Promise<void> {
+		this.settings = document.getElementById("anti-captcha-settings");
+		this.cards = document.getElementById("anti-captcha-cards");
+		this.wrappers = document.getElementById("anti-captcha-wrappers");
 
-    await listen<{ captcha_url: string; username: string; }>("captcha-bypass:web", (event) => {
-      try {
-        const captcha_url = event.payload.captcha_url;
-        const username = event.payload.username;
+		await listen<{ captcha_url: string; username: string; }>("captcha-bypass:web", (event) => {
+			try {
+				const captcha_url = event.payload.captcha_url;
+				const username = event.payload.username;
 
-        this.createCaptchaCard(username, {
-          type: "web",
-          data: {
-            url: captcha_url,
-            base64: null
-          }
-        });
-      } catch (error) {
-        logger.log(`Ошибка обработки события "captcha-bypass:web": ${error}`, "error");
-      }
-    });
+				this.createCaptchaCard(username, {
+					type: "web",
+					data: {
+						url: captcha_url,
+						base64: null
+					}
+				});
+			} catch (error) {
+				logger.log(`Ошибка обработки события "captcha-bypass:web": ${error}`, "error");
+			}
+		});
 
-    await listen<{ base64_code: string; username: string; }>("captcha-bypass:map", (event) => {
-      try {
-        const base64 = event.payload.base64_code;
-        const username = event.payload.username;
+		await listen<{ base64_code: string; username: string; }>("captcha-bypass:map", (event) => {
+			try {
+				const base64 = event.payload.base64_code;
+				const username = event.payload.username;
 
-        this.createCaptchaCard(username, {
-          type: "map",
-          data: {
-            url: null,
-            base64: base64
-          }
-        });
-      } catch (error) {
-        logger.log(`Ошибка обработки события "captcha-bypass:map": ${error}`, "error");
-      }
-    });
-  }
+				this.createCaptchaCard(username, {
+					type: "map",
+					data: {
+						url: null,
+						base64: base64
+					}
+				});
+			} catch (error) {
+				logger.log(`Ошибка обработки события "captcha-bypass:map": ${error}`, "error");
+			}
+		});
+	}
 
-  /** Метод активации обхода капчи */
-  public enable(type: string, mode: string): void {
-    if (type === "map" && mode === "manual") {
-      this.settings!.style.display = "none";
+	/** Метод активации обхода капчи */
+	public enable(type: string, mode: string): void {
+		if (type === "map" && mode === "manual") {
+			this.settings!.style.display = "none";
 
-      this.cards!.innerHTML = "";
-      this.cards!.style.display = "flex";
-    }
-  }
+			this.cards!.innerHTML = "";
+			this.cards!.style.display = "flex";
+		}
+	}
 
-  /** Метод очистки и выключения обхода капчи */
-  public disable(): void {
-    document.querySelectorAll('[wrapper="captcha-card"]').forEach(w => w.remove());
-    document.querySelectorAll('[wrapper="captcha-img"]').forEach(w => w.remove());
+	/** Метод очистки и выключения обхода капчи */
+	public disable(): void {
+		document.querySelectorAll('[wrapper="captcha-card"]').forEach(w => w.remove());
+		document.querySelectorAll('[wrapper="captcha-img"]').forEach(w => w.remove());
 
-    this.cards!.innerHTML = "";
-    this.cards!.style.display = "none";
+		this.cards!.innerHTML = "";
+		this.cards!.style.display = "none";
 
-    this.wrappers!.innerHTML = "";
+		this.wrappers!.innerHTML = "";
 
-    this.settings!.style.display = "flex";
-  }
+		this.settings!.style.display = "flex";
+	}
 
-  /** Метод создания карточки капчи */
-  private createCaptchaCard(username: string, captcha: Captcha): void {
-    const oldCard = document.getElementById(`bot-captcha-${username}`);
+	/** Метод создания карточки капчи */
+	private createCaptchaCard(username: string, captcha: Captcha): void {
+		const oldCard = document.getElementById(`bot-captcha-${username}`);
 
-    if (oldCard) {
-      oldCard.remove();
-      document.getElementById(`captcha-wrapper-${username}`)?.remove();
-    }
+		if (oldCard) {
+			oldCard.remove();
+			document.getElementById(`captcha-wrapper-${username}`)?.remove();
+		}
 
-    const card = document.createElement("div");
-    card.className = "bot-captcha";
-    card.id = `bot-captcha-${username}`;
-    card.setAttribute("wrapper", "captcha-card");
-    
-    card.innerHTML = `
+		const card = document.createElement("div");
+		card.className = "bot-captcha";
+		card.id = `bot-captcha-${username}`;
+		card.setAttribute("wrapper", "captcha-card");
+
+		card.innerHTML = `
       <div class="head">
         <div class="username">${username}</div>
       </div>
@@ -107,25 +107,25 @@ class CaptchaModule {
       </div>
     `;
 
-    this.cards?.appendChild(card);
+		this.cards?.appendChild(card);
 
-    this.initializeCaptchaCard(username, captcha);
-  }
+		this.initializeCaptchaCard(username, captcha);
+	}
 
-  /** Метод инициализации карточки капчи */
-  private initializeCaptchaCard(username: string, captcha: Captcha): void {
-    if (captcha.type === "web") {
-      document.getElementById(`solve-captcha-${username}`)?.addEventListener("click", async () => {
-        const url = captcha.data.url;
-        if (url && url !== "") await invoke("open_url", { url: url });
-      });
-    } else {
-      const wrapper = document.createElement("div");
-      wrapper.className = "cover";
-      wrapper.id = `captcha-wrapper-${username}`;
-      wrapper.setAttribute("wrapper", "captcha-img");
-      
-      wrapper.innerHTML = `
+	/** Метод инициализации карточки капчи */
+	private initializeCaptchaCard(username: string, captcha: Captcha): void {
+		if (captcha.type === "web") {
+			document.getElementById(`solve-captcha-${username}`)?.addEventListener("click", async () => {
+				const url = captcha.data.url;
+				if (url && url !== "") await invoke("open_url", { url: url });
+			});
+		} else {
+			const wrapper = document.createElement("div");
+			wrapper.className = "cover";
+			wrapper.id = `captcha-wrapper-${username}`;
+			wrapper.setAttribute("wrapper", "captcha-img");
+
+			wrapper.innerHTML = `
         <div class="panel with-header" style="margin-bottom: 20px;">
           <div class="left">
             <div class="header">Капча бота ${username}</div>
@@ -152,41 +152,41 @@ class CaptchaModule {
         </div>
       `;
 
-      this.wrappers?.appendChild(wrapper);
+			this.wrappers?.appendChild(wrapper);
 
-      const img = document.getElementById(`captcha-img-${username}`) as HTMLImageElement;
-      img.onload = () => {
-        const scale = Math.min(2, 800 / img.naturalWidth);
-        img.style.width = (img.naturalWidth * scale) + "px";
-        img.style.height = (img.naturalHeight * scale) + "px";
-      };
+			const img = document.getElementById(`captcha-img-${username}`) as HTMLImageElement;
+			img.onload = () => {
+				const scale = Math.min(2, 800 / img.naturalWidth);
+				img.style.width = (img.naturalWidth * scale) + "px";
+				img.style.height = (img.naturalHeight * scale) + "px";
+			};
 
-      document.getElementById(`solve-captcha-${username}`)?.addEventListener("click", () => wrapper.style.display = "flex");
-      document.getElementById(`close-captcha-wrapper-${username}`)?.addEventListener("click", () => wrapper.style.display = "none");
+			document.getElementById(`solve-captcha-${username}`)?.addEventListener("click", () => wrapper.style.display = "flex");
+			document.getElementById(`close-captcha-wrapper-${username}`)?.addEventListener("click", () => wrapper.style.display = "none");
 
-      document.getElementById(`captcha-wrapper-${username}`)?.addEventListener("keydown", async (e: Event) => {
-        if ((e as KeyboardEvent).key === "Enter") {
-          const input = document.getElementById(`captcha-code-${username}`) as HTMLInputElement;
+			document.getElementById(`captcha-wrapper-${username}`)?.addEventListener("keydown", async (e: Event) => {
+				if ((e as KeyboardEvent).key === "Enter") {
+					const input = document.getElementById(`captcha-code-${username}`) as HTMLInputElement;
 
-          await invoke("quick_operation", { 
-            operation: "send-message",
-            options: {
-              username: username,
-              message: input.value
-            }
-          });
+					await invoke("quick_operation", {
+						operation: "send-message",
+						options: {
+							username: username,
+							message: input.value
+						}
+					});
 
-          input.value = "";
-        }
-      });
-    }
+					input.value = "";
+				}
+			});
+		}
 
-    document.getElementById(`remove-captcha-${username}`)?.addEventListener("click", async () => {
-      document.getElementById(`bot-captcha-${username}`)?.remove();
-      document.getElementById(`captcha-wrapper-${username}`)?.remove();
-    });
-  }
-}   
+		document.getElementById(`remove-captcha-${username}`)?.addEventListener("click", async () => {
+			document.getElementById(`bot-captcha-${username}`)?.remove();
+			document.getElementById(`captcha-wrapper-${username}`)?.remove();
+		});
+	}
+}
 
 const captchaModule = new CaptchaModule();
 

@@ -38,7 +38,7 @@ class ScannerModule {
 				targetPort: targetPort,
 				timeout: timeout < 1 ? 8000 : timeout,
 			});
-			
+
 			messages.message("Сканер", `Сканирование серверов в диапазоне ${range}...`);
 			logger.log(`Сканирование серверов в диапазоне ${range}...`, "system");
 		});

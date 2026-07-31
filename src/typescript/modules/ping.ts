@@ -5,24 +5,24 @@ import { generateId } from "../utils/generator";
 
 /** Структура информации сервера */
 interface ServerInformation {
-  ip_address: string;
-  server_icon: string | null;
-  protocol_version: number;
-  server_version: string;
-  description: string;
-  players_online: number;
-  players_max: number;
-  list_of_players: Array<{ username: string; uuid: string; }>;
+	ip_address: string;
+	server_icon: string | null;
+	protocol_version: number;
+	server_version: string;
+	description: string;
+	players_online: number;
+	players_max: number;
+	list_of_players: Array<{ username: string; uuid: string; }>;
 }
 
 /** Модуль управления пинговкой серверов */
 class PingModule {
-  /** Метод инициализации функций, связанных с пингованием */
-  public init(): void {
-    document.getElementById("ping-server")?.addEventListener("click", async () => await this.ping_server());
-  }
+	/** Метод инициализации функций, связанных с пингованием */
+	public init(): void {
+		document.getElementById("ping-server")?.addEventListener("click", async () => await this.ping_server());
+	}
 
-  /** Метод пингования сервера */
+	/** Метод пингования сервера */
 	private async ping_server(): Promise<void> {
 		try {
 			const address = (document.getElementById("ping-server-address") as HTMLInputElement).value;
@@ -33,15 +33,15 @@ class PingModule {
 				address: address
 			});
 
-      const pingInfo = document.getElementById("ping-info") as HTMLElement;
-      pingInfo.innerHTML = "";
+			const pingInfo = document.getElementById("ping-info") as HTMLElement;
+			pingInfo.innerHTML = "";
 
-      const card = document.createElement("div");
-      card.className = "card";
+			const card = document.createElement("div");
+			card.className = "card";
 
-      const removeBtnId = `remove-ping-card-${generateId()}`;
-      
-      card.innerHTML = `
+			const removeBtnId = `remove-ping-card-${generateId()}`;
+
+			card.innerHTML = `
         <img class="icon" src="${result.server_icon}" draggable="false">
         <div class="text">
           <label>${result.description}</label>
@@ -62,52 +62,52 @@ class PingModule {
         </button>
       `;
 
-      pingInfo.appendChild(card);
+			pingInfo.appendChild(card);
 
-      const listOfPlayers = document.createElement("div");
-      listOfPlayers.className = "list";
-      listOfPlayers.style.display = "none";
+			const listOfPlayers = document.createElement("div");
+			listOfPlayers.className = "list";
+			listOfPlayers.style.display = "none";
 
-      if (result.list_of_players.length > 0) {
-        listOfPlayers.style.display = "flex";
+			if (result.list_of_players.length > 0) {
+				listOfPlayers.style.display = "flex";
 
-        const element = document.createElement("div");
-        element.className = "element";
+				const element = document.createElement("div");
+				element.className = "element";
 
-        element.innerHTML = `
+				element.innerHTML = `
           <p class="username">Никнейм</p>
           <div class="splitter"></div>
           <p class="uuid">UUID</p>
         `;
 
-        listOfPlayers.appendChild(element);
+				listOfPlayers.appendChild(element);
 
-        for (const player of result.list_of_players) {
-          const el = document.createElement("div");
-          el.className = "element";
+				for (const player of result.list_of_players) {
+					const el = document.createElement("div");
+					el.className = "element";
 
-          el.innerHTML = `
+					el.innerHTML = `
             <p class="username">${player.username}</p>
             <div class="splitter"></div>
             <p class="uuid">${player.uuid}</>
           `;
 
-          listOfPlayers.appendChild(el);
-        }
+					listOfPlayers.appendChild(el);
+				}
 
-        pingInfo.appendChild(listOfPlayers);
-      } else {
-        const header = document.createElement("div");
-        header.className = "header";
-        header.innerText = "Не удалось получить список игроков";
-        pingInfo.appendChild(header);
-      }
+				pingInfo.appendChild(listOfPlayers);
+			} else {
+				const header = document.createElement("div");
+				header.className = "header";
+				header.innerText = "Не удалось получить список игроков";
+				pingInfo.appendChild(header);
+			}
 
-      document.getElementById(removeBtnId)?.addEventListener("click", () => {
-        card.remove();
-        listOfPlayers.remove();
-        pingInfo.innerHTML = "";
-      });
+			document.getElementById(removeBtnId)?.addEventListener("click", () => {
+				card.remove();
+				listOfPlayers.remove();
+				pingInfo.innerHTML = "";
+			});
 		} catch (error) {
 			logger.log(`Ошибка пингования сервера: ${error}`, "error");
 		}

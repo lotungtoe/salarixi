@@ -34,7 +34,7 @@ class ScriptModule {
 
 		document.getElementById("execute-script")?.addEventListener("click", async () => await this.execute(false));
 		document.getElementById("execute-script-separately")?.addEventListener("click", async () => await this.execute(true));
-  	document.getElementById("stop-script")?.addEventListener("click", async () => await this.stop());
+		document.getElementById("stop-script")?.addEventListener("click", async () => await this.stop());
 	}
 
 	/** Метод обновления счётчика строк */
@@ -59,7 +59,7 @@ class ScriptModule {
 	}
 
 	/** Метод остановки пользовательского сценария */
-  private async stop(): Promise<void> {
+	private async stop(): Promise<void> {
 		try {
 			await invoke("stop_script");
 		} catch (error) {
