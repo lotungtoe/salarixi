@@ -34,7 +34,7 @@ class ChartModule {
 
     setInterval(async () => {
       try {
-        const data = await invoke("get_ram_usage") as number;
+        const data = await invoke<number>("get_ram_usage");
         const usage = parseFloat(data.toFixed(1));
         ramUsageSpan.innerText = `${usage}MB`;
         this.updateChart("ram", usage > 1024.0 ? 1024.0 : usage);
@@ -45,7 +45,7 @@ class ChartModule {
 
     setInterval(async () => {
       try {
-        const data = await invoke("get_cpu_usage") as number;
+        const data = await invoke<number>("get_cpu_usage");
         const usage = parseFloat(data.toFixed(1));
         cpuUsageSpan.innerText = `${usage}%`;
         this.updateChart("cpu", usage);

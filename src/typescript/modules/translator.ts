@@ -55,7 +55,7 @@ class TranslatorModule {
     try {
       // Здесь лучше принудительно читать файл с кэшем перевода, ведь если у пользователя не будет
       // интернета и при этом кэш будет устаревшим - он не сможет воспользоваться переводом.
-      const result = await invoke("read_file", { path: "cache/translation.json" }) as CommandResult<number[]>;
+      const result = await invoke<CommandResult<number[]>>("read_file", { path: "cache/translation.json" });
 
       if (result.error || !result.data) {
         logger.log(`Ошибка перевода: ${result.error}`, "error");
@@ -73,7 +73,7 @@ class TranslatorModule {
         return;
       }
   
-      const isDevMode = await invoke("is_dev_mode") as boolean;
+      const isDevMode = await invoke<boolean>("is_dev_mode");
       let filteredTranslation = [];
 
       // Для начала нужно пройтись по всем элементам перевода и отфильтровать
@@ -150,9 +150,9 @@ class TranslatorModule {
   /** Метод загрузки актуального перевода */
   private async lnf(): Promise<LnfResult> {
     try {
-      const translation = await invoke("download_json", {
+      const translation = await invoke<any>("download_json", {
         url: "https://codeberg.org/nullclyze/salarixi/raw/branch/main/salarixi.lang.json"
-      }) as any;
+      });
 
       return { data: translation, error: translation ? null : "resource moved or unavailable" };
     } catch (err) {

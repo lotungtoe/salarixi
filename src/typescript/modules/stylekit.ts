@@ -132,7 +132,7 @@ class StylekitModule {
         return;
       }
 
-      const kitBytes = await invoke("read_text_file", { path: path }) as number[];
+      const kitBytes = await invoke<number[]>("read_text_file", { path: path });
 
       if (kitBytes.length < 1) {
         messages.message("Набор стилей", "Не удалось применить набор стилей");

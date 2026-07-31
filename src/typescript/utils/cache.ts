@@ -72,7 +72,7 @@ export async function saveCache(cache: string, filename: string): Promise<Comman
 
 /** Функция загрузки кэша */
 export async function loadCache(name: string, filename: string, maxStorageValue: number, timeType: TimeType): Promise<CommandResult<string>> {
-  const result1 = await invoke("extract_cache_meta", { name: name }) as CommandResult<string>;
+  const result1 = await invoke<CommandResult<string>>("extract_cache_meta", { name: name });
 
   if (!result1.data) {
     return {
@@ -88,7 +88,7 @@ export async function loadCache(name: string, filename: string, maxStorageValue:
     };
   }
 
-  const result2 = await invoke("load_cache", { filename: filename }) as CommandResult<number[]>;
+  const result2 = await invoke<CommandResult<number[]>>("load_cache", { filename: filename });
 
   if (!result2.data) {
     return {

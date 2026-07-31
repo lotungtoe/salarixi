@@ -14,11 +14,6 @@ pub struct LogPayload {
 }
 
 #[derive(Serialize, Clone)]
-pub struct ConnectedBotsPayload {
-  pub count: u8,
-}
-
-#[derive(Serialize, Clone)]
 pub struct MessagePayload {
   pub name: String,
   pub content: String,
@@ -50,7 +45,7 @@ pub struct EmitManager {
 pub enum EmitEvent {
   Log { text: String, class: String },
   Message { name: String, content: String },
-  ConnectedBots { count: u8 },
+  ConnectedBots(u8),
   BotChat(ChatEventPayload),
   AntiWebCaptcha(AntiWebCaptchaEventPayload),
   AntiMapCaptcha(AntiMapCaptchaEventPayload),
@@ -88,33 +83,28 @@ pub fn emit_msg(name: impl Into<String>, content: impl Into<String>) {
   });
 }
 
-/// Вспомогательная функция отправки количества подключённых ботов
-pub fn emit_cbc(count: u8) {
-  EMIT_MANAGER.emit(EmitEvent::ConnectedBots { count });
-}
-
 pub async fn emit_event_loop(handle: AppHandle) {
   let mut rx = EMIT_MANAGER.events.subscribe();
 
   while let Ok(event) = rx.recv().await {
     match event {
       EmitEvent::Log { text, class } => {
-        let _ = handle.emit("log", LogPayload { text, class });
+        let _ = handle.emit("system:log", LogPayload { text, class });
       }
       EmitEvent::Message { name, content } => {
-        let _ = handle.emit("message", MessagePayload { name, content });
+        let _ = handle.emit("system:message", MessagePayload { name, content });
       }
-      EmitEvent::ConnectedBots { count } => {
-        let _ = handle.emit("connected-bots-count", ConnectedBotsPayload { count });
+      EmitEvent::ConnectedBots(count) => {
+        let _ = handle.emit("system:connected-bots", count);
       }
       EmitEvent::BotChat(payload) => {
-        let _ = handle.emit("chat-message", payload);
+        let _ = handle.emit("monitoring:chat-message", payload);
       }
       EmitEvent::AntiWebCaptcha(payload) => {
-        let _ = handle.emit("anti-web-captcha", payload);
+        let _ = handle.emit("captcha-bypass:web", payload);
       }
       EmitEvent::AntiMapCaptcha(payload) => {
-        let _ = handle.emit("anti-map-captcha", payload);
+        let _ = handle.emit("captcha-bypass:map", payload);
       }
       EmitEvent::PushScannedServer(meta) => {
         let _ = handle.emit("scanner:push-server", meta);

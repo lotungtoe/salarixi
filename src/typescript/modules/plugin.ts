@@ -196,9 +196,9 @@ class PluginModule {
   /** Метод загрузки актуальной информации о плагинах */
   private async lnf(): Promise<LnfResult> {
     try {
-      const plugins = await invoke("download_json", {
+      const plugins = await invoke<any>("download_json", {
         url: "https://codeberg.org/nullclyze/salarixi/raw/branch/main/salarixi.plugins.json"
-      }) as any;
+      });
 
       return { data: plugins, error: plugins ? null : "resource moved or unavailable" };
     } catch (err) {

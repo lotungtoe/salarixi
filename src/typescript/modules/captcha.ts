@@ -24,11 +24,10 @@ class CaptchaModule {
     this.cards = document.getElementById("anti-captcha-cards");
     this.wrappers = document.getElementById("anti-captcha-wrappers");
 
-    await listen("anti-web-captcha", (event) => {
+    await listen<{ captcha_url: string; username: string; }>("captcha-bypass:web", (event) => {
       try {
-        const payload = event.payload as { captcha_url: string; username: string; };
-        const captcha_url = payload.captcha_url;
-        const username = payload.username;
+        const captcha_url = event.payload.captcha_url;
+        const username = event.payload.username;
 
         this.createCaptchaCard(username, {
           type: "web",
@@ -38,15 +37,14 @@ class CaptchaModule {
           }
         });
       } catch (error) {
-        logger.log(`Ошибка обработки события (anti-web-captcha): ${error}`, "error");
+        logger.log(`Ошибка обработки события "captcha-bypass:web": ${error}`, "error");
       }
     });
 
-    await listen("anti-map-captcha", (event) => {
+    await listen<{ base64_code: string; username: string; }>("captcha-bypass:map", (event) => {
       try {
-        const payload = event.payload as { base64_code: string; username: string; };
-        const base64 = payload.base64_code;
-        const username = payload.username;
+        const base64 = event.payload.base64_code;
+        const username = event.payload.username;
 
         this.createCaptchaCard(username, {
           type: "map",
@@ -56,7 +54,7 @@ class CaptchaModule {
           }
         });
       } catch (error) {
-        logger.log(`Ошибка обработки события (anti-map-captcha): ${error}`, "error");
+        logger.log(`Ошибка обработки события "captcha-bypass:map": ${error}`, "error");
       }
     });
   }

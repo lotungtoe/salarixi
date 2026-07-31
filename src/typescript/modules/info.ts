@@ -55,15 +55,15 @@ class InfoModule {
   /** Метод загрузки актуальной информации о клиенте */
   private async lnf(): Promise<LnfResult> {
     try {
-      const repository = await invoke("download_json", {
+      const repository = await invoke<any>("download_json", {
         url: "https://codeberg.org/api/v1/repos/nullclyze/salarixi"
-      }) as any;
+      });
 
       if (!repository) return { data: null, error: "resource moved or unavailable" };
     
-      const social = await invoke("download_json", {
+      const social = await invoke<any>("download_json", {
         url: "https://codeberg.org/nullclyze/salarixi/raw/branch/main/salarixi.social.json"
-      }) as any;
+      });
 
       if (!social) return { data: null, error: "resource moved or unavailable" };
 

@@ -51,9 +51,9 @@ class UpdaterModule {
   /** Метод загрузки актуальной информации о последней версии клиента */
   private async lnf(): Promise<LnfResult> {
     try {
-      const version = await invoke("download_json", {
+      const version = await invoke<any>("download_json", {
         url: "https://codeberg.org/nullclyze/salarixi/raw/branch/main/salarixi.version.json",
-      }) as any;
+      });
 
       return { data: version, error: version ? null : "resource moved or unavailable" };
     } catch (err) {

@@ -94,9 +94,9 @@ class DocsModule {
   /** Метод загрузки актуальной пользовательской документации */
   private async lnf(): Promise<LnfResult> {
     try {
-      const docs = await invoke("download_text", {
+      const docs = await invoke<string | null>("download_text", {
         url: "https://codeberg.org/nullclyze/salarixi/raw/branch/main/docs/user.md"
-      }) as string | null;
+      });
 
       return { data: docs, error: docs ? null : "resource moved or unavailable" };
     } catch (err) {

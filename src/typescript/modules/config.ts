@@ -18,7 +18,7 @@ class ConfigModule {
   public async init(): Promise<void> {
     this.configList = document.getElementById("config-list") as HTMLDivElement | null;
 
-    const initializeResult = await invoke("initialize_configs_dir") as CommandResult<null>;
+    const initializeResult = await invoke<CommandResult<null>>("initialize_configs_dir");
     if (initializeResult.error) {
       logger.log(`Ошибка инициализации конфигуратора: ${initializeResult.error}`, "error");
       return;
@@ -32,7 +32,7 @@ class ConfigModule {
     document.getElementById("archive-current-config")?.addEventListener("click", async () => await this.archiveCurrentConfig());
     document.getElementById("refresh-configs")?.addEventListener("click", async () => await this.refreshConfigs());
     document.getElementById("open-configs-directory")?.addEventListener("click", async () => {
-      const result = await invoke("open_directory", { dir: "configs" }) as CommandResult<null>;
+      const result = await invoke<CommandResult<null>>("open_directory", { dir: "configs" });
       if (result.error) logger.log(`Ошибка открытия директории конфигов: ${result.error}`, "error");
     });
 
@@ -76,7 +76,7 @@ class ConfigModule {
 
     const selectedConfigFilename = localStorage.getItem("selected-config-filename");
     if (selectedConfigFilename) {
-      const result = await invoke("read_file", { path: `configs/${selectedConfigFilename}` }) as CommandResult<number[]>;
+      const result = await invoke<CommandResult<number[]>>("read_file", { path: `configs/${selectedConfigFilename}` });
 
       if (result.data && result.data.length > 0) {
         const decoder = new TextDecoder("utf-8");
@@ -102,10 +102,10 @@ class ConfigModule {
     const encoded = encoder.encode(config);
     const content = Array.from(encoded);
 
-    const result = await invoke("save_file", {
+    const result = await invoke<CommandResult<null>>("save_file", {
       path: "current_config.json",
       content: content,
-    }) as CommandResult<null>;
+    });
 
     if (result.error) logger.log(`Ошибка сохранения конфига: ${result.error}`, "error");
 
@@ -142,7 +142,7 @@ class ConfigModule {
 
       logger.log("Загрузка сохранённых конфигов...", "system");
 
-      const result = await invoke("load_configs") as CommandResult<Record<string, number[]>>;
+      const result = await invoke<CommandResult<Record<string, number[]>>>("load_configs");
 
       if (result.error) {
         logger.log(`Ошибка загрузки сохранённых конфигов: ${result.error}`, "error");
@@ -202,7 +202,7 @@ class ConfigModule {
   /** Метод загрузки текущего конфига */
   private async loadCurrentConfig(): Promise<void> {
     try {
-      const result = await invoke("read_file", { path: "current_config.json" }) as CommandResult<number[]>;
+      const result = await invoke<CommandResult<number[]>>("read_file", { path: "current_config.json" });
     
       if (result.error) {
         logger.log(`Ошибка загрузки текущего конфига: ${result.error}`, "error");
@@ -246,7 +246,7 @@ class ConfigModule {
     configCard.addEventListener("click", async () => {
       if (localStorage.getItem("selected-config-filename") === filename) return;
 
-      const result = await invoke("read_file", { path: `configs/${filename}` }) as CommandResult<number[]>;
+      const result = await invoke<CommandResult<number[]>>("read_file", { path: `configs/${filename}` });
 
       if (result.error) {
         logger.log(`Ошибка применения конфига "${filename}": ${result.error}`, "error");
@@ -305,10 +305,10 @@ class ConfigModule {
         const buf = await readFile(path);
         if (!buf) return;
 
-        const result = await invoke("save_file", {
+        const result = await invoke<CommandResult<null>>("save_file", {
           path: `configs/${filename}`,
           content: buf,
-        }) as CommandResult<null>;
+        });
 
         if (result.error) {
           logger.log(`Ошибка сохранения конфига "${filename}": ${result.error}`, "error");
@@ -340,10 +340,10 @@ class ConfigModule {
       const encoded = encoder.encode(config);
       const content = Array.from(encoded);
 
-      const result = await invoke("export_config", {
+      const result = await invoke<CommandResult<string>>("export_config", {
         directory: directory,
         content: content,
-      }) as CommandResult<string>;
+      });
 
       if (result.error) {
         logger.log(`Ошибка экспорта текущего конфига в ${directory}: ${result.error}`, "error");
@@ -368,7 +368,7 @@ class ConfigModule {
       const encoded = encoder.encode(config);
       const content = Array.from(encoded);
 
-      const result = await invoke("archive_config", { content: content }) as CommandResult<string>;
+      const result = await invoke<CommandResult<string>>("archive_config", { content: content });
 
       if (result.error) {
         logger.log(`Ошибка архивации текущего конфига: ${result.error}`, "error");

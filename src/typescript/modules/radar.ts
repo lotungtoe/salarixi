@@ -280,7 +280,7 @@ UUID: ${uuid}
         }
 
         try {
-          const data = await invoke("get_radar_data", { target: username }) as RadarInfo;
+          const data = await invoke<RadarInfo>("get_radar_data", { target: username });
 
           if (!data) return;
 

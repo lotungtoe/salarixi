@@ -179,7 +179,7 @@ async function startBots(): Promise<void> {
     const optionsStr = JSON.stringify(options);
     const bytes = new TextEncoder().encode(optionsStr);
 
-    const success = await invoke("launch_bots", { options: bytes }) as boolean;
+    const success = await invoke<boolean>("launch_bots", { options: bytes });
     if (!success) return;
 
 		processActivity = true;
@@ -212,7 +212,7 @@ async function stopBots(): Promise<void> {
 	updateProcessStatus();
 
   try {
-    const success = await invoke("stop_bots") as boolean;
+    const success = await invoke<boolean>("stop_bots");
 
     if (!success) {
 			updateProcessStatus();
@@ -403,31 +403,28 @@ function initTitleBar(): void {
 
 /** Функция инициализации слушателей основных событий */
 async function listenEvents(): Promise<void> {
-  await listen("log", (event) => {
+  await listen<{ text: string; class: string; }>("system:log", (event) => {
     try {
-      const payload = event.payload as { text: string; class: string; };
-      logger.log(payload.text, payload.class);
+      logger.log(event.payload.text, event.payload.class);
     } catch (error) {
-      logger.log(`Ошибка принятие события "log": ${error}`, "error");
+      logger.log(`Ошибка принятие события "system:log": ${error}`, "error");
     }
   });
 
-  await listen("message", (event) => {
+  await listen<{ name: string; content: string; }>("system:message", (event) => {
     try {
-      const payload = event.payload as { name: string; content: string; };
-      messages.message(payload.name, payload.content);
+      messages.message(event.payload.name, event.payload.content);
     } catch (error) {
-      logger.log(`Ошибка принятие события "message": ${error}`, "error");
+      logger.log(`Ошибка принятие события "system:message": ${error}`, "error");
     }
   });
 
-	await listen("connected-bots-count", (event) => {
+	await listen<number>("system:connected-bots", (event) => {
     try {
-      const payload = event.payload as { count: number; };
-			connectedBots = payload.count;
+			connectedBots = event.payload;
 			updateProcessStatus();
     } catch (error) {
-      logger.log(`Ошибка принятие события "connected-bots-count": ${error}`, "error");
+      logger.log(`Ошибка принятие события "system:connected-bots": ${error}`, "error");
     }
   });
 }

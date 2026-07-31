@@ -44,7 +44,7 @@ class MonitoringModule {
     this.statusText!.innerText = "Объекты ботов отсутствуют";
     this.statusText!.style.display = "flex";
 
-    await listen("chat-message", (event) => {
+    await listen("monitoring:chat-message", (event) => {
       try {
         const payload = event.payload as { receiver: string; message: string; };
         const receiver = payload.receiver;
@@ -105,7 +105,7 @@ class MonitoringModule {
         }
 
         try {
-          const profiles = await invoke("get_bot_profiles") as Record<string, BotProfile>;
+          const profiles = await invoke<Record<string, BotProfile>>("get_bot_profiles");
 
           for (const username in profiles) {
             if (isFirst) {

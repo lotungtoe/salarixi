@@ -87,7 +87,9 @@ async fn process_spawn(bot: Client) {
 
   PROFILE_SYSTEM.set_status(&index, BotStatus::Connected).await;
 
-  emit_cbc(PROFILE_SYSTEM.get_connected_count().await as u8);
+  EMIT_MANAGER.emit(EmitEvent::ConnectedBots(
+    PROFILE_SYSTEM.get_connected_count().await as u8,
+  ));
 
   let Some(opts) = current_options().await else {
     return;
@@ -162,7 +164,9 @@ async fn process_disconnect(bot: Client, text: Option<FormattedText>) {
 
   PROFILE_SYSTEM.set_status(&index, BotStatus::Disconnected).await;
 
-  emit_cbc(PROFILE_SYSTEM.get_connected_count().await as u8);
+  EMIT_MANAGER.emit(EmitEvent::ConnectedBots(
+    PROFILE_SYSTEM.get_connected_count().await as u8,
+  ));
 
   if let Some(t) = text {
     if let Some(options) = current_options().await {

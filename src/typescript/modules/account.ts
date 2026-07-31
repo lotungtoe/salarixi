@@ -147,10 +147,10 @@ class AccountModule {
       const encoder = new TextEncoder();
       const encoded = encoder.encode(string);
 
-      const result = await invoke("save_file", {
+      const result = await invoke<CommandResult<null>>("save_file", {
         path: "accounts.json",
         content: encoded,
-      }) as CommandResult<null>;
+      });
 
       if (result.error) {
         logger.log(`Ошибка сохранения аккаунтов: ${result.error}`, "error");
@@ -209,7 +209,7 @@ class AccountModule {
 
     this.accounts.clear();
     
-    const result = await invoke("remove_file", { path: "accounts.json" }) as CommandResult<null>;
+    const result = await invoke<CommandResult<null>>("remove_file", { path: "accounts.json" });
     if (result.error) logger.log(`Ошибка удаления файла "accounts.json": ${result.error}`, "error");
 
     this.noSelected = true;
@@ -220,7 +220,7 @@ class AccountModule {
 
   /** Метод загрузки сохранённых аккаунтов из локального хранилища */
   private async loadSavedAccounts(): Promise<void> {
-    const result = await invoke("read_file", { path: "accounts.json" }) as CommandResult<number[]>;
+    const result = await invoke<CommandResult<number[]>>("read_file", { path: "accounts.json" });
 
     if (result.error) {
       logger.log(`Ошибка загрузки контента из файла "accounts.json": ${result.error}`, "error");

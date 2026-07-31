@@ -29,9 +29,9 @@ class PingModule {
 
 			if (address === "") return;
 
-			const result = await invoke("get_server_info", {
+			const result = await invoke<ServerInformation>("get_server_info", {
 				address: address
-			}) as ServerInformation;
+			});
 
       const pingInfo = document.getElementById("ping-info") as HTMLElement;
       pingInfo.innerHTML = "";

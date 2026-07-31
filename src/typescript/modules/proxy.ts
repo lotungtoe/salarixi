@@ -70,14 +70,14 @@ class ProxyModule {
 
       this.setStatus("Поиск прокси...");
 
-      const bytes = await invoke("collect_proxies", {
+      const bytes = await invoke<number[]>("collect_proxies", {
         options: {
           algorithm: algorithm,
           country: country,
           port: port,
           count: count,
         }
-      }) as number[];
+      });
 
       const uint8arr = new Uint8Array(bytes);
       const decoder = new TextDecoder("utf-8");
@@ -113,9 +113,9 @@ class ProxyModule {
       const encoder = new TextEncoder();
       const inbytes = encoder.encode(proxies);
 
-      const out = await invoke("check_proxies", {
+      const out = await invoke<number[]>("check_proxies", {
         bytes: Array.from(inbytes),
-      }) as number[];
+      });
 
       const outbytes = new Uint8Array(out);
       const decoder = new TextDecoder("utf-8");
