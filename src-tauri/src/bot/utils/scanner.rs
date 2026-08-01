@@ -8,7 +8,9 @@ use serde::Serialize;
 use tokio::sync::RwLock;
 use tokio::task::JoinHandle;
 
-use crate::emit::{EmitEvent, EMIT_MANAGER};
+use crate::emit::{emit_log, emit_msg, EmitEvent, EMIT_MANAGER};
+use crate::result::CommandResult;
+use crate::{failed, success};
 
 static SCANNER_ROOT_TASK: Lazy<RwLock<Option<JoinHandle<()>>>> = Lazy::new(|| RwLock::new(None));
 static SCANNER_EXTRA_TASKS: Lazy<RwLock<Vec<JoinHandle<()>>>> = Lazy::new(|| RwLock::new(Vec::new()));
@@ -24,19 +26,19 @@ pub struct ServerMeta {
 }
 
 /// Функция парсинга диапазона IP-адресов
-fn parse_ip_range(range: &str) -> Vec<String> {
+fn parse_ip_range(range: &str) -> CommandResult<Vec<String>> {
   let splitted = range.split('/').collect::<Vec<&str>>();
 
   let Ok(ip) = splitted[0].parse::<Ipv4Addr>() else {
-    return Vec::new();
+    failed!("null address parsing error");
   };
 
   let Ok(designation) = splitted[1].parse::<u32>() else {
-    return Vec::new();
+    failed!("designation parsing error");
   };
 
   if designation < 20 {
-    return Vec::new();
+    failed!("number after '/' cannot be less than 20 or greater than 32");
   }
 
   let mask = if designation == 0 {
@@ -44,6 +46,7 @@ fn parse_ip_range(range: &str) -> Vec<String> {
   } else {
     !0u32 << (32 - designation)
   };
+
   let ip_num: u32 = ip.into();
   let null = ip_num & mask;
   let broadcast = null | !mask;
@@ -87,11 +90,11 @@ fn parse_ip_range(range: &str) -> Vec<String> {
     }
   }
 
-  hosts
+  success!(hosts);
 }
 
 /// Функция сканирования сети на наличие Minecraft серверов
-pub async fn start_scanning(range: String, task_count: usize, target_port: u32, timeout: u64) {
+pub async fn start_scanning(range: String, mut task_count: usize, target_port: u32, timeout: u64) -> CommandResult<()> {
   let mut extra_tasks = SCANNER_EXTRA_TASKS.write().await;
   extra_tasks.iter().for_each(|t| t.abort());
   extra_tasks.clear();
@@ -101,19 +104,23 @@ pub async fn start_scanning(range: String, task_count: usize, target_port: u32, 
     task.abort();
   }
 
-  let parsed = parse_ip_range(&range);
-  if parsed.is_empty() {
-    return;
-  }
+  let result = parse_ip_range(&range);
+  let Some(data) = result.data else {
+    failed!("{}", result.error.unwrap_or("unknown error".to_string()));
+  };
 
-  let total_hosts = parsed.len();
+  let total_hosts = data.len();
 
   EMIT_MANAGER.emit(EmitEvent::SetScannerStatus(1));
   EMIT_MANAGER.emit(EmitEvent::ScannerHostsScanned(0, total_hosts));
   EMIT_MANAGER.emit(EmitEvent::ScannerServersFound(0));
 
+  if task_count > total_hosts {
+    task_count = total_hosts;
+  }
+
   let scanner_task = tokio::spawn(async move {
-    let hosts = Arc::new(RwLock::new(parsed));
+    let hosts = Arc::new(RwLock::new(data));
     let servers = Arc::new(AtomicUsize::new(0));
     let status_reset = Arc::new(AtomicBool::new(false));
 
@@ -126,14 +133,19 @@ pub async fn start_scanning(range: String, task_count: usize, target_port: u32, 
           let mut hosts_guard = hosts_clone.write().await;
           if hosts_guard.len() < 1 {
             if !status_reset_clone.load(Ordering::SeqCst) {
-              EMIT_MANAGER.emit(EmitEvent::SetScannerStatus(0));
               status_reset_clone.store(true, Ordering::SeqCst);
+              stop_scanning().await;
+              emit_log("Сканирование серверов в указанном диапазоне завершено", "system");
+              emit_msg("Сканер", "Сканирование серверов завершено");
             }
 
             break;
           }
 
-          let target_host = hosts_guard.remove(0);
+          let Some(target_host) = hosts_guard.pop() else {
+            continue;
+          };
+
           drop(hosts_guard);
 
           let target_addr = format!("{}:{}", target_host, target_port);
@@ -170,6 +182,8 @@ pub async fn start_scanning(range: String, task_count: usize, target_port: u32, 
   });
 
   *SCANNER_ROOT_TASK.write().await = Some(scanner_task);
+
+  success!(());
 }
 
 /// Функция остановки сканирования серверов

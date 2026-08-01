@@ -19,6 +19,7 @@ use crate::launch::process::{current_options, process_is_active};
 use crate::launch::runner::{launch_bots_on_server, stop_bots_and_destroy_data};
 use crate::other::discord_rpc::DISCORD_RPC;
 use crate::other::webhook::send_webhook;
+use crate::result::CommandResult;
 use crate::sleep;
 
 #[tauri::command]
@@ -273,8 +274,13 @@ pub async fn set_discord_rpc(version: String, state: bool) {
 }
 
 #[tauri::command]
-pub async fn start_network_scanning(range: String, task_count: usize, target_port: u32, timeout: u64) {
-  start_scanning(range, task_count, target_port, timeout).await;
+pub async fn start_network_scanning(
+  range: String,
+  task_count: usize,
+  target_port: u32,
+  timeout: u64,
+) -> CommandResult<()> {
+  start_scanning(range, task_count, target_port, timeout).await
 }
 
 #[tauri::command]

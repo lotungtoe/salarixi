@@ -34,15 +34,20 @@ class ScannerModule {
 			const targetPort = parseInt(targetPortInput.value === "" ? "25565" : targetPortInput.value);
 			const timeout = parseInt(timeoutInput.value);
 
-			await invoke("start_network_scanning", {
+			const result = await invoke<CommandResult<null>>("start_network_scanning", {
 				range: range,
 				taskCount: taskCount < 1 ? 10 : taskCount,
 				targetPort: targetPort,
 				timeout: timeout < 1 ? 8000 : timeout,
 			});
 
-			messages.message("Сканер", `Сканирование серверов в диапазоне ${range}...`);
-			logger.log(`Сканирование серверов в диапазоне ${range}...`, "system");
+			if (result.error) {
+				messages.message("Сканер", `Ошибка сканирования ${range}`);
+				logger.log(`Ошибка сканирования серверов в диапазоне ${range}: ${result.error}`, "error");
+			} else {
+				messages.message("Сканер", `Сканирование ${range}...`);
+				logger.log(`Запущено сканирование серверов в диапазоне ${range}`, "system");
+			}
 		});
 
 		document.getElementById("stop-network-scanning")?.addEventListener("click", async () => {
