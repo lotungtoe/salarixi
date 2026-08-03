@@ -1,0 +1,8 @@
+[package]
+name = "salarixi-extensions"
+version = "1.1.1"
+description = "extensions for salarixi kernel"
+edition = "2024"
+
+[dependencies]
+bytes = "1.12.1"

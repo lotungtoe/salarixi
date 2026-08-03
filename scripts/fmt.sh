@@ -5,8 +5,12 @@ echo ""
 echo "Formatting TypeScript code..."
 npm run fmt > /dev/null 2>&1
 
-cd ./src-tauri
 echo "Formatting Rust code..."
+cd ./kernel
+cargo fmt > /dev/null 2>&1
+cd ../macros
+cargo fmt > /dev/null 2>&1
+cd ../extensions
 cargo fmt > /dev/null 2>&1
 cd ..
 

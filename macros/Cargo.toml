@@ -1,0 +1,16 @@
+[package]
+name = "salarixi-macros"
+version = "1.1.1"
+description = "helper macros for salarixi"
+repository = "https://codeberg.org/nullclyze/salarixi"
+authors = ["nullclyze"]
+edition = "2021"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+salarixi-extensions = { path = "../extensions" }
+proc-macro2 = "1.0.107"
+quote = "1.0"
+syn = { version = "2.0", features = ["full"] }
