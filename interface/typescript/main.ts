@@ -216,6 +216,7 @@ async function stopBots(): Promise<void> {
 		const success = await invoke<boolean>("stop_bots");
 
 		if (!success) {
+			stopping = false;
 			updateProcessStatus();
 			return;
 		}
