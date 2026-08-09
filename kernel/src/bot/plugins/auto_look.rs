@@ -5,7 +5,7 @@ use crate::bot::plugin_manager::PluginName;
 use crate::bot::systems::states::{getst, setmst, State, StateName};
 use crate::bot::traits::SalarixiPlugin;
 use crate::bot::PLUGINS;
-use crate::other::tools::randnum;
+use crate::tools::randnum;
 use crate::{sleep, take_bot};
 
 pub struct AutoLookPlugin;

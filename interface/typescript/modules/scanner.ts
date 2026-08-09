@@ -2,13 +2,14 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { messages } from "../utils/message";
 import { logger } from "../utils/logger";
+import { Buffer } from "../utils/buffer";
 
 interface ServerMeta {
 	address: string;
 	icon: string | null;
 	onlinePlayers: number;
 	maxPlayers: number;
-	version: number;
+	version: string;
 }
 
 /** Модуль сканирования хостов на наличие Minecraft серверов */
@@ -56,23 +57,52 @@ class ScannerModule {
 			logger.log("Сканирование серверов остановлено", "system");
 		});
 
-		await listen<ServerMeta>("scanner:push-server", (e) => this.pushServerToList(e.payload));
+		await listen<number[]>("scanner:push-server", (e) => {
+			try {
+				const buf = new Buffer(new Uint8Array(e.payload));
+
+				this.pushServerToList({
+					address: buf.readString(),
+					icon: buf.readOption(() => buf.readString()),
+					onlinePlayers: buf.readI32(),
+					maxPlayers: buf.readI32(),
+					version: buf.readString(),
+				});
+			} catch (error) {
+				logger.log(`Ошибка обработки события "scanner:push-server": ${error}`, "error");
+			}
+		});
 
 		const scannerStatus = document.getElementById("scanner-status") as HTMLSpanElement;
-		await listen<number>("scanner:status", (e) => {
-			scannerStatus.innerText = e.payload === 0 ? "inactive" : "active";
+		await listen<number[]>("scanner:status", (e) => {
+			try {
+				const buf = new Buffer(new Uint8Array(e.payload));
+				scannerStatus.innerText = buf.readU8() === 0x00 ? "inactive" : "active";
+			} catch (error) {
+				logger.log(`Ошибка обработки события "scanner:status": ${error}`, "error");
+			}
 		});
 
-		const scannedHosts = document.getElementById("scanner-hosts-scanned") as HTMLSpanElement;
-		await listen<Array<number>>("scanner:hosts-scanned", (e) => {
-			const scanned = e.payload[0];
-			const total = e.payload[1];
-			scannedHosts.innerText = `${scanned}/${total}`;
+		const hostsScanned = document.getElementById("scanner-hosts-scanned") as HTMLSpanElement;
+		await listen<number[]>("scanner:hosts-scanned", (e) => {
+			try {
+				const buf = new Buffer(new Uint8Array(e.payload));
+				const scanned = buf.readU16();
+				const total = buf.readU16();
+				hostsScanned.innerText = `${scanned}/${total}`;
+			} catch (error) {
+				logger.log(`Ошибка обработки события "scanner:hosts-scanned": ${error}`, "error");
+			}
 		});
 
-		const foundServers = document.getElementById("scanner-servers-found") as HTMLSpanElement;
-		await listen<number>("scanner:servers-found", (e) => {
-			foundServers.innerText = e.payload.toString();
+		const serversFound = document.getElementById("scanner-servers-found") as HTMLSpanElement;
+		await listen<number[]>("scanner:servers-found", (e) => {
+			try {
+				const buf = new Buffer(new Uint8Array(e.payload));
+				serversFound.innerText = buf.readU16().toString();
+			} catch (error) {
+				logger.log(`Ошибка обработки события "scanner:servers-found": ${error}`, "error");
+			}
 		});
 	}
 

@@ -19,9 +19,9 @@ use crate::bot::systems::index::INDEX_SYSTEM;
 use crate::bot::systems::profile::PROFILE_SYSTEM;
 use crate::bot::systems::registry::REGISTRY_SYSTEM;
 use crate::bot::systems::states::{try_getst, try_setst, State};
-use crate::emit::{emit_log, emit_msg};
 use crate::launch::process::{current_options, process_is_active};
-use crate::other::webhook::*;
+use crate::server::transfer::{emit_log, emit_msg};
+use crate::webhook::*;
 
 pub static SCRIPT_EXECUTOR: Lazy<ScriptExecutor> = Lazy::new(|| ScriptExecutor::new());
 

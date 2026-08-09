@@ -1,5 +1,5 @@
 use crate::bot::systems::index::INDEX_SYSTEM;
-use crate::other::tools::*;
+use crate::tools::*;
 
 const LEGIT_NICKNAMES: &[&str] = &[
   "Apple",

@@ -9,7 +9,7 @@ use crate::bot::extensions::{BotDefaultExt, BotInteractExt, BotInventoryExt, Ent
 use crate::bot::systems::states::{getst, setmst, State, StateName};
 use crate::bot::systems::tasks::{gettskact, killtsk, pushetsk, pushrtsk, TaskName};
 use crate::bot::traits::SalarixiModule;
-use crate::other::tools::*;
+use crate::tools::*;
 use crate::{sleep, take_bot};
 
 #[derive(PartialEq, Index)]

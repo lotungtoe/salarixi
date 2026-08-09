@@ -9,9 +9,9 @@ use salarixi_macros::Index;
 use crate::bot::modules::*;
 use crate::bot::systems::profile::PROFILE_SYSTEM;
 use crate::bot::traits::SalarixiModule;
-use crate::emit::{emit_log, emit_msg};
 use crate::launch::process::current_options;
-use crate::other::webhook::send_webhook;
+use crate::server::transfer::{emit_log, emit_msg};
+use crate::webhook::send_webhook;
 
 pub static MODULES: Lazy<ModuleManager> = Lazy::new(|| ModuleManager::new());
 
@@ -63,9 +63,7 @@ struct ControlMessage {
 }
 
 impl ControlMessage {
-  fn from_bytes(data: &[u8]) -> Option<Self> {
-    let mut buf = BytesMut::from(data);
-
+  fn from_bytes(mut buf: BytesMut) -> Option<Self> {
     let module_index = u8::read(&mut buf)?;
     let module_name = ModuleName::from_index(module_index)?;
     let group = String::read(&mut buf)?;
@@ -116,8 +114,8 @@ impl ModuleManager {
   }
 
   /// Метод взаимодействия с указанным модулем управления
-  pub async fn control(&self, data: Vec<u8>) -> Option<()> {
-    let mut message = ControlMessage::from_bytes(&data)?;
+  pub async fn control(&self, bytes: BytesMut) -> Option<()> {
+    let mut message = ControlMessage::from_bytes(bytes)?;
 
     let profiles = PROFILE_SYSTEM.get_all_connected().await;
     let total_count = profiles.len();

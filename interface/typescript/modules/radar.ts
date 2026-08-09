@@ -4,19 +4,8 @@ import { Chart } from "chart.js";
 
 import { logger } from "../utils/logger";
 import { messages } from "../utils/message";
-
-/** Структура информации о цели радара */
-interface RadarInfo {
-	status: string;
-	uuid: string;
-	x: number;
-	y: number;
-	z: number;
-	observer: {
-		x: number;
-		z: number;
-	};
-}
+import { Buffer } from "../utils/buffer";
+import { listen } from "@tauri-apps/api/event";
 
 /** Модуль обнаружения игроков */
 class RadarModule {
@@ -29,7 +18,7 @@ class RadarModule {
 	private targets: Map<string, { data: any, interval: any, chart: any }> = new Map();
 
 	/** Метод инициализации функций, связанных с радаром */
-	public init(): void {
+	public async init(): Promise<void> {
 		this.targetCardsContainer = document.getElementById("radar-target-cards-container") as HTMLElement;
 		this.targetWrappersContainer = document.getElementById("radar-target-wrappers-container") as HTMLElement;
 
@@ -56,7 +45,7 @@ class RadarModule {
 			card.id = `radar-target-${username}`;
 
 			card.innerHTML = `
-        <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-fill" viewBox="0 0 16 16">
+        <svg class="card-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-fill" viewBox="0 0 16 16">
           <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
         </svg>
 
@@ -64,7 +53,7 @@ class RadarModule {
 
         <div class="info" style="min-width: 220px; max-width: 220px;">
           <p>Никнейм: <span>${username.length <= 16 ? username : username.substring(0, 16) + "..."}</span></p>
-          <p>Статус: <span id="radar-target-status-${username}">Не найден</span></p>
+          <p>Статус: <span id="radar-target-status-${username}">Not found</span></p>
           <p>UUID: <span id="radar-target-uuid-${username}">?</span></p>
         </div>
 
@@ -177,6 +166,73 @@ class RadarModule {
 				this.setTargetUpdateInterval(n, this.updateFrequency);
 			});
 		});
+
+		let lx = "";
+		let ly = "";
+		let lz = "";
+
+		await listen<number[]>("radar:target-info", async (e) => {
+			try {
+				const buf = new Buffer(new Uint8Array(e.payload));
+				const username = buf.readString();
+				const uuid = buf.readString();
+				const tx = buf.readF64().toFixed(3);
+				const ty = buf.readF64().toFixed(3);
+				const tz = buf.readF64().toFixed(3);
+				const ox = buf.readF64();
+				const oz = buf.readF64();
+
+				(document.getElementById(`radar-target-status-${username}`) as HTMLElement).innerText = "Found";
+				(document.getElementById(`radar-target-uuid-${username}`) as HTMLElement).innerText = uuid.substring(0, 12) + "...";
+				(document.getElementById(`radar-target-x-${username}`) as HTMLElement).innerText = tx;
+				(document.getElementById(`radar-target-y-${username}`) as HTMLElement).innerText = ty;
+				(document.getElementById(`radar-target-z-${username}`) as HTMLElement).innerText = tz;
+
+				const target = this.targets.get(username);
+
+				if (target) target.data = { fullUuid: uuid };
+
+				if (lx !== tx || ly !== ty || lz !== tz) {
+					const card = document.getElementById(`radar-target-${username}`) as HTMLElement;
+					card.classList.add("glow");
+					setTimeout(() => card.classList.remove("glow"), 300);
+				}
+
+				lx = tx;
+				ly = ty;
+				lz = tz;
+
+				this.addRoutePointToChart(username, parseFloat(tx), parseFloat(tz), ox, oz);
+
+				if ((document.getElementById("radar_chbx_auto-save") as HTMLInputElement).checked) {
+					const path = (document.getElementById("radar_option_path") as HTMLInputElement).value;
+					const filename = (document.getElementById("radar_option_filename") as HTMLInputElement).value;
+
+					if (await isAbsolute(path)) {
+						const buf = new Buffer();
+						buf.writeString(username);
+						buf.writeString(path);
+						buf.writeString(filename || "radar_#t");
+						buf.writeF64(parseFloat(tx));
+						buf.writeF64(parseFloat(ty));
+						buf.writeF64(parseFloat(tz));
+
+						const finalBuf = new Buffer();
+						finalBuf.writeU8(0x09);
+						finalBuf.writeU32(buf.len);
+						finalBuf.writeBytes(buf.toUint8Array());
+
+						const result = await invoke<CommandResult<null>>("send_command", {
+							data: finalBuf.toUint8Array(),
+						});
+
+						if (result.error) logger.log(`Ошибка сохранения данных радара об игроке ${username}: ${result.error}`, "error");
+					}
+				}
+			} catch (error) {
+				logger.log(`Ошибка обработки события "radar:target-info": ${error}`, "error");
+			}
+		});
 	}
 
 	/** Метод активации радара */
@@ -244,14 +300,23 @@ UUID: ${uuid}
 					const x = parseInt(xText);
 					const z = parseInt(zText);
 
-					await invoke("follow_radar_target", {
-						x: x,
-						z: z
+					const buf = new Buffer();
+					buf.writeString(username);
+					buf.writeI32(x);
+					buf.writeI32(z);
+
+					const finalBuf = new Buffer();
+					finalBuf.writeU8(0x0A);
+					finalBuf.writeU32(buf.len);
+					finalBuf.writeBytes(buf.toUint8Array());
+
+					const result = await invoke<CommandResult<null>>("send_command", {
+						data: finalBuf.toUint8Array(),
 					});
 
-					messages.message("Радар", `Боты начали преследовать игрока ${username} (X: ${x}, Z: ${z})`);
+					if (result.error) logger.log(`Ошибка преследования ${username}: ${result.error}`, "error");
 				} catch (error) {
-					logger.log(`Ошибка преследования цели радара: ${error}`, "error");
+					logger.log(`Ошибка преследования ${username}: ${error}`, "error");
 				}
 			});
 
@@ -266,72 +331,35 @@ UUID: ${uuid}
 
 	/** Метод установки частоты обновления */
 	private setTargetUpdateInterval(username: string, frequency: number) {
-		let lx = "";
-		let ly = "";
-		let lz = "";
-
 		const target = this.targets.get(username);
 
-		if (target) {
-			target.interval = setInterval(async () => {
-				if (!this.active) {
+		if (!target) return;
+
+		target.interval = setInterval(async () => {
+			if (!this.active) {
+				clearInterval(target.interval);
+				return;
+			}
+
+			try {
+				const buf = new Buffer();
+				buf.writeU8(0x08);
+				buf.writeU32(2 + username.length);
+				buf.writeString(username);
+
+				const result = await invoke<CommandResult<null>>("send_command", {
+					data: buf.toUint8Array(),
+				});
+
+				if (result.error) {
+					logger.log(`Ошибка обновления цели радара ${username}: ${result.error}`, "error");
 					clearInterval(target.interval);
 					return;
 				}
-
-				try {
-					const data = await invoke<RadarInfo>("get_radar_data", { target: username });
-
-					if (!data) return;
-
-					const x = data.x.toFixed(3);
-					const y = data.y.toFixed(3);
-					const z = data.z.toFixed(3);
-
-					(document.getElementById(`radar-target-status-${username}`) as HTMLElement).innerText = data.status;
-					(document.getElementById(`radar-target-uuid-${username}`) as HTMLElement).innerText = data.uuid.substring(0, 12) + "...";
-					(document.getElementById(`radar-target-x-${username}`) as HTMLElement).innerText = x;
-					(document.getElementById(`radar-target-y-${username}`) as HTMLElement).innerText = y;
-					(document.getElementById(`radar-target-z-${username}`) as HTMLElement).innerText = z;
-
-					if (target) {
-						target.data = {
-							fullUUID: data.uuid
-						};
-					}
-
-					if (lx !== x || ly !== y || lz !== z) {
-						const card = document.getElementById(`radar-target-${username}`) as HTMLElement;
-						card.classList.add("glow");
-						setTimeout(() => card.classList.remove("glow"), 300);
-					}
-
-					lx = data.x.toFixed(3);
-					ly = data.y.toFixed(3);
-					lz = data.z.toFixed(3);
-
-					this.addRoutePointToChart(username, parseFloat(x), parseFloat(z), data.observer);
-
-					if ((document.getElementById("radar_chbx_auto-save") as HTMLInputElement).checked) {
-						const path = (document.getElementById("radar_option_path") as HTMLInputElement).value;
-						const filename = (document.getElementById("radar_option_filename") as HTMLInputElement).value;
-
-						if (await isAbsolute(path)) {
-							await invoke("save_radar_data", {
-								target: username,
-								path: path,
-								filename: filename || "radar_#t",
-								x: parseFloat(x),
-								y: parseFloat(y),
-								z: parseFloat(z)
-							});
-						}
-					}
-				} catch (error) {
-					logger.log(`Ошибка обновления цели радара ${username}: ${error}`, "error");
-				}
-			}, frequency);
-		}
+			} catch (error) {
+				logger.log(`Ошибка обновления цели радара ${username}: ${error}`, "error");
+			}
+		}, frequency);
 	}
 
 	/** Метод создания обёртки маршрута цели */
@@ -425,21 +453,21 @@ UUID: ${uuid}
 	}
 
 	/** Метод добавления поинта цели (её текущей позиции) на чарт маршрута */
-	private addRoutePointToChart(username: string, x: number, z: number, observer: { x: number, z: number }) {
+	private addRoutePointToChart(username: string, tx: number, tz: number, ox: number, oz: number) {
 		const target = this.targets.get(username);
 
 		if (!target) return;
 
-		target.chart.data.datasets[0].data.push({ x: x, y: z });
-		target.chart.data.datasets[1].data.push({ x: observer.x, y: observer.z });
+		target.chart.data.datasets[0].data.push({ x: tx, y: tz });
+		target.chart.data.datasets[1].data.push({ x: ox, y: oz });
 
 		if (target.chart.data.datasets[0].data.length > 30) target.chart.data.datasets[0].data.shift();
 		if (target.chart.data.datasets[1].data.length > 1) target.chart.data.datasets[1].data.shift();
 
-		const xMin = Number(x.toFixed(1)) - 200;
-		const xMax = Number(x.toFixed(1)) + 200;
-		const zMin = Number(z.toFixed(1)) - 200;
-		const zMax = Number(z.toFixed(1)) + 200;
+		const xMin = Number(tx.toFixed(1)) - 200;
+		const xMax = Number(tx.toFixed(1)) + 200;
+		const zMin = Number(tz.toFixed(1)) - 200;
+		const zMax = Number(tz.toFixed(1)) + 200;
 
 		target.chart.options.scales.x.min = xMin;
 		target.chart.options.scales.x.max = xMax;

@@ -1,4 +1,4 @@
-use bytes::Buf;
+use bytes::{Buf, BufMut};
 
 use crate::buffer::BufferExt;
 
@@ -14,6 +14,14 @@ impl BufferExt for String {
       arr.push(byte);
     }
 
-    Some(String::from_utf8_lossy(&arr).into())
+    let string = String::from_utf8(arr).ok()?;
+
+    Some(string)
+  }
+
+  fn write(&self, buf: &mut bytes::BytesMut) {
+    let len = self.len();
+    buf.put_u16(len as u16);
+    buf.put_slice(self.as_bytes());
   }
 }

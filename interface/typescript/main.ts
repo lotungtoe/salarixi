@@ -9,7 +9,7 @@ import { messages } from "./utils/message";
 import { enableParticles } from "./effects/particles";
 import { switchControlWrapper, switchGlobalWrapper } from "./utils/switchers";
 import { replenishTriggerRegistry } from "./trigger/replenish";
-import { Buffer } from "./buffer";
+import { Buffer } from "./utils/buffer";
 
 import { configModule } from "./modules/config";
 import { accountModule } from "./modules/account";
@@ -30,17 +30,13 @@ import { stylekitModule } from "./modules/stylekit";
 import { scannerModule } from "./modules/scanner";
 
 import { CLIENT_VERSION } from "./version";
+import { sessionModule } from "./modules/session";
 
 Chart.register(...registerables);
 
 Chart.defaults.font.family = "'Inter', sans-serif";
 Chart.defaults.font.size = 13;
 Chart.defaults.font.weight = "normal";
-
-let stopping = false;
-let botsWereFullyConnected = false;
-let totalBots = 0;
-let connectedBots = 0;
 
 export let processActivity: boolean = false;
 export let quickTasksAllowed: boolean = true;
@@ -72,31 +68,27 @@ export let controlWrappers: Array<{ id: string; el: HTMLElement }> = [];
 export let latestControlWrapper: HTMLElement | null = null;
 
 /** Функция обновления отображаемого статуса процесса */
-function updateProcessStatus(): void {
+function updateProcessStatus(statusId: number, connectedBots: number, totalBots: number): void {
 	const processStatus = document.getElementById("process-status");
 	if (!processStatus) return;
 
-	if (stopping) {
-		processStatus.innerText = `stopping ${connectedBots} bots...`;
-		processStatus.style.color = "var(--process-stopping-color)";
-		return;
-	}
-
-	if (processActivity) {
-		if (!botsWereFullyConnected && connectedBots === totalBots) {
-			botsWereFullyConnected = true;
-		}
-
-		if (botsWereFullyConnected) {
+	switch (statusId) {
+		case 0x00:
+			processStatus.innerText = `stopping ${connectedBots} bots...`;
+			processStatus.style.color = "var(--process-stopping-color)";
+			break;
+		case 0x01:
 			processStatus.innerText = `active (${connectedBots}/${totalBots} bots)`;
 			processStatus.style.color = "var(--process-active-color)";
-		} else {
+			break;
+		case 0x02:
 			processStatus.innerText = `launching (${connectedBots}/${totalBots} bots)...`;
 			processStatus.style.color = "var(--process-launching-color)";
-		}
-	} else {
-		processStatus.innerText = "inactive";
-		processStatus.style.color = "var(--process-inactive-color)";
+			break;
+		case 0x03:
+			processStatus.innerText = "inactive";
+			processStatus.style.color = "var(--process-inactive-color)";
+			break;
 	}
 }
 
@@ -110,16 +102,16 @@ async function startBots(): Promise<void> {
 	try {
 		const options: {
 			basic: any;
-			accounts: any;
+			accounts: Map<string, any>;
 			plugins: any;
 			captcha_bypass: any;
 			webhook: any;
 		} = {
 			basic: {},
-			accounts: {},
+			accounts: new Map(),
 			plugins: {},
 			captcha_bypass: {},
-			webhook: {}
+			webhook: {},
 		};
 
 		document.querySelectorAll<HTMLElement>("[launch-option]").forEach(o => {
@@ -154,50 +146,101 @@ async function startBots(): Promise<void> {
 		options.accounts = accountModule.getSelectedAccounts();
 		options.basic["script"] = options.basic.use_auto_script ? (document.getElementById("user-script") as HTMLTextAreaElement).value : null;
 
-		let currentLaunchCount = 0;
-
-		if (options.basic.use_accounts) {
-			for (const _ in options.accounts) currentLaunchCount++;
-		} else {
-			currentLaunchCount = options.basic.bots_count as number;
-		}
-
-		if (currentLaunchCount > 255 || currentLaunchCount < 1) {
-			messages.message("Cистема", "Невозможно запустить ботов");
-			logger.log("Невозможно запустить ботов: Number of simultaneously launching bots cannot be less than 1 and more than 255", "warning");
-			return;
-		}
-
-		totalBots = currentLaunchCount;
-
 		for (const name in plugins) options.plugins[name.replaceAll("-", "_")] = plugins[name].enable;
 
-		const text = `Запуск ботов на сервер ${options.basic.address}...`;
+		const buf = new Buffer();
 
-		logger.log(text, "info");
-		messages.message("Cистема", text);
+		buf.writeString(options.basic["address"]);
+		buf.writeU8(options.basic["bots_count"]);
+		buf.writeU32(options.basic["join_delay"]);
+		buf.writeString(options.basic["nickname_type"]);
+		buf.writeString(options.basic["password_type"]);
+		buf.writeString(options.basic["email_type"]);
+		buf.writeString(options.basic["nickname_template"]);
+		buf.writeString(options.basic["password_template"]);
+		buf.writeString(options.basic["register_mode"]);
+		buf.writeString(options.basic["register_command"]);
+		buf.writeString(options.basic["register_template"]);
+		buf.writeU32(options.basic["register_min_delay"]);
+		buf.writeU32(options.basic["register_max_delay"]);
+		buf.writeString(options.basic["register_trigger"]);
+		buf.writeString(options.basic["login_mode"]);
+		buf.writeString(options.basic["login_command"]);
+		buf.writeString(options.basic["login_template"]);
+		buf.writeU32(options.basic["login_min_delay"]);
+		buf.writeU32(options.basic["login_max_delay"]);
+		buf.writeString(options.basic["login_trigger"]);
+		buf.writeU32(options.basic["rejoin_delay"]);
+		buf.writeU8(options.basic["view_distance"]);
+		buf.writeOption<string>(options.basic["humanoid_arm"], (some) => buf.writeString(some));
+		buf.writeBoolean(options.basic["use_auto_rejoin"]);
+		buf.writeBoolean(options.basic["use_auto_register"]);
+		buf.writeBoolean(options.basic["use_double_auth"]);
+		buf.writeBoolean(options.basic["use_auto_login"]);
+		buf.writeBoolean(options.basic["use_auto_respawn"]);
+		buf.writeBoolean(options.basic["use_accept_rp"]);
+		buf.writeBoolean(options.basic["use_pathfinder"]);
+		buf.writeBoolean(options.basic["use_auto_script"]);
+		buf.writeBoolean(options.basic["use_proxy"]);
+		buf.writeBoolean(options.basic["use_anti_captcha"]);
+		buf.writeBoolean(options.basic["use_webhook"]);
+		buf.writeBoolean(options.basic["use_accounts"]);
+		buf.writeOption<string>(options.basic["proxy_list"], (some) => buf.writeString(some));
+		buf.writeOption<string>(options.basic["script"], (some) => buf.writeString(some));
 
-		const optionsStr = JSON.stringify(options);
-		const bytes = new TextEncoder().encode(optionsStr);
+		buf.writeU8(options.accounts.size);
+		for (const [username, account] of options.accounts) {
+			buf.writeString(username);
+			buf.writeOption(account["initial_group"], (some) => buf.writeString(some));
+			buf.writeOption(account["password"], (some) => buf.writeString(some));
+			buf.writeOption(account["email"], (some) => buf.writeString(some));
+			buf.writeOption(account["proxy"], (some) => buf.writeString(some));
+		}
 
-		const success = await invoke<boolean>("launch_bots", { options: bytes });
-		if (!success) return;
+		buf.writeBoolean(options.plugins["instant_armor_equip"]);
+		buf.writeBoolean(options.plugins["auto_totem"]);
+		buf.writeBoolean(options.plugins["auto_eat"]);
+		buf.writeBoolean(options.plugins["potion_consumer"]);
+		buf.writeBoolean(options.plugins["auto_look"]);
+		buf.writeBoolean(options.plugins["auto_shield"]);
+		buf.writeBoolean(options.plugins["auto_mending"]);
+		buf.writeBoolean(options.plugins["pearl_leave"]);
+
+		buf.writeString(options.captcha_bypass["captcha_type"]);
+		buf.writeString(options.captcha_bypass["captcha_subtype"]);
+		buf.writeString(options.captcha_bypass["solve_mode"]);
+		buf.writeString(options.captcha_bypass["regex"]);
+		buf.writeOption<string>(options.captcha_bypass["required_url_part"], (some) => buf.writeString(some));
+		buf.writeU32(options.captcha_bypass["number_of_columns"]);
+		buf.writeU32(options.captcha_bypass["number_of_rows"]);
+		buf.writeOption<string>(options.captcha_bypass["api_key"], (some) => buf.writeString(some));
+		buf.writeString(options.captcha_bypass["api_service"]);
+
+		buf.writeOption<string>(options.captcha_bypass["url"], (some) => buf.writeString(some));
+		buf.writeBoolean(options.plugins["send_information"]);
+		buf.writeBoolean(options.plugins["send_data"]);
+		buf.writeBoolean(options.plugins["send_actions"]);
+
+		const finalBuf = new Buffer();
+		finalBuf.writeU8(0x01);
+		finalBuf.writeU32(buf.len);
+		finalBuf.writeBytes(buf.toUint8Array());
+
+		const result = await invoke<CommandResult<null>>("send_command", {
+			data: finalBuf.toUint8Array(),
+		});
+
+		if (result.error) logger.log(`Ошибка запуска ботов: ${result.error}`, "error");
 
 		processActivity = true;
-		updateProcessStatus();
-
-		logger.log("Включение рантайм модулей...", "system");
 
 		monitoringModule.maxChatHistoryLength = parseInt((document.getElementById("monitoring_option_chat-history-length") as HTMLInputElement).value || "50");
-
 		monitoringModule.enable(parseInt((document.getElementById("monitoring_option_update-frequency") as HTMLInputElement).value || "1800"));
 		monitoringModule.wait();
 
 		if (options.basic.use_anti_captcha) captchaModule.enable(options.captcha_bypass.captcha_type, options.captcha_bypass.solve_mode);
 
 		radarModule.enable();
-
-		logger.log("Рантайм модули включены", "system");
 	} catch (error) {
 		logger.log(`Ошибка запуска ботов: ${error}`, "error");
 	}
@@ -205,37 +248,16 @@ async function startBots(): Promise<void> {
 
 /** Функция остановки ботов */
 async function stopBots(): Promise<void> {
-	if (stopping) return;
-
-	logger.log("Остановка ботов...", "info");
-
-	stopping = true;
-	updateProcessStatus();
-
 	try {
-		const success = await invoke<boolean>("stop_bots");
+		const buf = new Buffer();
+		buf.writeU8(0x02);
+		buf.writeU32(0);
 
-		if (!success) {
-			stopping = false;
-			updateProcessStatus();
-			return;
-		}
+		const result = await invoke<CommandResult<null>>("send_command", {
+			data: buf.toUint8Array(),
+		});
 
-		processActivity = false;
-		botsWereFullyConnected = false;
-		totalBots = 0;
-		connectedBots = 0;
-		stopping = false;
-
-		updateProcessStatus();
-
-		logger.log("Выключение рантайм модулей...", "system");
-
-		monitoringModule.disable();
-		captchaModule.disable();
-		radarModule.disable();
-
-		logger.log("Рантайм модули выключены", "system");
+		if (result.error) logger.log(`Ошибка остановки ботов: ${result.error}`, "error");
 	} catch (error) {
 		logger.log(`Ошибка остановки ботов: ${error}`, "error");
 	}
@@ -333,9 +355,18 @@ async function updateModuleState(index: number, state: number): Promise<void> {
 		// Пока так, состояние это последняя опция, иначе логически не поставить
 		buf.writeU8(state);
 
-		await invoke("control_bots", { data: buf.toUint8Array() });
+		const finalBuf = new Buffer();
+		finalBuf.writeU8(0x07);
+		finalBuf.writeU32(buf.len);
+		finalBuf.writeBytes(buf.toUint8Array());
+
+		const result = await invoke<CommandResult<null>>("send_command", {
+			data: finalBuf.toUint8Array(),
+		});
+
+		if (result.error) logger.log(`Ошибка изменения состояния модуля (index=${index}): ${result.error}`, "error");
 	} catch (error) {
-		logger.log(`Ошибка изменения состояния модуля (module-index=${index}): ${error}`, "error");
+		logger.log(`Ошибка изменения состояния модуля (index=${index}): ${error}`, "error");
 	}
 }
 
@@ -378,40 +409,56 @@ function initGlobalElements(): void {
 		if (!processActivity || !quickTasksAllowed) return;
 		const key = e.key.toLowerCase();
 		for (const k in pressedKeys) key === k ? pressedKeys[key] = true : null;
+
+		let taskId = undefined;
+
 		if (pressedKeys.shift && pressedKeys.i && pressedKeys.c) {
-			await invoke("quick_task", { name: "clear-inventory" });
+			taskId = 0x00;
 		} else if (pressedKeys.shift && pressedKeys.f && pressedKeys.c) {
-			await invoke("quick_task", { name: "form-circle" });
+			taskId = 0x0E;
 		} else if (pressedKeys.shift && pressedKeys.f && pressedKeys.l) {
-			await invoke("quick_task", { name: "form-line" });
+			taskId = 0x0F;
 		} else if (pressedKeys.shift && pressedKeys.p && pressedKeys.s) {
-			await invoke("quick_task", { name: "pathfinder-stop" });
+			taskId = 0x10;
 		} else if (pressedKeys.shift && pressedKeys.g && pressedKeys.f) {
-			await invoke("quick_task", { name: "fly" });
+			taskId = 0x07;
 		} else if (pressedKeys.shift && pressedKeys.g && pressedKeys.r) {
-			await invoke("quick_task", { name: "rise" });
+			taskId = 0x09;
 		} else if (pressedKeys.shift && pressedKeys.g && pressedKeys.c) {
-			await invoke("quick_task", { name: "capsule" });
+			taskId = 0x0A;
 		} else if (pressedKeys.alt && pressedKeys.shift && pressedKeys.q) {
-			await invoke("quick_task", { name: "quit" });
+			taskId = 0x08;
 		} else if (pressedKeys.shift && pressedKeys.w) {
-			await invoke("quick_task", { name: "move-forward" });
+			taskId = 0x01;
 		} else if (pressedKeys.shift && pressedKeys.s) {
-			await invoke("quick_task", { name: "move-backward" });
+			taskId = 0x02;
 		} else if (pressedKeys.shift && pressedKeys.a) {
-			await invoke("quick_task", { name: "move-left" });
+			taskId = 0x03;
 		} else if (pressedKeys.shift && pressedKeys.d) {
-			await invoke("quick_task", { name: "move-right" });
+			taskId = 0x04;
 		} else if (pressedKeys.shift && pressedKeys.j) {
-			await invoke("quick_task", { name: "jump" });
+			taskId = 0x05;
 		} else if (pressedKeys.shift && pressedKeys.c) {
-			await invoke("quick_task", { name: "shift" });
+			taskId = 0x06;
 		} else if (pressedKeys.shift && pressedKeys.u) {
-			await invoke("quick_task", { name: "unite" });
+			taskId = 0x0B;
 		} else if (pressedKeys.shift && pressedKeys.t) {
-			await invoke("quick_task", { name: "turn" });
+			taskId = 0x0C;
 		} else if (pressedKeys.shift && pressedKeys.z) {
-			await invoke("quick_task", { name: "zero" });
+			taskId = 0x0D;
+		}
+
+		if (taskId !== undefined) {
+			const buf = new Buffer();
+			buf.writeU8(0x0B);
+			buf.writeU32(1);
+			buf.writeU8(taskId);
+
+			const result = await invoke<CommandResult<null>>("send_command", {
+				data: buf.toUint8Array(),
+			});
+
+			if (result.error) logger.log(`Ошибка выполнения быстрой задачи (id=${taskId}): ${result.error}`, "info");
 		}
 	});
 
@@ -477,32 +524,145 @@ function initTitleBar(): void {
 	});
 }
 
-/** Функция инициализации слушателей основных событий */
-async function listenEvents(): Promise<void> {
-	await listen<{ text: string; class: string; }>("system:log", (event) => {
+/** Функция инициализации слушателей системных событий */
+async function listenSystemEvents(): Promise<void> {
+	await listen<number[]>("system:log", (e) => {
 		try {
-			logger.log(event.payload.text, event.payload.class);
+			const buf = new Buffer(new Uint8Array(e.payload));
+			const text = buf.readString();
+			const type = buf.readString();
+			logger.log(text, type);
 		} catch (error) {
-			logger.log(`Ошибка принятие события "system:log": ${error}`, "error");
+			logger.log(`Ошибка обработки события "system:log": ${error}`, "error");
 		}
 	});
 
-	await listen<{ name: string; content: string; }>("system:message", (event) => {
+	await listen<number[]>("system:message", (e) => {
 		try {
-			messages.message(event.payload.name, event.payload.content);
+			const buf = new Buffer(new Uint8Array(e.payload));
+			const name = buf.readString();
+			const content = buf.readString();
+			messages.message(name, content);
 		} catch (error) {
-			logger.log(`Ошибка принятие события "system:message": ${error}`, "error");
+			logger.log(`Ошибка обработки события "system:message": ${error}`, "error");
 		}
 	});
 
-	await listen<number>("system:connected-bots", (event) => {
+	await listen<number[]>("status:launch", (e) => {
 		try {
-			connectedBots = event.payload;
-			updateProcessStatus();
+			const buf = new Buffer(new Uint8Array(e.payload));
+			const status = buf.readU8();
+
+			if (status !== 0x01) {
+				processActivity = false;
+				monitoringModule.disable();
+				captchaModule.disable();
+				radarModule.disable();
+
+				switch (status) {
+					case 0x00:
+						logger.log("Ошибка запуска ботов: protocol or kernel error", "error");
+						break;
+					case 0x02:
+						logger.log("Запуск ботов невозможен: process is already active", "warning");
+						break;
+					case 0x03:
+						logger.log("Ошибка запуска ботов: number of launching bots must be in range 1-255", "error");
+						break;
+				}
+			}
 		} catch (error) {
-			logger.log(`Ошибка принятие события "system:connected-bots": ${error}`, "error");
+			logger.log(`Ошибка обработки события "status:launch": ${error}`, "error");
 		}
 	});
+
+	await listen<number[]>("status:stop", (e) => {
+		try {
+			const buf = new Buffer(new Uint8Array(e.payload));
+			const status = buf.readU8();
+
+			if (status === 0x01) {
+				monitoringModule.disable();
+				captchaModule.disable();
+				radarModule.disable();
+
+				processActivity = false;
+
+				messages.message("Система", "Остановка ботов завершена");
+				logger.log("Остановка ботов завершена", "info");
+			} else {
+				switch (status) {
+					case 0x00:
+						logger.log("Ошибка остановки ботов: protocol or kernel error", "error");
+						break;
+					case 0x02:
+						logger.log("Остановка ботов невозможна: process is already inactive", "warning");
+						break;
+					case 0x03:
+						logger.log("Остановка ботов невозможна: stop is already in progress", "warning");
+						break;
+				}
+			}
+		} catch (error) {
+			logger.log(`Ошибка обработки события "status:stop": ${error}`, "error");
+		}
+	});
+
+	await listen<number[]>("process:display-status", (e) => {
+		try {
+			const buf = new Buffer(new Uint8Array(e.payload));
+			const statusId = buf.readU8();
+			const connectedBots = buf.readU8();
+			const totalBots = buf.readU8();
+			updateProcessStatus(statusId, connectedBots, totalBots);
+		} catch (error) {
+			logger.log(`Ошибка обработки события "process:display-status": ${error}`, "error");
+		}
+	});
+
+	await listen<number[]>("process:synchronize", (e) => {
+		try {
+			const buf = new Buffer(new Uint8Array(e.payload));
+			const activity = buf.readU8() === 0x01;
+			const statusId = buf.readU8();
+			const connectedBots = buf.readU8();
+			const totalBots = buf.readU8();
+
+			processActivity = activity;
+
+			if (processActivity) {
+				monitoringModule.maxChatHistoryLength = parseInt((document.getElementById("monitoring_option_chat-history-length") as HTMLInputElement).value || "50");
+				monitoringModule.enable(parseInt((document.getElementById("monitoring_option_update-frequency") as HTMLInputElement).value || "1800"));
+				monitoringModule.wait();
+
+				// TODO: Сделать синхронизацию опций, пока без этого
+				// if (options.basic.use_anti_captcha) captchaModule.enable(options.captcha_bypass.captcha_type, options.captcha_bypass.solve_mode);
+
+				radarModule.enable();
+			} else {
+				monitoringModule.disable();
+				captchaModule.disable();
+				radarModule.disable();
+			}
+
+			updateProcessStatus(statusId, connectedBots, totalBots);
+		} catch (error) {
+			logger.log(`Ошибка обработки события "process:synchronize": ${error}`, "error");
+		}
+	});
+}
+
+/** Функция инициализации Discord RPC */
+async function initDiscordRpc(): Promise<void> {
+	const selectDiscordRpcMode = document.getElementById("interface_select_discord-rpc") as HTMLSelectElement;
+
+	selectDiscordRpcMode.addEventListener("change", async () => {
+		const result = await invoke<CommandResult<null>>("set_discord_rpc", { state: selectDiscordRpcMode.value === "enable" });
+		if (result.error) logger.log(`Ошибка изменения состояния Discord RPC: ${result.error}`, "error");
+	});
+
+	const result = await invoke<CommandResult<null>>("set_discord_rpc", { state: selectDiscordRpcMode.value === "enable" });
+	if (result.error) logger.log(`Ошибка изменения состояния Discord RPC: ${result.error}`, "error");
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -538,8 +698,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 document.addEventListener("DOMContentLoaded", async () => {
 	try {
-		await listenEvents();
-
+		await listenSystemEvents();
 		await configModule.init();
 
 		scriptModule.updateLineCounter();
@@ -549,15 +708,15 @@ document.addEventListener("DOMContentLoaded", async () => {
 		await captchaModule.init();
 		await proxyModule.init();
 		await scannerModule.init();
+
+		await sessionModule.init();
+
 		await translatorModule.init();
 		await pluginModule.init();
 		await docsModule.init();
 		await infoModule.init();
 
-		const selectDiscordRpcMode = document.getElementById("interface_select_discord-rpc") as HTMLSelectElement;
-
-		selectDiscordRpcMode.addEventListener("change", async () => await invoke("set_discord_rpc", { version: CLIENT_VERSION, state: selectDiscordRpcMode.value === "enable" }));
-		await invoke("set_discord_rpc", { version: CLIENT_VERSION, state: selectDiscordRpcMode.value === "enable" });
+		await initDiscordRpc();
 
 		updaterModule.init();
 	} catch (error) {

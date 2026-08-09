@@ -68,3 +68,4 @@ node_modules
 dist-ssr
 *.local
 .vscode
+/target/

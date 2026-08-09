@@ -8,7 +8,7 @@ use crate::bot::plugin_manager::PluginName;
 use crate::bot::systems::states::{getst, setmst, State, StateName};
 use crate::bot::traits::SalarixiPlugin;
 use crate::bot::PLUGINS;
-use crate::other::tools::*;
+use crate::tools::*;
 use crate::{sleep, take_bot};
 
 /// Структура данных сломанного предмета

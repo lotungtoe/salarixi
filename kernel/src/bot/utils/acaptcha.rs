@@ -13,9 +13,9 @@ use tokio::sync::RwLock;
 
 use crate::bot::systems::index::INDEX_SYSTEM;
 use crate::bot::systems::registry::REGISTRY_SYSTEM;
-use crate::emit::emit_log;
 use crate::launch::options::CaptchaBypassOptions;
 use crate::launch::process::current_options;
+use crate::server::transfer::emit_log;
 
 pub static WEB_CAPTCHA_BYPASS: Lazy<WebCaptchaBypass> = Lazy::new(|| WebCaptchaBypass::new());
 pub static MAP_CAPTCHA_BYPASS: Lazy<MapCaptchaBypass> = Lazy::new(|| MapCaptchaBypass::new());

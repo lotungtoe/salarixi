@@ -12,7 +12,7 @@ use crate::bot::extensions::{BotDefaultExt, BotInventoryExt, BotMovementExt, Bot
 use crate::bot::systems::states::{setmst, StateName};
 use crate::bot::systems::tasks::{gettskact, killtsk, pushetsk, pushrtsk, TaskName};
 use crate::bot::traits::SalarixiModule;
-use crate::other::tools::*;
+use crate::tools::*;
 use crate::{sleep, take_bot};
 
 #[derive(Index)]

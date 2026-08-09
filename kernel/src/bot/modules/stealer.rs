@@ -11,7 +11,7 @@ use crate::bot::extensions::BotMovementExt;
 use crate::bot::systems::states::{getst, setmst, setst, State, StateName};
 use crate::bot::systems::tasks::{gettskact, killtsk, pushrtsk, TaskName};
 use crate::bot::traits::SalarixiModule;
-use crate::other::tools::*;
+use crate::tools::*;
 use crate::{sleep, take_bot};
 
 #[derive(Index)]

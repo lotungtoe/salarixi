@@ -2,6 +2,7 @@ import { invoke } from "@tauri-apps/api/core";
 
 import { logger } from "../utils/logger";
 import { setQuickTasksAllowed } from "../main";
+import { Buffer } from "../utils/buffer";
 
 /** Модуль управления пользовательским сценарием */
 class ScriptModule {
@@ -52,18 +53,37 @@ class ScriptModule {
 			if (!this.editor) return;
 			const script = this.editor.value;
 			if (script === "") return;
-			await invoke("execute_script", { script: script, separately: separately });
+
+			const buf = new Buffer();
+			buf.writeU8(0x0C);
+			buf.writeU32(3 + script.length);
+			buf.writeString(script);
+			buf.writeBoolean(separately);
+
+			const result = await invoke<CommandResult<null>>("send_command", {
+				data: buf.toUint8Array(),
+			});
+
+			if (result.error) logger.log(`Ошибка выполнения сценария: ${result.error}`, "error");
 		} catch (error) {
-			logger.log(`Ошибка выполнения скрипта: ${error}`, "error");
+			logger.log(`Ошибка выполнения сценария: ${error}`, "error");
 		}
 	}
 
 	/** Метод остановки пользовательского сценария */
 	private async stop(): Promise<void> {
 		try {
-			await invoke("stop_script");
+			const buf = new Buffer();
+			buf.writeU8(0x0D);
+			buf.writeU32(0);
+
+			const result = await invoke<CommandResult<null>>("send_command", {
+				data: buf.toUint8Array(),
+			});
+
+			if (result.error) logger.log(`Ошибка остановки сценария: ${result.error}`, "error");
 		} catch (error) {
-			logger.log(`Ошибка остановки скрипта: ${error}`, "error");
+			logger.log(`Ошибка остановки сценария: ${error}`, "error");
 		}
 	}
 }

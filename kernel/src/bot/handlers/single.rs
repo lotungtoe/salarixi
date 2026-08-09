@@ -21,11 +21,12 @@ use crate::bot::systems::states::STATE_SYSTEM;
 use crate::bot::systems::tasks::TASK_SYSTEM;
 use crate::bot::utils::acaptcha::{MAP_ACCUMULATOR, MAP_CAPTCHA_BYPASS, WEB_CAPTCHA_BYPASS};
 use crate::bot::PLUGINS;
-use crate::emit::*;
 use crate::launch::process::current_options;
-use crate::other::tools::*;
-use crate::other::webhook::*;
+use crate::launch::process::update_process_status;
+use crate::server::transfer::*;
 use crate::sleep;
+use crate::tools::*;
+use crate::webhook::*;
 use crate::{take_bot, take_profile};
 
 /// Обработчик для одного бота
@@ -87,12 +88,8 @@ async fn process_spawn(bot: Client) {
   };
 
   PLUGINS.activate_for(index, opts.plugins).await;
-
   PROFILE_SYSTEM.set_status(&index, BotStatus::Connected).await;
-
-  EMIT_MANAGER.emit(EmitEvent::ConnectedBots(
-    PROFILE_SYSTEM.get_connected_count().await as u8,
-  ));
+  update_process_status().await;
 
   take_bot!(&index, async |bot| {
     let pos = bot.feet_pos();
@@ -160,12 +157,9 @@ async fn process_disconnect(bot: Client, text: Option<FormattedText>) {
   PROFILE_SYSTEM.set_bool(&index, "captcha_caught", false).await;
   STATE_SYSTEM.reset(&index).await;
   TASK_SYSTEM.remove(&index).await;
-
   PROFILE_SYSTEM.set_status(&index, BotStatus::Disconnected).await;
 
-  EMIT_MANAGER.emit(EmitEvent::ConnectedBots(
-    PROFILE_SYSTEM.get_connected_count().await as u8,
-  ));
+  update_process_status().await;
 
   if let Some(t) = text {
     if let Some(options) = current_options().await {
@@ -193,7 +187,7 @@ async fn process_chat_message(bot: Client, packet: ChatPacket) {
     return;
   };
 
-  EMIT_MANAGER.emit(EmitEvent::BotChat(ChatEventPayload {
+  TRANSFER.emit(TransferEvent::BotChat(BotChatPayload {
     receiver: username.clone(),
     message: packet.message().to_html(),
   }));
@@ -223,7 +217,7 @@ async fn process_chat_message(bot: Client, packet: ChatPacket) {
           "info",
         );
 
-        EMIT_MANAGER.emit(EmitEvent::AntiWebCaptcha(AntiWebCaptchaEventPayload {
+        TRANSFER.emit(TransferEvent::AntiWebCaptcha(AntiWebCaptchaPayload {
           captcha_url: url,
           username: username.clone(),
         }));
@@ -337,7 +331,7 @@ async fn process_packet(bot: Client, packet: Arc<ClientboundGamePacket>) {
               if options.captcha_bypass.solve_mode == "auto" {
                 MAP_CAPTCHA_BYPASS.solve_captcha(username.clone(), combined_base64, options.captcha_bypass);
               } else {
-                EMIT_MANAGER.emit(EmitEvent::AntiMapCaptcha(AntiMapCaptchaEventPayload {
+                TRANSFER.emit(TransferEvent::AntiMapCaptcha(AntiMapCaptchaPayload {
                   base64_code: combined_base64,
                   username: username.to_string(),
                 }));
@@ -367,7 +361,7 @@ async fn process_packet(bot: Client, packet: Arc<ClientboundGamePacket>) {
             if options.captcha_bypass.solve_mode == "auto" {
               MAP_CAPTCHA_BYPASS.solve_captcha(username, base64_code, options.captcha_bypass);
             } else {
-              EMIT_MANAGER.emit(EmitEvent::AntiMapCaptcha(AntiMapCaptchaEventPayload {
+              TRANSFER.emit(TransferEvent::AntiMapCaptcha(AntiMapCaptchaPayload {
                 base64_code,
                 username: username.to_string(),
               }));

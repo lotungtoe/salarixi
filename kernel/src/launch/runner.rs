@@ -1,4 +1,5 @@
 use std::net::SocketAddr;
+use std::sync::atomic::Ordering;
 use std::thread;
 use std::time::Duration;
 
@@ -19,9 +20,12 @@ use crate::bot::systems::states::STATE_SYSTEM;
 use crate::bot::systems::tasks::TASK_SYSTEM;
 use crate::bot::utils::acaptcha::MAP_ACCUMULATOR;
 use crate::bot::PLUGINS;
-use crate::emit::{emit_log, emit_msg};
-use crate::other::webhook::send_webhook;
+use crate::launch::process::update_process_status;
+use crate::launch::process::BOTS_WERE_FULLY_CONNECTED;
+use crate::launch::process::STOPPING;
+use crate::server::transfer::{emit_log, emit_msg};
 use crate::sleep;
+use crate::webhook::send_webhook;
 
 use super::generators::{generate_email, generate_unique_username, generate_username_or_password};
 use super::options::{AccountOptions, LaunchOptions};
@@ -115,20 +119,35 @@ async fn processs_proxy(index: &u8, proxy: &str, join_opts: JoinOpts) -> JoinOpt
 }
 
 /// Функция запуска ботов на сервер
-pub async fn launch_bots_on_server(options: LaunchOptions) -> bool {
-  if process_is_active() {
-    emit_log(
-      format!("Запуск ботов невозможен: The process is already active"),
-      "warning",
-    );
+pub async fn launch_bots_on_server(options: LaunchOptions) -> u8 {
+  emit_msg("Система", "Запуск ботов...");
+  emit_log(format!("Запуск ботов на сервер {}...", options.basic.address), "info");
 
-    return false;
+  // При ошибке логи и сообщения выше придут на фронт позже, чем
+  // само сообщение об ошибке, пока пусть будет такая задержка
+  sleep!(500);
+
+  if process_is_active() {
+    return 0x02;
   }
 
-  emit_log("Подготовка...", "extended");
+  let total_bots;
+
+  if options.basic.use_accounts {
+    total_bots = options.accounts.len() as u8;
+  } else {
+    total_bots = options.basic.bots_count;
+  }
+
+  if total_bots < 1 {
+    return 0x03;
+  }
+
+  emit_log("Подготовка к запуску...", "extended");
 
   set_options(options.clone()).await;
   set_process_activity(true);
+  update_process_status().await;
 
   if options.basic.use_webhook {
     send_webhook(
@@ -152,7 +171,7 @@ pub async fn launch_bots_on_server(options: LaunchOptions) -> bool {
       if !options.basic.use_auto_rejoin {
         swarm_plugins = swarm_plugins.disable::<azalea::auto_reconnect::AutoReconnectPlugin>();
       } else {
-        AutoReconnectDelay::new(Duration::from_millis(options.basic.rejoin_delay));
+        AutoReconnectDelay::new(Duration::from_millis(options.basic.rejoin_delay.into()));
       }
 
       let mut bot_plugins = azalea::bot::DefaultBotPlugins.build();
@@ -174,7 +193,7 @@ pub async fn launch_bots_on_server(options: LaunchOptions) -> bool {
           .add_plugins(swarm_plugins)
           .add_plugins(bot_plugins)
           .add_plugins(azalea::swarm::DefaultSwarmPlugins)
-          .join_delay(Duration::from_millis(options.basic.join_delay))
+          .join_delay(Duration::from_millis(options.basic.join_delay.into()))
           .set_swarm_handler(swarm_handler)
           .set_handler(single_handler);
 
@@ -279,23 +298,28 @@ pub async fn launch_bots_on_server(options: LaunchOptions) -> bool {
     });
   });
 
-  true
+  0x01
 }
 
 /// Функция остановки ботов
-pub async fn stop_bots_and_destroy_data() -> bool {
+pub async fn stop_bots_and_destroy_data() -> u8 {
+  let total_bots = PROFILE_SYSTEM.len().await;
+
   emit_msg("Система", "Остановка ботов...");
+  emit_log(format!("Остановка {} ботов...", total_bots), "info");
+
+  sleep!(500);
 
   if !process_is_active() {
-    emit_log(
-      format!("Остановка ботов невозможна: The process is not active now"),
-      "warning",
-    );
-
-    return false;
+    return 0x02;
   }
 
-  let total_bots = PROFILE_SYSTEM.len().await;
+  if STOPPING.load(Ordering::SeqCst) {
+    return 0x03;
+  }
+
+  STOPPING.store(true, Ordering::SeqCst);
+  update_process_status().await;
 
   PLUGINS.clear().await;
   TASK_SYSTEM.clear().await;
@@ -310,6 +334,11 @@ pub async fn stop_bots_and_destroy_data() -> bool {
 
   set_process_activity(false);
 
+  STOPPING.store(false, Ordering::SeqCst);
+  BOTS_WERE_FULLY_CONNECTED.store(false, Ordering::SeqCst);
+
+  update_process_status().await;
+
   if let Some(options) = current_options().await {
     if options.basic.use_webhook {
       send_webhook(
@@ -319,8 +348,5 @@ pub async fn stop_bots_and_destroy_data() -> bool {
     }
   }
 
-  emit_msg("Система", "Остановка ботов завершена");
-  emit_log("Остановка ботов завершена", "info");
-
-  true
+  0x01
 }

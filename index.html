@@ -251,19 +251,20 @@
     </button>
 
     <button class="pretty-btn" id="proxy" path="proxy-container">
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-server-cog">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-world-cog">
         <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-        <path d="M3 7a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v2a3 3 0 0 1 -3 3h-12a3 3 0 0 1 -3 -3v-2" />
-        <path d="M12 20h-6a3 3 0 0 1 -3 -3v-2a3 3 0 0 1 3 -3h10.5" />
-        <path d="M16 18a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
-        <path d="M18 14.5v1.5" />
-        <path d="M18 20v1.5" />
-        <path d="M21.032 16.25l-1.299 .75" />
-        <path d="M16.27 19l-1.3 .75" />
-        <path d="M14.97 16.25l1.3 .75" />
-        <path d="M19.733 19l1.3 .75" />
-        <path d="M7 8v.01" />
-        <path d="M7 16v.01" />
+        <path d="M21 12a9 9 0 1 0 -8.979 9" />
+        <path d="M3.6 9h16.8" />
+        <path d="M3.6 15h8.9" />
+        <path d="M11.5 3a17 17 0 0 0 0 18" />
+        <path d="M12.5 3a16.992 16.992 0 0 1 2.522 10.376" />
+        <path d="M17.001 19a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
+        <path d="M19.001 15.5v1.5" />
+        <path d="M19.001 21v1.5" />
+        <path d="M22.032 17.25l-1.299 .75" />
+        <path d="M17.27 20l-1.3 .75" />
+        <path d="M15.97 17.25l1.3 .75" />
+        <path d="M20.733 20l1.3 .75" />
       </svg>
       <span class="text" tt="proxy">Прокси</span>
     </button>
@@ -404,6 +405,24 @@
         <path d="M20.733 20l1.3 .75" />
       </svg>
       <span class="text" tt="config">Конфиг</span>
+    </button>
+
+    <button class="pretty-btn" id="session" path="session-container">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-server-cog">
+        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+        <path d="M3 7a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v2a3 3 0 0 1 -3 3h-12a3 3 0 0 1 -3 -3v-2" />
+        <path d="M12 20h-6a3 3 0 0 1 -3 -3v-2a3 3 0 0 1 3 -3h10.5" />
+        <path d="M16 18a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
+        <path d="M18 14.5v1.5" />
+        <path d="M18 20v1.5" />
+        <path d="M21.032 16.25l-1.299 .75" />
+        <path d="M16.27 19l-1.3 .75" />
+        <path d="M14.97 16.25l1.3 .75" />
+        <path d="M19.733 19l1.3 .75" />
+        <path d="M7 8v.01" />
+        <path d="M7 16v.01" />
+      </svg>
+      <span class="text" tt="session">Сессия</span>
     </button>
 
     <div class="splitter"></div>
@@ -1983,7 +2002,7 @@
   <div class="main-wrapper centered" id="monitoring-container" style="display: none;" global="true">
     <img src="interface/assets/steve.png" id="steve-img" draggable="false" style="display: none;">
 
-    <h1 class="info-text" id="monitoring-status-text">Объекты ботов отсутствуют</h1>
+    <h1 class="info-text" id="monitoring-status-text" tt="bots-objects-missing">Объекты ботов отсутствуют</h1>
 
     <div class="monitoring-wrapper" id="bot-cards-container" style="display: none;"></div>
     <div id="bot-wrappers-container"></div>
@@ -2268,6 +2287,67 @@
     </div>
 
     <div id="config-list"></div>
+  </div>
+
+  <div class="main-wrapper" id="session-container" style="display: none;" global="true">
+    <div class="session-wrapper">
+      <div class="panel">
+        <div class="inputs">
+          <div class="form-input">
+            <label class="text" tt="server-address">Адрес сервера</label>
+            <input type="text" id="session-address" placeholder="127.0.0.1:48736" keep private>
+          </div>
+
+          <div class="form-input">
+            <label class="text" tt="password">Пароль</label>
+            <input type="text" id="session-password" placeholder="qwe123" keep private>
+          </div>
+        </div>
+
+        <div class="buttons">
+          <button id="change-session">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-broadcast">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+              <path d="M18.364 19.364a9 9 0 1 0 -12.728 0" />
+              <path d="M15.536 16.536a5 5 0 1 0 -7.072 0" />
+              <path d="M11 13a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
+            </svg>
+            <span tt="connect">Подключиться</span>
+          </button>
+
+          <button class="min" id="setup-default-session">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-restore">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+              <path d="M3.06 13a9 9 0 1 0 .49 -4.087" />
+              <path d="M3 4.001v5h5" />
+              <path d="M11 12a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
+            </svg>
+            <span tt="reset">Сбросить</span>
+          </button>
+        </div>
+
+        <div class="info">
+          <label><span tt="current-address:">Текущий адрес:</span><span class="default-value" id="current-session-address">?</span></label>
+          <label><span tt="current-password:">Текущий пароль:</span><span class="copy-value" id="current-session-password">?</span></label>
+        </div>
+      </div>
+
+      <div class="chat">
+        <div class="content" id="session-chat-content"></div>
+
+        <div class="input-with-button">
+          <input type="text" id="session-message" placeholder="Hello, chat!">
+
+          <button class="min" id="send-session-message">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-send-2">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+              <path d="M4.698 4.034l16.302 7.966l-16.302 7.966a.503 .503 0 0 1 -.546 -.124a.555 .555 0 0 1 -.12 -.568l2.468 -7.274l-2.468 -7.274a.555 .555 0 0 1 .12 -.568a.503 .503 0 0 1 .546 -.124" />
+              <path d="M6.5 12h14.5" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <div class="main-wrapper centered" id="documentation-container" style="display: none;" global="true">

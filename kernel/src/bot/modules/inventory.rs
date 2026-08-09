@@ -4,7 +4,7 @@ use salarixi_extensions::buffer::BufferExt;
 use crate::bot::extensions::{BotInteractExt, BotInventoryExt, ClickMode};
 use crate::bot::systems::index::INDEX_SYSTEM;
 use crate::bot::traits::SalarixiModule;
-use crate::emit::*;
+use crate::server::transfer::*;
 use crate::take_bot;
 
 pub struct InventoryOptions {

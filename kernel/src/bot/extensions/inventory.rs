@@ -13,8 +13,8 @@ use azalea::registry::builtin::ItemKind;
 use crate::bot::common::convert_inventory_slot_to_hotbar_slot;
 use crate::bot::extensions::BotMovementExt;
 use crate::bot::systems::states::{getst, setmst, setst, State, StateName};
-use crate::other::tools::randnum;
 use crate::sleep;
+use crate::tools::randnum;
 
 /// Структура метаданных предмета
 pub struct ItemMeta {

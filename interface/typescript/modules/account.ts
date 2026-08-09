@@ -104,18 +104,18 @@ class AccountModule {
 	}
 
 	/** Метод получения всех выбранных аккаунтов без лишних полей */
-	public getSelectedAccounts(): Record<string, any> {
-		let cleanAccounts: any = {};
+	public getSelectedAccounts(): Map<string, any> {
+		let cleanAccounts: Map<string, any> = new Map();
 
 		for (const [username, account] of this.accounts) {
 			if (!account.selected) continue;
 
-			cleanAccounts[username] = {
+			cleanAccounts.set(username, {
 				initial_group: account.initial_group,
 				password: account.password,
 				email: account.email,
 				proxy: account.proxy,
-			};
+			});
 		}
 
 		return cleanAccounts;

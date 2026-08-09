@@ -5,6 +5,8 @@ use azalea::core::position::BlockPos;
 use azalea::prelude::PathfinderClientExt;
 use azalea::{Vec3, WalkDirection};
 use once_cell::sync::Lazy;
+use salarixi_extensions::index::IndexExt;
+use salarixi_macros::Index;
 
 use crate::bot::common::{get_average_coordinates_of_bots, this_is_solid_block};
 use crate::bot::extensions::{go_to, BotDefaultExt, BotInventoryExt, BotMovementExt, BotPhysicsExt, ClickMode};
@@ -13,69 +15,139 @@ use crate::bot::systems::registry::REGISTRY_SYSTEM;
 use crate::bot::systems::states::{getst, setmst, State, StateName, STATE_SYSTEM};
 use crate::bot::systems::tasks::TASK_SYSTEM;
 use crate::bot::PLUGINS;
-use crate::other::tools::*;
+use crate::launch::process::current_options;
+use crate::server::transfer::{emit_log, emit_msg};
+use crate::tools::*;
+use crate::webhook::send_webhook;
 use crate::{sleep, take_bot};
 
 pub static QUICK_TASKS: Lazy<QuickTaskManager> = Lazy::new(|| QuickTaskManager::new());
 
-/// Менеджер быстрых задач
+#[derive(Clone, Index)]
+enum QuickTask {
+  ClearInventory = 0x00,
+  MoveForward = 0x01,
+  MoveBackward = 0x02,
+  MoveLeft = 0x03,
+  MoveRight = 0x04,
+  Jump = 0x05,
+  Shift = 0x06,
+  Fly = 0x07,
+  Quit = 0x08,
+  Rise = 0x09,
+  Capsule = 0x0A,
+  Unite = 0x0B,
+  Turn = 0x0C,
+  Zero = 0x0D,
+  FormCircle = 0x0E,
+  FormLine = 0x0F,
+  StopPathfinder = 0x10,
+}
+
+impl QuickTask {
+  fn to_str(&self) -> &str {
+    match self {
+      Self::ClearInventory => "clear-inventory",
+      Self::MoveForward => "move-forward",
+      Self::MoveBackward => "move-backward",
+      Self::MoveLeft => "move-left",
+      Self::MoveRight => "move-right",
+      Self::Jump => "jump",
+      Self::Shift => "shift",
+      Self::Fly => "fly",
+      Self::Quit => "quit",
+      Self::Rise => "rise",
+      Self::Capsule => "capsule",
+      Self::Unite => "unite",
+      Self::Turn => "turn",
+      Self::Zero => "zero",
+      Self::FormCircle => "form-circle",
+      Self::FormLine => "form-line",
+      Self::StopPathfinder => "stop-pathfinder",
+    }
+  }
+}
+
 pub struct QuickTaskManager;
 
 impl QuickTaskManager {
-  /// Метод создания менеджера
   pub fn new() -> Self {
     Self
   }
 
   /// Метод выполненя быстрой задачи
-  pub async fn execute(&self, name: String) {
-    for (number, index) in PROFILE_SYSTEM.get_all_connected().await.into_keys().enumerate() {
-      let name = name.clone();
+  pub async fn execute(&self, id: u8) {
+    let Some(task) = QuickTask::from_index(id) else {
+      return;
+    };
 
+    let connected_bots = PROFILE_SYSTEM.get_connected_count().await;
+    let str_task = task.to_str();
+
+    if let Some(opts) = current_options().await {
+      if opts.basic.use_webhook && opts.webhook.send_actions {
+        send_webhook(
+          opts.webhook.url,
+          format!("{} ботов получили быструю задачу \"{}\"", connected_bots, str_task),
+        );
+      }
+    }
+
+    emit_log(
+      format!("{} ботов получили быструю задачу \"{}\"", connected_bots, str_task),
+      "info",
+    );
+
+    emit_msg("Быстрая задача", format!("Быстрая задача \"{}\"", str_task));
+
+    for (number, index) in PROFILE_SYSTEM.get_all_connected().await.into_keys().enumerate() {
+      let task_clone = task.clone();
+
+      // TODO: Разбить все задачи по отдельным функциям
       tokio::spawn(async move {
-        take_bot!(&index, async |bot| match name.as_str() {
-          "clear-inventory" => {
+        take_bot!(&index, async |bot| match task_clone {
+          QuickTask::ClearInventory => {
             if let Some(menu) = bot.get_inventory_menu() {
               for (slot, _) in menu.slots().iter().enumerate() {
                 bot.inventory_click(&index, slot, ClickMode::DropAll, false).await;
               }
             }
           }
-          "move-forward" => {
+          QuickTask::MoveForward => {
             bot.start_walking(&index, WalkDirection::Forward).await;
             sleep!(200);
             bot.stop_move(&index).await;
           }
-          "move-backward" => {
+          QuickTask::MoveBackward => {
             bot.start_walking(&index, WalkDirection::Backward).await;
             sleep!(200);
             bot.stop_move(&index).await;
           }
-          "move-left" => {
+          QuickTask::MoveLeft => {
             bot.start_walking(&index, WalkDirection::Right).await;
             sleep!(200);
             bot.stop_move(&index).await;
           }
-          "move-right" => {
+          QuickTask::MoveRight => {
             bot.start_walking(&index, WalkDirection::Left).await;
             sleep!(200);
             bot.stop_move(&index).await;
           }
-          "jump" => {
+          QuickTask::Jump => {
             bot.jump();
           }
-          "shift" => {
+          QuickTask::Shift => {
             bot.set_crouching(true);
             sleep!(200);
             bot.set_crouching(false);
           }
-          "fly" => {
+          QuickTask::Fly => {
             for i in 0..randnum(3, 5) {
               bot.set_velocity("y", randnum(0.022 * i as f64, 0.031 * i as f64));
               sleep!(50);
             }
           }
-          "quit" => {
+          QuickTask::Quit => {
             PLUGINS.kill_all_tasks_for(&index).await;
             TASK_SYSTEM.kill_all_tasks_for(&index).await;
 
@@ -88,7 +160,7 @@ impl QuickTaskManager {
 
             PROFILE_SYSTEM.set_str(&index, "status", "Оффлайн").await;
           }
-          "rise" => {
+          QuickTask::Rise => {
             if getst(&index, State::CanLooking).await && getst(&index, State::CanInteracting).await {
               let mut block_slot = None;
 
@@ -141,7 +213,7 @@ impl QuickTaskManager {
               }
             }
           }
-          "capsule" => {
+          QuickTask::Capsule => {
             let position = bot.feet_pos();
 
             let block_positions = vec![
@@ -252,7 +324,7 @@ impl QuickTaskManager {
               }
             }
           }
-          "unite" => {
+          QuickTask::Unite => {
             let mut positions = vec![];
 
             for username in PROFILE_SYSTEM.get_all_connected().await.keys() {
@@ -267,14 +339,14 @@ impl QuickTaskManager {
 
             go_to(index, average_cords.0 as i32, average_cords.2 as i32);
           }
-          "turn" => {
+          QuickTask::Turn => {
             let direction = bot.direction();
             bot.set_direction(direction.0 - 90.0, direction.1);
           }
-          "zero" => {
+          QuickTask::Zero => {
             bot.set_direction(0.0, 0.0);
           }
-          "form-circle" => {
+          QuickTask::FormCircle => {
             let mut positions = vec![];
 
             for username in PROFILE_SYSTEM.get_all_connected().await.keys() {
@@ -293,7 +365,7 @@ impl QuickTaskManager {
 
             go_to(index, x as i32, z as i32);
           }
-          "form-line" => {
+          QuickTask::FormLine => {
             let mut positions = vec![];
 
             for username in PROFILE_SYSTEM.get_all_connected().await.keys() {
@@ -311,10 +383,9 @@ impl QuickTaskManager {
 
             go_to(index, x as i32, z as i32);
           }
-          "pathfinder-stop" => {
+          QuickTask::StopPathfinder => {
             bot.stop_pathfinding();
           }
-          _ => {}
         });
       });
     }

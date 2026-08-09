@@ -4,13 +4,15 @@ import { listen } from "@tauri-apps/api/event";
 import { logger } from "../utils/logger";
 import { date } from "../utils/date";
 import { processActivity } from "../main";
+import { Buffer } from "../utils/buffer";
 
 /** Структура информации о боте */
 interface BotProfile {
-	status: any;
+	status: BotStatus;
 	password: string | null;
+	email: string | null;
 	proxy: {
-		ip_address: string | null;
+		ipAddress: string | null;
 		proxy: string | null;
 		username: string | null;
 		password: string | null;
@@ -18,8 +20,15 @@ interface BotProfile {
 	ping: number;
 	health: number;
 	registered: boolean;
-	captcha_caught: boolean;
+	logined: boolean;
+	captchaCaught: boolean;
 	group: string;
+}
+
+enum BotStatus {
+	Waiting,
+	Connected,
+	Disconnected,
 }
 
 /** Модуль управления мониторингом */
@@ -41,14 +50,13 @@ class MonitoringModule {
 		this.cards = document.getElementById("bot-cards-container");
 		this.wrappers = document.getElementById("bot-wrappers-container");
 
-		this.statusText!.innerText = "Объекты ботов отсутствуют";
 		this.statusText!.style.display = "flex";
 
-		await listen("monitoring:chat-message", (event) => {
+		await listen<number[]>("monitoring:chat", (e) => {
 			try {
-				const payload = event.payload as { receiver: string; message: string; };
-				const receiver = payload.receiver;
-				const message = payload.message;
+				const buf = new Buffer(new Uint8Array(e.payload));
+				const receiver = buf.readString();
+				const message = buf.readString();
 
 				if (!this.chatHistoryFilters[receiver]) this.chatHistoryFilters[receiver] = "all";
 				if (!this.filterMessage(this.chatHistoryFilters[receiver], message)) return;
@@ -82,21 +90,73 @@ class MonitoringModule {
 					}
 				}
 			} catch (error) {
-				logger.log(`Ошибка мониторинга (receive-payload): ${error}`, "error");
+				logger.log(`Ошибка обработки события "monitoring:chat": ${error}`, "error");
+			}
+		});
+
+		await listen<number[]>("monitoring:profiles", (e) => {
+			try {
+				const buf = new Buffer(new Uint8Array(e.payload));
+				const len = buf.readU8();
+
+				for (let i = 0; i < len; i++) {
+					const username = buf.readString();
+
+					const statusCode = buf.readU8();
+					let status = BotStatus.Waiting;
+
+					switch (statusCode) {
+						case 0x01:
+							status = BotStatus.Connected;
+							break;
+						case 0x02:
+							status = BotStatus.Disconnected;
+							break;
+					}
+
+					const profile: BotProfile = {
+						status: status,
+						password: buf.readOption(() => buf.readString()),
+						email: buf.readOption(() => buf.readString()),
+						proxy: {
+							ipAddress: buf.readOption(() => buf.readString()),
+							proxy: buf.readOption(() => buf.readString()),
+							username: buf.readOption(() => buf.readString()),
+							password: buf.readOption(() => buf.readString()),
+						},
+						ping: buf.readU32(),
+						health: buf.readU32(),
+						registered: buf.readBoolean(),
+						logined: buf.readBoolean(),
+						captchaCaught: buf.readBoolean(),
+						group: buf.readString(),
+					};
+
+					this.usernameList.includes(username) ? this.updateBotCard(username, profile) : this.createBotCard(username, profile);
+				}
+
+
+			} catch (error) {
+				logger.log(`Ошибка обработки события "monitoring:profiles": ${error}`, "error");
 			}
 		});
 	}
 
 	/** Метод переключения состояния мониторинга на ожидание */
 	public wait(): void {
-		this.statusText!.innerText = "Ожидание активных ботов...";
+		this.statusText!.style.display = "none";
 		this.cards!.innerHTML = "";
+		this.cards!.style.display = "flex";
 	}
 
 	/** Метод активации мониторинга */
 	public enable(delay: number): void {
 		try {
-			let isFirst = true;
+			const buf = new Buffer();
+			buf.writeU8(0x03);
+			buf.writeU32(0);
+
+			const uin8arr = buf.toUint8Array();
 
 			const interval = setInterval(async () => {
 				if (!processActivity) {
@@ -104,26 +164,14 @@ class MonitoringModule {
 					return;
 				}
 
-				try {
-					const profiles = await invoke<Record<string, BotProfile>>("get_bot_profiles");
+				const result = await invoke<CommandResult<null>>("send_command", {
+					data: uin8arr,
+				});
 
-					for (const username in profiles) {
-						if (isFirst) {
-							this.statusText!.style.display = "none";
-							this.cards!.style.display = "flex";
-							isFirst = false;
-						}
-
-						const profile = profiles[username];
-
-						this.usernameList.includes(username) ? this.updateBotCard(username, profile) : this.createBotCard(username, profile);
-					}
-				} catch (error) {
-					logger.log(`Ошибка мониторинга профилей: ${error}`, "error");
-				}
+				if (result.error) logger.log(`Ошибка получения профилей ботов: ${result.error}`, "error");
 			}, delay);
 		} catch (error) {
-			logger.log(`Ошибка инициализации мониторинга: ${error}`, "error");
+			logger.log(`Ошибка включения мониторинга: ${error}`, "error");
 		}
 	}
 
@@ -182,7 +230,7 @@ class MonitoringModule {
       <div class="info">
         <p class="line">Пинг: <span id="monitoring-ping-${username}">${profile.ping}</span>ms</p>
         <p class="line">Здоровье: <span id="monitoring-health-${username}">${profile.health}</span> / 20</p>
-        <p class="line">Прокси: <span id="monitoring-proxy-${username}">${profile.proxy.ip_address}</span></p>
+        <p class="line">Прокси: <span id="monitoring-proxy-${username}">${profile.proxy.ipAddress}</span></p>
         <p class="line">Пароль: <span>${profile.password ?? "No password"}</span></p>
       </div>
 
@@ -277,20 +325,22 @@ class MonitoringModule {
 		let statusColor = "var(--bot-waiting-status-color)";
 
 		switch (profile.status) {
-			case "Connected":
+			case BotStatus.Waiting:
+				status.innerText = "waiting";
+				statusColor = "var(--bot-waiting-status-color)";
+				break;
+			case BotStatus.Connected:
+				status.innerText = "connected";
 				statusColor = "var(--bot-connected-status-color)";
 				break;
-			case "Disconnected":
+			case BotStatus.Disconnected:
+				status.innerText = "disconnected";
 				statusColor = "var(--bot-disconnected-status-color)";
-				break;
-			case "Waiting":
-				statusColor = "var(--bot-waiting-status-color)";
 				break;
 		}
 
-		status.innerText = String(profile.status).toLowerCase();
 		status.style.color = statusColor;
-		proxy.innerText = profile.proxy.ip_address ? profile.proxy.ip_address : "No proxy";
+		proxy.innerText = profile.proxy.ipAddress ? profile.proxy.ipAddress : "No proxy";
 		ping.innerText = profile.ping.toString();
 		health.innerText = profile.health.toString();
 
@@ -305,45 +355,86 @@ class MonitoringModule {
 
 		const chatWrapper = this.createChatWrapper(username);
 
-		document.getElementById(`bot-group-${username}`)?.addEventListener("input", async () => {
-			try {
-				const group = (document.getElementById(`bot-group-${username}`) as HTMLInputElement).value.replace(" ", "");
-
-				await invoke("set_group", {
-					username: username,
-					group: group !== "" ? group : "global"
-				});
-			} catch (error) {
-				logger.log(`Ошибка изменения группы ${username}: ${error}`, "error");
-			}
-		});
-
 		document.getElementById(`open-chat-${username}`)?.addEventListener("click", () => chatWrapper.style.display = "flex");
 		document.getElementById(`close-chat-${username}`)?.addEventListener("click", () => chatWrapper.style.display = "none");
 
-		document.getElementById(`disconnect-${username}`)?.addEventListener("click", async () => {
-			try {
-				await invoke("quick_operation", {
-					operation: "disconnect-bot",
-					options: {
-						username: username
-					}
+		document.getElementById(`chat-${username}`)?.addEventListener("keydown", async (e) => {
+			if ((e as KeyboardEvent).key === "Enter") {
+				const message = document.getElementById(`chat-message-${username}`) as HTMLInputElement;
+
+				const buf = new Buffer();
+				buf.writeU8(0x05);
+				buf.writeU32(5 + username.length + message.value.length);
+				buf.writeU8(0x00);
+				buf.writeString(username);
+				buf.writeString(message.value);
+
+				const result = await invoke<CommandResult<null>>("send_command", {
+					data: buf.toUint8Array(),
 				});
-			} catch (error) {
-				logger.log(`Ошибка отключения бота ${username}: ${error}`, "error");
+
+				if (result.error) {
+					logger.log(`Ошибка отправки сообщения от бота ${username}: ${result.error}`, "error");
+					return;
+				}
+
+				message.value = "";
 			}
 		});
 
 		document.getElementById(`reset-${username}`)?.addEventListener("click", async () => {
 			try {
-				await invoke("quick_operation", {
-					operation: "reset-bot",
-					options: {
-						username: username
-					}
+				const buf = new Buffer();
+				buf.writeU8(0x05);
+				buf.writeU32(3 + username.length);
+				buf.writeU8(0x01);
+				buf.writeString(username);
+
+				const result = await invoke<CommandResult<null>>("send_command", {
+					data: buf.toUint8Array(),
 				});
+
+				if (result.error) logger.log(`Ошибка сбрасывания задач и состояний бота ${username}: ${result.error}`, "error");
 			} catch (error) {
 				logger.log(`Ошибка сбрасывания задач и состояний бота ${username}: ${error}`, "error");
+			}
+		});
+
+		document.getElementById(`disconnect-${username}`)?.addEventListener("click", async () => {
+			try {
+				const buf = new Buffer();
+				buf.writeU8(0x05);
+				buf.writeU32(3 + username.length);
+				buf.writeU8(0x02);
+				buf.writeString(username);
+
+				const result = await invoke<CommandResult<null>>("send_command", {
+					data: buf.toUint8Array(),
+				});
+
+				if (result.error) logger.log(`Ошибка отключения бота ${username}: ${result.error}`, "error");
+			} catch (error) {
+				logger.log(`Ошибка отключения бота ${username}: ${error}`, "error");
+			}
+		});
+
+		document.getElementById(`bot-group-${username}`)?.addEventListener("input", async () => {
+			try {
+				const group = (document.getElementById(`bot-group-${username}`) as HTMLInputElement).value.replace(" ", "") || "global";
+
+				const buf = new Buffer();
+				buf.writeU8(0x06);
+				buf.writeU32(4 + username.length + group.length);
+				buf.writeString(username);
+				buf.writeString(group);
+
+				const result = await invoke<CommandResult<null>>("send_command", {
+					data: buf.toUint8Array(),
+				});
+
+				if (result.error) logger.log(`Ошибка изменения группы бота ${username}: ${result.error}`, "error");
+			} catch (error) {
+				logger.log(`Ошибка изменения группы бота ${username}: ${error}`, "error");
 			}
 		});
 
@@ -366,22 +457,6 @@ class MonitoringModule {
 			const messages = document.querySelectorAll(`[monitoring-message="${username}"]`);
 			messages.forEach(msg => msg.remove());
 			this.chatMessageCounter[username] = 0;
-		});
-
-		document.getElementById(`chat-${username}`)?.addEventListener("keydown", async (e) => {
-			if ((e as KeyboardEvent).key === "Enter") {
-				const input = document.getElementById(`chat-message-${username}`) as HTMLInputElement;
-
-				await invoke("quick_operation", {
-					operation: "send-message",
-					options: {
-						username: username,
-						message: input.value
-					}
-				});
-
-				input.value = "";
-			}
 		});
 	}
 

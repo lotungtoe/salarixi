@@ -2,6 +2,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 
 import { logger } from "../utils/logger";
+import { Buffer } from "../utils/buffer";
 
 /** Структура данных капчи */
 interface Captcha {
@@ -24,10 +25,11 @@ class CaptchaModule {
 		this.cards = document.getElementById("anti-captcha-cards");
 		this.wrappers = document.getElementById("anti-captcha-wrappers");
 
-		await listen<{ captcha_url: string; username: string; }>("captcha-bypass:web", (event) => {
+		await listen<number[]>("captcha:new-web", (e) => {
 			try {
-				const captcha_url = event.payload.captcha_url;
-				const username = event.payload.username;
+				const buf = new Buffer(new Uint8Array(e.payload));
+				const captcha_url = buf.readString();
+				const username = buf.readString();
 
 				this.createCaptchaCard(username, {
 					type: "web",
@@ -37,14 +39,15 @@ class CaptchaModule {
 					}
 				});
 			} catch (error) {
-				logger.log(`Ошибка обработки события "captcha-bypass:web": ${error}`, "error");
+				logger.log(`Ошибка обработки события "captcha:new-web": ${error}`, "error");
 			}
 		});
 
-		await listen<{ base64_code: string; username: string; }>("captcha-bypass:map", (event) => {
+		await listen<number[]>("captcha:new-map", (e) => {
 			try {
-				const base64 = event.payload.base64_code;
-				const username = event.payload.username;
+				const buf = new Buffer(new Uint8Array(e.payload));
+				const base64 = buf.readString();
+				const username = buf.readString();
 
 				this.createCaptchaCard(username, {
 					type: "map",
@@ -54,7 +57,19 @@ class CaptchaModule {
 					}
 				});
 			} catch (error) {
-				logger.log(`Ошибка обработки события "captcha-bypass:map": ${error}`, "error");
+				logger.log(`Ошибка обработки события "captcha:new-map": ${error}`, "error");
+			}
+		});
+
+		await listen<number[]>("captcha:remove", (e) => {
+			try {
+				const buf = new Buffer(new Uint8Array(e.payload));
+				const username = buf.readString();
+
+				document.getElementById(`bot-captcha-${username}`)?.remove();
+				document.getElementById(`captcha-wrapper-${username}`)?.remove();
+			} catch (error) {
+				logger.log(`Ошибка обработки события "captcha:remove": ${error}`, "error");
 			}
 		});
 	}
@@ -166,24 +181,40 @@ class CaptchaModule {
 
 			document.getElementById(`captcha-wrapper-${username}`)?.addEventListener("keydown", async (e: Event) => {
 				if ((e as KeyboardEvent).key === "Enter") {
-					const input = document.getElementById(`captcha-code-${username}`) as HTMLInputElement;
+					const message = document.getElementById(`captcha-code-${username}`) as HTMLInputElement;
 
-					await invoke("quick_operation", {
-						operation: "send-message",
-						options: {
-							username: username,
-							message: input.value
-						}
+					const buf = new Buffer();
+					buf.writeU8(0x05);
+					buf.writeU32(5 + username.length + message.value.length);
+					buf.writeU8(0x00);
+					buf.writeString(username);
+					buf.writeString(message.value);
+
+					const result = await invoke<CommandResult<null>>("send_command", {
+						data: buf.toUint8Array(),
 					});
 
-					input.value = "";
+					if (result.error) {
+						logger.log(`Ошибка отправки сообщения от бота ${username}: ${result.error}`, "error");
+						return;
+					}
+
+					message.value = "";
 				}
 			});
 		}
 
 		document.getElementById(`remove-captcha-${username}`)?.addEventListener("click", async () => {
-			document.getElementById(`bot-captcha-${username}`)?.remove();
-			document.getElementById(`captcha-wrapper-${username}`)?.remove();
+			const buf = new Buffer();
+			buf.writeU8(0x04);
+			buf.writeU32(2 + username.length);
+			buf.writeString(username);
+
+			const result = await invoke<CommandResult<null>>("send_command", {
+				data: buf.toUint8Array(),
+			});
+
+			if (result.error) logger.log(`Ошибка удаления капчи бота ${username}: ${result.error}`, "error");
 		});
 	}
 }

@@ -1,13 +1,14 @@
+use bytes::BufMut;
 use hashbrown::HashMap;
 use once_cell::sync::Lazy;
+use salarixi_extensions::buffer::BufferExt;
 use serde::Serialize;
 use tokio::sync::RwLock;
 
-use crate::emit::emit_log;
+use crate::server::transfer::emit_log;
 
 pub static PROFILE_SYSTEM: Lazy<ProfileSystem> = Lazy::new(|| ProfileSystem::new());
 
-/// Структура профиля бота
 #[derive(Clone, Serialize)]
 pub struct Profile {
   pub status: BotStatus,
@@ -22,7 +23,21 @@ pub struct Profile {
   pub group: String,
 }
 
-/// Состояние бота
+impl Profile {
+  pub fn write(&self, buf: &mut bytes::BytesMut) {
+    self.status.write(buf);
+    self.password.write(buf);
+    self.email.write(buf);
+    self.proxy.write(buf);
+    self.ping.write(buf);
+    self.health.write(buf);
+    self.registered.write(buf);
+    self.logined.write(buf);
+    self.captcha_caught.write(buf);
+    self.group.write(buf);
+  }
+}
+
 #[derive(Clone, Serialize, PartialEq)]
 pub enum BotStatus {
   Waiting,
@@ -30,7 +45,16 @@ pub enum BotStatus {
   Disconnected,
 }
 
-/// Структура прокси бота
+impl BotStatus {
+  pub fn write(&self, buf: &mut bytes::BytesMut) {
+    buf.put_u8(match self {
+      Self::Waiting => 0x00,
+      Self::Connected => 0x01,
+      Self::Disconnected => 0x02,
+    });
+  }
+}
+
 #[derive(Clone, Serialize)]
 pub struct ProfileProxy {
   pub ip_address: Option<String>,
@@ -39,8 +63,16 @@ pub struct ProfileProxy {
   pub password: Option<String>,
 }
 
+impl ProfileProxy {
+  pub fn write(&self, buf: &mut bytes::BytesMut) {
+    self.ip_address.write(buf);
+    self.proxy.write(buf);
+    self.username.write(buf);
+    self.password.write(buf);
+  }
+}
+
 impl Profile {
-  /// Метод создания нового профиля
   pub fn new(password: Option<String>, email: Option<String>) -> Self {
     Self {
       status: BotStatus::Waiting,

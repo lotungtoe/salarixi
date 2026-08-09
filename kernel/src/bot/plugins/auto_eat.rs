@@ -9,7 +9,7 @@ use crate::bot::systems::states::{getst, setmst, setst, State, StateName};
 use crate::bot::systems::tasks::{gettskact, TaskName};
 use crate::bot::traits::SalarixiPlugin;
 use crate::bot::PLUGINS;
-use crate::other::tools::randchance;
+use crate::tools::randchance;
 use crate::{sleep, take_bot};
 
 #[derive(Clone, Copy)]

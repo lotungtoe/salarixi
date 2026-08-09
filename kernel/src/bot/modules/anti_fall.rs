@@ -16,7 +16,7 @@ use crate::bot::common::get_block_state;
 use crate::bot::extensions::{BotInventoryExt, BotPhysicsExt};
 use crate::bot::systems::tasks::{gettskact, killtsk, pushrtsk, TaskName};
 use crate::bot::traits::SalarixiModule;
-use crate::other::tools::*;
+use crate::tools::*;
 use crate::{sleep, take_bot};
 
 #[derive(Index)]

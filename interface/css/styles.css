@@ -372,7 +372,7 @@ body {
   border: 1px solid var(--dashboard-button-border);
   border-radius: var(--dashboard-button-border-radius);
   width: 90%;
-  padding: 4px 12px;
+  padding: 5px 12px;
   border: none;
   cursor: pointer;
   color: var(--dashboard-button-color);
@@ -510,7 +510,7 @@ body {
 
 .client-settings-wrapper .stylekit-panel {
   position: absolute;
-  bottom: 10px;
+  bottom: 0;
   left: 0;
   display: flex;
   width: 100%;
@@ -2595,7 +2595,7 @@ button svg {
   100% { opacity: 1; transform: translateX(0); }
 }
 
-.radar-wrapper .radar-target .icon {
+.radar-wrapper .radar-target .card-icon {
   color: var(--dim-color);
   width: 45px;
   min-width: 45px;
@@ -2604,8 +2604,8 @@ button svg {
   transition: color 0.12s ease;
 }
 
-.radar-wrapper .radar-target.glow .icon,
-.radar-wrapper .radar-target .icon:hover {
+.radar-wrapper .radar-target.glow .card-icon,
+.radar-wrapper .radar-target .card-icon:hover {
   color: var(--highlight-color);
 }
 
@@ -2800,6 +2800,139 @@ button svg {
   background: var(--bright-bg);
 }
 
+.session-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+.session-wrapper .panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: start;
+  height: 100%;
+  width: 100%;
+  padding-right: 30px;
+}
+
+.session-wrapper .panel .inputs {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+}
+
+.session-wrapper .panel .buttons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 30px;
+}
+
+.session-wrapper .panel .info {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: start;
+  gap: 4px;
+  width: 100%;
+  margin-top: 280px;
+}
+
+.session-wrapper .panel .info label {
+  font-family: var(--global-font-family);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--muted-color);
+}
+
+.session-wrapper .panel .info label .default-value {
+  margin-left: 4px;
+  user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  -webkit-user-select: text;
+  cursor: text;
+}
+
+.session-wrapper .panel .info label .copy-value {
+  margin-left: 4px;
+  cursor: pointer;
+}
+
+.session-wrapper .chat {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  height: 100%;
+  width: 380px;
+  border: 1px solid var(--secondary-border);
+  border-radius: 12px;
+}
+
+.session-wrapper .chat .content {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: start;
+  height: 100%;
+  width: 380px;
+  overflow-y: auto;
+}
+
+.session-wrapper .chat .content label {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  font-family: var(--global-font-family);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--muted-color);
+  padding: 8px;
+  width: 100%;
+  word-break: break-all;
+  border-bottom: 1px solid var(--secondary-border);
+  user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  -webkit-user-select: text;
+  cursor: text;
+}
+
+.session-wrapper .chat .content label:last-child {
+  border-bottom: none;
+}
+
+.session-wrapper .chat .content label:hover {
+  color: var(--default-color);
+}
+
+.session-wrapper .chat .input-with-button {
+  border: none;
+  border-top: 1px solid var(--input-border);
+  border-radius: 0;
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+}
+
+.session-wrapper .chat .input-with-button,
+.session-wrapper .chat .input-with-button input {
+  width: 100%;
+}
+
+.session-wrapper .chat .input-with-button button.min {
+  border-radius: 0;
+  border-bottom-right-radius: 12px;
+}
+
 .messages-wrapper {
   position: absolute;
   right: 20px;
@@ -2873,7 +3006,7 @@ button svg {
 }
 
 .message .up-part .name {
-  font-family: var(--script-font-family);
+  font-family: var(--global-font-family);
   font-size: 15px;
   font-weight: bold;
   color: var(--muted-color);

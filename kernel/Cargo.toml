@@ -1,48 +1,29 @@
 [package]
-name = "salarixi"
-version = "1.1.1"
-description = "lightweight tool for minecraft botting"
-repository = "https://codeberg.org/nullclyze/salarixi"
-authors = ["nullclyze"]
-edition = "2021"
-
-[lib]
-name = "salarixi_lib"
-crate-type = ["staticlib", "cdylib", "rlib"]
-
-[profile.release]
-opt-level = 3
-strip = true
-lto = "thin"
-
-[build-dependencies]
-tauri-build = { version = "2.5.6", features = [] }
+name = "salarixi-kernel"
+description = "kernel of salarixi"
+version.workspace = true
+repository.workspace = true
+authors.workspace = true
+edition.workspace = true
 
 [dependencies]
-salarixi-extensions = { path = "../extensions" }
-salarixi-macros = { path = "../macros" }
-tauri = { version = "2.11.0", features = [] }
-tokio = { version = "1.50.0", features = ["full"] }
-serde = { version = "1", features = ["derive"] }
-serde_json = "1.0.149"
-azalea = { version = "0.15.1", default-features = false, features = ["packet-event"] }
-socks5-impl = { version = "0.8.0", features = ["client"] }
-reqwest = { version = "0.13.1", features = ["json"] }
-chrono = { version = "0.4", features = ["clock"] }
-rand = "0.8"
-regex = "1"
-once_cell = "1.18"
-memory-stats = "1.0.0"
-open = "5.3.3"
-base64 = "0.22.1"
-image = "0.25"
-dashmap = "6.1.0"
-rhai = "1.24.0"
-dns-lookup = "3.0.1"
-tauri-plugin-dialog = "2.7.1"
-tauri-plugin-fs = "2.5.1"
-discord-presence = "3.2.0"
-hashbrown = "0.16.1"
-dirs = "6.0.0"
-systemstat = "0.2.7"
-bytes = "1.12.1"
+salarixi-extensions.workspace = true
+salarixi-macros.workspace = true
+tokio.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+azalea.workspace = true
+socks5-impl.workspace = true
+reqwest.workspace = true
+chrono.workspace = true
+rand.workspace = true
+regex.workspace = true
+once_cell.workspace = true
+base64.workspace = true
+image.workspace = true
+dashmap.workspace = true
+rhai.workspace = true
+hashbrown.workspace = true
+dirs.workspace = true
+bytes.workspace = true
+pkcs8.workspace = true

@@ -9,9 +9,9 @@ use crate::bot::plugin_manager::PluginName;
 use crate::bot::systems::states::{getst, setmst, setst, State, StateName};
 use crate::bot::traits::SalarixiPlugin;
 use crate::bot::PLUGINS;
-use crate::other::tools::*;
 use crate::sleep;
 use crate::take_bot;
+use crate::tools::*;
 
 /// Структура информации и зелье
 #[derive(Clone)]

@@ -5,8 +5,8 @@ use azalea::Vec3;
 use bevy_ecs::entity::Entity;
 
 use crate::bot::extensions::BotDefaultExt;
-use crate::other::tools::{randchance, randnum};
 use crate::sleep;
+use crate::tools::{randchance, randnum};
 
 pub trait BotRotationExt {
   fn look_at_entity(&self, entity: Entity, with_eye_height: bool);

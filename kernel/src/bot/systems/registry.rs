@@ -6,7 +6,7 @@ use dashmap::DashMap;
 use once_cell::sync::Lazy;
 use tokio::sync::RwLock;
 
-use crate::emit::emit_log;
+use crate::server::transfer::emit_log;
 
 pub static REGISTRY_SYSTEM: Lazy<RegistrySystem> = Lazy::new(|| RegistrySystem::new());
 

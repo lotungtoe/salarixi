@@ -4,7 +4,6 @@ use std::io::Write;
 use azalea::player::GameProfileComponent;
 use chrono::prelude::*;
 use once_cell::sync::Lazy;
-use serde::Serialize;
 
 use crate::bot::extensions::{go_to, BotDefaultExt};
 use crate::bot::systems::profile::PROFILE_SYSTEM;
@@ -12,22 +11,13 @@ use crate::take_bot;
 
 pub static RADAR: Lazy<Radar> = Lazy::new(|| Radar::new());
 
-// Структура информации радара
-#[derive(Serialize)]
 pub struct RadarInfo {
-  pub status: String,
   pub uuid: String,
-  pub x: f64,
-  pub y: f64,
-  pub z: f64,
-  pub observer: RadarObserver,
-}
-
-// Структура информации о наблюдателе
-#[derive(Serialize)]
-pub struct RadarObserver {
-  pub x: f64,
-  pub z: f64,
+  pub tx: f64,
+  pub ty: f64,
+  pub tz: f64,
+  pub ox: f64,
+  pub oz: f64,
 }
 
 pub struct Radar;
@@ -61,15 +51,12 @@ impl Radar {
             let client_pos = bot.feet_pos();
 
             info = Some(RadarInfo {
-              status: "Найден".to_string(),
               uuid: uuid.to_string(),
-              x: player_pos.x,
-              y: player_pos.y,
-              z: player_pos.z,
-              observer: RadarObserver {
-                x: client_pos.x,
-                z: client_pos.z,
-              },
+              tx: player_pos.x,
+              ty: player_pos.y,
+              tz: player_pos.z,
+              ox: client_pos.x,
+              oz: client_pos.z,
             });
           }
         }

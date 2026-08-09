@@ -7,9 +7,9 @@ use salarixi_macros::Index;
 use crate::bot::extensions::{go_to, BotMovementExt};
 use crate::bot::systems::tasks::{gettskact, killtsk, pushrtsk, TaskName};
 use crate::bot::traits::SalarixiModule;
-use crate::other::tools::*;
 use crate::sleep;
 use crate::take_bot;
+use crate::tools::*;
 
 #[derive(Index)]
 enum Mode {

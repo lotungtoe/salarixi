@@ -19,9 +19,10 @@ export default defineConfig(async () => ({
       : undefined,
     watch: {
       ignored: [
+        "**/app/**",
         "**/kernel/**",
-        "**/macros/**",
         "**/extensions/**",
+        "**/macros/**",
       ],
     },
   },

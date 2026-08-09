@@ -12,7 +12,7 @@ use crate::bot::systems::registry::REGISTRY_SYSTEM;
 use crate::bot::systems::tasks::{gettskact, killtsk, pushrtsk, TaskName};
 use crate::bot::traits::SalarixiModule;
 use crate::bot::utils::radar::RADAR;
-use crate::other::tools::*;
+use crate::tools::*;
 use crate::{sleep, take_bot};
 
 #[derive(PartialEq, Index)]
@@ -155,9 +155,9 @@ impl ChatModule {
             let msg = format!(
               "{} > X: {}, Y: {}, Z: {}",
               target_nickname,
-              radar_info.x.round(),
-              radar_info.y.round(),
-              radar_info.z.round()
+              radar_info.tx.round(),
+              radar_info.ty.round(),
+              radar_info.tz.round()
             );
 
             result = text.replace(tag.as_str(), msg.as_str());

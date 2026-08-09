@@ -16,7 +16,8 @@ pub fn derive_indexed_enum(input: TokenStream) -> TokenStream {
     }
   };
 
-  let mut vars = Vec::new();
+  let mut vars_from = Vec::new();
+  let mut vars_to = Vec::new();
 
   for v in variants.into_iter() {
     let (v_ident, v_value) = match extract_index(&v) {
@@ -24,8 +25,12 @@ pub fn derive_indexed_enum(input: TokenStream) -> TokenStream {
       Err(e) => return e.to_compile_error().into(),
     };
 
-    vars.push(quote! {
+    vars_from.push(quote! {
       #v_value => Some(#ident::#v_ident),
+    });
+
+    vars_to.push(quote! {
+      Self::#v_ident => #v_value,
     });
   }
 
@@ -33,7 +38,7 @@ pub fn derive_indexed_enum(input: TokenStream) -> TokenStream {
     impl salarixi_extensions::index::IndexExt for #ident {
       fn from_index(index: u8) -> Option<Self> {
         match index {
-          #(#vars)*
+          #(#vars_from)*
           _ => None,
         }
       }

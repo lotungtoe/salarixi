@@ -1,8 +1,8 @@
 use crate::bot::systems::index::INDEX_SYSTEM;
 use crate::bot::systems::profile::PROFILE_SYSTEM;
-use crate::emit::emit_log;
 use crate::launch::process::current_options;
-use crate::other::tools::*;
+use crate::server::transfer::emit_log;
+use crate::tools::*;
 use crate::{sleep, take_bot};
 
 const DEFAULT_AUTH_TEMPLATE: &str = "$cmd $pass";
@@ -58,7 +58,7 @@ pub async fn default_authorize(index: &u8) {
     return;
   }
 
-  sleep!(randnum(min_delay, max_delay));
+  sleep!(randnum(min_delay, max_delay).into());
 
   let msg = template
     .replace("$cmd", &cmd)

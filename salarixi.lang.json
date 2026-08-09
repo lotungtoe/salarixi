@@ -221,6 +221,17 @@
       }
     },
     {
+      "versions": "1.1.1",
+      "tag": "session",
+      "lang": {
+        "ru": "Сессия",
+        "en": "Session",
+        "tr": "Oturum",
+        "ja": "セッション",
+        "zh": "會議"
+      }
+    },
+    {
       "versions": "1.1.0:1.1.1",
       "tag": "about",
       "lang": {
@@ -3254,6 +3265,61 @@
         "tr": "Bulunan sunucular",
         "ja": "見つかったサーバー数",
         "zh": "找到的服务器数"
+      }
+    },
+    {
+      "versions": "1.1.1",
+      "tag": "password",
+      "lang": {
+        "ru": "Пароль",
+        "en": "Password",
+        "tr": "Parola",
+        "ja": "パスワード",
+        "zh": "密码"
+      }
+    },
+    {
+      "versions": "1.1.1",
+      "tag": "connect",
+      "lang": {
+        "ru": "Подключиться",
+        "en": "Connect",
+        "tr": "Bağlan",
+        "ja": "接続",
+        "zh": "连接"
+      }
+    },
+    {
+      "versions": "1.1.1",
+      "tag": "reset",
+      "lang": {
+        "ru": "Сбросить",
+        "en": "Reset",
+        "tr": "Sıfırla",
+        "ja": "リセット",
+        "zh": "重置"
+      }
+    },
+    {
+      "versions": "1.1.1",
+      "tag": "current-address",
+      "lang": {
+        "ru": "Текущий адрес",
+        "en": "Current address",
+        "tr": "Geçerli adres",
+        "ja": "現在のアドレス",
+        "zh": "当前地址"
+      }
+    },
+    {
+      "versions": "1.1.1",
+      "tag": "current-password",
+      "lang": {
+        "ru": "Текущий пароль",
+        "en": "Current password",
+        "tr": "Geçerli parola",
+        "ja": "現在のパスワード",
+        "zh": "当前密码"
       }
     }
   ]
