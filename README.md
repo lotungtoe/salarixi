@@ -18,6 +18,10 @@ Uses [azalea](https://github.com/azalea-rs/azalea) library as a base.
 > [!IMPORTANT]
 > This is just a fun project.
 
+## Donate
+
+Liked the project? Support me: [click](https://www.tinkoff.ru/rm/r_RLPlAMDRde.PvdqgZSnCT/bEUIT9180)
+
 ## Philosophy
 
 1. **Minimalism:** When developing this client, i don't try to solve every possible problem in this scope, i only address the "critical" part. This doesn't mean i'm covering up my laziness in implementing features, it means i'm trying to get rid of unnecessary, unused cruft.
@@ -162,7 +166,3 @@ npm run tauri dev
 
 - **License:** [Apache-2.0 license](./LICENSE)
 - **Latest release:** [Release](https://codeberg.org/nullclyze/salarixi/releases/tag/v1.1.1)
-
-## Donate
-
-Liked the project? Support us: 5599002129447795
