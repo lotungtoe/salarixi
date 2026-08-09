@@ -3,9 +3,13 @@ use hashbrown::HashMap;
 use once_cell::sync::Lazy;
 use salarixi_extensions::buffer::BufferExt;
 use serde::Serialize;
-use tokio::sync::RwLock;
+use tokio::{sync::RwLock, task::JoinHandle};
 
-use crate::server::transfer::emit_log;
+use crate::{
+  bot::systems::index::INDEX_SYSTEM,
+  server::transfer::{emit_log, MonitoringProfilesPayload, TransferEvent, TRANSFER},
+  sleep,
+};
 
 pub static PROFILE_SYSTEM: Lazy<ProfileSystem> = Lazy::new(|| ProfileSystem::new());
 
@@ -94,28 +98,57 @@ impl Profile {
   }
 }
 
-/// Система управления профилями
 pub struct ProfileSystem {
   pub map: RwLock<HashMap<u8, Profile>>,
+  updater_task: RwLock<Option<JoinHandle<()>>>,
 }
 
 impl ProfileSystem {
-  /// Метод создания системы профилей
   pub fn new() -> Self {
     Self {
       map: RwLock::new(HashMap::new()),
+      updater_task: RwLock::new(None),
     }
+  }
+
+  /// Метод активации системы
+  pub async fn activate(&self, update_rate: u64) {
+    let updater_task = tokio::spawn(async move {
+      loop {
+        let mut profiles = HashMap::new();
+
+        for (index, profile) in PROFILE_SYSTEM.map.read().await.iter() {
+          let Some(username) = INDEX_SYSTEM.username_by_index(index).await else {
+            continue;
+          };
+
+          profiles.insert(username, profile.clone());
+        }
+
+        TRANSFER.emit(TransferEvent::MonitoringProfiles(MonitoringProfilesPayload {
+          profiles,
+        }));
+
+        sleep!(update_rate);
+      }
+    });
+
+    *self.updater_task.write().await = Some(updater_task);
+  }
+
+  /// Метод выключения системы
+  pub async fn shutdown(&self) {
+    if let Some(task) = self.updater_task.write().await.take() {
+      task.abort();
+    }
+
+    self.map.write().await.clear();
+    emit_log("Профили ботов очищены", "system");
   }
 
   /// Метод регистрации бота
   pub async fn register(&self, index: u8, password: Option<String>, email: Option<String>) {
     self.map.write().await.insert(index, Profile::new(password, email));
-  }
-
-  /// Метод очистки хранилища всех профилей
-  pub async fn clear(&self) {
-    self.map.write().await.clear();
-    emit_log("Профили ботов очищены", "extended");
   }
 
   /// Метод получения количества зарегистрированных профилей
@@ -221,44 +254,6 @@ impl ProfileSystem {
     }
 
     result
-  }
-
-  pub async fn set_status(&self, index: &u8, status: BotStatus) {
-    let mut profiles = self.map.write().await;
-    if let Some(profile) = profiles.get_mut(index) {
-      profile.status = status;
-    }
-  }
-
-  pub async fn set_str(&self, index: &u8, field: &str, value: &str) {
-    let mut profiles = self.map.write().await;
-    if let Some(profile) = profiles.get_mut(index) {
-      match field {
-        "password" => profile.password = Some(value.to_string()),
-        "email" => profile.email = Some(value.to_string()),
-        "group" => profile.group = value.to_string(),
-        _ => {}
-      }
-    }
-  }
-
-  pub async fn set_bool(&self, index: &u8, field: &str, value: bool) {
-    let mut profiles = self.map.write().await;
-    if let Some(profile) = profiles.get_mut(index) {
-      match field {
-        "registered" => profile.registered = value,
-        "logined" => profile.logined = value,
-        "captcha_caught" => profile.captcha_caught = value,
-        _ => {}
-      }
-    }
-  }
-
-  pub async fn set_proxy(&self, index: &u8, proxy: ProfileProxy) {
-    let mut profiles = self.map.write().await;
-    if let Some(profile) = profiles.get_mut(index) {
-      profile.proxy = proxy;
-    }
   }
 }
 

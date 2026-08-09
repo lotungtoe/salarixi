@@ -19,7 +19,7 @@ use crate::server::transfer::emit_log;
 
 pub static WEB_CAPTCHA_BYPASS: Lazy<WebCaptchaBypass> = Lazy::new(|| WebCaptchaBypass::new());
 pub static MAP_CAPTCHA_BYPASS: Lazy<MapCaptchaBypass> = Lazy::new(|| MapCaptchaBypass::new());
-pub static MAP_ACCUMULATOR: Lazy<MapAccumulator> = Lazy::new(|| MapAccumulator::new());
+pub static MAP_COLLECTOR: Lazy<MapCollector> = Lazy::new(|| MapCollector::new());
 
 /// Обход web-капчи
 pub struct WebCaptchaBypass;
@@ -478,14 +478,14 @@ pub struct MapData {
   pub yaw: f32,
 }
 
-pub struct MapAccumulator {
+pub struct MapCollector {
   maps: RwLock<HashMap<u8, Vec<MapData>>>,
   frame_positions: RwLock<HashMap<u8, Vec<(i32, f64, f64, f64)>>>,
   processing: RwLock<HashMap<u8, bool>>,
   last_captcha_time: RwLock<HashMap<u8, Instant>>,
 }
 
-impl MapAccumulator {
+impl MapCollector {
   pub fn new() -> Self {
     Self {
       maps: RwLock::new(HashMap::new()),

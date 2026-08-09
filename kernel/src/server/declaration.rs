@@ -134,6 +134,9 @@ impl Server {
             TransferEvent::AntiMapCaptcha(payload) => {
               bytes = payload.to_bytes();
             }
+            TransferEvent::MonitoringProfiles(payload) => {
+              bytes = payload.to_bytes();
+            }
             TransferEvent::ProcessStatus(payload) => {
               bytes = payload.to_bytes();
             }

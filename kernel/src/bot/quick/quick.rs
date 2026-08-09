@@ -10,16 +10,16 @@ use salarixi_macros::Index;
 
 use crate::bot::common::{get_average_coordinates_of_bots, this_is_solid_block};
 use crate::bot::extensions::{go_to, BotDefaultExt, BotInventoryExt, BotMovementExt, BotPhysicsExt, ClickMode};
-use crate::bot::systems::profile::PROFILE_SYSTEM;
+use crate::bot::systems::profile::{BotStatus, PROFILE_SYSTEM};
 use crate::bot::systems::registry::REGISTRY_SYSTEM;
 use crate::bot::systems::states::{getst, setmst, State, StateName, STATE_SYSTEM};
 use crate::bot::systems::tasks::TASK_SYSTEM;
 use crate::bot::PLUGINS;
 use crate::launch::process::current_options;
 use crate::server::transfer::{emit_log, emit_msg};
-use crate::tools::*;
 use crate::webhook::send_webhook;
 use crate::{sleep, take_bot};
+use crate::{take_profile, tools::*};
 
 pub static QUICK_TASKS: Lazy<QuickTaskManager> = Lazy::new(|| QuickTaskManager::new());
 
@@ -158,7 +158,9 @@ impl QuickTaskManager {
             STATE_SYSTEM.remove(&index).await;
             TASK_SYSTEM.remove(&index).await;
 
-            PROFILE_SYSTEM.set_str(&index, "status", "Оффлайн").await;
+            take_profile!(&index, async |profile| {
+              profile.status = BotStatus::Disconnected;
+            });
           }
           QuickTask::Rise => {
             if getst(&index, State::CanLooking).await && getst(&index, State::CanInteracting).await {

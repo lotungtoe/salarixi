@@ -18,13 +18,14 @@ use crate::bot::systems::profile::{ProfileProxy, PROFILE_SYSTEM};
 use crate::bot::systems::registry::REGISTRY_SYSTEM;
 use crate::bot::systems::states::STATE_SYSTEM;
 use crate::bot::systems::tasks::TASK_SYSTEM;
-use crate::bot::utils::acaptcha::MAP_ACCUMULATOR;
+use crate::bot::utils::acaptcha::MAP_COLLECTOR;
 use crate::bot::PLUGINS;
 use crate::launch::process::update_process_status;
 use crate::launch::process::BOTS_WERE_FULLY_CONNECTED;
 use crate::launch::process::STOPPING;
 use crate::server::transfer::{emit_log, emit_msg};
 use crate::sleep;
+use crate::take_profile;
 use crate::webhook::send_webhook;
 
 use super::generators::{generate_email, generate_unique_username, generate_username_or_password};
@@ -92,7 +93,10 @@ async fn processs_proxy(index: &u8, proxy: &str, join_opts: JoinOpts) -> JoinOpt
       };
 
       profile_proxy.ip_address = Some(ip_addr.to_string());
-      PROFILE_SYSTEM.set_proxy(index, profile_proxy).await;
+
+      take_profile!(index, async |profile| {
+        profile.proxy = profile_proxy;
+      });
 
       return join_opts.proxy(proxy);
     }
@@ -108,7 +112,10 @@ async fn processs_proxy(index: &u8, proxy: &str, join_opts: JoinOpts) -> JoinOpt
         };
 
         profile_proxy.ip_address = Some(ip_addr.to_string());
-        PROFILE_SYSTEM.set_proxy(index, profile_proxy).await;
+
+        take_profile!(index, async |profile| {
+          profile.proxy = profile_proxy;
+        });
 
         return join_opts.proxy(proxy);
       }
@@ -149,6 +156,10 @@ pub async fn launch_bots_on_server(options: LaunchOptions) -> u8 {
   set_process_activity(true);
   update_process_status().await;
 
+  PROFILE_SYSTEM
+    .activate(options.basic.monitoring_update_rate as u64)
+    .await;
+
   if options.basic.use_webhook {
     send_webhook(
       options.webhook.url.clone(),
@@ -161,7 +172,13 @@ pub async fn launch_bots_on_server(options: LaunchOptions) -> u8 {
   }
 
   thread::spawn(move || {
-    let rt = tokio::runtime::Runtime::new().unwrap();
+    let rt = match tokio::runtime::Runtime::new() {
+      Ok(rt) => rt,
+      Err(e) => {
+        emit_log(format!("Ошибка запуска ботов: {}", e), "error");
+        return;
+      }
+    };
 
     rt.block_on(async move {
       let local_set = tokio::task::LocalSet::new();
@@ -251,8 +268,10 @@ pub async fn launch_bots_on_server(options: LaunchOptions) -> u8 {
 
           if options.basic.use_accounts {
             for account in accounts.into_iter() {
-              if let Some(initial_group) = &account.options.initial_group {
-                PROFILE_SYSTEM.set_str(&account.index, "group", initial_group).await;
+              if let Some(initial_group) = account.options.initial_group.clone() {
+                take_profile!(&account.index, async |profile| {
+                  profile.group = initial_group;
+                });
               }
 
               let mut join_opts = JoinOpts::new();
@@ -327,8 +346,8 @@ pub async fn stop_bots_and_destroy_data() -> u8 {
   REGISTRY_SYSTEM.destroy_swarm().await;
   sleep!(1000);
   STATE_SYSTEM.clear().await;
-  PROFILE_SYSTEM.clear().await;
-  MAP_ACCUMULATOR.clear_all().await;
+  PROFILE_SYSTEM.shutdown().await;
+  MAP_COLLECTOR.clear_all().await;
   REGISTRY_SYSTEM.clear().await;
   INDEX_SYSTEM.clear().await;
 

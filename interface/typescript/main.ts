@@ -171,6 +171,7 @@ async function startBots(): Promise<void> {
 		buf.writeU32(options.basic["login_max_delay"]);
 		buf.writeString(options.basic["login_trigger"]);
 		buf.writeU32(options.basic["rejoin_delay"]);
+		buf.writeU32(options.basic["monitoring_update_rate"]);
 		buf.writeU8(options.basic["view_distance"]);
 		buf.writeOption<string>(options.basic["humanoid_arm"], (some) => buf.writeString(some));
 		buf.writeBoolean(options.basic["use_auto_rejoin"]);
@@ -235,8 +236,7 @@ async function startBots(): Promise<void> {
 		processActivity = true;
 
 		monitoringModule.maxChatHistoryLength = parseInt((document.getElementById("monitoring_option_chat-history-length") as HTMLInputElement).value || "50");
-		monitoringModule.enable(parseInt((document.getElementById("monitoring_option_update-frequency") as HTMLInputElement).value || "1800"));
-		monitoringModule.wait();
+		monitoringModule.enable();
 
 		if (options.basic.use_anti_captcha) captchaModule.enable(options.captcha_bypass.captcha_type, options.captcha_bypass.solve_mode);
 
@@ -632,8 +632,7 @@ async function listenSystemEvents(): Promise<void> {
 
 			if (processActivity) {
 				monitoringModule.maxChatHistoryLength = parseInt((document.getElementById("monitoring_option_chat-history-length") as HTMLInputElement).value || "50");
-				monitoringModule.enable(parseInt((document.getElementById("monitoring_option_update-frequency") as HTMLInputElement).value || "1800"));
-				monitoringModule.wait();
+				monitoringModule.enable();
 
 				// TODO: Сделать синхронизацию опций, пока без этого
 				// if (options.basic.use_anti_captcha) captchaModule.enable(options.captcha_bypass.captcha_type, options.captcha_bypass.solve_mode);

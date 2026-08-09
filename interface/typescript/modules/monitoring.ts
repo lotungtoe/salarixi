@@ -3,7 +3,6 @@ import { listen } from "@tauri-apps/api/event";
 
 import { logger } from "../utils/logger";
 import { date } from "../utils/date";
-import { processActivity } from "../main";
 import { Buffer } from "../utils/buffer";
 
 /** Структура информации о боте */
@@ -142,37 +141,11 @@ class MonitoringModule {
 		});
 	}
 
-	/** Метод переключения состояния мониторинга на ожидание */
-	public wait(): void {
+	/** Метод включения модуля */
+	public enable(): void {
 		this.statusText!.style.display = "none";
 		this.cards!.innerHTML = "";
 		this.cards!.style.display = "flex";
-	}
-
-	/** Метод активации мониторинга */
-	public enable(delay: number): void {
-		try {
-			const buf = new Buffer();
-			buf.writeU8(0x03);
-			buf.writeU32(0);
-
-			const uin8arr = buf.toUint8Array();
-
-			const interval = setInterval(async () => {
-				if (!processActivity) {
-					clearInterval(interval);
-					return;
-				}
-
-				const result = await invoke<CommandResult<null>>("send_command", {
-					data: uin8arr,
-				});
-
-				if (result.error) logger.log(`Ошибка получения профилей ботов: ${result.error}`, "error");
-			}, delay);
-		} catch (error) {
-			logger.log(`Ошибка включения мониторинга: ${error}`, "error");
-		}
 	}
 
 	/** Метод очистки и выключения мониторинга */

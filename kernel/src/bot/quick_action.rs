@@ -3,12 +3,12 @@ use salarixi_macros::Index;
 
 use crate::bot::extensions::{BotDefaultExt, BotMovementExt};
 use crate::bot::systems::index::INDEX_SYSTEM;
-use crate::bot::systems::profile::PROFILE_SYSTEM;
+use crate::bot::systems::profile::BotStatus;
 use crate::bot::systems::states::STATE_SYSTEM;
 use crate::bot::systems::tasks::TASK_SYSTEM;
 use crate::bot::PLUGINS;
 use crate::server::transfer::*;
-use crate::{sleep, take_bot};
+use crate::{sleep, take_bot, take_profile};
 
 #[derive(Index)]
 pub enum QuickAction {
@@ -71,8 +71,10 @@ pub async fn disconnect_bot(username: String) {
   STATE_SYSTEM.remove(&index).await;
   TASK_SYSTEM.remove(&index).await;
 
-  PROFILE_SYSTEM.set_bool(&index, "captcha_caught", false).await;
-  PROFILE_SYSTEM.set_str(&index, "status", "Оффлайн").await;
+  take_profile!(&index, async |profile| {
+    profile.captcha_caught = false;
+    profile.status = BotStatus::Disconnected;
+  });
 
   emit_log(format!("Бот {} отключился", username), "info");
   emit_msg("Управление", format!("Бот {} отключился", username));

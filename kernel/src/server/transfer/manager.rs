@@ -3,7 +3,7 @@ use tokio::sync::broadcast;
 
 use crate::server::transfer::{
   AntiMapCaptchaPayload, AntiWebCaptchaPayload, BotChatPayload, ConnectedBotsPayload, LogPayload, MessagePayload,
-  ProcessStatusPayload, SessionChatPayload, TotalBotsPayload,
+  MonitoringProfilesPayload, ProcessStatusPayload, SessionChatPayload, TotalBotsPayload,
 };
 
 pub static TRANSFER: Lazy<TransferManager> = Lazy::new(|| TransferManager::new());
@@ -18,6 +18,7 @@ pub enum TransferEvent {
   BotChat(BotChatPayload),
   AntiWebCaptcha(AntiWebCaptchaPayload),
   AntiMapCaptcha(AntiMapCaptchaPayload),
+  MonitoringProfiles(MonitoringProfilesPayload),
   ProcessStatus(ProcessStatusPayload),
 }
 

@@ -2,8 +2,8 @@ use crate::bot::systems::index::INDEX_SYSTEM;
 use crate::bot::systems::profile::PROFILE_SYSTEM;
 use crate::launch::process::current_options;
 use crate::server::transfer::emit_log;
-use crate::tools::*;
 use crate::{sleep, take_bot};
+use crate::{take_profile, tools::*};
 
 const DEFAULT_AUTH_TEMPLATE: &str = "$cmd $pass";
 
@@ -73,12 +73,15 @@ pub async fn default_authorize(index: &u8) {
   // текущее значения может быть true (то есть бот уже зарегистрирован),
   // и при этом оно сбросится на false, что будет некорректно
   if registered {
-    PROFILE_SYSTEM.set_bool(index, "registered", true).await;
+    take_profile!(index, async |profile| {
+      profile.registered = true;
+    });
   }
 
-  // Аналогично registered
   if logined {
-    PROFILE_SYSTEM.set_bool(index, "logined", true).await;
+    take_profile!(index, async |profile| {
+      profile.logined = true;
+    });
   }
 
   if let Some(username) = INDEX_SYSTEM.username_by_index(index).await {
@@ -151,11 +154,15 @@ pub async fn trigger_authorize(index: &u8, message: String) {
   });
 
   if registered {
-    PROFILE_SYSTEM.set_bool(index, "registered", true).await;
+    take_profile!(index, async |profile| {
+      profile.registered = true;
+    });
   }
 
   if logined {
-    PROFILE_SYSTEM.set_bool(index, "logined", true).await;
+    take_profile!(index, async |profile| {
+      profile.logined = true;
+    });
   }
 
   if let Some(username) = INDEX_SYSTEM.username_by_index(index).await {

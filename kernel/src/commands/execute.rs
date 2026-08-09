@@ -22,6 +22,7 @@ use crate::launch::options::LaunchOptions;
 use crate::launch::process::{process_is_active, process_status_payload, PROCESS_ACTIVITY};
 use crate::launch::runner::{launch_bots_on_server, stop_bots_and_destroy_data};
 use crate::server::write_bytes_to_sockets;
+use crate::take_profile;
 
 /// Функция выполнения команды клиента
 pub async fn execute_client_command(
@@ -124,28 +125,6 @@ pub async fn execute_client_command(
 
       write_bytes_to_sockets(sockets, buf.freeze()).await;
     }
-    ClientCommand::GetAllProfiles => {
-      let profiles = PROFILE_SYSTEM.get_all().await;
-
-      let mut buf = BytesMut::new();
-      buf.put_u8(profiles.len() as u8);
-
-      for (index, profile) in profiles {
-        let Some(username) = INDEX_SYSTEM.username_by_index(&index).await else {
-          continue;
-        };
-
-        username.write(&mut buf);
-        profile.write(&mut buf);
-      }
-
-      let mut final_buf = BytesMut::with_capacity(5 + buf.len());
-      final_buf.put_u8(0x0B);
-      final_buf.put_u32(buf.len() as u32);
-      final_buf.put_slice(&buf);
-
-      writer.write().await.write_all(&final_buf).await?;
-    }
     ClientCommand::QuickAction => {
       let Some(action) = QuickAction::from_index(data.try_get_u8()?) else {
         return Ok(());
@@ -171,7 +150,9 @@ pub async fn execute_client_command(
       let group = String::read(&mut data).ok_or(Error::new(ErrorKind::InvalidData, "options parsing error"))?;
 
       if let Some(index) = INDEX_SYSTEM.index_by_username(&username).await {
-        PROFILE_SYSTEM.set_str(&index, "group", &group).await;
+        take_profile!(&index, async |profile| {
+          profile.group = group;
+        });
       }
     }
     ClientCommand::ChangeModuleState => {

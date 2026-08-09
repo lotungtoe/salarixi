@@ -19,7 +19,7 @@ use crate::bot::systems::profile::PROFILE_SYSTEM;
 use crate::bot::systems::registry::REGISTRY_SYSTEM;
 use crate::bot::systems::states::STATE_SYSTEM;
 use crate::bot::systems::tasks::TASK_SYSTEM;
-use crate::bot::utils::acaptcha::{MAP_ACCUMULATOR, MAP_CAPTCHA_BYPASS, WEB_CAPTCHA_BYPASS};
+use crate::bot::utils::acaptcha::{MAP_CAPTCHA_BYPASS, MAP_COLLECTOR, WEB_CAPTCHA_BYPASS};
 use crate::bot::PLUGINS;
 use crate::launch::process::current_options;
 use crate::launch::process::update_process_status;
@@ -88,7 +88,13 @@ async fn process_spawn(bot: Client) {
   };
 
   PLUGINS.activate_for(index, opts.plugins).await;
-  PROFILE_SYSTEM.set_status(&index, BotStatus::Connected).await;
+
+  take_profile!(&index, async |profile| {
+    profile.logined = false;
+    profile.captcha_caught = false;
+    profile.status = BotStatus::Connected;
+  });
+
   update_process_status().await;
 
   take_bot!(&index, async |bot| {
@@ -153,11 +159,14 @@ async fn process_disconnect(bot: Client, text: Option<FormattedText>) {
 
   sleep!(2000);
 
-  PROFILE_SYSTEM.set_bool(&index, "logined", false).await;
-  PROFILE_SYSTEM.set_bool(&index, "captcha_caught", false).await;
   STATE_SYSTEM.reset(&index).await;
   TASK_SYSTEM.remove(&index).await;
-  PROFILE_SYSTEM.set_status(&index, BotStatus::Disconnected).await;
+
+  take_profile!(&index, async |profile| {
+    profile.logined = false;
+    profile.captcha_caught = false;
+    profile.status = BotStatus::Disconnected;
+  });
 
   update_process_status().await;
 
@@ -203,7 +212,9 @@ async fn process_chat_message(bot: Client, packet: ChatPacket) {
       };
 
       if !profile.captcha_caught {
-        PROFILE_SYSTEM.set_bool(&index, "captcha_caught", true).await;
+        take_profile!(&index, async |profile| {
+          profile.captcha_caught = true;
+        });
 
         if options.basic.use_webhook && options.webhook.send_information {
           send_webhook(
@@ -212,10 +223,7 @@ async fn process_chat_message(bot: Client, packet: ChatPacket) {
           );
         }
 
-        emit_log(
-          format!("[ Анти-Капча ]: Бот {} получил ссылку на капчу", username),
-          "info",
-        );
+        emit_log(format!("Бот {} получил ссылку на капчу", username), "info");
 
         TRANSFER.emit(TransferEvent::AntiWebCaptcha(AntiWebCaptchaPayload {
           captcha_url: url,
@@ -260,7 +268,7 @@ async fn process_packet(bot: Client, packet: Arc<ClientboundGamePacket>) {
     ClientboundGamePacket::AddEntity(entity_packet) => {
       if entity_packet.entity_type == EntityKind::ItemFrame || entity_packet.entity_type == EntityKind::GlowItemFrame {
         let pos = entity_packet.position;
-        MAP_ACCUMULATOR
+        MAP_COLLECTOR
           .add_frame_position(index, entity_packet.id.0 as i32, pos.x, pos.y, pos.z)
           .await;
       }
@@ -290,7 +298,7 @@ async fn process_packet(bot: Client, packet: Arc<ClientboundGamePacket>) {
               0.0
             };
 
-            MAP_ACCUMULATOR
+            MAP_COLLECTOR
               .add_map_data(
                 index,
                 map_patch.width as u32,
@@ -302,31 +310,31 @@ async fn process_packet(bot: Client, packet: Arc<ClientboundGamePacket>) {
               )
               .await;
 
-            if MAP_ACCUMULATOR.is_processing(&index).await {
+            if MAP_COLLECTOR.is_processing(&index).await {
               return;
             }
 
-            let maps = MAP_ACCUMULATOR.get_maps(&index).await.unwrap_or_default();
+            let maps = MAP_COLLECTOR.get_maps(&index).await.unwrap_or_default();
 
             if maps.len() < (options.captcha_bypass.number_of_columns * options.captcha_bypass.number_of_rows) as usize
             {
               return;
             }
 
-            MAP_ACCUMULATOR.set_processing(index, true).await;
+            MAP_COLLECTOR.set_processing(index, true).await;
 
-            if let Some(combined_base64) = MAP_ACCUMULATOR.combine_all(&index).await {
-              PROFILE_SYSTEM.set_bool(&index, "captcha_caught", true).await;
-              MAP_ACCUMULATOR.update_captcha_time(index).await;
+            if let Some(combined_base64) = MAP_COLLECTOR.combine_all(&index).await {
+              take_profile!(&index, async |profile| {
+                profile.captcha_caught = true;
+              });
+
+              MAP_COLLECTOR.update_captcha_time(index).await;
 
               if options.basic.use_webhook && options.webhook.send_information {
                 send_webhook(options.webhook.url, format!("Бот {} получил капчу с карты", username));
               }
 
-              emit_log(
-                format!("[ Анти-Капча ]: Бот {} получил капчу с карты", username),
-                "info",
-              );
+              emit_log(format!("Бот {} получил капчу с карты", username), "info");
 
               if options.captcha_bypass.solve_mode == "auto" {
                 MAP_CAPTCHA_BYPASS.solve_captcha(username.clone(), combined_base64, options.captcha_bypass);
@@ -338,7 +346,7 @@ async fn process_packet(bot: Client, packet: Arc<ClientboundGamePacket>) {
               }
             }
 
-            MAP_ACCUMULATOR.clear_maps(&index).await;
+            MAP_COLLECTOR.clear_maps(&index).await;
           } else {
             let base64_code = MAP_CAPTCHA_BYPASS.create_png_image(
               map_patch.width as u32,
@@ -346,17 +354,17 @@ async fn process_packet(bot: Client, packet: Arc<ClientboundGamePacket>) {
               &map_patch.map_colors,
             );
 
-            PROFILE_SYSTEM.set_bool(&index, "captcha_caught", true).await;
-            MAP_ACCUMULATOR.update_captcha_time(index).await;
+            take_profile!(&index, async |profile| {
+              profile.captcha_caught = true;
+            });
+
+            MAP_COLLECTOR.update_captcha_time(index).await;
 
             if options.basic.use_webhook && options.webhook.send_information {
               send_webhook(options.webhook.url, format!("Бот {} получил капчу с карты", username));
             }
 
-            emit_log(
-              format!("[ Анти-Капча ]: Бот {} получил капчу с карты", username),
-              "info",
-            );
+            emit_log(format!("Бот {} получил капчу с карты", username), "info");
 
             if options.captcha_bypass.solve_mode == "auto" {
               MAP_CAPTCHA_BYPASS.solve_captcha(username, base64_code, options.captcha_bypass);
