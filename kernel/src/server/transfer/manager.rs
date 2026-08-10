@@ -2,8 +2,8 @@ use once_cell::sync::Lazy;
 use tokio::sync::broadcast;
 
 use crate::server::transfer::{
-  AntiMapCaptchaPayload, AntiWebCaptchaPayload, BotChatPayload, ConnectedBotsPayload, LogPayload, MessagePayload,
-  MonitoringProfilesPayload, ProcessStatusPayload, SessionChatPayload, TotalBotsPayload,
+  AntiMapCaptchaPayload, AntiWebCaptchaPayload, BotChatPayload, LogPayload, MessagePayload, MonitoringProfilesPayload,
+  ProcessStatusPayload, SessionChatPayload,
 };
 
 pub static TRANSFER: Lazy<TransferManager> = Lazy::new(|| TransferManager::new());
@@ -12,8 +12,6 @@ pub static TRANSFER: Lazy<TransferManager> = Lazy::new(|| TransferManager::new()
 pub enum TransferEvent {
   Log(LogPayload),
   Message(MessagePayload),
-  ConnectedBots(ConnectedBotsPayload),
-  TotalBots(TotalBotsPayload),
   SessionChat(SessionChatPayload),
   BotChat(BotChatPayload),
   AntiWebCaptcha(AntiWebCaptchaPayload),

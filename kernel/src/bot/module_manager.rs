@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use bytes::BytesMut;
+use bytes::Bytes;
 use once_cell::sync::Lazy;
 use salarixi_extensions::buffer::BufferExt;
 use salarixi_extensions::index::IndexExt;
@@ -59,11 +59,11 @@ impl ModuleName {
 struct ControlMessage {
   module_name: ModuleName,
   group: String,
-  raw_options: BytesMut,
+  raw_options: Bytes,
 }
 
 impl ControlMessage {
-  fn from_bytes(mut buf: BytesMut) -> Option<Self> {
+  fn from_bytes(mut buf: Bytes) -> Option<Self> {
     let module_index = u8::read(&mut buf)?;
     let module_name = ModuleName::from_index(module_index)?;
     let group = String::read(&mut buf)?;
@@ -114,7 +114,7 @@ impl ModuleManager {
   }
 
   /// Метод взаимодействия с указанным модулем управления
-  pub async fn control(&self, bytes: BytesMut) -> Option<()> {
+  pub async fn control(&self, bytes: Bytes) -> Option<()> {
     let mut message = ControlMessage::from_bytes(bytes)?;
 
     let profiles = PROFILE_SYSTEM.get_all_connected().await;

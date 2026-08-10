@@ -56,7 +56,6 @@ class ScriptModule {
 
 			const buf = new Buffer();
 			buf.writeU8(0x0C);
-			buf.writeU32(3 + script.length);
 			buf.writeString(script);
 			buf.writeBoolean(separately);
 

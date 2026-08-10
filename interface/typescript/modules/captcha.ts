@@ -185,7 +185,6 @@ class CaptchaModule {
 
 					const buf = new Buffer();
 					buf.writeU8(0x05);
-					buf.writeU32(5 + username.length + message.value.length);
 					buf.writeU8(0x00);
 					buf.writeString(username);
 					buf.writeString(message.value);
@@ -207,7 +206,6 @@ class CaptchaModule {
 		document.getElementById(`remove-captcha-${username}`)?.addEventListener("click", async () => {
 			const buf = new Buffer();
 			buf.writeU8(0x04);
-			buf.writeU32(2 + username.length);
 			buf.writeString(username);
 
 			const result = await invoke<CommandResult<null>>("send_command", {

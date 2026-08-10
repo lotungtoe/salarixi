@@ -80,7 +80,7 @@ pub struct KillauraOptions {
 }
 
 impl KillauraOptions {
-  pub fn from_bytes(buf: &mut bytes::BytesMut) -> Option<Self> {
+  pub fn from_bytes(buf: &mut bytes::Bytes) -> Option<Self> {
     Some(Self {
       behavior: Behavior::from_index(u8::read(buf)?)?,
       settings: Settings::from_index(u8::read(buf)?)?,

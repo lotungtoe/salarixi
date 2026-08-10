@@ -36,7 +36,7 @@ pub struct ChatOptions {
 }
 
 impl ChatOptions {
-  pub fn from_bytes(buf: &mut bytes::BytesMut) -> Option<Self> {
+  pub fn from_bytes(buf: &mut bytes::Bytes) -> Option<Self> {
     Some(Self {
       mode: Mode::from_index(u8::read(buf)?)?,
       message: String::read(buf)?,

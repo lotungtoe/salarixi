@@ -47,7 +47,7 @@ pub struct MinerOptions {
 }
 
 impl MinerOptions {
-  pub fn from_bytes(buf: &mut bytes::BytesMut) -> Option<Self> {
+  pub fn from_bytes(buf: &mut bytes::Bytes) -> Option<Self> {
     Some(Self {
       mode: Mode::from_index(u8::read(buf)?)?,
       tunnel: Tunnel::from_index(u8::read(buf)?)?,

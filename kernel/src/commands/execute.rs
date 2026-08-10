@@ -2,12 +2,11 @@ use std::io::{Error, ErrorKind};
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
 
-use bytes::{Buf, BufMut, BytesMut};
-use hashbrown::HashMap;
+use aes_gcm::Aes256Gcm;
+use bytes::{Buf, BufMut, Bytes, BytesMut};
 use salarixi_extensions::buffer::BufferExt;
 use salarixi_extensions::index::IndexExt;
-use tokio::io::AsyncWriteExt;
-use tokio::net::tcp::{OwnedReadHalf, OwnedWriteHalf};
+use tokio::net::tcp::OwnedWriteHalf;
 use tokio::sync::RwLock;
 
 use crate::bot::quick::QUICK_TASKS;
@@ -21,16 +20,17 @@ use crate::commands::enumeration::ClientCommand;
 use crate::launch::options::LaunchOptions;
 use crate::launch::process::{process_is_active, process_status_payload, PROCESS_ACTIVITY};
 use crate::launch::runner::{launch_bots_on_server, stop_bots_and_destroy_data};
-use crate::server::write_bytes_to_sockets;
+use crate::server::{write_to_socket, write_to_sockets, Sockets};
 use crate::take_profile;
 
 /// Функция выполнения команды клиента
 pub async fn execute_client_command(
   addr: String,
   writer: &Arc<RwLock<OwnedWriteHalf>>,
+  cipher: &Arc<Aes256Gcm>,
   command: &ClientCommand,
-  mut data: BytesMut,
-  sockets: &Arc<RwLock<HashMap<String, (Arc<RwLock<OwnedReadHalf>>, Arc<RwLock<OwnedWriteHalf>>)>>>,
+  mut data: Bytes,
+  sockets: &Sockets,
 ) -> std::io::Result<()> {
   println!(
     "[info :: {}] command \"{:?}\" received | length={}",
@@ -43,23 +43,18 @@ pub async fn execute_client_command(
   match command {
     ClientCommand::SessionChat => {
       let mut buf = BytesMut::new();
+      buf.put_u8(0x02);
       addr.write(&mut buf);
       buf.put_slice(&data);
 
-      let mut final_buf = BytesMut::new();
-      final_buf.put_u8(0x04);
-      final_buf.put_u32(buf.len() as u32);
-      final_buf.put_slice(&buf);
-
-      write_bytes_to_sockets(sockets, final_buf.freeze()).await;
+      write_to_sockets(sockets, &buf).await;
     }
     ClientCommand::RemoveCaptcha => {
       let mut buf = BytesMut::new();
-      buf.put_u8(0x08);
-      buf.put_u32(data.len() as u32);
+      buf.put_u8(0x07);
       buf.put_slice(&data);
 
-      write_bytes_to_sockets(sockets, buf.freeze()).await;
+      write_to_sockets(sockets, &buf).await;
     }
     ClientCommand::LaunchBots => {
       let options = match LaunchOptions::read(&mut data) {
@@ -67,10 +62,9 @@ pub async fn execute_client_command(
         None => {
           let mut buf = BytesMut::new();
           buf.put_u8(0x09);
-          buf.put_u32(1);
           buf.put_u8(0x00);
 
-          write_bytes_to_sockets(sockets, buf.freeze()).await;
+          write_to_sockets(sockets, &buf).await;
 
           return Ok(());
         }
@@ -80,15 +74,13 @@ pub async fn execute_client_command(
 
       let mut buf = BytesMut::new();
       buf.put_u8(0x09);
-      buf.put_u32(1);
       buf.put_u8(status);
 
-      write_bytes_to_sockets(sockets, buf.freeze()).await;
+      write_to_sockets(sockets, &buf).await;
 
       let process = process_status_payload().await;
       let mut buf = BytesMut::new();
-      buf.put_u8(0x0E);
-      buf.put_u32(4);
+      buf.put_u8(0x03);
       buf.put_u8(if PROCESS_ACTIVITY.load(Ordering::SeqCst) {
         0x01
       } else {
@@ -98,22 +90,20 @@ pub async fn execute_client_command(
       buf.put_u8(process.connected_bots);
       buf.put_u8(process.total_bots);
 
-      write_bytes_to_sockets(sockets, buf.freeze()).await;
+      write_to_sockets(sockets, &buf).await;
     }
     ClientCommand::StopBots => {
       let status = stop_bots_and_destroy_data().await;
 
       let mut buf = BytesMut::new();
       buf.put_u8(0x0A);
-      buf.put_u32(1);
       buf.put_u8(status);
 
-      write_bytes_to_sockets(sockets, buf.freeze()).await;
+      write_to_sockets(sockets, &buf).await;
 
       let process = process_status_payload().await;
       let mut buf = BytesMut::new();
-      buf.put_u8(0x0E);
-      buf.put_u32(4);
+      buf.put_u8(0x03);
       buf.put_u8(if PROCESS_ACTIVITY.load(Ordering::SeqCst) {
         0x01
       } else {
@@ -123,7 +113,7 @@ pub async fn execute_client_command(
       buf.put_u8(process.connected_bots);
       buf.put_u8(process.total_bots);
 
-      write_bytes_to_sockets(sockets, buf.freeze()).await;
+      write_to_sockets(sockets, &buf).await;
     }
     ClientCommand::QuickAction => {
       let Some(action) = QuickAction::from_index(data.try_get_u8()?) else {
@@ -165,6 +155,7 @@ pub async fn execute_client_command(
 
       if let Some(info) = RADAR.find_target(target.clone()).await {
         let mut buf = BytesMut::new();
+        buf.put_u8(0x0B);
         target.write(&mut buf);
         info.uuid.write(&mut buf);
         info.tx.write(&mut buf);
@@ -173,12 +164,7 @@ pub async fn execute_client_command(
         info.ox.write(&mut buf);
         info.oz.write(&mut buf);
 
-        let mut final_buf = BytesMut::with_capacity(5 + buf.len());
-        final_buf.put_u8(0x0D);
-        final_buf.put_u32(buf.len() as u32);
-        final_buf.put_slice(&buf);
-
-        writer.write().await.write_all(&final_buf).await?;
+        write_to_socket(&addr, writer, cipher, &buf).await;
       }
     }
     ClientCommand::SaveRadarData => {
@@ -234,8 +220,7 @@ pub async fn execute_client_command(
       let process = process_status_payload().await;
 
       let mut buf = BytesMut::new();
-      buf.put_u8(0x0E);
-      buf.put_u32(4);
+      buf.put_u8(0x0C);
       buf.put_u8(if PROCESS_ACTIVITY.load(Ordering::SeqCst) {
         0x01
       } else {
@@ -245,7 +230,7 @@ pub async fn execute_client_command(
       buf.put_u8(process.connected_bots);
       buf.put_u8(process.total_bots);
 
-      writer.write().await.write_all(&buf).await?;
+      write_to_socket(&addr, writer, cipher, &buf).await;
     }
   }
 

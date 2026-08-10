@@ -1,17 +1,15 @@
 use std::io::{Error, ErrorKind};
 
+use aes_gcm::{Aes256Gcm, KeyInit};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
 
 use crate::version::CLIENT_VERSION_STR;
 
-pub async fn client_process(socket: &mut TcpStream, password: Option<String>) -> std::io::Result<()> {
+pub async fn client_process(socket: &mut TcpStream, password: Option<String>) -> std::io::Result<Aes256Gcm> {
   process_handshake(socket).await?;
   process_authentication(socket, password).await?;
-  // TODO: Шифрование и, возможно, отдельное состояние для
-  // изначальной синхронизации данных сервера и клиента
-
-  Ok(())
+  process_encryption(socket).await
 }
 
 async fn process_handshake(socket: &mut TcpStream) -> std::io::Result<()> {
@@ -57,4 +55,13 @@ async fn process_authentication(socket: &mut TcpStream, password: Option<String>
     socket.shutdown().await?;
     return Err(Error::new(ErrorKind::InvalidInput, "incorrect password"));
   }
+}
+
+async fn process_encryption(socket: &mut TcpStream) -> std::io::Result<Aes256Gcm> {
+  let mut key = [0u8; 32];
+  socket.read_exact(&mut key).await?;
+
+  let cipher = Aes256Gcm::new((&key).into());
+
+  Ok(cipher)
 }

@@ -6,7 +6,7 @@ impl<T> BufferExt for Option<T>
 where
   T: BufferExt,
 {
-  fn read(buf: &mut bytes::BytesMut) -> Option<Self> {
+  fn read(buf: &mut bytes::Bytes) -> Option<Self> {
     let is_some = buf.try_get_u8().ok()? == 1;
 
     if is_some {

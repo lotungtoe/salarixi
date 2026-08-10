@@ -1,8 +1,10 @@
 use std::io::{Error, ErrorKind};
 use std::sync::Arc;
 
-use bytes::BytesMut;
+use aes_gcm::Aes256Gcm;
+use bytes::{Buf, Bytes};
 use hashbrown::HashMap;
+use salarixi_extensions::encryption::decrypt_data;
 use salarixi_extensions::index::IndexExt;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::tcp::{OwnedReadHalf, OwnedWriteHalf};
@@ -13,12 +15,16 @@ use tokio::task::JoinHandle;
 use crate::commands::{execute_client_command, ClientCommand};
 use crate::server::process::process_socket;
 use crate::server::transfer::{TransferEvent, TRANSFER};
-use crate::server::write_bytes_to_sockets;
+use crate::server::write_to_sockets;
+
+/// Вспомогательный тип, лень много раз длинную строку писать
+pub type Sockets =
+  Arc<RwLock<HashMap<String, (Arc<Aes256Gcm>, Arc<RwLock<OwnedReadHalf>>, Arc<RwLock<OwnedWriteHalf>>)>>>;
 
 pub struct Server {
   pub listener: Arc<RwLock<TcpListener>>,
   password: Arc<Option<String>>,
-  sockets: Arc<RwLock<HashMap<String, (Arc<RwLock<OwnedReadHalf>>, Arc<RwLock<OwnedWriteHalf>>)>>>,
+  sockets: Sockets,
   tasks: Arc<RwLock<Vec<JoinHandle<()>>>>,
 }
 
@@ -69,23 +75,25 @@ impl Server {
             println!("[info] new connection from {}", addr_string);
 
             match process_socket(&mut socket, &addr_string, &password).await {
-              Ok(_) => {
+              Ok(cipher) => {
                 println!("[success :: {}] connection registered successfully", addr_string);
 
                 let (r, w) = socket.into_split();
                 let reader = Arc::new(RwLock::new(r));
                 let writer = Arc::new(RwLock::new(w));
+                let cipher = Arc::new(cipher);
 
                 sockets
                   .write()
                   .await
-                  .insert(addr_string.clone(), (reader.clone(), writer.clone()));
+                  .insert(addr_string.clone(), (cipher.clone(), reader.clone(), writer.clone()));
 
                 let read_loop = tokio::spawn(Self::run_individual_read_loop(
                   sockets.clone(),
                   addr_string,
                   reader,
                   writer,
+                  cipher,
                 ));
                 tasks.write().await.push(read_loop);
               }
@@ -116,13 +124,10 @@ impl Server {
             TransferEvent::Message(payload) => {
               bytes = payload.to_bytes();
             }
-            TransferEvent::ConnectedBots(payload) => {
-              bytes = payload.to_bytes();
-            }
             TransferEvent::SessionChat(payload) => {
               bytes = payload.to_bytes();
             }
-            TransferEvent::TotalBots(payload) => {
+            TransferEvent::ProcessStatus(payload) => {
               bytes = payload.to_bytes();
             }
             TransferEvent::BotChat(payload) => {
@@ -137,12 +142,9 @@ impl Server {
             TransferEvent::MonitoringProfiles(payload) => {
               bytes = payload.to_bytes();
             }
-            TransferEvent::ProcessStatus(payload) => {
-              bytes = payload.to_bytes();
-            }
           }
 
-          write_bytes_to_sockets(&sockets, bytes).await;
+          write_to_sockets(&sockets, &bytes).await;
         }
       }
     });
@@ -169,14 +171,15 @@ impl Server {
 
   /// Метод запуска индивидуального цикла чтения пакетов указанного сокета
   async fn run_individual_read_loop(
-    sockets: Arc<RwLock<HashMap<String, (Arc<RwLock<OwnedReadHalf>>, Arc<RwLock<OwnedWriteHalf>>)>>>,
+    sockets: Sockets,
     addr: String,
     reader: Arc<RwLock<OwnedReadHalf>>,
     writer: Arc<RwLock<OwnedWriteHalf>>,
+    cipher: Arc<Aes256Gcm>,
   ) {
     loop {
       let mut reader_guard = reader.write().await;
-      let Some((id, data)) = Self::read_packet(&mut reader_guard).await else {
+      let Some((id, data)) = Self::read_packet(&mut reader_guard, &cipher).await else {
         println!("[error :: {}] client sent an invalid packet, read loop finished", addr);
         let _ = writer.write().await.shutdown().await;
         sockets.write().await.remove(&addr);
@@ -190,23 +193,24 @@ impl Server {
         continue;
       };
 
-      let buf = BytesMut::from_iter(data);
-
-      if let Err(e) = execute_client_command(addr.clone(), &writer, &command, buf, &sockets).await {
+      if let Err(e) = execute_client_command(addr.clone(), &writer, &cipher, &command, data, &sockets).await {
         println!("[error :: {}] command \"{:?}\" execution error: {}", addr, command, e);
       }
     }
   }
 
   /// Вспомогательный метод чтения пакета от клиента
-  async fn read_packet(read_half: &mut OwnedReadHalf) -> Option<(u8, Vec<u8>)> {
-    let id = read_half.read_u8().await.ok()?;
-    let len = read_half.read_u32().await.ok()?;
-    let mut data = Vec::with_capacity(len as usize);
+  async fn read_packet(half: &mut OwnedReadHalf, cipher: &Arc<Aes256Gcm>) -> Option<(u8, Bytes)> {
+    let len = half.read_u32().await.ok()?;
+    let mut input = Vec::with_capacity(len as usize);
 
     for _ in 0..len {
-      data.push(read_half.read_u8().await.ok()?);
+      input.push(half.read_u8().await.ok()?);
     }
+
+    let decrypted = decrypt_data(cipher, &input).ok()?;
+    let mut data = Bytes::from_iter(decrypted);
+    let id = data.try_get_u8().ok()?;
 
     Some((id, data))
   }

@@ -337,7 +337,6 @@ class MonitoringModule {
 
 				const buf = new Buffer();
 				buf.writeU8(0x05);
-				buf.writeU32(5 + username.length + message.value.length);
 				buf.writeU8(0x00);
 				buf.writeString(username);
 				buf.writeString(message.value);
@@ -359,7 +358,6 @@ class MonitoringModule {
 			try {
 				const buf = new Buffer();
 				buf.writeU8(0x05);
-				buf.writeU32(3 + username.length);
 				buf.writeU8(0x01);
 				buf.writeString(username);
 
@@ -377,7 +375,6 @@ class MonitoringModule {
 			try {
 				const buf = new Buffer();
 				buf.writeU8(0x05);
-				buf.writeU32(3 + username.length);
 				buf.writeU8(0x02);
 				buf.writeString(username);
 
@@ -397,7 +394,6 @@ class MonitoringModule {
 
 				const buf = new Buffer();
 				buf.writeU8(0x06);
-				buf.writeU32(4 + username.length + group.length);
 				buf.writeString(username);
 				buf.writeString(group);
 

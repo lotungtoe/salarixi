@@ -3,7 +3,7 @@ use bytes::{Buf, BufMut};
 use crate::buffer::BufferExt;
 
 impl BufferExt for String {
-  fn read(buf: &mut bytes::BytesMut) -> Option<Self> {
+  fn read(buf: &mut bytes::Bytes) -> Option<Self> {
     // Долго над этим не думал, пусть будет u16, маловероятно
     // что кому-то не хватит на одну строку 65535 символа
     let len = buf.try_get_u16().ok()?;

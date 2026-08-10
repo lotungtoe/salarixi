@@ -149,6 +149,7 @@ async function startBots(): Promise<void> {
 		for (const name in plugins) options.plugins[name.replaceAll("-", "_")] = plugins[name].enable;
 
 		const buf = new Buffer();
+		buf.writeU8(0x01);
 
 		buf.writeString(options.basic["address"]);
 		buf.writeU8(options.basic["bots_count"]);
@@ -222,13 +223,8 @@ async function startBots(): Promise<void> {
 		buf.writeBoolean(options.plugins["send_data"]);
 		buf.writeBoolean(options.plugins["send_actions"]);
 
-		const finalBuf = new Buffer();
-		finalBuf.writeU8(0x01);
-		finalBuf.writeU32(buf.len);
-		finalBuf.writeBytes(buf.toUint8Array());
-
 		const result = await invoke<CommandResult<null>>("send_command", {
-			data: finalBuf.toUint8Array(),
+			data: buf.toUint8Array(),
 		});
 
 		if (result.error) logger.log(`Ошибка запуска ботов: ${result.error}`, "error");
@@ -251,7 +247,6 @@ async function stopBots(): Promise<void> {
 	try {
 		const buf = new Buffer();
 		buf.writeU8(0x02);
-		buf.writeU32(0);
 
 		const result = await invoke<CommandResult<null>>("send_command", {
 			data: buf.toUint8Array(),
@@ -267,6 +262,7 @@ async function stopBots(): Promise<void> {
 async function updateModuleState(index: number, state: number): Promise<void> {
 	try {
 		const buf = new Buffer();
+		buf.writeU8(0x07);
 		buf.writeU8(index);
 
 		const group = (document.getElementById("control-group") as HTMLInputElement).value.replace(" ", "");
@@ -355,13 +351,8 @@ async function updateModuleState(index: number, state: number): Promise<void> {
 		// Пока так, состояние это последняя опция, иначе логически не поставить
 		buf.writeU8(state);
 
-		const finalBuf = new Buffer();
-		finalBuf.writeU8(0x07);
-		finalBuf.writeU32(buf.len);
-		finalBuf.writeBytes(buf.toUint8Array());
-
 		const result = await invoke<CommandResult<null>>("send_command", {
-			data: finalBuf.toUint8Array(),
+			data: buf.toUint8Array(),
 		});
 
 		if (result.error) logger.log(`Ошибка изменения состояния модуля (index=${index}): ${result.error}`, "error");
@@ -451,7 +442,6 @@ function initGlobalElements(): void {
 		if (taskId !== undefined) {
 			const buf = new Buffer();
 			buf.writeU8(0x0B);
-			buf.writeU32(1);
 			buf.writeU8(taskId);
 
 			const result = await invoke<CommandResult<null>>("send_command", {

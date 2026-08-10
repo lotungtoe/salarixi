@@ -48,7 +48,6 @@ class SessionModule {
 
 			const buf = new Buffer();
 			buf.writeU8(0x00);
-			buf.writeU32(2 + message.value.length);
 			buf.writeString(message.value);
 
 			const result = await invoke<CommandResult<null>>("send_command", {
@@ -126,8 +125,7 @@ class SessionModule {
 
 	private async synchronize(): Promise<void> {
 		const buf = new Buffer();
-		buf.writeU8(0x0E);
-		buf.writeU32(0);
+		buf.writeU8(0x03);
 
 		const result = await invoke<CommandResult<null>>("send_command", {
 			data: buf.toUint8Array()

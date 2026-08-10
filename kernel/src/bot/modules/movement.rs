@@ -40,7 +40,7 @@ pub struct MovementOptions {
 }
 
 impl MovementOptions {
-  pub fn from_bytes(buf: &mut bytes::BytesMut) -> Option<Self> {
+  pub fn from_bytes(buf: &mut bytes::Bytes) -> Option<Self> {
     Some(Self {
       mode: Mode::from_index(u8::read(buf)?)?,
       direction: Direction::from_index(u8::read(buf)?)?,

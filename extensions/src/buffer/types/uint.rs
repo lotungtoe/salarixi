@@ -3,7 +3,7 @@ use bytes::{Buf, BufMut};
 use crate::buffer::BufferExt;
 
 impl BufferExt for u8 {
-  fn read(buf: &mut bytes::BytesMut) -> Option<Self> {
+  fn read(buf: &mut bytes::Bytes) -> Option<Self> {
     buf.try_get_u8().ok()
   }
 
@@ -13,7 +13,7 @@ impl BufferExt for u8 {
 }
 
 impl BufferExt for u16 {
-  fn read(buf: &mut bytes::BytesMut) -> Option<Self> {
+  fn read(buf: &mut bytes::Bytes) -> Option<Self> {
     buf.try_get_u16().ok()
   }
 
@@ -23,7 +23,7 @@ impl BufferExt for u16 {
 }
 
 impl BufferExt for u32 {
-  fn read(buf: &mut bytes::BytesMut) -> Option<Self> {
+  fn read(buf: &mut bytes::Bytes) -> Option<Self> {
     buf.try_get_u32().ok()
   }
 
@@ -33,7 +33,7 @@ impl BufferExt for u32 {
 }
 
 impl BufferExt for u64 {
-  fn read(buf: &mut bytes::BytesMut) -> Option<Self> {
+  fn read(buf: &mut bytes::Bytes) -> Option<Self> {
     buf.try_get_u64().ok()
   }
 

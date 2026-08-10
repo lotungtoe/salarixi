@@ -1,6 +1,10 @@
+use std::io::{Error, ErrorKind};
 use std::sync::Arc;
 
+use aes_gcm::Aes256Gcm;
+use bytes::{Buf, BufMut, Bytes, BytesMut};
 use once_cell::sync::Lazy;
+use salarixi_extensions::encryption::{decrypt_data, encrypt_data};
 use salarixi_kernel::server::Server;
 use salarixi_kernel::sleep;
 use salarixi_kernel::tools::{randnum, randstr, CharClass};
@@ -23,6 +27,7 @@ pub struct Session {
   reader_task: RwLock<Option<JoinHandle<()>>>,
   reader: Arc<RwLock<Option<OwnedReadHalf>>>,
   writer: Arc<RwLock<Option<OwnedWriteHalf>>>,
+  cipher: Arc<RwLock<Option<Aes256Gcm>>>,
 }
 
 impl Session {
@@ -32,6 +37,7 @@ impl Session {
       reader_task: RwLock::new(None),
       reader: Arc::new(RwLock::new(None)),
       writer: Arc::new(RwLock::new(None)),
+      cipher: Arc::new(RwLock::new(None)),
     }
   }
 
@@ -97,9 +103,12 @@ impl Session {
       }
     };
 
-    if let Err(e) = client_process(&mut socket, password).await {
-      failed!("{}", e);
-    }
+    let cipher = match client_process(&mut socket, password).await {
+      Ok(c) => c,
+      Err(e) => failed!("{}", e),
+    };
+
+    *self.cipher.write().await = Some(cipher);
 
     let (r, w) = socket.into_split();
 
@@ -139,22 +148,33 @@ impl Session {
 
     *server_guard = None;
     drop(server_guard);
+
+    *self.cipher.write().await = None;
   }
 
   /// Метод запуска цикла чтения входящих пакетов
   async fn run_reader_task(&self) {
     let reader = self.reader.clone();
+    let cipher = self.cipher.clone();
     let task = tokio::spawn(async move {
       let read_fn = async |half: &mut OwnedReadHalf| {
-        let id = half.read_u8().await.ok()?;
-        let len = half.read_u32().await.ok()?;
-        let mut data = Vec::with_capacity(len as usize);
+        let len = half.read_u32().await?;
+        let mut input = Vec::with_capacity(len as usize);
 
         for _ in 0..len {
-          data.push(half.read_u8().await.ok()?);
+          input.push(half.read_u8().await?);
         }
 
-        Some((id, data))
+        let cipher_guard = cipher.read().await;
+        let Some(cipher) = cipher_guard.as_ref() else {
+          return Err(Error::new(ErrorKind::Other, "cipher is not set"));
+        };
+
+        let decrypted = decrypt_data(cipher, &input)?;
+        let mut data = Bytes::from_iter(decrypted);
+        let id = data.try_get_u8()?;
+
+        Ok((id, data.to_vec()))
       };
 
       loop {
@@ -163,7 +183,7 @@ impl Session {
           continue;
         };
 
-        let Some((id, data)) = read_fn(half).await else {
+        let Ok((id, data)) = read_fn(half).await else {
           continue;
         };
 
@@ -178,13 +198,30 @@ impl Session {
 
   /// Метод отправки команды
   pub async fn send_command(&self, data: Vec<u8>) -> CommandResult<()> {
-    if let Some(writer) = self.writer.write().await.as_mut() {
-      match writer.write_all(&data).await {
-        Ok(_) => success!(()),
-        Err(e) => failed!("write error: {}", e),
-      }
+    let mut writer_guard = self.writer.write().await;
+    let Some(writer) = writer_guard.as_mut() else {
+      failed!("session not established");
+    };
+
+    let cipher_guard = self.cipher.read().await;
+    let Some(cipher) = cipher_guard.as_ref() else {
+      failed!("cipher is not set");
+    };
+
+    let encrypted = match encrypt_data(cipher, &data) {
+      Ok(e) => e,
+      Err(e) => failed!("encryption error: {}", e),
+    };
+
+    let mut buf = BytesMut::new();
+    buf.put_u32(encrypted.len() as u32);
+    buf.put_slice(&encrypted);
+
+    match writer.write_all(&buf).await {
+      Ok(_) => {}
+      Err(e) => failed!("write error: {}", e),
     }
 
-    failed!("session not established");
+    success!(());
   }
 }

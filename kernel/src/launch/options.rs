@@ -11,7 +11,7 @@ pub struct LaunchOptions {
 }
 
 impl LaunchOptions {
-  pub fn read(buf: &mut bytes::BytesMut) -> Option<Self> {
+  pub fn read(buf: &mut bytes::Bytes) -> Option<Self> {
     let basic = BasicOptions::read(buf)?;
 
     let account_count = u8::read(buf)?;
@@ -80,7 +80,7 @@ pub struct BasicOptions {
 }
 
 impl BasicOptions {
-  pub fn read(buf: &mut bytes::BytesMut) -> Option<Self> {
+  pub fn read(buf: &mut bytes::Bytes) -> Option<Self> {
     Some(Self {
       address: String::read(buf)?,
       bots_count: u8::read(buf)?,
@@ -133,7 +133,7 @@ pub struct AccountOptions {
 }
 
 impl AccountOptions {
-  pub fn read(buf: &mut bytes::BytesMut) -> Option<Self> {
+  pub fn read(buf: &mut bytes::Bytes) -> Option<Self> {
     Some(Self {
       initial_group: Option::read(buf)?,
       password: Option::read(buf)?,
@@ -156,7 +156,7 @@ pub struct PluginOptions {
 }
 
 impl PluginOptions {
-  pub fn read(buf: &mut bytes::BytesMut) -> Option<Self> {
+  pub fn read(buf: &mut bytes::Bytes) -> Option<Self> {
     Some(Self {
       instant_armor_equip: bool::read(buf)?,
       auto_totem: bool::read(buf)?,
@@ -184,7 +184,7 @@ pub struct CaptchaBypassOptions {
 }
 
 impl CaptchaBypassOptions {
-  pub fn read(buf: &mut bytes::BytesMut) -> Option<Self> {
+  pub fn read(buf: &mut bytes::Bytes) -> Option<Self> {
     Some(Self {
       captcha_type: String::read(buf)?,
       captcha_subtype: String::read(buf)?,
@@ -208,7 +208,7 @@ pub struct WebhookOptions {
 }
 
 impl WebhookOptions {
-  pub fn read(buf: &mut bytes::BytesMut) -> Option<Self> {
+  pub fn read(buf: &mut bytes::Bytes) -> Option<Self> {
     Some(Self {
       url: Option::read(buf)?,
       send_information: bool::read(buf)?,

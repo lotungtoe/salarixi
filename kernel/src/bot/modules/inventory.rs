@@ -14,7 +14,7 @@ pub struct InventoryOptions {
 }
 
 impl InventoryOptions {
-  pub fn from_bytes(buf: &mut bytes::BytesMut) -> Option<Self> {
+  pub fn from_bytes(buf: &mut bytes::Bytes) -> Option<Self> {
     Some(Self {
       slot: Option::read(buf)?,
       target_slot: Option::read(buf)?,

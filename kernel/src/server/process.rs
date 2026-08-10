@@ -1,6 +1,8 @@
 use std::io::{Error, ErrorKind};
 use std::sync::Arc;
 
+use aes_gcm::{Aes256Gcm, KeyInit};
+use rand::Rng;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
 
@@ -10,13 +12,10 @@ pub async fn process_socket(
   socket: &mut TcpStream,
   addr: &str,
   expected_password: &Arc<Option<String>>,
-) -> std::io::Result<()> {
+) -> std::io::Result<Aes256Gcm> {
   process_handshake(socket, addr).await?;
   process_authentication(socket, expected_password).await?;
-  // TODO: Шифрование и, возможно, отдельное состояние для
-  // изначальной синхронизации данных сервера и клиента
-
-  Ok(())
+  process_encryption(socket).await
 }
 
 async fn process_handshake(socket: &mut TcpStream, addr: &str) -> std::io::Result<()> {
@@ -89,4 +88,13 @@ async fn process_authentication(
   socket.write_u8(0x00).await?;
 
   Ok(())
+}
+
+async fn process_encryption(socket: &mut TcpStream) -> std::io::Result<Aes256Gcm> {
+  let key = rand::thread_rng().gen::<[u8; 32]>();
+  let cipher = Aes256Gcm::new((&key).into());
+
+  socket.write_all(&key).await?;
+
+  Ok(cipher)
 }

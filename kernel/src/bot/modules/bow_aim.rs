@@ -46,7 +46,7 @@ pub struct BowAimOptions {
 }
 
 impl BowAimOptions {
-  pub fn from_bytes(buf: &mut bytes::BytesMut) -> Option<Self> {
+  pub fn from_bytes(buf: &mut bytes::Bytes) -> Option<Self> {
     Some(Self {
       target: Target::from_index(u8::read(buf)?)?,
       target_nickname: Option::read(buf)?,

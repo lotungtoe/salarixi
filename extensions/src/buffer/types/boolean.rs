@@ -3,7 +3,7 @@ use bytes::{Buf, BufMut};
 use crate::buffer::BufferExt;
 
 impl BufferExt for bool {
-  fn read(buf: &mut bytes::BytesMut) -> Option<Self> {
+  fn read(buf: &mut bytes::Bytes) -> Option<Self> {
     Some(buf.try_get_u8().ok()? == 1)
   }
 

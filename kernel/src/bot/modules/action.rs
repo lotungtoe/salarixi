@@ -27,7 +27,7 @@ pub struct ActionOptions {
 }
 
 impl ActionOptions {
-  pub fn from_bytes(buf: &mut bytes::BytesMut) -> Option<Self> {
+  pub fn from_bytes(buf: &mut bytes::Bytes) -> Option<Self> {
     Some(Self {
       action: Action::from_index(u8::read(buf)?)?,
       use_sync: bool::read(buf)?,

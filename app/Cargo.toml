@@ -19,6 +19,7 @@ salarixi-extensions.workspace = true
 azalea.workspace = true
 tauri.workspace = true
 tokio.workspace = true
+aes-gcm.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 socks5-impl.workspace = true

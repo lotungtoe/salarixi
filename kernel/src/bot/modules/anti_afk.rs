@@ -27,7 +27,7 @@ pub struct AntiAfkOptions {
 }
 
 impl AntiAfkOptions {
-  pub fn from_bytes(buf: &mut bytes::BytesMut) -> Option<Self> {
+  pub fn from_bytes(buf: &mut bytes::Bytes) -> Option<Self> {
     Some(Self {
       mode: Mode::from_index(u8::read(buf)?)?,
       min_delay: Option::read(buf)?,

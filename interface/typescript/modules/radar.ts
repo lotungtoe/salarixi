@@ -210,6 +210,7 @@ class RadarModule {
 
 					if (await isAbsolute(path)) {
 						const buf = new Buffer();
+						buf.writeU8(0x09);
 						buf.writeString(username);
 						buf.writeString(path);
 						buf.writeString(filename || "radar_#t");
@@ -217,13 +218,8 @@ class RadarModule {
 						buf.writeF64(parseFloat(ty));
 						buf.writeF64(parseFloat(tz));
 
-						const finalBuf = new Buffer();
-						finalBuf.writeU8(0x09);
-						finalBuf.writeU32(buf.len);
-						finalBuf.writeBytes(buf.toUint8Array());
-
 						const result = await invoke<CommandResult<null>>("send_command", {
-							data: finalBuf.toUint8Array(),
+							data: buf.toUint8Array(),
 						});
 
 						if (result.error) logger.log(`Ошибка сохранения данных радара об игроке ${username}: ${result.error}`, "error");
@@ -301,17 +297,13 @@ UUID: ${uuid}
 					const z = parseInt(zText);
 
 					const buf = new Buffer();
+					buf.writeU8(0x0A);
 					buf.writeString(username);
 					buf.writeI32(x);
 					buf.writeI32(z);
 
-					const finalBuf = new Buffer();
-					finalBuf.writeU8(0x0A);
-					finalBuf.writeU32(buf.len);
-					finalBuf.writeBytes(buf.toUint8Array());
-
 					const result = await invoke<CommandResult<null>>("send_command", {
-						data: finalBuf.toUint8Array(),
+						data: buf.toUint8Array(),
 					});
 
 					if (result.error) logger.log(`Ошибка преследования ${username}: ${result.error}`, "error");

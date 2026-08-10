@@ -29,7 +29,7 @@ pub struct StealerOptions {
 }
 
 impl StealerOptions {
-  pub fn from_bytes(buf: &mut bytes::BytesMut) -> Option<Self> {
+  pub fn from_bytes(buf: &mut bytes::Bytes) -> Option<Self> {
     Some(Self {
       target: Target::from_index(u8::read(buf)?)?,
       radius: Option::read(buf)?,
