@@ -1,7 +1,8 @@
 use hashbrown::HashMap;
-use salarixi_extensions::buffer::BufferExt;
+use salarixi_extensions::{buffer::BufferExt, index::IndexExt};
+use salarixi_macros::Index;
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct LaunchOptions {
   pub basic: BasicOptions,
   pub accounts: HashMap<String, AccountOptions>,
@@ -37,23 +38,23 @@ impl LaunchOptions {
   }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct BasicOptions {
   pub address: String,
   pub bots_count: u8,
   pub join_delay: u32,
-  pub nickname_type: String,
-  pub password_type: String,
-  pub email_type: String,
+  pub nickname_type: NicknameType,
+  pub password_type: PasswordType,
+  pub email_type: EmailType,
   pub nickname_template: String,
   pub password_template: String,
-  pub register_mode: String,
+  pub register_mode: AuthMode,
   pub register_command: String,
   pub register_template: String,
   pub register_min_delay: u32,
   pub register_max_delay: u32,
   pub register_trigger: String,
-  pub login_mode: String,
+  pub login_mode: AuthMode,
   pub login_command: String,
   pub login_template: String,
   pub login_min_delay: u32,
@@ -85,18 +86,18 @@ impl BasicOptions {
       address: String::read(buf)?,
       bots_count: u8::read(buf)?,
       join_delay: u32::read(buf)?,
-      nickname_type: String::read(buf)?,
-      password_type: String::read(buf)?,
-      email_type: String::read(buf)?,
+      nickname_type: NicknameType::from_index(u8::read(buf)?)?,
+      password_type: PasswordType::from_index(u8::read(buf)?)?,
+      email_type: EmailType::from_index(u8::read(buf)?)?,
       nickname_template: String::read(buf)?,
       password_template: String::read(buf)?,
-      register_mode: String::read(buf)?,
+      register_mode: AuthMode::from_index(u8::read(buf)?)?,
       register_command: String::read(buf)?,
       register_template: String::read(buf)?,
       register_min_delay: u32::read(buf)?,
       register_max_delay: u32::read(buf)?,
       register_trigger: String::read(buf)?,
-      login_mode: String::read(buf)?,
+      login_mode: AuthMode::from_index(u8::read(buf)?)?,
       login_command: String::read(buf)?,
       login_template: String::read(buf)?,
       login_min_delay: u32::read(buf)?,
@@ -124,7 +125,55 @@ impl BasicOptions {
   }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone, Index)]
+pub enum NicknameType {
+  Legit = 0x00,
+  Random = 0x01,
+  Custom = 0x02,
+}
+
+impl NicknameType {
+  pub fn to_str(&self) -> &str {
+    match self {
+      Self::Legit => "legit",
+      Self::Random => "random",
+      Self::Custom => "custom",
+    }
+  }
+}
+
+#[derive(Clone, Index)]
+pub enum PasswordType {
+  Without = 0x00,
+  Legit = 0x01,
+  Random = 0x02,
+  Custom = 0x03,
+}
+
+impl PasswordType {
+  pub fn to_str(&self) -> &str {
+    match self {
+      Self::Without => "without",
+      Self::Legit => "legit",
+      Self::Random => "random",
+      Self::Custom => "custom",
+    }
+  }
+}
+
+#[derive(Clone, Index)]
+pub enum EmailType {
+  Without = 0x00,
+  Random = 0x01,
+}
+
+#[derive(Clone, PartialEq, Index)]
+pub enum AuthMode {
+  Default = 0x00,
+  Trigger = 0x01,
+}
+
+#[derive(Clone)]
 pub struct AccountOptions {
   pub initial_group: Option<String>,
   pub password: Option<String>,
@@ -143,7 +192,7 @@ impl AccountOptions {
   }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct PluginOptions {
   pub instant_armor_equip: bool,
   pub auto_totem: bool,
@@ -170,36 +219,59 @@ impl PluginOptions {
   }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct CaptchaBypassOptions {
-  pub captcha_type: String,
-  pub captcha_subtype: String,
-  pub solve_mode: String,
+  pub captcha_type: CaptchaType,
+  pub captcha_subtype: CaptchaSubtype,
+  pub solve_mode: CaptchaSolveMode,
   pub regex: String,
   pub required_url_part: Option<String>,
   pub number_of_columns: u32,
   pub number_of_rows: u32,
   pub api_key: Option<String>,
-  pub api_service: String,
+  pub api_service: CaptchaApiService,
 }
 
 impl CaptchaBypassOptions {
   pub fn read(buf: &mut bytes::Bytes) -> Option<Self> {
     Some(Self {
-      captcha_type: String::read(buf)?,
-      captcha_subtype: String::read(buf)?,
-      solve_mode: String::read(buf)?,
+      captcha_type: CaptchaType::from_index(u8::read(buf)?)?,
+      captcha_subtype: CaptchaSubtype::from_index(u8::read(buf)?)?,
+      solve_mode: CaptchaSolveMode::from_index(u8::read(buf)?)?,
       regex: String::read(buf)?,
       required_url_part: Option::read(buf)?,
       number_of_columns: u32::read(buf)?,
       number_of_rows: u32::read(buf)?,
       api_key: Option::read(buf)?,
-      api_service: String::read(buf)?,
+      api_service: CaptchaApiService::from_index(u8::read(buf)?)?,
     })
   }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone, PartialEq, Index)]
+pub enum CaptchaType {
+  Web = 0x00,
+  Map = 0x01,
+}
+
+#[derive(Clone, PartialEq, Index)]
+pub enum CaptchaSubtype {
+  Inventory = 0x00,
+  Frame = 0x01,
+}
+
+#[derive(Clone, PartialEq, Index)]
+pub enum CaptchaSolveMode {
+  Manual = 0x00,
+  Auto = 0x01,
+}
+
+#[derive(Clone, PartialEq, Index)]
+pub enum CaptchaApiService {
+  TwoCaptcha = 0x00,
+}
+
+#[derive(Clone)]
 pub struct WebhookOptions {
   pub url: Option<String>,
   pub send_information: bool,

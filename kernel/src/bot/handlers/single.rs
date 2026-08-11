@@ -21,6 +21,9 @@ use crate::bot::systems::states::STATE_SYSTEM;
 use crate::bot::systems::tasks::TASK_SYSTEM;
 use crate::bot::utils::acaptcha::{MAP_CAPTCHA_BYPASS, MAP_COLLECTOR, WEB_CAPTCHA_BYPASS};
 use crate::bot::PLUGINS;
+use crate::launch::options::CaptchaSolveMode;
+use crate::launch::options::CaptchaSubtype;
+use crate::launch::options::CaptchaType;
 use crate::launch::process::current_options;
 use crate::launch::process::update_process_status;
 use crate::server::transfer::*;
@@ -201,7 +204,7 @@ async fn process_chat_message(bot: Client, packet: ChatPacket) {
     message: packet.message().to_html(),
   }));
 
-  if options.basic.use_anti_captcha && options.captcha_bypass.captcha_type.as_str() == "web" {
+  if options.basic.use_anti_captcha && options.captcha_bypass.captcha_type == CaptchaType::Web {
     if let Some(url) = WEB_CAPTCHA_BYPASS.catch_url_from_message(
       packet.message().to_string(),
       options.captcha_bypass.regex.as_str(),
@@ -278,7 +281,7 @@ async fn process_packet(bot: Client, packet: Arc<ClientboundGamePacket>) {
         return;
       };
 
-      if options.basic.use_anti_captcha && options.captcha_bypass.captcha_type.as_str() == "map" {
+      if options.basic.use_anti_captcha && options.captcha_bypass.captcha_type == CaptchaType::Map {
         let Some(map_patch) = &data.color_patch.0 else {
           return;
         };
@@ -288,7 +291,7 @@ async fn process_packet(bot: Client, packet: Arc<ClientboundGamePacket>) {
         };
 
         if !profile.captcha_caught {
-          let is_frame = options.captcha_bypass.captcha_subtype.as_str() == "frame";
+          let is_frame = options.captcha_bypass.captcha_subtype == CaptchaSubtype::Frame;
 
           if is_frame {
             let pos = bot.feet_pos();
@@ -336,7 +339,7 @@ async fn process_packet(bot: Client, packet: Arc<ClientboundGamePacket>) {
 
               emit_log(format!("Бот {} получил капчу с карты", username), "info");
 
-              if options.captcha_bypass.solve_mode == "auto" {
+              if options.captcha_bypass.solve_mode == CaptchaSolveMode::Auto {
                 MAP_CAPTCHA_BYPASS.solve_captcha(username.clone(), combined_base64, options.captcha_bypass);
               } else {
                 TRANSFER.emit(TransferEvent::AntiMapCaptcha(AntiMapCaptchaPayload {
@@ -366,7 +369,7 @@ async fn process_packet(bot: Client, packet: Arc<ClientboundGamePacket>) {
 
             emit_log(format!("Бот {} получил капчу с карты", username), "info");
 
-            if options.captcha_bypass.solve_mode == "auto" {
+            if options.captcha_bypass.solve_mode == CaptchaSolveMode::Auto {
               MAP_CAPTCHA_BYPASS.solve_captcha(username, base64_code, options.captcha_bypass);
             } else {
               TRANSFER.emit(TransferEvent::AntiMapCaptcha(AntiMapCaptchaPayload {

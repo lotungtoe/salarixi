@@ -75,8 +75,8 @@ class CaptchaModule {
 	}
 
 	/** Метод активации обхода капчи */
-	public enable(type: string, mode: string): void {
-		if (type === "map" && mode === "manual") {
+	public enable(type: number, mode: number): void {
+		if (type === 0x00 || (type === 0x01 && mode === 0x00)) {
 			this.settings!.style.display = "none";
 
 			this.cards!.innerHTML = "";

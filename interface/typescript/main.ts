@@ -136,7 +136,7 @@ async function startBots(): Promise<void> {
 				}
 			} else if (o.tagName.toLocaleLowerCase() === "select") {
 				const select = o as HTMLSelectElement;
-				current[optionKey] = select.value;
+				current[optionKey] = select.selectedIndex;
 			} else if (o.tagName.toLocaleLowerCase() === "textarea") {
 				const textarea = o as HTMLTextAreaElement;
 				current[optionKey] = textarea.value;
@@ -154,18 +154,18 @@ async function startBots(): Promise<void> {
 		buf.writeString(options.basic["address"]);
 		buf.writeU8(options.basic["bots_count"]);
 		buf.writeU32(options.basic["join_delay"]);
-		buf.writeString(options.basic["nickname_type"]);
-		buf.writeString(options.basic["password_type"]);
-		buf.writeString(options.basic["email_type"]);
+		buf.writeU8(options.basic["nickname_type"]);
+		buf.writeU8(options.basic["password_type"]);
+		buf.writeU8(options.basic["email_type"]);
 		buf.writeString(options.basic["nickname_template"]);
 		buf.writeString(options.basic["password_template"]);
-		buf.writeString(options.basic["register_mode"]);
+		buf.writeU8(options.basic["register_mode"]);
 		buf.writeString(options.basic["register_command"]);
 		buf.writeString(options.basic["register_template"]);
 		buf.writeU32(options.basic["register_min_delay"]);
 		buf.writeU32(options.basic["register_max_delay"]);
 		buf.writeString(options.basic["register_trigger"]);
-		buf.writeString(options.basic["login_mode"]);
+		buf.writeU8(options.basic["login_mode"]);
 		buf.writeString(options.basic["login_command"]);
 		buf.writeString(options.basic["login_template"]);
 		buf.writeU32(options.basic["login_min_delay"]);
@@ -208,15 +208,15 @@ async function startBots(): Promise<void> {
 		buf.writeBoolean(options.plugins["auto_mending"]);
 		buf.writeBoolean(options.plugins["pearl_leave"]);
 
-		buf.writeString(options.captcha_bypass["captcha_type"]);
-		buf.writeString(options.captcha_bypass["captcha_subtype"]);
-		buf.writeString(options.captcha_bypass["solve_mode"]);
+		buf.writeU8(options.captcha_bypass["captcha_type"]);
+		buf.writeU8(options.captcha_bypass["captcha_subtype"]);
+		buf.writeU8(options.captcha_bypass["solve_mode"]);
 		buf.writeString(options.captcha_bypass["regex"]);
 		buf.writeOption<string>(options.captcha_bypass["required_url_part"], (some) => buf.writeString(some));
 		buf.writeU32(options.captcha_bypass["number_of_columns"]);
 		buf.writeU32(options.captcha_bypass["number_of_rows"]);
 		buf.writeOption<string>(options.captcha_bypass["api_key"], (some) => buf.writeString(some));
-		buf.writeString(options.captcha_bypass["api_service"]);
+		buf.writeU8(options.captcha_bypass["api_service"]);
 
 		buf.writeOption<string>(options.captcha_bypass["url"], (some) => buf.writeString(some));
 		buf.writeBoolean(options.plugins["send_information"]);
@@ -234,7 +234,7 @@ async function startBots(): Promise<void> {
 		monitoringModule.maxChatHistoryLength = parseInt((document.getElementById("monitoring_option_chat-history-length") as HTMLInputElement).value || "50");
 		monitoringModule.enable();
 
-		if (options.basic.use_anti_captcha) captchaModule.enable(options.captcha_bypass.captcha_type, options.captcha_bypass.solve_mode);
+		if (options.basic["use_anti_captcha"]) captchaModule.enable(options.captcha_bypass["captcha_type"], options.captcha_bypass["solve_mode"]);
 
 		radarModule.enable();
 	} catch (error) {

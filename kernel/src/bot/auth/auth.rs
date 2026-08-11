@@ -1,5 +1,6 @@
 use crate::bot::systems::index::INDEX_SYSTEM;
 use crate::bot::systems::profile::PROFILE_SYSTEM;
+use crate::launch::options::AuthMode;
 use crate::launch::process::current_options;
 use crate::server::transfer::emit_log;
 use crate::{sleep, take_bot};
@@ -26,7 +27,7 @@ pub async fn default_authorize(index: &u8) {
   let mut logined = false;
 
   if !profile.registered {
-    if opts.basic.use_auto_register && opts.basic.register_mode == "default" {
+    if opts.basic.use_auto_register && opts.basic.register_mode == AuthMode::Default {
       cmd = opts.basic.register_command.trim();
       template = opts.basic.register_template.trim();
       min_delay = opts.basic.register_min_delay;
@@ -39,7 +40,7 @@ pub async fn default_authorize(index: &u8) {
       }
     }
   } else if !profile.logined {
-    if opts.basic.use_auto_login && opts.basic.login_mode == "default" {
+    if opts.basic.use_auto_login && opts.basic.login_mode == AuthMode::Default {
       cmd = opts.basic.login_command.trim();
       template = opts.basic.login_template.trim();
       min_delay = opts.basic.login_min_delay;
@@ -116,7 +117,7 @@ pub async fn trigger_authorize(index: &u8, message: String) {
   let mut logined = false;
 
   if !profile.registered {
-    if opts.basic.use_auto_register && opts.basic.register_mode == "trigger" {
+    if opts.basic.use_auto_register && opts.basic.register_mode == AuthMode::Trigger {
       cmd = opts.basic.register_command.trim();
       template = opts.basic.register_template.trim();
       action = "зарегистрировался";
@@ -126,7 +127,7 @@ pub async fn trigger_authorize(index: &u8, message: String) {
         logined = true;
       }
     }
-  } else if !profile.logined && opts.basic.login_mode == "trigger" {
+  } else if !profile.logined && opts.basic.login_mode == AuthMode::Trigger {
     if opts.basic.use_auto_login {
       cmd = opts.basic.login_command.trim();
       template = opts.basic.login_template.trim();

@@ -1,4 +1,5 @@
 use crate::bot::systems::index::INDEX_SYSTEM;
+use crate::launch::options::{EmailType, NicknameType};
 use crate::tools::*;
 
 const LEGIT_NICKNAMES: &[&str] = &[
@@ -129,8 +130,8 @@ const LEGIT_PASSWORDS: &[&str] = &[
 ];
 
 /// Функция генерации юзернейма или пароля
-pub fn generate_username_or_password(item: &str, class: &str, template: &str) -> Option<String> {
-  match class {
+pub fn generate_username_or_password(item: &str, ty: &str, template: &str) -> Option<String> {
+  match ty {
     "legit" => {
       let mut value = randelem(if item == "username" {
         LEGIT_NICKNAMES
@@ -201,9 +202,9 @@ pub fn generate_username_or_password(item: &str, class: &str, template: &str) ->
 }
 
 /// Функция генерации электронной почты
-pub fn generate_email(class: &str) -> Option<String> {
-  match class {
-    "random" => {
+pub fn generate_email(ty: &EmailType) -> Option<String> {
+  match ty {
+    EmailType::Random => {
       let templates = vec![
         "#m#m#m#m",
         "#n#n#n#n",
@@ -229,16 +230,16 @@ pub fn generate_email(class: &str) -> Option<String> {
         chosen_service
       ))
     }
-    _ => None,
+    EmailType::Without => None,
   }
 }
 
 /// Функция генерации уникального юзернейма
-pub async fn generate_unique_username(class: &str, template: &str) -> Option<String> {
+pub async fn generate_unique_username(ty: &NicknameType, template: &str) -> Option<String> {
   let usernames = INDEX_SYSTEM.get_all_usernames().await;
 
   for _ in 0..5 {
-    let Some(username) = generate_username_or_password("username", class, template) else {
+    let Some(username) = generate_username_or_password("username", ty.to_str(), template) else {
       continue;
     };
 

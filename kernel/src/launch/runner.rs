@@ -32,8 +32,6 @@ use super::generators::{generate_email, generate_unique_username, generate_usern
 use super::options::{AccountOptions, LaunchOptions};
 use super::process::{current_options, process_is_active, set_options, set_process_activity};
 
-/// Структура кастомного аккаунта бота
-#[derive(Debug)]
 struct CustomAccount {
   object: Account,
   options: AccountOptions,
@@ -167,10 +165,6 @@ pub async fn launch_bots_on_server(options: LaunchOptions) -> u8 {
     );
   }
 
-  if options.basic.use_webhook && options.webhook.send_data {
-    send_webhook(options.webhook.url.clone(), format!("Опции запуска: {:#?}", options));
-  }
-
   thread::spawn(move || {
     let rt = match tokio::runtime::Runtime::new() {
       Ok(rt) => rt,
@@ -242,7 +236,7 @@ pub async fn launch_bots_on_server(options: LaunchOptions) -> u8 {
 
             let password = generate_username_or_password(
               "password",
-              &options.basic.password_type,
+              options.basic.password_type.to_str(),
               &options.basic.password_template,
             );
 
