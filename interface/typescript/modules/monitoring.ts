@@ -2,7 +2,6 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 
 import { logger } from "../utils/logger";
-import { date } from "../utils/date";
 import { Buffer } from "../utils/buffer";
 
 /** Структура информации о боте */
@@ -66,18 +65,9 @@ class MonitoringModule {
 				const line = document.createElement("div");
 				line.className = "line";
 				line.setAttribute("monitoring-message", receiver);
-
-				line.innerHTML = `
-          <div class="time">${date()}</div>
-          <div class="msg">${message}</div>
-        `;
+				line.innerHTML = message;
 
 				chat.appendChild(line);
-
-				chat.scrollTo({
-					top: chat.scrollHeight,
-					behavior: "smooth"
-				});
 
 				if (!this.chatMessageCounter[receiver]) {
 					this.chatMessageCounter[receiver] = 1;
@@ -162,20 +152,9 @@ class MonitoringModule {
 	private createBotCard(username: string, profile: BotProfile): void {
 		const steveIconPath = document.getElementById("steve-img") as HTMLImageElement;
 
-		const groupNameExamples = [
-			"killaura", "bow_aim", "AutoFarm",
-			"AFK", "Travelers", "miner",
-			"Stealer", "Farmer", "Spamming",
-			"PvE", "PvP", "afk_group",
-			"MyGroup", "Group", "group1",
-			"GroupOne", "Stalkers", "my_group"
-		];
-
-		const groupNameExample = groupNameExamples[Math.floor(Math.random() * groupNameExamples.length)];
-
 		const card = document.createElement("div");
-		card.className = "bot-card";
-		card.id = `bot-card-${username}`;
+		card.className = "profile";
+		card.id = `profile-${username}`;
 		card.setAttribute("wrapper", "bot-card");
 
 		card.innerHTML = `
@@ -184,19 +163,19 @@ class MonitoringModule {
           <img src="${steveIconPath.src}" class="image" draggable="false">
           <div class="text">
             <div class="username">${username}</div>
-            <div class="status" id="monitoring-status-${username}">waiting</div>
+            <div class="status" id="monitoring-status-${username}">Waiting</div>
           </div>
         </div>
 
         <div class="bottom">
-          <input type="text" class="bot-group" id="bot-group-${username}" placeholder="Группа, например, ${groupNameExample}">
+          <input type="text" class="bot-group" id="bot-group-${username}" placeholder="bot group">
         </div>
       </div>
 
       <div class="info">
         <p class="line">Пинг: <span id="monitoring-ping-${username}">${profile.ping}</span>ms</p>
         <p class="line">Здоровье: <span id="monitoring-health-${username}">${profile.health}</span> / 20</p>
-        <p class="line">Прокси: <span id="monitoring-proxy-${username}">${profile.proxy.ipAddress}</span></p>
+        <p class="line">Прокси: <span id="monitoring-proxy-${username}">${profile.proxy.ipAddress ?? "?"}</span></p>
         <p class="line">Пароль: <span>${profile.password ?? "No password"}</span></p>
       </div>
 
@@ -283,7 +262,7 @@ class MonitoringModule {
 		const group = document.getElementById(`bot-group-${username}`) as HTMLInputElement;
 
 		if (health.innerText.split("/")[0].replace(" ", "") != profile.health.toString()) {
-			const card = document.getElementById(`bot-card-${username}`);
+			const card = document.getElementById(`profile-${username}`);
 			card?.classList.add("glow");
 			setTimeout(() => card?.classList.remove("glow"), 300);
 		}
@@ -292,21 +271,21 @@ class MonitoringModule {
 
 		switch (profile.status) {
 			case BotStatus.Waiting:
-				status.innerText = "waiting";
+				status.innerText = "Waiting";
 				statusColor = "var(--bot-waiting-status-color)";
 				break;
 			case BotStatus.Connected:
-				status.innerText = "connected";
+				status.innerText = "Connected";
 				statusColor = "var(--bot-connected-status-color)";
 				break;
 			case BotStatus.Disconnected:
-				status.innerText = "disconnected";
+				status.innerText = "Disconnected";
 				statusColor = "var(--bot-disconnected-status-color)";
 				break;
 		}
 
 		status.style.color = statusColor;
-		proxy.innerText = profile.proxy.ipAddress ? profile.proxy.ipAddress : "No proxy";
+		proxy.innerText = profile.proxy.ipAddress ?? "No proxy";
 		ping.innerText = profile.ping.toString();
 		health.innerText = profile.health.toString();
 

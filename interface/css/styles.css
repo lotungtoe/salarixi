@@ -1883,11 +1883,10 @@ button svg {
   justify-content: start;
   align-items: center;
   overflow-y: auto;
-  width: 740px;
+  width: 100%;
   height: 100%;
-  margin-top: 5px;
-  gap: 10px;
-  padding-bottom: 20px;
+  border: 1px solid var(--secondary-border);
+  border-radius: 12px;
 }
 
 .monitoring-wrapper::-webkit-scrollbar {
@@ -1896,24 +1895,26 @@ button svg {
   height: 0;
 }
 
-.monitoring-wrapper .bot-card {
+.monitoring-wrapper .profile {
   display: flex;
   justify-content: start;
   align-items: center;
   width: 100%;
   min-height: 115px;
-  background: var(--secondary-bg);
-  border: 1px solid var(--secondary-border);
-  border-radius: 12px;
+  border-bottom: 1px solid var(--secondary-border);
   overflow: hidden; 
-  transition: border 0.1s ease;
+  transition: background 0.1s ease;
 }
 
-.monitoring-wrapper .bot-card.glow {
-  border-color: var(--hover-border);
+.monitoring-wrapper .profile:last-child {
+  border-bottom: none;
 }
 
-.monitoring-wrapper .bot-card .head {
+.monitoring-wrapper .profile.glow {
+  background: var(--hover-bg);
+}
+
+.monitoring-wrapper .profile .head {
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -1925,14 +1926,14 @@ button svg {
   border-right: 1px solid var(--secondary-border);
 }
 
-.monitoring-wrapper .bot-card .head .top {
+.monitoring-wrapper .profile .head .top {
   display: flex;
   justify-content: start;
   align-items: center;
   padding: 0 10px;
 }
 
-.monitoring-wrapper .bot-card .head .top .image {
+.monitoring-wrapper .profile .head .top .image {
   width: 55px;
   height: 55px;
   border-radius: 8px;
@@ -1941,7 +1942,7 @@ button svg {
   image-rendering: optimizeSpeed;
 }
 
-.monitoring-wrapper .bot-card .head .top .text {
+.monitoring-wrapper .profile .head .top .text {
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -1952,10 +1953,10 @@ button svg {
   text-rendering: optimizeSpeed;
 }
 
-.monitoring-wrapper .bot-card .head .top .text .username {
+.monitoring-wrapper .profile .head .top .text .username {
   color: var(--default-color);
   font-size: 15px;
-  font-weight: 500;
+  font-weight: 600;
   font-family: var(--global-font-family);
   -webkit-user-select: text; 
   -moz-user-select: text;
@@ -1963,38 +1964,38 @@ button svg {
   user-select: text;
 }
 
-.monitoring-wrapper .bot-card .head .top .text .status {
+.monitoring-wrapper .profile .head .top .text .status {
   margin: 0;
   color: var(--bot-waiting-status-color);
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   font-family: var(--global-font-family);
 }
 
-.monitoring-wrapper .bot-card .head .top .text .status::before {
+.monitoring-wrapper .profile .head .top .text .status::before {
   content: "•";
   margin-right: 4px;
 }
 
-.monitoring-wrapper .bot-card .head .bottom {
+.monitoring-wrapper .profile .head .bottom {
   display: flex;
   justify-content: center;
   width: 100%;
-  margin-top: 4px;
-  padding-top: 6px;
   border-top: 1px solid var(--secondary-border);
 }
 
-.monitoring-wrapper .bot-card .head .bottom .bot-group {
+.monitoring-wrapper .profile .head .bottom .bot-group {
   padding: 0;
-  width: 90%;
+  width: 100%;
   height: 100%;
   background: transparent;
   border: none;
   border-radius: 0;
+  padding-left: 12px;
+  padding-top: 10px;
 }
 
-.monitoring-wrapper .bot-card .info {
+.monitoring-wrapper .profile .info {
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -2010,13 +2011,13 @@ button svg {
   text-rendering: optimizeSpeed;
 }
 
-.monitoring-wrapper .bot-card .info .line {
+.monitoring-wrapper .profile .info .line {
   font-family: var(--global-font-family);
   font-size: 14px;
   color: var(--muted-color);
 }
 
-.monitoring-wrapper .bot-card .buttons {
+.monitoring-wrapper .profile .buttons {
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -2027,7 +2028,7 @@ button svg {
   gap: 6px;
 }
 
-.monitoring-wrapper .bot-card .buttons button {
+.monitoring-wrapper .profile .buttons button {
   width: 150px;
   padding: 5px 0;
   border-radius: 4px;
@@ -2090,35 +2091,11 @@ button svg {
 .chat-content .line {
   display: flex;
   width: 100%;
-  min-height: 28px;
   background: var(--secondary-bg);
-}
-
-.chat-content .line:hover {
-  background: var(--hover-bg);
-}
-
-.chat-content .line .time {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-width: 85px;
-  text-align: center;
-  font-family: var(--script-font-family);
-  color: var(--muted-color);
-  border-right: 1px solid var(--secondary-border);
-  user-select: none;
-  font-size: 14px;
-}
-
-.chat-content .line .msg {
-  display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
   color: var(--default-color);
-  padding: 0 8px;
-  text-align: left;
-  white-space: pre-wrap;
+  padding: 6px 8px;
   font-family: var(--global-font-family);
   font-size: 14px;
   word-break: break-all;
@@ -2126,6 +2103,11 @@ button svg {
   -moz-user-select: text;
   -ms-user-select: text;
   user-select: text;
+  gap: 4px;
+}
+
+.chat-content .line:hover {
+  background: var(--hover-bg);
 }
 
 .notice-wrap {

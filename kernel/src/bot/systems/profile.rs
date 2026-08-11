@@ -12,7 +12,7 @@ use crate::sleep;
 
 pub static PROFILE_SYSTEM: Lazy<ProfileSystem> = Lazy::new(|| ProfileSystem::new());
 
-#[derive(Clone, Serialize)]
+#[derive(Clone)]
 pub struct Profile {
   pub status: BotStatus,
   pub password: Option<String>,
