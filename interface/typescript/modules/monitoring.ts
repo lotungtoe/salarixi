@@ -93,50 +93,43 @@ class MonitoringModule {
 			}
 		});
 
-		await listen<number[]>("monitoring:profiles", (e) => {
+		await listen<number[]>("monitoring:update-profile", (e) => {
 			try {
 				const buf = new Buffer(new Uint8Array(e.payload));
-				const len = buf.readU8();
+				const username = buf.readString();
+				const statusCode = buf.readU8();
+				let status = BotStatus.Waiting;
 
-				for (let i = 0; i < len; i++) {
-					const username = buf.readString();
-
-					const statusCode = buf.readU8();
-					let status = BotStatus.Waiting;
-
-					switch (statusCode) {
-						case 0x01:
-							status = BotStatus.Connected;
-							break;
-						case 0x02:
-							status = BotStatus.Disconnected;
-							break;
-					}
-
-					const profile: BotProfile = {
-						status: status,
-						password: buf.readOption(() => buf.readString()),
-						email: buf.readOption(() => buf.readString()),
-						proxy: {
-							ipAddress: buf.readOption(() => buf.readString()),
-							proxy: buf.readOption(() => buf.readString()),
-							username: buf.readOption(() => buf.readString()),
-							password: buf.readOption(() => buf.readString()),
-						},
-						ping: buf.readU32(),
-						health: buf.readU32(),
-						registered: buf.readBoolean(),
-						logined: buf.readBoolean(),
-						captchaCaught: buf.readBoolean(),
-						group: buf.readString(),
-					};
-
-					this.usernameList.includes(username) ? this.updateBotCard(username, profile) : this.createBotCard(username, profile);
+				switch (statusCode) {
+					case 0x01:
+						status = BotStatus.Connected;
+						break;
+					case 0x02:
+						status = BotStatus.Disconnected;
+						break;
 				}
 
+				const profile: BotProfile = {
+					status: status,
+					password: buf.readOption(() => buf.readString()),
+					email: buf.readOption(() => buf.readString()),
+					proxy: {
+						ipAddress: buf.readOption(() => buf.readString()),
+						proxy: buf.readOption(() => buf.readString()),
+						username: buf.readOption(() => buf.readString()),
+						password: buf.readOption(() => buf.readString()),
+					},
+					ping: buf.readU32(),
+					health: buf.readU32(),
+					registered: buf.readBoolean(),
+					logined: buf.readBoolean(),
+					captchaCaught: buf.readBoolean(),
+					group: buf.readString(),
+				};
 
+				this.usernameList.includes(username) ? this.updateBotCard(username, profile) : this.createBotCard(username, profile);
 			} catch (error) {
-				logger.log(`Ошибка обработки события "monitoring:profiles": ${error}`, "error");
+				logger.log(`Ошибка обработки события "monitoring:update-profile": ${error}`, "error");
 			}
 		});
 	}

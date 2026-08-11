@@ -139,7 +139,7 @@ impl Server {
             TransferEvent::AntiMapCaptcha(payload) => {
               bytes = payload.to_bytes();
             }
-            TransferEvent::MonitoringProfiles(payload) => {
+            TransferEvent::UpdateBotProfile(payload) => {
               bytes = payload.to_bytes();
             }
           }

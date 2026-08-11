@@ -1,5 +1,4 @@
 use bytes::{BufMut, Bytes, BytesMut};
-use hashbrown::HashMap;
 use salarixi_extensions::buffer::BufferExt;
 
 use crate::bot::systems::profile::Profile;
@@ -133,21 +132,17 @@ impl RemoveCaptchaPayload {
 }
 
 #[derive(Clone)]
-pub struct MonitoringProfilesPayload {
-  pub profiles: HashMap<String, Profile>,
+pub struct UpdateBotProfilePayload {
+  pub username: String,
+  pub profile: Profile,
 }
 
-impl MonitoringProfilesPayload {
+impl UpdateBotProfilePayload {
   pub fn to_bytes(&self) -> Bytes {
     let mut buf = BytesMut::new();
     buf.put_u8(0x08);
-    buf.put_u8(self.profiles.len() as u8);
-
-    for (username, profile) in &self.profiles {
-      username.write(&mut buf);
-      profile.write(&mut buf);
-    }
-
+    self.username.write(&mut buf);
+    self.profile.write(&mut buf);
     buf.freeze()
   }
 }

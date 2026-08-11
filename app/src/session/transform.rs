@@ -8,7 +8,7 @@ pub fn transform_id(id: u8) -> &'static str {
     0x05 => "captcha:new-web",
     0x06 => "captcha:new-map",
     0x07 => "captcha:remove",
-    0x08 => "monitoring:profiles",
+    0x08 => "monitoring:update-profile",
     0x09 => "status:launch",
     0x0A => "status:stop",
     0x0B => "radar:target-info",
