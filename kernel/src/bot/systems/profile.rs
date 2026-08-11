@@ -1,5 +1,6 @@
-use bytes::BufMut;
+use bytes::{BufMut, BytesMut};
 use hashbrown::HashMap;
+use md5::{digest::Update, Digest, Md5};
 use once_cell::sync::Lazy;
 use salarixi_extensions::buffer::BufferExt;
 use serde::Serialize;
@@ -114,16 +115,34 @@ impl ProfileSystem {
   /// Метод активации системы
   pub async fn activate(&self, update_rate: u64) {
     let updater_task = tokio::spawn(async move {
+      let mut last_hash = Vec::new();
+
       loop {
         let mut profiles = HashMap::new();
+        let mut buf = BytesMut::new();
 
         for (index, profile) in PROFILE_SYSTEM.map.read().await.iter() {
+          buf.put_u8(*index);
+
           let Some(username) = INDEX_SYSTEM.username_by_index(index).await else {
             continue;
           };
 
           profiles.insert(username, profile.clone());
+          profile.write(&mut buf);
         }
+
+        let hash = Md5::new().chain(&buf).finalize().to_vec();
+
+        if hash == last_hash {
+          drop(profiles);
+          drop(hash);
+          drop(buf);
+          sleep!(update_rate);
+          continue;
+        }
+
+        last_hash = hash;
 
         TRANSFER.emit(TransferEvent::MonitoringProfiles(MonitoringProfilesPayload {
           profiles,

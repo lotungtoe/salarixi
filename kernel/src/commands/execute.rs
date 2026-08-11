@@ -77,20 +77,6 @@ pub async fn execute_client_command(
       buf.put_u8(status);
 
       write_to_sockets(sockets, &buf).await;
-
-      let process = process_status_payload().await;
-      let mut buf = BytesMut::new();
-      buf.put_u8(0x03);
-      buf.put_u8(if PROCESS_ACTIVITY.load(Ordering::SeqCst) {
-        0x01
-      } else {
-        0x02
-      });
-      buf.put_u8(process.status_id);
-      buf.put_u8(process.connected_bots);
-      buf.put_u8(process.total_bots);
-
-      write_to_sockets(sockets, &buf).await;
     }
     ClientCommand::StopBots => {
       let status = stop_bots_and_destroy_data().await;
@@ -98,20 +84,6 @@ pub async fn execute_client_command(
       let mut buf = BytesMut::new();
       buf.put_u8(0x0A);
       buf.put_u8(status);
-
-      write_to_sockets(sockets, &buf).await;
-
-      let process = process_status_payload().await;
-      let mut buf = BytesMut::new();
-      buf.put_u8(0x03);
-      buf.put_u8(if PROCESS_ACTIVITY.load(Ordering::SeqCst) {
-        0x01
-      } else {
-        0x02
-      });
-      buf.put_u8(process.status_id);
-      buf.put_u8(process.connected_bots);
-      buf.put_u8(process.total_bots);
 
       write_to_sockets(sockets, &buf).await;
     }
