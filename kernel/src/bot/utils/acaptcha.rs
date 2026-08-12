@@ -882,6 +882,7 @@ impl FrameCollector {
     self.maps.write().await.remove(index);
     self.frame_positions.write().await.remove(index);
     self.last_frame_time.write().await.remove(index);
+    self.waiters.write().await.remove(index);
   }
 
   /// Метод очистки всего хранилища
@@ -889,5 +890,6 @@ impl FrameCollector {
     self.maps.write().await.clear();
     self.frame_positions.write().await.clear();
     self.last_frame_time.write().await.clear();
+    self.waiters.write().await.clear();
   }
 }
