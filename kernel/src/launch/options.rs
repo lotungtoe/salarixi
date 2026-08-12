@@ -224,10 +224,12 @@ pub struct CaptchaBypassOptions {
   pub captcha_type: CaptchaType,
   pub captcha_subtype: CaptchaSubtype,
   pub solve_mode: CaptchaSolveMode,
+  pub captcha_size: CaptchaSize,
   pub regex: String,
   pub required_url_part: Option<String>,
   pub number_of_columns: u32,
   pub number_of_rows: u32,
+  pub max_pause: u32,
   pub api_key: Option<String>,
   pub api_service: CaptchaApiService,
 }
@@ -238,10 +240,12 @@ impl CaptchaBypassOptions {
       captcha_type: CaptchaType::from_index(u8::read(buf)?)?,
       captcha_subtype: CaptchaSubtype::from_index(u8::read(buf)?)?,
       solve_mode: CaptchaSolveMode::from_index(u8::read(buf)?)?,
+      captcha_size: CaptchaSize::from_index(u8::read(buf)?)?,
       regex: String::read(buf)?,
       required_url_part: Option::read(buf)?,
       number_of_columns: u32::read(buf)?,
       number_of_rows: u32::read(buf)?,
+      max_pause: u32::read(buf)?,
       api_key: Option::read(buf)?,
       api_service: CaptchaApiService::from_index(u8::read(buf)?)?,
     })
@@ -264,6 +268,12 @@ pub enum CaptchaSubtype {
 pub enum CaptchaSolveMode {
   Manual = 0x00,
   Auto = 0x01,
+}
+
+#[derive(Clone, PartialEq, Index)]
+pub enum CaptchaSize {
+  Fixed = 0x00,
+  Dynamic = 0x01,
 }
 
 #[derive(Clone, PartialEq, Index)]

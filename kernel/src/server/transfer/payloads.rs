@@ -87,32 +87,48 @@ impl BotChatPayload {
 
 #[derive(Clone)]
 pub struct AntiWebCaptchaPayload {
-  pub captcha_url: String,
   pub username: String,
+  pub captcha_url: String,
 }
 
 impl AntiWebCaptchaPayload {
   pub fn to_bytes(&self) -> Bytes {
     let mut buf = BytesMut::new();
     buf.put_u8(0x05);
-    self.captcha_url.write(&mut buf);
     self.username.write(&mut buf);
+    self.captcha_url.write(&mut buf);
     buf.freeze()
   }
 }
 
 #[derive(Clone)]
 pub struct AntiMapCaptchaPayload {
-  pub base64_code: String,
   pub username: String,
+  pub b64: String,
 }
 
 impl AntiMapCaptchaPayload {
   pub fn to_bytes(&self) -> Bytes {
     let mut buf = BytesMut::new();
     buf.put_u8(0x06);
-    self.base64_code.write(&mut buf);
     self.username.write(&mut buf);
+
+    if self.b64.len() < u16::MAX as usize {
+      buf.put_u8(0x01);
+      self.b64.write(&mut buf);
+      return buf.freeze();
+    }
+
+    let chunk_size = u16::MAX as usize;
+    let parts = (self.b64.len() + chunk_size - 1) / chunk_size;
+    buf.put_u8(parts as u8);
+
+    for i in 0..parts {
+      let start = chunk_size * i;
+      let end = std::cmp::min(chunk_size * (i + 1), self.b64.len());
+      self.b64[start..end].to_string().write(&mut buf);
+    }
+
     buf.freeze()
   }
 }

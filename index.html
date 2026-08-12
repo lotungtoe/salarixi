@@ -1051,7 +1051,7 @@
             </select>
           </div>
 
-          <div class="custom-select between" id="anti-map-captcha-select-api-service-container">
+          <div class="custom-select between" id="anti-map-captcha-select-api-service-container" style="display: none;">
             <label tt="api-service:">API сервис:</label>
             <select id="captcha-bypass_select_captcha-service" section="captcha_bypass" key="api_service" keep launch-option>
               <option value="2captcha">2Captcha</option>
@@ -1063,6 +1063,14 @@
             <select id="captcha-bypass_select_captcha-subtype" section="captcha_bypass" key="captcha_subtype" keep trigger launch-option>
               <option value="inventory">Inventory</option>
               <option value="frame">Frame</option>
+            </select>
+          </div>
+
+          <div class="custom-select between" id="anti-map-captcha-select-size-container" style="display: none;">
+            <label tt="size:">Размер:</label>
+            <select id="captcha-bypass_select_captcha-size" section="captcha_bypass" key="captcha_size" keep trigger launch-option>
+              <option value="fixed" tt="size-fixed">Фиксированный</option>
+              <option value="dynamic" tt="size-dynamic">Динамический</option>
             </select>
           </div>
         </div>
@@ -1081,17 +1089,22 @@
       </div>
 
       <div class="options" id="anti-map-captcha-options" style="display: none;">
-        <div class="form-input" id="anti-map-captcha-number-of-columns-container">
+        <div class="form-input" id="anti-map-captcha-number-of-columns-container" style="display: none;">
           <label for="captcha-bypass_map_number-of-columns" class="text" tt="number-of-columns">Количество коллон</label>
           <input type="number" id="captcha-bypass_map_number-of-columns" placeholder="4" value="4" keep section="captcha_bypass" key="number_of_columns" default="4" launch-option>
         </div>
 
-        <div class="form-input" id="anti-map-captcha-number-of-rows-container">
+        <div class="form-input" id="anti-map-captcha-number-of-rows-container" style="display: none;">
           <label for="captcha-bypass_map_number-of-rows" class="text" tt="number-of-rows">Количество рядов</label>
           <input type="number" id="captcha-bypass_map_number-of-rows" placeholder="3" value="3" keep section="captcha_bypass" key="number_of_rows" default="3" launch-option>
         </div>
 
-        <div class="form-input" id="anti-map-captcha-api-key-container">
+        <div class="form-input" id="anti-map-captcha-max-pause" style="display: none;">
+          <label for="captcha-bypass_map_max-pause" class="text" tt="max-pause">Максимальная пауза</label>
+          <input type="number" id="captcha-bypass_map_max-pause" placeholder="1400" value="1400" keep section="captcha_bypass" key="max_pause" default="1400" launch-option>
+        </div>
+
+        <div class="form-input" id="anti-map-captcha-api-key-container" style="display: none;">
           <label for="captcha-bypass_web_map-captcha-api-key" class="text" tt="api-key">API ключ</label>
           <input type="text" id="captcha-bypass_map-captcha-api-key" placeholder="u72ks-73ujhd-8j3j3j83-jdu73hrhf" keep private section="captcha_bypass" key="api_key" launch-option>
         </div>

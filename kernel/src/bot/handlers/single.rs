@@ -2,11 +2,9 @@ use std::sync::Arc;
 
 use azalea::chat::ChatPacket;
 use azalea::entity::HumanoidArm;
-use azalea::entity::LookDirection;
 use azalea::prelude::*;
 use azalea::protocol::common::client_information::ParticleStatus;
 use azalea::protocol::packets::game::ClientboundGamePacket;
-use azalea::registry::builtin::EntityKind;
 use azalea::FormattedText;
 use azalea::{ClientInformation, NoState};
 
@@ -19,10 +17,8 @@ use crate::bot::systems::profile::PROFILE_SYSTEM;
 use crate::bot::systems::registry::REGISTRY_SYSTEM;
 use crate::bot::systems::states::STATE_SYSTEM;
 use crate::bot::systems::tasks::TASK_SYSTEM;
-use crate::bot::utils::acaptcha::{MAP_CAPTCHA_BYPASS, MAP_COLLECTOR, WEB_CAPTCHA_BYPASS};
+use crate::bot::utils::acaptcha::{MAP_CAPTCHA_BYPASS, WEB_CAPTCHA_BYPASS};
 use crate::bot::PLUGINS;
-use crate::launch::options::CaptchaSolveMode;
-use crate::launch::options::CaptchaSubtype;
 use crate::launch::options::CaptchaType;
 use crate::launch::process::current_options;
 use crate::launch::process::update_process_status;
@@ -268,118 +264,11 @@ async fn process_packet(bot: Client, packet: Arc<ClientboundGamePacket>) {
   };
 
   match &*packet {
-    ClientboundGamePacket::AddEntity(entity_packet) => {
-      if entity_packet.entity_type == EntityKind::ItemFrame || entity_packet.entity_type == EntityKind::GlowItemFrame {
-        let pos = entity_packet.position;
-        MAP_COLLECTOR
-          .add_frame_position(index, entity_packet.id.0 as i32, pos.x, pos.y, pos.z)
-          .await;
-      }
+    ClientboundGamePacket::AddEntity(p) => {
+      MAP_CAPTCHA_BYPASS.process_frame(index, p).await;
     }
-    ClientboundGamePacket::MapItemData(data) => {
-      let Some(options) = current_options().await else {
-        return;
-      };
-
-      if options.basic.use_anti_captcha && options.captcha_bypass.captcha_type == CaptchaType::Map {
-        let Some(map_patch) = &data.color_patch.0 else {
-          return;
-        };
-
-        let Some(profile) = PROFILE_SYSTEM.get(&index).await else {
-          return;
-        };
-
-        if !profile.captcha_caught {
-          let is_frame = options.captcha_bypass.captcha_subtype == CaptchaSubtype::Frame;
-
-          if is_frame {
-            let pos = bot.feet_pos();
-            let yaw = if let Some(look_dir) = bot.get_component::<LookDirection>() {
-              look_dir.y_rot()
-            } else {
-              0.0
-            };
-
-            MAP_COLLECTOR
-              .add_map_data(
-                index,
-                map_patch.width as u32,
-                map_patch.height as u32,
-                map_patch.map_colors.clone(),
-                pos.x,
-                pos.z,
-                yaw,
-              )
-              .await;
-
-            if MAP_COLLECTOR.is_processing(&index).await {
-              return;
-            }
-
-            let maps = MAP_COLLECTOR.get_maps(&index).await.unwrap_or_default();
-
-            if maps.len() < (options.captcha_bypass.number_of_columns * options.captcha_bypass.number_of_rows) as usize
-            {
-              return;
-            }
-
-            MAP_COLLECTOR.set_processing(index, true).await;
-
-            if let Some(combined_base64) = MAP_COLLECTOR.combine_all(&index).await {
-              take_profile!(&index, async |profile| {
-                profile.captcha_caught = true;
-              });
-
-              MAP_COLLECTOR.update_captcha_time(index).await;
-
-              if options.basic.use_webhook && options.webhook.send_information {
-                send_webhook(options.webhook.url, format!("Бот {} получил капчу с карты", username));
-              }
-
-              emit_log(format!("Бот {} получил капчу с карты", username), "info");
-
-              if options.captcha_bypass.solve_mode == CaptchaSolveMode::Auto {
-                MAP_CAPTCHA_BYPASS.solve_captcha(username.clone(), combined_base64, options.captcha_bypass);
-              } else {
-                TRANSFER.emit(TransferEvent::AntiMapCaptcha(AntiMapCaptchaPayload {
-                  base64_code: combined_base64,
-                  username: username.to_string(),
-                }));
-              }
-            }
-
-            MAP_COLLECTOR.clear_maps(&index).await;
-          } else {
-            let base64_code = MAP_CAPTCHA_BYPASS.create_png_image(
-              map_patch.width as u32,
-              map_patch.height as u32,
-              &map_patch.map_colors,
-            );
-
-            take_profile!(&index, async |profile| {
-              profile.captcha_caught = true;
-            });
-
-            MAP_COLLECTOR.update_captcha_time(index).await;
-
-            if options.basic.use_webhook && options.webhook.send_information {
-              send_webhook(options.webhook.url, format!("Бот {} получил капчу с карты", username));
-            }
-
-            emit_log(format!("Бот {} получил капчу с карты", username), "info");
-
-            if options.captcha_bypass.solve_mode == CaptchaSolveMode::Auto {
-              MAP_CAPTCHA_BYPASS.solve_captcha(username, base64_code, options.captcha_bypass);
-            } else {
-              TRANSFER.emit(TransferEvent::AntiMapCaptcha(AntiMapCaptchaPayload {
-                base64_code,
-                username: username.to_string(),
-              }));
-            }
-          }
-        }
-      }
+    ClientboundGamePacket::MapItemData(p) => {
+      MAP_CAPTCHA_BYPASS.process_map_data(&bot, username, index, p).await;
     }
     _ => {}
   }

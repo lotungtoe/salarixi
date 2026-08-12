@@ -2,6 +2,10 @@ use std::cmp::Ordering;
 use std::f64::consts::PI;
 use std::time::{Duration, Instant};
 
+use azalea::entity::LookDirection;
+use azalea::protocol::packets::game::{ClientboundAddEntity, ClientboundMapItemData};
+use azalea::registry::builtin::EntityKind;
+use azalea::Client;
 use base64::prelude::BASE64_STANDARD;
 use base64::Engine;
 use hashbrown::HashMap;
@@ -10,18 +14,21 @@ use once_cell::sync::Lazy;
 use regex::Regex;
 use serde_json::json;
 use tokio::sync::RwLock;
+use tokio::task::JoinHandle;
 
+use crate::bot::extensions::BotDefaultExt;
 use crate::bot::systems::index::INDEX_SYSTEM;
+use crate::bot::systems::profile::PROFILE_SYSTEM;
 use crate::bot::systems::registry::REGISTRY_SYSTEM;
-use crate::launch::options::CaptchaBypassOptions;
+use crate::launch::options::{CaptchaBypassOptions, CaptchaSize, CaptchaSolveMode, CaptchaSubtype, CaptchaType};
 use crate::launch::process::current_options;
-use crate::server::transfer::emit_log;
+use crate::server::transfer::{emit_log, AntiMapCaptchaPayload, TransferEvent, TRANSFER};
+use crate::webhook::send_webhook;
+use crate::{sleep, take_profile};
 
 pub static WEB_CAPTCHA_BYPASS: Lazy<WebCaptchaBypass> = Lazy::new(|| WebCaptchaBypass::new());
 pub static MAP_CAPTCHA_BYPASS: Lazy<MapCaptchaBypass> = Lazy::new(|| MapCaptchaBypass::new());
-pub static MAP_COLLECTOR: Lazy<MapCollector> = Lazy::new(|| MapCollector::new());
 
-/// Обход web-капчи
 pub struct WebCaptchaBypass;
 
 impl WebCaptchaBypass {
@@ -54,12 +61,17 @@ impl WebCaptchaBypass {
   }
 }
 
-/// Обход map-капчи
-pub struct MapCaptchaBypass;
+pub struct MapCaptchaBypass {
+  frame_collector: FrameCollector,
+  solver_tasks: RwLock<HashMap<u8, JoinHandle<()>>>,
+}
 
 impl MapCaptchaBypass {
   pub fn new() -> Self {
-    Self
+    Self {
+      frame_collector: FrameCollector::new(),
+      solver_tasks: RwLock::new(HashMap::new()),
+    }
   }
 
   /// Метод конвертации ID цвета Minecraft в RGB код
@@ -300,8 +312,8 @@ impl MapCaptchaBypass {
   }
 
   /// Метод автоматического решения капчи
-  pub fn solve_captcha(&self, username: String, base64_code: String, options: CaptchaBypassOptions) {
-    tokio::spawn(async move {
+  pub async fn solve_captcha(&self, index: u8, username: String, base64_code: String, options: CaptchaBypassOptions) {
+    let task = tokio::spawn(async move {
       let api_key = match options.api_key {
         Some(key) => key,
         None => {
@@ -351,13 +363,13 @@ impl MapCaptchaBypass {
 
       if let Some(err_id) = create_resp["errorId"].as_i64() {
         if err_id != 0 {
-          let err_desc = create_resp["errorDescription"].as_str().unwrap_or("No description");
+          let err_desc = create_resp["errorDescription"].as_str().unwrap_or("unknown error");
           emit_log(format!("Бот {} не смог решить капчу: {}", username, err_desc), "error");
           return;
         }
       } else {
         emit_log(
-          format!("Бот {} не смог решить капчу: Incorrect response format", username),
+          format!("Бот {} не смог решить капчу: incorrect response format", username),
           "error",
         );
         return;
@@ -367,7 +379,7 @@ impl MapCaptchaBypass {
         Some(id) => id.to_string(),
         None => {
           emit_log(
-            format!("Бот {} не смог решить капчу: Task ID is missing in response", username),
+            format!("Бот {} не смог решить капчу: task ID is missing in response", username),
             "error",
           );
           return;
@@ -385,7 +397,7 @@ impl MapCaptchaBypass {
       loop {
         if attempts >= max_attempts {
           emit_log(
-            format!("Бот {} не смог решить капчу: Timeout exceeded", username),
+            format!("Бот {} не смог решить капчу: timeout exceeded", username),
             "error",
           );
           return;
@@ -417,7 +429,7 @@ impl MapCaptchaBypass {
 
         if let Some(err_id) = res_data["errorId"].as_i64() {
           if err_id != 0 {
-            let err_desc = res_data["errorDescription"].as_str().unwrap_or("No description");
+            let err_desc = res_data["errorDescription"].as_str().unwrap_or("unknown error");
             emit_log(format!("Бот {} не смог решить капчу: {}", username, err_desc), "error");
             return;
           }
@@ -436,11 +448,11 @@ impl MapCaptchaBypass {
                 })
                 .await;
 
-              emit_log(format!("Бот {} решил капчу: '{}'", username, solved_text), "info");
+              emit_log(format!("Бот {} решил капчу (текст: {})", username, solved_text), "info");
               return;
             } else {
               emit_log(
-                format!("Бот {} не смог решить капчу: Incorrect response format", username),
+                format!("Бот {} не смог решить капчу: incorrect response format", username),
                 "error",
               );
               return;
@@ -449,25 +461,142 @@ impl MapCaptchaBypass {
             continue;
           } else {
             emit_log(
-              format!("Бот {} не смог решить капчу: Unknown status '{}'", username, status),
+              format!("Бот {} не смог решить капчу: unknown status \"{}\"", username, status),
               "error",
             );
             return;
           }
         } else {
           emit_log(
-            format!("Бот {} не смог решить капчу: Status field is missing", username),
+            format!("Бот {} не смог решить капчу: status field is missing", username),
             "error",
           );
           return;
         }
       }
     });
+
+    self.solver_tasks.write().await.insert(index, task);
+  }
+
+  /// Метод обработки рамки
+  pub async fn process_frame(&self, index: u8, packet: &ClientboundAddEntity) {
+    if packet.entity_type == EntityKind::ItemFrame || packet.entity_type == EntityKind::GlowItemFrame {
+      let pos = packet.position;
+      self
+        .frame_collector
+        .push_frame(index, packet.id.0 as i32, pos.x, pos.y, pos.z)
+        .await;
+    }
+  }
+
+  /// Метод обработки данных карты из рамки
+  pub async fn process_map_data(&self, bot: &Client, username: String, index: u8, packet: &ClientboundMapItemData) {
+    let Some(options) = current_options().await else {
+      return;
+    };
+
+    if !options.basic.use_anti_captcha || options.captcha_bypass.captcha_type != CaptchaType::Map {
+      return;
+    }
+
+    let Some(map_patch) = &packet.color_patch.0 else {
+      return;
+    };
+
+    let Some(profile) = PROFILE_SYSTEM.get(&index).await else {
+      return;
+    };
+
+    if profile.captcha_caught {
+      return;
+    }
+
+    if options.captcha_bypass.captcha_subtype == CaptchaSubtype::Frame {
+      let pos = bot.feet_pos();
+      let yaw = if let Some(look_dir) = bot.get_component::<LookDirection>() {
+        look_dir.y_rot()
+      } else {
+        0.0
+      };
+
+      self
+        .frame_collector
+        .push_map_data(
+          index,
+          map_patch.width as u32,
+          map_patch.height as u32,
+          map_patch.map_colors.clone(),
+          pos.x,
+          pos.z,
+          yaw,
+        )
+        .await;
+
+      self.frame_collector.update_last_frame_time(index).await;
+
+      if let Some(b64) = self.frame_collector.try_combine_all(&index, false).await {
+        take_profile!(&index, async |profile| {
+          profile.captcha_caught = true;
+        });
+
+        if options.basic.use_webhook && options.webhook.send_information {
+          send_webhook(options.webhook.url, format!("Бот {} получил капчу с рамок", username));
+        }
+
+        emit_log(format!("Бот {} получил капчу с рамок", username), "info");
+
+        if options.captcha_bypass.solve_mode == CaptchaSolveMode::Auto {
+          self
+            .solve_captcha(index, username.clone(), b64, options.captcha_bypass)
+            .await;
+        } else {
+          TRANSFER.emit(TransferEvent::AntiMapCaptcha(AntiMapCaptchaPayload {
+            b64,
+            username: username.to_string(),
+          }));
+        }
+
+        self.frame_collector.clear(&index).await;
+      }
+    } else {
+      let b64 = self.create_png_image(map_patch.width as u32, map_patch.height as u32, &map_patch.map_colors);
+
+      take_profile!(&index, async |profile| {
+        profile.captcha_caught = true;
+      });
+
+      if options.basic.use_webhook && options.webhook.send_information {
+        send_webhook(options.webhook.url, format!("Бот {} получил капчу с карты", username));
+      }
+
+      emit_log(format!("Бот {} получил капчу с карты", username), "info");
+
+      if options.captcha_bypass.solve_mode == CaptchaSolveMode::Auto {
+        self.solve_captcha(index, username, b64, options.captcha_bypass).await;
+      } else {
+        TRANSFER.emit(TransferEvent::AntiMapCaptcha(AntiMapCaptchaPayload {
+          b64,
+          username: username.to_string(),
+        }));
+      }
+    }
+  }
+
+  /// Метод выключения и очистки утилиты
+  pub async fn shutdown(&self) {
+    let mut tasks_guard = self.solver_tasks.write().await;
+    tasks_guard.iter().for_each(|(_, t)| t.abort());
+    sleep!(500);
+    tasks_guard.clear();
+    drop(tasks_guard);
+
+    self.frame_collector.clear_all().await;
   }
 }
 
 #[derive(Clone)]
-pub struct MapData {
+struct MapData {
   pub width: u32,
   pub height: u32,
   pub colors: Vec<u8>,
@@ -478,32 +607,32 @@ pub struct MapData {
   pub yaw: f32,
 }
 
-pub struct MapCollector {
+struct FrameCollector {
   maps: RwLock<HashMap<u8, Vec<MapData>>>,
   frame_positions: RwLock<HashMap<u8, Vec<(i32, f64, f64, f64)>>>,
-  processing: RwLock<HashMap<u8, bool>>,
-  last_captcha_time: RwLock<HashMap<u8, Instant>>,
+  last_frame_time: RwLock<HashMap<u8, Instant>>,
+  waiters: RwLock<HashMap<u8, ()>>,
 }
 
-impl MapCollector {
+impl FrameCollector {
   pub fn new() -> Self {
     Self {
       maps: RwLock::new(HashMap::new()),
       frame_positions: RwLock::new(HashMap::new()),
-      processing: RwLock::new(HashMap::new()),
-      last_captcha_time: RwLock::new(HashMap::new()),
+      last_frame_time: RwLock::new(HashMap::new()),
+      waiters: RwLock::new(HashMap::new()),
     }
   }
 
-  /// Метод добавления позиции рамки
-  pub async fn add_frame_position(&self, index: u8, entity_id: i32, x: f64, y: f64, z: f64) {
+  /// Метод добавления рамки
+  pub async fn push_frame(&self, index: u8, entity_id: i32, x: f64, y: f64, z: f64) {
     let mut positions = self.frame_positions.write().await;
     let user_positions = positions.entry(index).or_insert_with(Vec::new);
     user_positions.push((entity_id, x, y, z));
   }
 
-  /// Метод добавления данных карты
-  pub async fn add_map_data(
+  /// Метод добавления данных карты из рамки
+  pub async fn push_map_data(
     &self,
     index: u8,
     width: u32,
@@ -534,74 +663,94 @@ impl MapCollector {
     maps.get(index).cloned()
   }
 
-  /// Метод проверки статуса сборки капчи указанного бота
-  pub async fn is_processing(&self, index: &u8) -> bool {
-    let processing = self.processing.read().await;
-    processing.get(index).copied().unwrap_or(false)
-  }
-
-  /// Метод установки статуса сборки капчи указанного бота
-  pub async fn set_processing(&self, index: u8, value: bool) {
-    let mut processing = self.processing.write().await;
-    processing.insert(index, value);
-  }
-
-  /// Метод обновления времени капчи указанного бота
-  pub async fn update_captcha_time(&self, index: u8) {
-    let mut last_time = self.last_captcha_time.write().await;
+  /// Метод обновления последнего времени прихода фрейма указанного бота
+  pub async fn update_last_frame_time(&self, index: u8) {
+    let mut last_time = self.last_frame_time.write().await;
     last_time.insert(index, Instant::now());
   }
 
-  /// Метод комбинации всех карт и созданий Base64-изображения
-  pub async fn combine_all(&self, index: &u8) -> Option<String> {
+  /// Метод получения последнего времени прихода фрейма указанного бота
+  pub async fn get_last_captcha_time(&self, index: &u8) -> Option<Instant> {
+    self.last_frame_time.write().await.get(index).cloned()
+  }
+
+  /// Метод попытки комбинации всех карт и созданий base64-изображения
+  pub async fn try_combine_all(&self, index: &u8, force: bool) -> Option<String> {
     let mut map_data = self.get_maps(index).await?;
-    let positions = self.frame_positions.read().await;
+
+    if map_data.is_empty() {
+      return None;
+    }
 
     let Some(opts) = current_options().await else {
       return None;
     };
 
-    let num_frames = (opts.captcha_bypass.number_of_columns * opts.captcha_bypass.number_of_rows) as usize;
+    let frame_count;
 
-    if map_data.is_empty() || map_data.len() < num_frames {
-      return None;
-    }
+    if opts.captcha_bypass.captcha_size == CaptchaSize::Fixed {
+      frame_count = (opts.captcha_bypass.number_of_columns * opts.captcha_bypass.number_of_rows) as usize;
 
-    if !map_data.is_empty() {
-      let first_map = &map_data[0];
-      let yaw = first_map.yaw;
-      let pos_x = first_map.pos_x;
-      let pos_z = first_map.pos_z;
+      if !force && map_data.len() < frame_count {
+        return None;
+      }
+    } else {
+      let Some(last_frame_time) = self.get_last_captcha_time(index).await else {
+        return None;
+      };
 
-      let yaw_rad = (yaw as f64).to_radians();
+      let current_time = Instant::now();
+      let passed = current_time.duration_since(last_frame_time).as_millis();
 
-      map_data.retain(|map| {
-        let dx = map.x - pos_x;
-        let dz = map.z - pos_z;
-        let distance = (dx * dx + dz * dz).sqrt();
-
-        let angle_to_frame = dz.atan2(dx);
-        let angle_diff = (angle_to_frame - yaw_rad).abs();
-
-        let normalized_angle = if angle_diff > PI {
-          2.0 * PI - angle_diff
+      if !force && passed < opts.captcha_bypass.max_pause as u128 {
+        if !self.waiters.write().await.contains_key(index) {
+          let time_left = opts.captcha_bypass.max_pause as u64 - passed as u64;
+          self.waiters.write().await.insert(*index, ());
+          sleep!(time_left);
+          self.waiters.write().await.remove(index);
+          map_data = self.get_maps(index).await?;
         } else {
-          angle_diff
-        };
+          return None;
+        }
+      }
 
-        distance < 20.0 && normalized_angle < PI / 2.0
-      });
+      frame_count = map_data.len();
     }
 
-    if map_data.len() < num_frames {
+    let first_map = &map_data[0];
+    let yaw = first_map.yaw;
+    let pos_x = first_map.pos_x;
+    let pos_z = first_map.pos_z;
+
+    let yaw_rad = (yaw as f64).to_radians();
+
+    map_data.retain(|map| {
+      let dx = map.x - pos_x;
+      let dz = map.z - pos_z;
+      let distance = (dx * dx + dz * dz).sqrt();
+
+      let angle_to_frame = dz.atan2(dx);
+      let angle_diff = (angle_to_frame - yaw_rad).abs();
+
+      let normalized_angle = if angle_diff > PI {
+        2.0 * PI - angle_diff
+      } else {
+        angle_diff
+      };
+
+      distance < 20.0 && normalized_angle < PI / 2.0
+    });
+
+    if map_data.len() < frame_count {
       let all_maps = self.get_maps(index).await?;
       map_data = all_maps;
     }
 
-    map_data.truncate(num_frames);
+    map_data.truncate(frame_count);
 
+    let positions = self.frame_positions.read().await;
     if let Some(user_positions) = positions.get(index) {
-      if user_positions.len() >= num_frames {
+      if user_positions.len() >= frame_count {
         let mut sorted_positions = user_positions.clone();
 
         sorted_positions.sort_by(|a, b| match b.2.partial_cmp(&a.2).unwrap_or(Ordering::Equal) {
@@ -611,7 +760,7 @@ impl MapCollector {
 
         let mut sorted_maps = vec![];
 
-        for (_, _, _, _) in sorted_positions.iter().take(num_frames) {
+        for _ in sorted_positions.iter().take(frame_count) {
           if let Some(map) = map_data.pop() {
             sorted_maps.push(map);
           }
@@ -621,7 +770,7 @@ impl MapCollector {
       }
     }
 
-    let frames: Vec<_> = map_data.iter().take(num_frames).collect();
+    let frames: Vec<_> = map_data.iter().take(frame_count).collect();
 
     let frame_width = frames[0].width;
     let frame_height = frames[0].height;
@@ -663,27 +812,17 @@ impl MapCollector {
     Some(BASE64_STANDARD.encode(&bytes))
   }
 
-  /// Метод очистки карт указанного бота
-  pub async fn clear_maps(&self, index: &u8) {
-    let mut maps = self.maps.write().await;
-    let mut positions = self.frame_positions.write().await;
-    let mut processing = self.processing.write().await;
-
-    maps.remove(index);
-    positions.remove(index);
-    processing.remove(index);
+  /// Метод очистки данных указанного бота
+  pub async fn clear(&self, index: &u8) {
+    self.maps.write().await.remove(index);
+    self.frame_positions.write().await.remove(index);
+    self.last_frame_time.write().await.remove(index);
   }
 
   /// Метод очистки всего хранилища
   pub async fn clear_all(&self) {
-    let mut maps = self.maps.write().await;
-    let mut positions = self.frame_positions.write().await;
-    let mut processing = self.processing.write().await;
-    let mut last_captcha_time = self.last_captcha_time.write().await;
-
-    maps.clear();
-    positions.clear();
-    processing.clear();
-    last_captcha_time.clear();
+    self.maps.write().await.clear();
+    self.frame_positions.write().await.clear();
+    self.last_frame_time.write().await.clear();
   }
 }

@@ -18,7 +18,7 @@ use crate::bot::systems::profile::{ProfileProxy, PROFILE_SYSTEM};
 use crate::bot::systems::registry::REGISTRY_SYSTEM;
 use crate::bot::systems::states::STATE_SYSTEM;
 use crate::bot::systems::tasks::TASK_SYSTEM;
-use crate::bot::utils::acaptcha::MAP_COLLECTOR;
+use crate::bot::utils::acaptcha::MAP_CAPTCHA_BYPASS;
 use crate::bot::PLUGINS;
 use crate::launch::process::update_process_status;
 use crate::launch::process::BOTS_WERE_FULLY_CONNECTED;
@@ -341,7 +341,7 @@ pub async fn stop_bots_and_destroy_data() -> u8 {
   sleep!(1000);
   STATE_SYSTEM.clear().await;
   PROFILE_SYSTEM.shutdown().await;
-  MAP_COLLECTOR.clear_all().await;
+  MAP_CAPTCHA_BYPASS.shutdown().await;
   REGISTRY_SYSTEM.clear().await;
   INDEX_SYSTEM.clear().await;
 

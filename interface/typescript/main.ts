@@ -211,10 +211,12 @@ async function startBots(): Promise<void> {
 		buf.writeU8(options.captcha_bypass["captcha_type"]);
 		buf.writeU8(options.captcha_bypass["captcha_subtype"]);
 		buf.writeU8(options.captcha_bypass["solve_mode"]);
+		buf.writeU8(options.captcha_bypass["captcha_size"]);
 		buf.writeString(options.captcha_bypass["regex"]);
 		buf.writeOption<string>(options.captcha_bypass["required_url_part"], (some) => buf.writeString(some));
 		buf.writeU32(options.captcha_bypass["number_of_columns"]);
 		buf.writeU32(options.captcha_bypass["number_of_rows"]);
+		buf.writeU32(options.captcha_bypass["max_pause"]);
 		buf.writeOption<string>(options.captcha_bypass["api_key"], (some) => buf.writeString(some));
 		buf.writeU8(options.captcha_bypass["api_service"]);
 

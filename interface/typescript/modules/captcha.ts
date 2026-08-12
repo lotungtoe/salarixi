@@ -28,8 +28,8 @@ class CaptchaModule {
 		await listen<number[]>("captcha:new-web", (e) => {
 			try {
 				const buf = new Buffer(new Uint8Array(e.payload));
-				const captcha_url = buf.readString();
 				const username = buf.readString();
+				const captcha_url = buf.readString();
 
 				this.createCaptchaCard(username, {
 					type: "web",
@@ -46,8 +46,14 @@ class CaptchaModule {
 		await listen<number[]>("captcha:new-map", (e) => {
 			try {
 				const buf = new Buffer(new Uint8Array(e.payload));
-				const base64 = buf.readString();
 				const username = buf.readString();
+				const parts = buf.readU8();
+
+				let base64 = "";
+
+				for (let i = 0; i < parts; i++) {
+					base64 += buf.readString();
+				}
 
 				this.createCaptchaCard(username, {
 					type: "map",

@@ -3321,6 +3321,61 @@
         "ja": "現在のパスワード",
         "zh": "当前密码"
       }
+    },
+    {
+      "versions": "1.1.1",
+      "tag": "bots-objects-missing",
+      "lang": {
+        "ru": "Объекты ботов отсутствуют",
+        "en": "There are no bot objects",
+        "tr": "Bot nesnesi yok",
+        "ja": "ボットオブジェクトはありません",
+        "zh": "沒有機器人"
+      }
+    },
+    {
+      "versions": "1.1.1",
+      "tag": "size",
+      "lang": {
+        "ru": "Размер",
+        "en": "Size",
+        "tr": "Boyut",
+        "ja": "サイズ",
+        "zh": "尺寸"
+      }
+    },
+    {
+      "versions": "1.1.1",
+      "tag": "size-fixed",
+      "lang": {
+        "ru": "Фиксированный",
+        "en": "Fixed",
+        "tr": "Sabit",
+        "ja": "修理済み",
+        "zh": "固定的"
+      }
+    },
+    {
+      "versions": "1.1.1",
+      "tag": "size-dynamic",
+      "lang": {
+        "ru": "Динамический",
+        "en": "Dynamic",
+        "tr": "Dinamik",
+        "ja": "動的",
+        "zh": "動態的"
+      }
+    },
+    {
+      "versions": "1.1.1",
+      "tag": "max-pause",
+      "lang": {
+        "ru": "Максимальная пауза",
+        "en": "Maximum pause",
+        "tr": "Maksimum duraklama",
+        "ja": "最大一時停止",
+        "zh": "最大暫停"
+      }
     }
   ]
 }

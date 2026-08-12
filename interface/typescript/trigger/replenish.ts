@@ -117,7 +117,49 @@ export function replenishTriggerRegistry(): void {
 		}
 	});
 
-	const mf1 = (current: HTMLSelectElement) => {
+	triggerRegistry.register("captcha-bypass_select_captcha-type", "select", (current: HTMLSelectElement) => {
+		const antiWebCaptchaOptionsContainer = document.getElementById("anti-web-captcha-options") as HTMLElement;
+		const antiMapCaptchaOptionsContainer = document.getElementById("anti-map-captcha-options") as HTMLElement;
+		const antiMapCaptchaSelectsContainer = document.getElementById("anti-map-captha-selects-container") as HTMLElement;
+		const antiMapCaptchaSelectSubtype = document.getElementById("captcha-bypass_select_captcha-subtype") as HTMLSelectElement;
+		const antiMapCaptchaNumberOfColumnsInput = document.getElementById("anti-map-captcha-number-of-columns-container") as HTMLElement;
+		const antiMapCaptchaNumberOfRowsInput = document.getElementById("anti-map-captcha-number-of-rows-container") as HTMLElement;
+		const antiMapCaptchaSelectSizeContainer = document.getElementById("anti-map-captcha-select-size-container") as HTMLElement;
+		const antiMapCaptchaMaxPauseInput = document.getElementById("anti-map-captcha-max-pause") as HTMLElement;
+
+		if (current.value === "web") {
+			antiWebCaptchaOptionsContainer.style.display = "flex";
+			antiMapCaptchaOptionsContainer.style.display = "none";
+			antiMapCaptchaSelectsContainer.style.display = "none";
+		} else if (current.value === "map") {
+			antiWebCaptchaOptionsContainer.style.display = "none";
+			antiMapCaptchaSelectsContainer.style.display = "flex";
+			antiMapCaptchaOptionsContainer.style.display = "flex";
+
+			if (antiMapCaptchaSelectSubtype.value === "frame") {
+				antiMapCaptchaSelectSizeContainer.style.display = "grid";
+
+				const antiMapCaptchaSelectSize = document.getElementById("captcha-bypass_select_captcha-size") as HTMLSelectElement;
+
+				if (antiMapCaptchaSelectSize.value === "dynamic") {
+					antiMapCaptchaNumberOfColumnsInput.style.display = "none";
+					antiMapCaptchaNumberOfRowsInput.style.display = "none";
+					antiMapCaptchaMaxPauseInput.style.display = "flex";
+				} else {
+					antiMapCaptchaMaxPauseInput.style.display = "none";
+					antiMapCaptchaNumberOfColumnsInput.style.display = "flex";
+					antiMapCaptchaNumberOfRowsInput.style.display = "flex";
+				}
+			} else {
+				antiMapCaptchaSelectSizeContainer.style.display = "none";
+				antiMapCaptchaNumberOfColumnsInput.style.display = "none";
+				antiMapCaptchaNumberOfRowsInput.style.display = "none";
+				antiMapCaptchaMaxPauseInput.style.display = "none";
+			}
+		}
+	});
+
+	triggerRegistry.register("captcha-bypass_select_solve-mode", "select", (current: HTMLSelectElement) => {
 		const antiCaptchaType = (document.getElementById("captcha-bypass_select_captcha-type") as HTMLSelectElement).value;
 		const antiMapCaptchaApiInputContainer = document.getElementById("anti-map-captcha-api-key-container") as HTMLElement;
 		const antiMapCaptchaApiServiceSelectContainer = document.getElementById("anti-map-captcha-select-api-service-container") as HTMLElement;
@@ -131,53 +173,51 @@ export function replenishTriggerRegistry(): void {
 			antiMapCaptchaApiInputContainer.style.display = "none";
 			antiMapCaptchaApiServiceSelectContainer.style.display = "none";
 		}
-	}
+	});
 
-	const mf2 = (current: HTMLSelectElement) => {
+	triggerRegistry.register("captcha-bypass_select_captcha-subtype", "select", (current: HTMLSelectElement) => {
 		const antiMapCaptchaNumberOfColumnsInput = document.getElementById("anti-map-captcha-number-of-columns-container") as HTMLElement;
 		const antiMapCaptchaNumberOfRowsInput = document.getElementById("anti-map-captcha-number-of-rows-container") as HTMLElement;
+		const antiMapCaptchaSelectSizeContainer = document.getElementById("anti-map-captcha-select-size-container") as HTMLElement;
+		const antiMapCaptchaMaxPauseInput = document.getElementById("anti-map-captcha-max-pause") as HTMLElement;
 
 		if (current.value === "inventory") {
 			antiMapCaptchaNumberOfColumnsInput.style.display = "none";
 			antiMapCaptchaNumberOfRowsInput.style.display = "none";
+			antiMapCaptchaSelectSizeContainer.style.display = "none";
+			antiMapCaptchaMaxPauseInput.style.display = "none";
 		} else if (current.value === "frame") {
+			antiMapCaptchaSelectSizeContainer.style.display = "grid";
+
+			const antiMapCaptchaSelectSize = document.getElementById("captcha-bypass_select_captcha-size") as HTMLSelectElement;
+
+			if (antiMapCaptchaSelectSize.value === "dynamic") {
+				antiMapCaptchaNumberOfColumnsInput.style.display = "none";
+				antiMapCaptchaNumberOfRowsInput.style.display = "none";
+				antiMapCaptchaMaxPauseInput.style.display = "flex";
+			} else {
+				antiMapCaptchaMaxPauseInput.style.display = "none";
+				antiMapCaptchaNumberOfColumnsInput.style.display = "flex";
+				antiMapCaptchaNumberOfRowsInput.style.display = "flex";
+			}
+		}
+	});
+
+	triggerRegistry.register("captcha-bypass_select_captcha-size", "select", (current: HTMLSelectElement) => {
+		const antiMapCaptchaNumberOfColumnsInput = document.getElementById("anti-map-captcha-number-of-columns-container") as HTMLElement;
+		const antiMapCaptchaNumberOfRowsInput = document.getElementById("anti-map-captcha-number-of-rows-container") as HTMLElement;
+		const antiMapCaptchaMaxPauseInput = document.getElementById("anti-map-captcha-max-pause") as HTMLElement;
+
+		if (current.value === "dynamic") {
+			antiMapCaptchaNumberOfColumnsInput.style.display = "none";
+			antiMapCaptchaNumberOfRowsInput.style.display = "none";
+			antiMapCaptchaMaxPauseInput.style.display = "flex";
+		} else {
+			antiMapCaptchaMaxPauseInput.style.display = "none";
 			antiMapCaptchaNumberOfColumnsInput.style.display = "flex";
 			antiMapCaptchaNumberOfRowsInput.style.display = "flex";
 		}
-	}
-
-	triggerRegistry.register("captcha-bypass_select_captcha-type", "select", (current: HTMLSelectElement) => {
-		const antiWebCaptchaOptionsContainer = document.getElementById("anti-web-captcha-options") as HTMLElement;
-		const antiMapCaptchaOptionsContainer = document.getElementById("anti-map-captcha-options") as HTMLElement;
-		const antiMapCaptchaSelectsContainer = document.getElementById("anti-map-captha-selects-container") as HTMLElement;
-		const antiMapCaptchaSelectSubtype = document.getElementById("captcha-bypass_select_captcha-subtype") as HTMLSelectElement;
-		const antiMapCaptchaNumberOfColumnsInput = document.getElementById("anti-map-captcha-number-of-columns-container") as HTMLElement;
-		const antiMapCaptchaNumberOfRowsInput = document.getElementById("anti-map-captcha-number-of-rows-container") as HTMLElement;
-
-		if (current.value === "web") {
-			antiWebCaptchaOptionsContainer.style.display = "flex";
-			antiMapCaptchaOptionsContainer.style.display = "none";
-			antiMapCaptchaSelectsContainer.style.display = "none";
-		} else if (current.value === "map") {
-			antiWebCaptchaOptionsContainer.style.display = "none";
-			antiMapCaptchaSelectsContainer.style.display = "flex";
-			antiMapCaptchaOptionsContainer.style.display = "flex";
-
-			if (antiMapCaptchaSelectSubtype.value === "frame") {
-				antiMapCaptchaNumberOfColumnsInput.style.display = "flex";
-				antiMapCaptchaNumberOfRowsInput.style.display = "flex";
-			} else {
-				antiMapCaptchaNumberOfColumnsInput.style.display = "none";
-				antiMapCaptchaNumberOfRowsInput.style.display = "none";
-			}
-		}
-
-		mf1(document.getElementById("captcha-bypass_select_solve-mode") as HTMLSelectElement);
-		mf2(document.getElementById("captcha-bypass_select_captcha-subtype") as HTMLSelectElement);
 	});
-
-	triggerRegistry.register("captcha-bypass_select_solve-mode", "select", mf1);
-	triggerRegistry.register("captcha-bypass_select_captcha-subtype", "select", mf2);
 
 	triggerRegistry.register("module_chat_select_mode", "select", (current: HTMLSelectElement) => {
 		const chatSpammingChbxContainer = document.getElementById("chat-spamming-chbx-container") as HTMLElement;
