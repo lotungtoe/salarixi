@@ -12,19 +12,19 @@ use hashbrown::HashMap;
 use image::{ImageBuffer, ImageFormat, Rgb};
 use once_cell::sync::Lazy;
 use regex::Regex;
-use serde_json::json;
+use serde_json::{json, Value};
 use tokio::sync::RwLock;
 use tokio::task::JoinHandle;
 
 use crate::bot::extensions::BotDefaultExt;
-use crate::bot::systems::index::INDEX_SYSTEM;
 use crate::bot::systems::profile::PROFILE_SYSTEM;
-use crate::bot::systems::registry::REGISTRY_SYSTEM;
-use crate::launch::options::{CaptchaBypassOptions, CaptchaSize, CaptchaSolveMode, CaptchaSubtype, CaptchaType};
+use crate::launch::options::{
+  CaptchaApiService, CaptchaBypassOptions, CaptchaSize, CaptchaSolveMode, CaptchaSubtype, CaptchaType,
+};
 use crate::launch::process::current_options;
 use crate::server::transfer::{emit_log, AntiMapCaptchaPayload, TransferEvent, TRANSFER};
 use crate::webhook::send_webhook;
-use crate::{sleep, take_profile};
+use crate::{sleep, take_bot, take_profile};
 
 pub static WEB_CAPTCHA_BYPASS: Lazy<WebCaptchaBypass> = Lazy::new(|| WebCaptchaBypass::new());
 pub static MAP_CAPTCHA_BYPASS: Lazy<MapCaptchaBypass> = Lazy::new(|| MapCaptchaBypass::new());
@@ -312,7 +312,7 @@ impl MapCaptchaBypass {
   }
 
   /// Метод автоматического решения капчи
-  pub async fn solve_captcha(&self, index: u8, username: String, base64_code: String, options: CaptchaBypassOptions) {
+  pub async fn solve_captcha(&self, index: u8, username: String, b64: String, options: CaptchaBypassOptions) {
     let task = tokio::spawn(async move {
       let api_key = match options.api_key {
         Some(key) => key,
@@ -325,27 +325,116 @@ impl MapCaptchaBypass {
         }
       };
 
-      let client = reqwest::Client::new();
-      let create_url = "https://api.rucaptcha.com/createTask";
-      let result_url = "https://api.rucaptcha.com/getTaskResult";
+      match options.api_service {
+        CaptchaApiService::TwoCaptcha => Self::solve_with_two_captcha(&index, username, b64, api_key).await,
+        CaptchaApiService::TrueCaptcha => {
+          let user_id = match options.user_id {
+            Some(key) => key,
+            None => {
+              emit_log(
+                format!("Бот {} не смог решить капчу: user ID not specified", username),
+                "error",
+              );
+              return;
+            }
+          };
 
-      let req_body = json!({
+          Self::solve_with_true_captcha(&index, username, b64, user_id, api_key).await;
+        }
+      }
+    });
+
+    self.solver_tasks.write().await.insert(index, task);
+  }
+
+  /// Метод решения капчи при помощи сервиса `2captcha.com`
+  async fn solve_with_two_captcha(index: &u8, username: String, b64: String, api_key: String) {
+    let client = reqwest::Client::new();
+    let create_url = "https://api.2captcha.com/createTask";
+    let result_url = "https://api.2captcha.com/getTaskResult";
+
+    let req_body = json!({
+      "clientKey": api_key,
+      "task": {
+        "type": "ImageToTextTask",
+        "body": b64,
+        "phrase": false,
+        "case": true,
+        "numeric": 0,
+        "math": false,
+        "minLength": 0,
+        "maxLength": 0,
+      },
+      "languagePool": "en"
+    });
+
+    let resp = match client.post(create_url).json(&req_body).send().await {
+      Ok(r) => r,
+      Err(e) => {
+        emit_log(format!("Бот {} не смог решить капчу: {}", username, e), "error");
+        return;
+      }
+    };
+
+    let create_resp: serde_json::Value = match resp.json().await {
+      Ok(v) => v,
+      Err(e) => {
+        emit_log(format!("Бот {} не смог решить капчу: {}", username, e), "error");
+        return;
+      }
+    };
+
+    if let Some(err_id) = create_resp["errorId"].as_i64() {
+      if err_id != 0 {
+        let err_desc = create_resp["errorDescription"].as_str().unwrap_or("unknown error");
+        emit_log(format!("Бот {} не смог решить капчу: {}", username, err_desc), "error");
+        return;
+      }
+    } else {
+      emit_log(
+        format!("Бот {} не смог решить капчу: incorrect response format", username),
+        "error",
+      );
+      return;
+    }
+
+    let task_id = match create_resp["taskId"].as_str() {
+      Some(id) => id.to_string(),
+      None => {
+        emit_log(
+          format!("Бот {} не смог решить капчу: task ID is missing in response", username),
+          "error",
+        );
+        return;
+      }
+    };
+
+    emit_log(
+      format!("Задача решения капчи бота {} создана, ожидание завершения...", username),
+      "extended",
+    );
+
+    let mut attempts = 0;
+    let max_attempts = 6;
+
+    loop {
+      if attempts >= max_attempts {
+        emit_log(
+          format!("Бот {} не смог решить капчу: timeout exceeded", username),
+          "error",
+        );
+        return;
+      }
+
+      tokio::time::sleep(Duration::from_secs(5)).await;
+      attempts += 1;
+
+      let result_req_body = json!({
         "clientKey": api_key,
-        "task": {
-          "type": "ImageToTextTask",
-          "body": base64_code,
-          "phrase": false,
-          "case": true,
-          "numeric": 0,
-          "math": false,
-          "minLength": 0,
-          "maxLength": 0,
-          "comment": "enter the code you see on the image"
-        },
-        "languagePool": "en"
+        "taskId": task_id
       });
 
-      let resp = match client.post(create_url).json(&req_body).send().await {
+      let res_resp = match client.post(result_url).json(&result_req_body).send().await {
         Ok(r) => r,
         Err(e) => {
           emit_log(format!("Бот {} не смог решить капчу: {}", username, e), "error");
@@ -353,7 +442,7 @@ impl MapCaptchaBypass {
         }
       };
 
-      let create_resp: serde_json::Value = match resp.json().await {
+      let res_data: serde_json::Value = match res_resp.json().await {
         Ok(v) => v,
         Err(e) => {
           emit_log(format!("Бот {} не смог решить капчу: {}", username, e), "error");
@@ -361,122 +450,98 @@ impl MapCaptchaBypass {
         }
       };
 
-      if let Some(err_id) = create_resp["errorId"].as_i64() {
+      if let Some(err_id) = res_data["errorId"].as_i64() {
         if err_id != 0 {
-          let err_desc = create_resp["errorDescription"].as_str().unwrap_or("unknown error");
+          let err_desc = res_data["errorDescription"].as_str().unwrap_or("unknown error");
           emit_log(format!("Бот {} не смог решить капчу: {}", username, err_desc), "error");
           return;
         }
-      } else {
-        emit_log(
-          format!("Бот {} не смог решить капчу: incorrect response format", username),
-          "error",
-        );
-        return;
       }
 
-      let task_id = match create_resp["taskId"].as_str() {
-        Some(id) => id.to_string(),
-        None => {
-          emit_log(
-            format!("Бот {} не смог решить капчу: task ID is missing in response", username),
-            "error",
-          );
-          return;
-        }
-      };
-
-      emit_log(
-        format!("Задача решения капчи бота {} создана, ожидание завершения...", username),
-        "extended",
-      );
-
-      let mut attempts = 0;
-      let max_attempts = 6;
-
-      loop {
-        if attempts >= max_attempts {
-          emit_log(
-            format!("Бот {} не смог решить капчу: timeout exceeded", username),
-            "error",
-          );
-          return;
-        }
-
-        tokio::time::sleep(Duration::from_secs(5)).await;
-        attempts += 1;
-
-        let result_req_body = json!({
-          "clientKey": api_key,
-          "taskId": task_id
-        });
-
-        let res_resp = match client.post(result_url).json(&result_req_body).send().await {
-          Ok(r) => r,
-          Err(e) => {
-            emit_log(format!("Бот {} не смог решить капчу: {}", username, e), "error");
+      if let Some(status) = res_data["status"].as_str() {
+        if status == "ready" {
+          if let Some(result) = res_data["solution"]["text"].as_str() {
+            take_bot!(index, async |bot| {
+              bot.chat(result);
+              emit_log(format!("Бот {} решил капчу (текст: {})", username, result), "info");
+            });
             return;
-          }
-        };
-
-        let res_data: serde_json::Value = match res_resp.json().await {
-          Ok(v) => v,
-          Err(e) => {
-            emit_log(format!("Бот {} не смог решить капчу: {}", username, e), "error");
-            return;
-          }
-        };
-
-        if let Some(err_id) = res_data["errorId"].as_i64() {
-          if err_id != 0 {
-            let err_desc = res_data["errorDescription"].as_str().unwrap_or("unknown error");
-            emit_log(format!("Бот {} не смог решить капчу: {}", username, err_desc), "error");
-            return;
-          }
-        }
-
-        if let Some(status) = res_data["status"].as_str() {
-          if status == "ready" {
-            if let Some(solved_text) = res_data["solution"]["text"].as_str() {
-              let Some(index) = INDEX_SYSTEM.index_by_username(&username).await else {
-                return;
-              };
-
-              REGISTRY_SYSTEM
-                .async_get_bot(&index, async |bot| {
-                  bot.chat(solved_text);
-                })
-                .await;
-
-              emit_log(format!("Бот {} решил капчу (текст: {})", username, solved_text), "info");
-              return;
-            } else {
-              emit_log(
-                format!("Бот {} не смог решить капчу: incorrect response format", username),
-                "error",
-              );
-              return;
-            }
-          } else if status == "processing" {
-            continue;
           } else {
             emit_log(
-              format!("Бот {} не смог решить капчу: unknown status \"{}\"", username, status),
+              format!("Бот {} не смог решить капчу: incorrect response format", username),
               "error",
             );
             return;
           }
+        } else if status == "processing" {
+          continue;
         } else {
           emit_log(
-            format!("Бот {} не смог решить капчу: status field is missing", username),
+            format!("Бот {} не смог решить капчу: unknown status \"{}\"", username, status),
             "error",
           );
           return;
         }
+      } else {
+        emit_log(
+          format!("Бот {} не смог решить капчу: status field is missing", username),
+          "error",
+        );
+        return;
       }
+    }
+  }
+
+  /// Метод решения капчи при помощи сервиса `truecaptcha.org`
+  async fn solve_with_true_captcha(index: &u8, username: String, b64: String, user_id: String, api_key: String) {
+    let client = reqwest::Client::new();
+    let target_url = "https://api.apitruecaptcha.org/one/gettext";
+
+    let req_body = json!({
+      "userid": user_id,
+      "apikey": api_key,
+      "data": b64,
     });
 
-    self.solver_tasks.write().await.insert(index, task);
+    let resp = match client.post(target_url).json(&req_body).send().await {
+      Ok(resp) => resp,
+      Err(e) => {
+        emit_log(format!("Бот {} не смог решить капчу: {}", username, e), "error");
+        return;
+      }
+    };
+
+    if !resp.status().is_success() {
+      emit_log(
+        format!("Бот {} не смог решить капчу: status code {}", username, resp.status()),
+        "error",
+      );
+      return;
+    }
+
+    let json: Value = match resp.json().await {
+      Ok(v) => v,
+      Err(e) => {
+        emit_log(
+          format!("Бот {} не смог решить капчу: status code {}", username, e),
+          "error",
+        );
+        return;
+      }
+    };
+
+    let Some(result) = json["result"].as_str() else {
+      emit_log(
+        format!("Бот {} не смог решить капчу: result missing", username),
+        "error",
+      );
+      return;
+    };
+
+    take_bot!(index, async |bot| {
+      bot.chat(result);
+      emit_log(format!("Бот {} решил капчу (текст: {})", username, result), "info");
+    });
   }
 
   /// Метод обработки рамки

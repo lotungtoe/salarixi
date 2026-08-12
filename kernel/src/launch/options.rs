@@ -230,6 +230,7 @@ pub struct CaptchaBypassOptions {
   pub number_of_columns: u32,
   pub number_of_rows: u32,
   pub max_pause: u32,
+  pub user_id: Option<String>,
   pub api_key: Option<String>,
   pub api_service: CaptchaApiService,
 }
@@ -246,6 +247,7 @@ impl CaptchaBypassOptions {
       number_of_columns: u32::read(buf)?,
       number_of_rows: u32::read(buf)?,
       max_pause: u32::read(buf)?,
+      user_id: Option::read(buf)?,
       api_key: Option::read(buf)?,
       api_service: CaptchaApiService::from_index(u8::read(buf)?)?,
     })
@@ -279,6 +281,7 @@ pub enum CaptchaSize {
 #[derive(Clone, PartialEq, Index)]
 pub enum CaptchaApiService {
   TwoCaptcha = 0x00,
+  TrueCaptcha = 0x01,
 }
 
 #[derive(Clone)]

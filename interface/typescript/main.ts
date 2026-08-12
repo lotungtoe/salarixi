@@ -217,6 +217,7 @@ async function startBots(): Promise<void> {
 		buf.writeU32(options.captcha_bypass["number_of_columns"]);
 		buf.writeU32(options.captcha_bypass["number_of_rows"]);
 		buf.writeU32(options.captcha_bypass["max_pause"]);
+		buf.writeOption<string>(options.captcha_bypass["user_id"], (some) => buf.writeString(some));
 		buf.writeOption<string>(options.captcha_bypass["api_key"], (some) => buf.writeString(some));
 		buf.writeU8(options.captcha_bypass["api_service"]);
 

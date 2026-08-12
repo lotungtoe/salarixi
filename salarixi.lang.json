@@ -906,7 +906,7 @@
       "versions": "1.1.0:1.1.1",
       "tag": "username",
       "lang": {
-        "ru": "Юзернейм",
+        "ru": "Имя пользователя",
         "en": "Username",
         "tr": "Kullanıcı adı",
         "ja": "ユーザー名",

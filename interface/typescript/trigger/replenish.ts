@@ -203,6 +203,11 @@ export function replenishTriggerRegistry(): void {
 		}
 	});
 
+	triggerRegistry.register("captcha-bypass_select_captcha-service", "select", (current: HTMLSelectElement) => {
+		const antiMapCaptchaUserIdInput = document.getElementById("anti-map-captcha-user-id-container") as HTMLElement;
+		antiMapCaptchaUserIdInput.style.display = current.value === "truecaptcha" ? "flex" : "none";
+	});
+
 	triggerRegistry.register("captcha-bypass_select_captcha-size", "select", (current: HTMLSelectElement) => {
 		const antiMapCaptchaNumberOfColumnsInput = document.getElementById("anti-map-captcha-number-of-columns-container") as HTMLElement;
 		const antiMapCaptchaNumberOfRowsInput = document.getElementById("anti-map-captcha-number-of-rows-container") as HTMLElement;

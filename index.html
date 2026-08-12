@@ -819,7 +819,7 @@
             <input type="checkbox" id="change-all-accounts-select">
             <span class="checkmark"></span>
           </label>
-          <span tt="username">Юзернейм</span>
+          <span tt="username">Имя пользователя</span>
           <span id="selected-account-counter" style="margin-left: 4px;"></span>
         </div>
         <div class="header-cell date-header" tt="creation-date">Дата создания</div>
@@ -1054,7 +1054,8 @@
           <div class="custom-select between" id="anti-map-captcha-select-api-service-container" style="display: none;">
             <label tt="api-service:">API сервис:</label>
             <select id="captcha-bypass_select_captcha-service" section="captcha_bypass" key="api_service" keep launch-option>
-              <option value="2captcha">2Captcha</option>
+              <option value="2captcha">2captcha.com</option>
+              <option value="truecaptcha">truecaptcha.org</option>
             </select>
           </div>
           
@@ -1104,9 +1105,14 @@
           <input type="number" id="captcha-bypass_map_max-pause" placeholder="1400" value="1400" keep section="captcha_bypass" key="max_pause" default="1400" launch-option>
         </div>
 
+        <div class="form-input" id="anti-map-captcha-user-id-container" style="display: none;">
+          <label for="captcha-bypass_web_map-captcha-user-id" class="text" tt="username">Имя пользователя</label>
+          <input type="text" id="captcha-bypass_map-captcha-user-id" placeholder="john_doe" section="captcha_bypass" key="user_id" launch-option keep private>
+        </div>
+
         <div class="form-input" id="anti-map-captcha-api-key-container" style="display: none;">
           <label for="captcha-bypass_web_map-captcha-api-key" class="text" tt="api-key">API ключ</label>
-          <input type="text" id="captcha-bypass_map-captcha-api-key" placeholder="u72ks-73ujhd-8j3j3j83-jdu73hrhf" keep private section="captcha_bypass" key="api_key" launch-option>
+          <input type="text" id="captcha-bypass_map-captcha-api-key" placeholder="xxxx-xxxx-xxxxxxxx-xx" section="captcha_bypass" key="api_key" launch-option keep private>
         </div>
       </div>
     </div>
