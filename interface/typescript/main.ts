@@ -184,9 +184,10 @@ async function startBots(): Promise<void> {
 		buf.writeBoolean(options.basic["use_pathfinder"]);
 		buf.writeBoolean(options.basic["use_auto_script"]);
 		buf.writeBoolean(options.basic["use_proxy"]);
+		buf.writeBoolean(options.basic["use_accounts"]);
 		buf.writeBoolean(options.basic["use_anti_captcha"]);
 		buf.writeBoolean(options.basic["use_webhook"]);
-		buf.writeBoolean(options.basic["use_accounts"]);
+		buf.writeBoolean(options.basic["monitoring_optimization"]);
 		buf.writeOption<string>(options.basic["proxy_list"], (some) => buf.writeString(some));
 		buf.writeOption<string>(options.basic["script"], (some) => buf.writeString(some));
 

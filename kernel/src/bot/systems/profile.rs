@@ -111,31 +111,35 @@ impl ProfileSystem {
   }
 
   /// Метод активации системы
-  pub async fn activate(&self, update_rate: u64) {
+  pub async fn activate(&self, update_rate: u64, optimized: bool) {
     let updater_task = tokio::spawn(async move {
       let mut last_hashes = HashMap::new();
 
       loop {
         for (index, profile) in PROFILE_SYSTEM.map.read().await.iter() {
-          let mut buf = BytesMut::new();
-          profile.write(&mut buf);
+          if optimized {
+            let mut buf = BytesMut::new();
+            profile.group.write(&mut buf);
+            profile.health.write(&mut buf);
+            profile.ping.write(&mut buf);
 
-          let finalized = Md5::new().chain(&buf).finalize();
-          let hash: [u8; 16] = match finalized.as_slice()[..16].try_into() {
-            Ok(h) => h,
-            Err(_) => continue,
-          };
+            let finalized = Md5::new().chain(&buf).finalize();
+            let hash: [u8; 16] = match finalized.as_slice()[..16].try_into() {
+              Ok(h) => h,
+              Err(_) => continue,
+            };
 
-          if let Some(last_hash) = last_hashes.get_mut(index) {
-            if hash == *last_hash {
-              // println!("[debug :: monitoring] {} skipped", username);
-              continue;
-            }
-          };
+            if let Some((last_status, last_hash)) = last_hashes.get(index) {
+              if profile.status == *last_status && hash == *last_hash {
+                // println!("[debug :: monitoring] {} skipped", username);
+                continue;
+              }
+            };
 
-          last_hashes.insert(*index, hash);
+            last_hashes.insert(*index, (profile.status.clone(), hash));
 
-          // println!("[debug :: monitoring] {} updated", username);
+            // println!("[debug :: monitoring] {} updated", username);
+          }
 
           let Some(username) = INDEX_SYSTEM.username_by_index(index).await else {
             continue;

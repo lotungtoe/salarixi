@@ -155,7 +155,10 @@ pub async fn launch_bots_on_server(options: LaunchOptions) -> u8 {
   update_process_status().await;
 
   PROFILE_SYSTEM
-    .activate(options.basic.monitoring_update_rate as u64)
+    .activate(
+      options.basic.monitoring_update_rate as u64,
+      options.basic.monitoring_optimization,
+    )
     .await;
 
   if options.basic.use_webhook {

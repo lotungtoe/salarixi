@@ -870,6 +870,17 @@
       }
     },
     {
+      "versions": "1.1.1",
+      "tag": "monitoring-optimization",
+      "lang": {
+        "ru": "Использовать аккаунты",
+        "en": "Monitoring Optimization",
+        "tr": "İzlemenin optimize edilmesi",
+        "ja": "監視の最適化",
+        "zh": "優化監測"
+      }
+    },
+    {
       "versions": "1.1.0:1.1.1",
       "tag": "import",
       "lang": {

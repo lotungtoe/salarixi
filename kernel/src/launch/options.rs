@@ -73,9 +73,10 @@ pub struct BasicOptions {
   pub use_pathfinder: bool,
   pub use_auto_script: bool,
   pub use_proxy: bool,
+  pub use_accounts: bool,
   pub use_anti_captcha: bool,
   pub use_webhook: bool,
-  pub use_accounts: bool,
+  pub monitoring_optimization: bool,
   pub proxy_list: Option<String>,
   pub script: Option<String>,
 }
@@ -116,9 +117,10 @@ impl BasicOptions {
       use_pathfinder: bool::read(buf)?,
       use_auto_script: bool::read(buf)?,
       use_proxy: bool::read(buf)?,
+      use_accounts: bool::read(buf)?,
       use_anti_captcha: bool::read(buf)?,
       use_webhook: bool::read(buf)?,
-      use_accounts: bool::read(buf)?,
+      monitoring_optimization: bool::read(buf)?,
       proxy_list: Option::read(buf)?,
       script: Option::read(buf)?,
     })
