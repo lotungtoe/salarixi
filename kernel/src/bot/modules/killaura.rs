@@ -15,10 +15,11 @@ use crate::{sleep, take_bot};
 
 struct Weapon {
   slot: Option<usize>,
-  priority: u8,
+  material_priority: u8,
+  enchantments_priority: i32,
 }
 
-#[derive(Index)]
+#[derive(PartialEq, Index)]
 enum Behavior {
   Moderate = 0,
   Aggressive = 1,
@@ -113,7 +114,6 @@ struct KillauraConfig {
 pub struct KillauraModule;
 
 impl KillauraModule {
-  /// Метод создания модуля
   pub fn new() -> Self {
     Self
   }
@@ -125,7 +125,11 @@ impl KillauraModule {
         target: options.target.clone(),
         weapon_slot: options.weapon_slot,
         attack_distance: 3.1,
-        delay: 500,
+        delay: if options.behavior == Behavior::Moderate {
+          500
+        } else {
+          350
+        },
         chase_distance: options.chase_distance.unwrap_or(10.0),
         min_distance_to_target: options.min_distance_to_target.unwrap_or(3.0),
       }
@@ -161,122 +165,155 @@ impl KillauraModule {
     bot.find_nearest_entity(EntityType::from(target), max_distance)
   }
 
-  /// Метод взятия оружия в руку
-  async fn take_weapon(bot: &Client, index: &u8, weapon_type: &WeaponType) {
-    let mut weapons = vec![];
+  /// Метод вычисления приоретета предмета по чарам
+  fn calc_item_enchantments_priority(enchantments: &Vec<(String, i32)>) -> i32 {
+    let mut priority = 0;
 
-    if let Some(menu) = bot.get_inventory_menu() {
-      for (slot, item) in menu.slots().iter().enumerate() {
-        if !item.is_empty() {
-          match weapon_type {
-            WeaponType::Sword => match item.kind() {
-              ItemKind::WoodenSword => {
-                weapons.push(Weapon {
-                  slot: Some(slot),
-                  priority: 0,
-                });
-              }
-              ItemKind::GoldenSword => {
-                weapons.push(Weapon {
-                  slot: Some(slot),
-                  priority: 1,
-                });
-              }
-              ItemKind::StoneSword => {
-                weapons.push(Weapon {
-                  slot: Some(slot),
-                  priority: 2,
-                });
-              }
-              ItemKind::CopperSword => {
-                weapons.push(Weapon {
-                  slot: Some(slot),
-                  priority: 3,
-                });
-              }
-              ItemKind::IronSword => {
-                weapons.push(Weapon {
-                  slot: Some(slot),
-                  priority: 4,
-                });
-              }
-              ItemKind::DiamondSword => {
-                weapons.push(Weapon {
-                  slot: Some(slot),
-                  priority: 5,
-                });
-              }
-              ItemKind::NetheriteSword => {
-                weapons.push(Weapon {
-                  slot: Some(slot),
-                  priority: 6,
-                });
-              }
-              _ => {}
-            },
-            WeaponType::Axe => match item.kind() {
-              ItemKind::WoodenAxe => {
-                weapons.push(Weapon {
-                  slot: Some(slot),
-                  priority: 0,
-                });
-              }
-              ItemKind::GoldenAxe => {
-                weapons.push(Weapon {
-                  slot: Some(slot),
-                  priority: 1,
-                });
-              }
-              ItemKind::StoneAxe => {
-                weapons.push(Weapon {
-                  slot: Some(slot),
-                  priority: 2,
-                });
-              }
-              ItemKind::CopperAxe => {
-                weapons.push(Weapon {
-                  slot: Some(slot),
-                  priority: 3,
-                });
-              }
-              ItemKind::IronAxe => {
-                weapons.push(Weapon {
-                  slot: Some(slot),
-                  priority: 4,
-                });
-              }
-              ItemKind::DiamondAxe => {
-                weapons.push(Weapon {
-                  slot: Some(slot),
-                  priority: 5,
-                });
-              }
-              ItemKind::NetheriteAxe => {
-                weapons.push(Weapon {
-                  slot: Some(slot),
-                  priority: 6,
-                });
-              }
-              _ => {}
-            },
-          }
-        }
+    for (id, level) in enchantments {
+      match id.as_str() {
+        "minecraft:fire_aspect" => priority += *level,
+        "minecraft:knockback" => priority += *level,
+        "minecraft:looting" => priority += *level,
+        "minecraft:smite" => priority += *level,
+        "minecraft:sweeping_edge" => priority += *level,
+        "minecraft:unbreaking" => priority += *level,
+
+        // Никогда не понимал что делает эта чара, хаха,
+        // думаю, стоит занизить ей приоретет на еденицу
+        "minecraft:bane_of_arthropods" => priority += if *level > 0 { *level - 1 } else { 0 },
+
+        // Этим чарам явно требуется повышенный приоретет
+        "minecraft:mending" => priority += 2,
+        "minecraft:sharpness" => priority += *level + 1,
+
+        _ => {}
       }
     }
 
-    let mut best_weapon = Weapon {
-      slot: None,
-      priority: 0,
+    priority
+  }
+
+  /// Метод взятия оружия в руку
+  async fn take_weapon(bot: &Client, index: &u8, weapon_type: &WeaponType) {
+    let Some(menu) = bot.get_inventory_menu() else {
+      return;
     };
 
-    for w in weapons {
-      if w.priority > best_weapon.priority {
-        best_weapon = w;
+    let mut best_weapon = Weapon {
+      slot: None,
+      material_priority: 0,
+      enchantments_priority: 0,
+    };
+
+    for (slot, item) in menu.slots().iter().enumerate() {
+      if item.is_empty() {
+        continue;
+      }
+
+      let Some(meta) = bot.extract_item_meta(item) else {
+        continue;
+      };
+
+      let mut material_priority = None;
+
+      match weapon_type {
+        WeaponType::Sword => match item.kind() {
+          ItemKind::WoodenSword => {
+            material_priority = Some(0);
+          }
+          ItemKind::GoldenSword => {
+            material_priority = Some(1);
+          }
+          ItemKind::StoneSword => {
+            material_priority = Some(2);
+          }
+          ItemKind::CopperSword => {
+            material_priority = Some(3);
+          }
+          ItemKind::IronSword => {
+            material_priority = Some(4);
+          }
+          ItemKind::DiamondSword => {
+            material_priority = Some(5);
+          }
+          ItemKind::NetheriteSword => {
+            material_priority = Some(6);
+          }
+          _ => {}
+        },
+        WeaponType::Axe => match item.kind() {
+          ItemKind::WoodenAxe => {
+            material_priority = Some(0);
+          }
+          ItemKind::GoldenAxe => {
+            material_priority = Some(1);
+          }
+          ItemKind::StoneAxe => {
+            material_priority = Some(2);
+          }
+          ItemKind::CopperAxe => {
+            material_priority = Some(3);
+          }
+          ItemKind::IronAxe => {
+            material_priority = Some(4);
+          }
+          ItemKind::DiamondAxe => {
+            material_priority = Some(5);
+          }
+          ItemKind::NetheriteAxe => {
+            material_priority = Some(6);
+          }
+          _ => {}
+        },
+      }
+
+      let Some(mp) = material_priority else {
+        continue;
+      };
+
+      let ep = Self::calc_item_enchantments_priority(&meta.enchantments);
+
+      if mp - best_weapon.material_priority >= 2 {
+        best_weapon = Weapon {
+          slot: Some(slot),
+          material_priority: mp,
+          enchantments_priority: ep,
+        };
+
+        continue;
+      }
+
+      if ep - best_weapon.enchantments_priority >= 4 {
+        best_weapon = Weapon {
+          slot: Some(slot),
+          material_priority: mp,
+          enchantments_priority: ep,
+        };
+
+        continue;
+      }
+
+      if mp > best_weapon.material_priority {
+        best_weapon = Weapon {
+          slot: Some(slot),
+          material_priority: mp,
+          enchantments_priority: ep,
+        };
+      }
+
+      if ep > best_weapon.enchantments_priority {
+        best_weapon = Weapon {
+          slot: Some(slot),
+          material_priority: mp,
+          enchantments_priority: ep,
+        };
+
+        continue;
       }
     }
 
     if let Some(slot) = best_weapon.slot {
-      bot.take_item(index, slot, true).await;
+      bot.take_item(index, slot, false).await;
     }
   }
 
@@ -286,11 +323,11 @@ impl KillauraModule {
       loop {
         take_bot!(&index, async |bot| {
           bot.start_crouching();
-          sleep!(randnum(100, 800));
+          sleep!(randnum(300, 800));
           bot.stop_crouching();
         });
 
-        sleep!(randnum(400, 1500));
+        sleep!(randnum(600, 1500));
       }
     });
 
@@ -312,7 +349,12 @@ impl KillauraModule {
             let eye_pos = bot.eye_pos();
 
             if eye_pos.distance_to(bot.get_entity_position(entity)) > min_distance_to_target {
-              bot.start_jumping();
+              if eye_pos.distance_to(bot.get_entity_position(entity)) - min_distance_to_target
+                > min_distance_to_target * 1.5
+              {
+                bot.jump();
+              }
+
               bot.start_sprinting(&index, SprintDirection::Forward).await;
 
               if getst(&index, State::CanLooking).await {
@@ -323,15 +365,11 @@ impl KillauraModule {
                 setmst(&index, StateName::Looking, false).await;
               }
             } else {
-              bot.stop_jumping();
-
               if getst(&index, State::IsSprinting).await {
                 bot.stop_move(&index).await;
               }
             }
           } else {
-            bot.stop_jumping();
-
             if getst(&index, State::IsSprinting).await {
               bot.stop_move(&index).await;
             }
@@ -410,7 +448,7 @@ impl KillauraModule {
     if options.use_critical {
       bot.jump();
 
-      sleep!(randnum(500, 600));
+      sleep!(randnum(400, 500));
 
       let bot_pos = bot.feet_pos();
       let entity_pos = bot.get_entity_position(entity);
@@ -515,7 +553,6 @@ impl SalarixiModule<KillauraOptions> for KillauraModule {
       take_bot!(&index, async |bot| {
         bot.stop_move(&index).await;
         bot.stop_crouching();
-        bot.stop_jumping();
       });
 
       setmst(&index, StateName::Looking, false).await;
