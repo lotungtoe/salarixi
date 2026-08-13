@@ -620,16 +620,16 @@ async function listenSystemEvents(): Promise<void> {
 			const statusId = buf.readU8();
 			const connectedBots = buf.readU8();
 			const totalBots = buf.readU8();
+			const antiCaptchaEnabled = buf.readU8() === 0x01;
+			const captchaType = buf.readU8();
+			const captchaSolveMode = buf.readU8();
 
 			processActivity = activity;
 
 			if (processActivity) {
 				monitoringModule.maxChatHistoryLength = parseInt((document.getElementById("monitoring_option_chat-history-length") as HTMLInputElement).value || "50");
 				monitoringModule.enable();
-
-				// TODO: Сделать синхронизацию опций, пока без этого
-				// if (options.basic.use_anti_captcha) captchaModule.enable(options.captcha_bypass.captcha_type, options.captcha_bypass.solve_mode);
-
+				if (antiCaptchaEnabled) captchaModule.enable(captchaType, captchaSolveMode);
 				radarModule.enable();
 			} else {
 				monitoringModule.disable();

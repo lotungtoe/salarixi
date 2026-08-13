@@ -17,8 +17,8 @@ use crate::bot::systems::profile::PROFILE_SYSTEM;
 use crate::bot::utils::radar::RADAR;
 use crate::bot::MODULES;
 use crate::commands::enumeration::ClientCommand;
-use crate::launch::options::LaunchOptions;
-use crate::launch::process::{process_is_active, process_status_payload, PROCESS_ACTIVITY};
+use crate::launch::options::{CaptchaSolveMode, CaptchaType, LaunchOptions};
+use crate::launch::process::{current_options, process_is_active, process_status_payload, PROCESS_ACTIVITY};
 use crate::launch::runner::{launch_bots_on_server, stop_bots_and_destroy_data};
 use crate::server::{write_to_socket, write_to_sockets, Sockets};
 use crate::take_profile;
@@ -65,6 +65,7 @@ pub async fn execute_client_command(
           buf.put_u8(0x00);
 
           write_to_sockets(sockets, &buf).await;
+          synchronize_all(sockets).await;
 
           return Ok(());
         }
@@ -77,6 +78,7 @@ pub async fn execute_client_command(
       buf.put_u8(status);
 
       write_to_sockets(sockets, &buf).await;
+      synchronize_all(sockets).await;
     }
     ClientCommand::StopBots => {
       let status = stop_bots_and_destroy_data().await;
@@ -86,6 +88,7 @@ pub async fn execute_client_command(
       buf.put_u8(status);
 
       write_to_sockets(sockets, &buf).await;
+      synchronize_all(sockets).await;
     }
     ClientCommand::QuickAction => {
       let Some(action) = QuickAction::from_index(data.try_get_u8()?) else {
@@ -189,22 +192,55 @@ pub async fn execute_client_command(
     }
     // TODO: Реализовать нормальную логику синхронизации клиентов
     ClientCommand::Synchronize => {
-      let process = process_status_payload().await;
-
-      let mut buf = BytesMut::new();
-      buf.put_u8(0x0C);
-      buf.put_u8(if PROCESS_ACTIVITY.load(Ordering::SeqCst) {
-        0x01
-      } else {
-        0x02
-      });
-      buf.put_u8(process.status_id);
-      buf.put_u8(process.connected_bots);
-      buf.put_u8(process.total_bots);
-
-      write_to_socket(&addr, writer, cipher, &buf).await;
+      synchronize(&addr, writer, cipher).await;
     }
   }
 
   Ok(())
+}
+
+async fn create_sync_buf() -> Option<Bytes> {
+  let process = process_status_payload().await;
+
+  let Some(opts) = current_options().await else {
+    return None;
+  };
+
+  let mut buf = BytesMut::new();
+  buf.put_u8(0x0C);
+  buf.put_u8(if PROCESS_ACTIVITY.load(Ordering::SeqCst) {
+    0x01
+  } else {
+    0x02
+  });
+  buf.put_u8(process.status_id);
+  buf.put_u8(process.connected_bots);
+  buf.put_u8(process.total_bots);
+  buf.put_u8(if opts.basic.use_anti_captcha { 0x01 } else { 0x00 });
+  buf.put_u8(match opts.captcha_bypass.captcha_type {
+    CaptchaType::Web => 0x00,
+    CaptchaType::Map => 0x01,
+  });
+  buf.put_u8(match opts.captcha_bypass.solve_mode {
+    CaptchaSolveMode::Manual => 0x00,
+    CaptchaSolveMode::Auto => 0x01,
+  });
+
+  Some(buf.freeze())
+}
+
+async fn synchronize(addr: &str, writer: &Arc<RwLock<OwnedWriteHalf>>, cipher: &Arc<Aes256Gcm>) {
+  let Some(buf) = create_sync_buf().await else {
+    return;
+  };
+
+  write_to_socket(addr, writer, cipher, &buf).await;
+}
+
+async fn synchronize_all(sockets: &Sockets) {
+  let Some(buf) = create_sync_buf().await else {
+    return;
+  };
+
+  write_to_sockets(sockets, &buf).await;
 }

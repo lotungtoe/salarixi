@@ -2089,10 +2089,11 @@ button svg {
 
 .chat-content .line {
   display: flex;
+  flex-direction: column;
   width: 100%;
   background: var(--secondary-bg);
-  justify-content: flex-start;
-  align-items: center;
+  justify-content: center;
+  align-items: start;
   color: var(--default-color);
   padding: 6px 8px;
   font-family: var(--global-font-family);
