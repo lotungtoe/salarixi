@@ -2366,6 +2366,17 @@
       }
     },
     {
+      "versions": "1.1.1",
+      "tag": "prediction",
+      "lang": {
+        "ru": "Предугадывание",
+        "en": "Prediction",
+        "tr": "Tahmin",
+        "ja": "予測",
+        "zh": "預言"
+      }
+    },
+    {
       "versions": "1.1.0:1.1.1",
       "tag": "vanilla",
       "lang": {

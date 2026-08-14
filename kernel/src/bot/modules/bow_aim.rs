@@ -1,3 +1,4 @@
+use azalea::ecs::entity::Entity;
 use azalea::prelude::*;
 use azalea::registry::builtin::ItemKind;
 use azalea::Vec3;
@@ -5,14 +6,14 @@ use salarixi_extensions::buffer::BufferExt;
 use salarixi_extensions::index::IndexExt;
 use salarixi_macros::Index;
 
-use crate::bot::extensions::{BotDefaultExt, BotInteractExt, BotInventoryExt, EntityType};
-use crate::bot::systems::states::{getst, setmst, State, StateName};
+use crate::bot::extensions::{BotDefaultExt, BotInteractExt, BotInventoryExt, BotMovementExt, EntityType};
+use crate::bot::systems::states::{getst, setmst, setst, State, StateName};
 use crate::bot::systems::tasks::{gettskact, killtsk, pushetsk, pushrtsk, TaskName};
 use crate::bot::traits::SalarixiModule;
 use crate::tools::*;
 use crate::{sleep, take_bot};
 
-#[derive(PartialEq, Index)]
+#[derive(Clone, Copy, PartialEq, Index)]
 enum Target {
   Player = 0,
   Monster = 1,
@@ -40,8 +41,9 @@ impl Target {
 pub struct BowAimOptions {
   target: Target,
   target_nickname: Option<String>,
-  delay: Option<u64>,
+  shoot_delay: Option<u64>,
   max_distance: Option<f64>,
+  use_prediction: bool,
   state: u8,
 }
 
@@ -50,8 +52,9 @@ impl BowAimOptions {
     Some(Self {
       target: Target::from_index(u8::read(buf)?)?,
       target_nickname: Option::read(buf)?,
-      delay: Option::read(buf)?,
+      shoot_delay: Option::read(buf)?,
       max_distance: Option::read(buf)?,
+      use_prediction: bool::read(buf)?,
       state: u8::read(buf)?,
     })
   }
@@ -64,19 +67,94 @@ impl BowAimModule {
     Self
   }
 
-  fn find_bow_in_inventory(bot: &Client) -> Option<usize> {
+  /// Метод проверки, есть ли стрелы в инвентаре
+  async fn arrows_exist(bot: &Client) -> bool {
     if let Some(menu) = bot.get_inventory_menu() {
-      for (slot, item) in menu.slots().iter().enumerate() {
-        if item.kind() == ItemKind::Bow {
-          return Some(slot);
+      for (_, item) in menu.slots().iter().enumerate() {
+        if item.kind() == ItemKind::Arrow || item.kind() == ItemKind::SpectralArrow {
+          return true;
         }
       }
     }
 
-    None
+    false
   }
 
-  async fn aiming(index: u8, target: String, distance: f64) {
+  /// Метод взятия лука в руку
+  async fn take_bow(bot: &Client, index: &u8) -> bool {
+    if let Some(menu) = bot.get_inventory_menu() {
+      for (slot, item) in menu.slots().iter().enumerate() {
+        if item.kind() == ItemKind::Bow {
+          bot.take_item(index, slot, true).await;
+          return true;
+        }
+      }
+    }
+
+    false
+  }
+
+  /// Метод поиска ближайшей сущности
+  fn find_nearest_entity(
+    bot: &Client,
+    target: Target,
+    target_nickname: Option<String>,
+    max_distance: f64,
+  ) -> Option<Entity> {
+    let target = if target == Target::Custom {
+      target_nickname
+    } else {
+      Some(target.to_string())
+    };
+
+    let Some(target) = target else {
+      return None;
+    };
+
+    bot.find_nearest_entity(EntityType::from(target), max_distance)
+  }
+
+  /// Метод предугадывания следующей позиции сущности
+  async fn predict_entity_position(bot: &Client, entity: Entity) -> Vec3 {
+    let old_pos = bot.get_entity_position(entity);
+
+    sleep!(100);
+
+    let mut predicted_pos = bot.get_entity_position(entity);
+
+    let diff_x = predicted_pos.x - old_pos.x;
+    let diff_y = predicted_pos.y - old_pos.y;
+    let diff_z = predicted_pos.z - old_pos.z;
+
+    let distance = bot.eye_pos().distance_to(predicted_pos);
+
+    predicted_pos.x += diff_x.powi(1);
+    predicted_pos.y += diff_y.powi(1);
+    predicted_pos.z += diff_z.powi(1);
+
+    if diff_x != 0.0 {
+      predicted_pos.x += diff_x + distance * ((diff_x / 100.0) * 11.0);
+    }
+
+    if diff_y != 0.0 {
+      predicted_pos.y += diff_y + distance * ((diff_x / 100.0) * 10.0);
+    }
+
+    if diff_z != 0.0 {
+      predicted_pos.z += diff_z + distance * ((diff_z / 100.0) * 11.0);
+    }
+
+    predicted_pos
+  }
+
+  /// Метод запуска автоматической наводки
+  async fn start_aiming(
+    index: u8,
+    target: Target,
+    target_nickname: Option<String>,
+    distance: f64,
+    use_prediction: bool,
+  ) {
     let extra_task = tokio::spawn(async move {
       loop {
         if !getst(&index, State::CanLooking).await {
@@ -84,28 +162,30 @@ impl BowAimModule {
           continue;
         }
 
-        let mut nearest_entity_exist = false;
+        let mut target_entity_exist = false;
 
         take_bot!(&index, async |bot| {
-          if let Some(entity) = bot.find_nearest_entity(EntityType::from(target.clone()), distance) {
-            nearest_entity_exist = true;
+          if let Some(entity) = Self::find_nearest_entity(bot, target, target_nickname.clone(), distance) {
+            target_entity_exist = true;
 
-            let dest_pos = bot.get_entity_position(entity);
+            let dest_pos = if use_prediction {
+              Self::predict_entity_position(bot, entity).await
+            } else {
+              bot.get_entity_position(entity)
+            };
 
-            setmst(&index, StateName::Looking, true).await;
-            sleep!(randnum(50, 100));
             bot.look_at(Vec3::new(
               dest_pos.x,
               dest_pos.y + bot.get_entity_eye_height(entity),
               dest_pos.z,
             ));
-            sleep!(randnum(50, 100));
-            setmst(&index, StateName::Looking, false).await;
           }
         });
 
-        if !nearest_entity_exist {
+        if !target_entity_exist {
           sleep!(200);
+        } else {
+          sleep!(50);
         }
       }
     });
@@ -113,77 +193,101 @@ impl BowAimModule {
     pushetsk(&index, TaskName::BowAim, extra_task).await;
   }
 
-  async fn shoot(bot: &Client, index: &u8, target: String, distance: f64) {
-    if !getst(index, State::CanInteracting).await {
+  /// Метод выстрела из лука
+  async fn shoot(
+    bot: &Client,
+    index: &u8,
+    target: Target,
+    target_nickname: Option<String>,
+    distance: f64,
+    use_prediction: bool,
+  ) {
+    if !getst(index, State::CanInteracting).await || !getst(index, State::CanLooking).await {
       return;
     }
 
-    let Some(bow_slot) = Self::find_bow_in_inventory(bot) else {
+    if !Self::arrows_exist(bot).await {
+      return;
+    }
+
+    if !Self::take_bow(bot, index).await {
+      return;
+    }
+
+    let Some(entity) = Self::find_nearest_entity(bot, target, target_nickname.clone(), distance) else {
       return;
     };
 
-    let mut bow_picked = false;
-
-    if gettskact(index, TaskName::Killaura).await && bow_slot != 45 {
-      if let Some(item) = bot.get_item_by_slot(45) {
-        if item.is_empty() {
-          bot.inventory_swap_click(index, bow_slot, 45, true).await;
-          bow_picked = true;
-        }
-      }
-    }
-
-    if !bow_picked {
-      bot.take_item(index, bow_slot, true).await;
-    }
-
+    bot.freeze_move(index).await;
+    setst(index, State::CanAttacking, false).await;
+    setst(index, State::CanDrinking, false).await;
+    setst(index, State::CanEating, false).await;
+    setst(index, State::CanLooking, false).await;
     setmst(index, StateName::Interacting, true).await;
 
+    sleep!(50);
     bot.start_use_item();
-
     sleep!(randnum(900, 1100));
 
-    if let Some(entity) = bot.find_nearest_entity(EntityType::from(target), distance) {
-      let dest_pos = bot.get_entity_position(entity);
+    let dest_pos = if use_prediction {
+      Self::predict_entity_position(bot, entity).await
+    } else {
+      bot.get_entity_position(entity)
+    };
+    let distance = bot.eye_pos().distance_to(dest_pos);
+
+    bot.look_at(Vec3::new(dest_pos.x, dest_pos.y + distance * 0.09, dest_pos.z));
+
+    if distance > 40.0 {
+      bot.jump();
+
+      sleep!(100);
+
+      let dest_pos = if use_prediction {
+        Self::predict_entity_position(bot, entity).await
+      } else {
+        bot.get_entity_position(entity)
+      };
       let distance = bot.eye_pos().distance_to(dest_pos);
 
-      bot.look_at(Vec3::new(dest_pos.x, dest_pos.y + distance * 0.16, dest_pos.z));
-
-      if distance > 50.0 {
-        bot.jump();
-
-        sleep!(100);
-
-        let dest_pos = bot.get_entity_position(entity);
-        let distance = bot.eye_pos().distance_to(dest_pos);
-
-        bot.look_at(Vec3::new(dest_pos.x, dest_pos.y + distance * 0.12, dest_pos.z));
-      }
-
-      sleep!(50);
+      bot.look_at(Vec3::new(dest_pos.x, dest_pos.y + distance * 0.12, dest_pos.z));
     }
+
+    sleep!(50);
 
     bot.release_use_item();
 
     setmst(index, StateName::Interacting, false).await;
+    bot.unfreeze_move(index).await;
+    setst(index, State::CanAttacking, true).await;
+    setst(index, State::CanDrinking, true).await;
+    setst(index, State::CanEating, true).await;
+    setst(index, State::CanLooking, true).await;
   }
 
   async fn start(bot: &Client, index: &u8, options: &BowAimOptions) {
-    let target = if options.target == Target::Custom {
-      options.target_nickname.clone()
-    } else {
-      Some(options.target.to_string())
-    };
+    let distance = options.max_distance.unwrap_or(70.0);
 
-    let Some(t) = target else {
-      return;
-    };
-
-    Self::aiming(*index, t.clone(), options.max_distance.unwrap_or(70.0)).await;
+    Self::start_aiming(
+      *index,
+      options.target,
+      options.target_nickname.clone(),
+      distance,
+      options.use_prediction,
+    )
+    .await;
 
     loop {
-      Self::shoot(bot, index, t.clone(), options.max_distance.unwrap_or(70.0)).await;
-      sleep!(options.delay.unwrap_or(50));
+      Self::shoot(
+        bot,
+        index,
+        options.target,
+        options.target_nickname.clone(),
+        distance,
+        options.use_prediction,
+      )
+      .await;
+      sleep!(options.shoot_delay.unwrap_or(50));
     }
   }
 }
