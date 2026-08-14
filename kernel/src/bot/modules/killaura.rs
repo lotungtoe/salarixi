@@ -1,7 +1,7 @@
 use azalea::ecs::entity::Entity;
-use azalea::prelude::*;
 use azalea::registry::builtin::ItemKind;
 use azalea::SprintDirection;
+use azalea::{prelude::*, WalkDirection};
 use salarixi_extensions::buffer::BufferExt;
 use salarixi_extensions::index::IndexExt;
 use salarixi_macros::Index;
@@ -70,7 +70,7 @@ pub struct KillauraOptions {
   target_nickname: Option<String>,
   weapon_slot: Option<u8>,
   attack_distance: Option<f64>,
-  delay: Option<u64>,
+  attack_delay: Option<u64>,
   chase_distance: Option<f64>,
   min_distance_to_target: Option<f64>,
   use_auto_weapon: bool,
@@ -90,7 +90,7 @@ impl KillauraOptions {
       target_nickname: Option::read(buf)?,
       weapon_slot: Option::read(buf)?,
       attack_distance: Option::read(buf)?,
-      delay: Option::read(buf)?,
+      attack_delay: Option::read(buf)?,
       chase_distance: Option::read(buf)?,
       min_distance_to_target: Option::read(buf)?,
       use_auto_weapon: bool::read(buf)?,
@@ -106,7 +106,7 @@ struct KillauraConfig {
   target: Target,
   weapon_slot: Option<u8>,
   attack_distance: f64,
-  delay: u64,
+  attack_delay: u64,
   chase_distance: f64,
   min_distance_to_target: f64,
 }
@@ -125,7 +125,7 @@ impl KillauraModule {
         target: options.target.clone(),
         weapon_slot: options.weapon_slot,
         attack_distance: 3.1,
-        delay: if options.behavior == Behavior::Moderate {
+        attack_delay: if options.behavior == Behavior::Moderate {
           500
         } else {
           350
@@ -138,7 +138,7 @@ impl KillauraModule {
         target: options.target.clone(),
         weapon_slot: options.weapon_slot,
         attack_distance: options.attack_distance.unwrap_or(3.1),
-        delay: options.delay.unwrap_or(500),
+        attack_delay: options.attack_delay.unwrap_or(500),
         chase_distance: options.chase_distance.unwrap_or(10.0),
         min_distance_to_target: options.min_distance_to_target.unwrap_or(3.0),
       }
@@ -179,7 +179,7 @@ impl KillauraModule {
         "minecraft:unbreaking" => priority += *level,
 
         // Никогда не понимал что делает эта чара, хаха,
-        // думаю, стоит занизить ей приоретет на еденицу
+        // думаю, стоит занизить ей приоретет на единицу
         "minecraft:bane_of_arthropods" => priority += if *level > 0 { *level - 1 } else { 0 },
 
         // Этим чарам явно требуется повышенный приоретет
@@ -273,7 +273,13 @@ impl KillauraModule {
 
       let ep = Self::calc_item_enchantments_priority(&meta.enchantments);
 
-      if mp - best_weapon.material_priority >= 2 {
+      let material_diff = if best_weapon.material_priority > mp {
+        best_weapon.material_priority - mp
+      } else {
+        mp - best_weapon.material_priority
+      };
+
+      if material_diff >= 2 {
         best_weapon = Weapon {
           slot: Some(slot),
           material_priority: mp,
@@ -283,7 +289,13 @@ impl KillauraModule {
         continue;
       }
 
-      if ep - best_weapon.enchantments_priority >= 4 {
+      let enchantments_diff = if best_weapon.enchantments_priority > ep {
+        best_weapon.enchantments_priority - ep
+      } else {
+        ep - best_weapon.enchantments_priority
+      };
+
+      if enchantments_diff >= 4 {
         best_weapon = Weapon {
           slot: Some(slot),
           material_priority: mp,
@@ -299,6 +311,8 @@ impl KillauraModule {
           material_priority: mp,
           enchantments_priority: ep,
         };
+
+        continue;
       }
 
       if ep > best_weapon.enchantments_priority {
@@ -307,31 +321,12 @@ impl KillauraModule {
           material_priority: mp,
           enchantments_priority: ep,
         };
-
-        continue;
       }
     }
 
     if let Some(slot) = best_weapon.slot {
       bot.take_item(index, slot, false).await;
     }
-  }
-
-  /// Метод включения доджинга
-  async fn start_dodging(index: u8) {
-    let extra_task = tokio::spawn(async move {
-      loop {
-        take_bot!(&index, async |bot| {
-          bot.start_crouching();
-          sleep!(randnum(300, 800));
-          bot.stop_crouching();
-        });
-
-        sleep!(randnum(600, 1500));
-      }
-    });
-
-    pushetsk(&index, TaskName::Killaura, extra_task).await;
   }
 
   /// Метод включения преследования
@@ -344,11 +339,15 @@ impl KillauraModule {
   ) {
     let extra_task = tokio::spawn(async move {
       loop {
+        let mut target_entity_exist = false;
+
         take_bot!(&index, async |bot| {
           if let Some(entity) = Self::find_nearest_entity(&bot, target.clone(), target_nickname.clone(), distance) {
             let eye_pos = bot.eye_pos();
 
             if eye_pos.distance_to(bot.get_entity_position(entity)) > min_distance_to_target {
+              target_entity_exist = true;
+
               if eye_pos.distance_to(bot.get_entity_position(entity)) - min_distance_to_target
                 > min_distance_to_target * 1.5
               {
@@ -376,7 +375,11 @@ impl KillauraModule {
           }
         });
 
-        sleep!(50);
+        if target_entity_exist {
+          sleep!(50);
+        } else {
+          sleep!(200);
+        }
       }
     });
 
@@ -392,21 +395,21 @@ impl KillauraModule {
           continue;
         }
 
-        let mut nearest_entity_exist = false;
+        let mut target_entity_exist = false;
 
         take_bot!(&index, async |bot| {
           if let Some(entity) = Self::find_nearest_entity(&bot, target.clone(), target_nickname.clone(), distance) {
-            nearest_entity_exist = true;
+            target_entity_exist = true;
 
             setmst(&index, StateName::Looking, true).await;
-            sleep!(randnum(50, 100));
+            sleep!(50);
             bot.look_at_entity(entity, false);
-            sleep!(randnum(50, 100));
+            sleep!(50);
             setmst(&index, StateName::Looking, false).await;
           }
         });
 
-        if !nearest_entity_exist {
+        if !target_entity_exist {
           sleep!(200);
         }
       }
@@ -415,8 +418,44 @@ impl KillauraModule {
     pushetsk(&index, TaskName::Killaura, extra_task).await;
   }
 
+  /// Метод уклонения от атаки целевой сущности
+  async fn dodge(bot: &Client, index: &u8) {
+    let num = randnum(0, 2);
+
+    match num {
+      0 => {
+        let direction = randelem(&[
+          WalkDirection::Backward,
+          WalkDirection::BackwardLeft,
+          WalkDirection::BackwardRight,
+        ]);
+
+        bot.start_walking(index, *direction).await;
+        sleep!(randnum(200, 300));
+        bot.stop_move(index).await;
+      }
+      1 => {
+        bot.start_crouching();
+        sleep!(randnum(300, 400));
+        bot.stop_crouching();
+      }
+      2 => {
+        let direction = randelem(&[WalkDirection::ForwardLeft, WalkDirection::ForwardRight]);
+
+        bot.start_walking(index, *direction).await;
+        sleep!(randnum(300, 500));
+        bot.stop_move(index).await;
+      }
+      _ => {}
+    }
+  }
+
   /// Метод атаки указанной сущности
   async fn attack(bot: &Client, index: &u8, options: &KillauraOptions, config: &KillauraConfig) {
+    if !getst(index, State::CanAttacking).await {
+      return;
+    }
+
     let Some(entity) = Self::find_nearest_entity(
       bot,
       config.target.clone(),
@@ -437,11 +476,7 @@ impl KillauraModule {
       if let Some(slot) = config.weapon_slot {
         if slot <= 8 {
           bot.set_selected_hotbar_slot(slot);
-        } else {
-          Self::take_weapon(bot, index, &options.weapon).await;
         }
-      } else {
-        Self::take_weapon(bot, &index, &options.weapon).await;
       }
     }
 
@@ -460,6 +495,10 @@ impl KillauraModule {
       }
     } else {
       bot.attack(entity);
+    }
+
+    if options.use_dodging {
+      Self::dodge(bot, index).await;
     }
 
     setmst(index, StateName::Attacking, false).await;
@@ -491,13 +530,9 @@ impl KillauraModule {
       .await;
     }
 
-    if options.use_dodging {
-      Self::start_dodging(index).await;
-    }
-
     loop {
       Self::attack(bot, &index, options, &config).await;
-      sleep!(config.delay);
+      sleep!(config.attack_delay);
     }
   }
 
@@ -516,13 +551,9 @@ impl KillauraModule {
       .await;
     }
 
-    if options.use_dodging {
-      Self::start_dodging(index).await;
-    }
-
     loop {
       Self::attack(bot, &index, options, &config).await;
-      sleep!(config.delay);
+      sleep!(config.attack_delay);
     }
   }
 
