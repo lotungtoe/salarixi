@@ -1,5 +1,6 @@
 use azalea::ecs::entity::Entity;
 use azalea::prelude::*;
+use azalea::protocol::packets::game::s_interact::InteractionHand;
 use azalea::registry::builtin::ItemKind;
 use azalea::Vec3;
 use salarixi_extensions::buffer::BufferExt;
@@ -116,7 +117,7 @@ impl BowAimModule {
   async fn predict_entity_position(bot: &Client, entity: Entity) -> Vec3 {
     let old_pos = bot.get_entity_position(entity);
 
-    sleep!(100);
+    sleep!(50);
 
     let mut predicted_pos = bot.get_entity_position(entity);
 
@@ -224,7 +225,7 @@ impl BowAimModule {
     setmst(index, StateName::Interacting, true).await;
 
     sleep!(50);
-    bot.start_use_item();
+    bot.start_use_item_by(InteractionHand::MainHand);
     sleep!(randnum(900, 1100));
 
     let dest_pos = if use_prediction {
@@ -248,7 +249,7 @@ impl BowAimModule {
       };
       let distance = bot.eye_pos().distance_to(dest_pos);
 
-      bot.look_at(Vec3::new(dest_pos.x, dest_pos.y + distance * 0.12, dest_pos.z));
+      bot.look_at(Vec3::new(dest_pos.x, dest_pos.y + distance * 0.146, dest_pos.z));
     }
 
     sleep!(50);
@@ -307,10 +308,15 @@ impl SalarixiModule<BowAimOptions> for BowAimModule {
 
       take_bot!(&index, async |bot| {
         bot.release_use_item();
+        bot.unfreeze_move(&index).await;
       });
 
       setmst(&index, StateName::Looking, false).await;
       setmst(&index, StateName::Interacting, false).await;
+      setst(&index, State::CanAttacking, true).await;
+      setst(&index, State::CanDrinking, true).await;
+      setst(&index, State::CanEating, true).await;
+      setst(&index, State::CanLooking, true).await;
     } else {
       return false;
     }
