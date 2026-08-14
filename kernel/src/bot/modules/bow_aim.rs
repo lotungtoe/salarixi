@@ -19,8 +19,7 @@ enum Target {
   Monster = 1,
   Animal = 2,
   Vehicle = 3,
-  Any = 4,
-  Custom = 5,
+  Custom = 4,
 }
 
 impl Target {
@@ -30,7 +29,6 @@ impl Target {
       Self::Monster => "monster",
       Self::Animal => "animal",
       Self::Vehicle => "vehicle",
-      Self::Any => "any",
       Self::Custom => "custom",
     };
 
