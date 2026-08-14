@@ -13,12 +13,12 @@ export const plugins: Record<string, { name: string; enable: boolean; date: stri
 	"auto-eat": {
 		name: "Auto Eat",
 		enable: false,
-		date: "28.07.2026"
+		date: "14.08.2026"
 	},
 	"potion-consumer": {
 		name: "Potion Consumer",
 		enable: false,
-		date: "04.07.2026"
+		date: "14.08.2026"
 	},
 	"auto-look": {
 		name: "Auto Look",
@@ -38,6 +38,6 @@ export const plugins: Record<string, { name: string; enable: boolean; date: stri
 	"pearl-leave": {
 		name: "Pearl Leave",
 		enable: false,
-		date: "04.07.2026"
+		date: "14.08.2026"
 	},
 };

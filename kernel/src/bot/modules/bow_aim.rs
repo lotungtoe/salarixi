@@ -66,17 +66,26 @@ impl BowAimModule {
     Self
   }
 
-  /// Метод проверки, есть ли стрелы в инвентаре
-  async fn arrows_exist(bot: &Client) -> bool {
+  /// Метод проверки, есть ли стрелы и лук в инвентаре
+  async fn arrows_and_bow_exist(bot: &Client) -> bool {
+    let mut arrows_exits = false;
+    let mut bow_exits = false;
+
     if let Some(menu) = bot.get_inventory_menu() {
       for (_, item) in menu.slots().iter().enumerate() {
-        if item.kind() == ItemKind::Arrow || item.kind() == ItemKind::SpectralArrow {
-          return true;
+        if arrows_exits && bow_exits {
+          break;
+        }
+
+        match item.kind() {
+          ItemKind::Arrow | ItemKind::SpectralArrow => arrows_exits = true,
+          ItemKind::Bow => bow_exits = true,
+          _ => {}
         }
       }
     }
 
-    false
+    arrows_exits && bow_exits
   }
 
   /// Метод взятия лука в руку
@@ -205,17 +214,17 @@ impl BowAimModule {
       return;
     }
 
-    if !Self::arrows_exist(bot).await {
-      return;
-    }
-
-    if !Self::take_bow(bot, index).await {
+    if !Self::arrows_and_bow_exist(bot).await {
       return;
     }
 
     let Some(entity) = Self::find_nearest_entity(bot, target, target_nickname.clone(), distance) else {
       return;
     };
+
+    if !Self::take_bow(bot, index).await {
+      return;
+    }
 
     bot.freeze_move(index).await;
     setst(index, State::CanAttacking, false).await;

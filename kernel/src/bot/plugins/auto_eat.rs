@@ -1,9 +1,10 @@
 use azalea::entity::ActiveEffects;
 use azalea::inventory::ItemStack;
+use azalea::protocol::packets::game::s_interact::InteractionHand;
 use azalea::registry::builtin::{ItemKind, MobEffect};
 use azalea::Client;
 
-use crate::bot::extensions::{BotDefaultExt, BotInventoryExt, BotMovementExt};
+use crate::bot::extensions::{BotDefaultExt, BotInteractExt, BotInventoryExt, BotMovementExt};
 use crate::bot::plugin_manager::PluginName;
 use crate::bot::systems::states::{getst, setmst, setst, State, StateName};
 use crate::bot::systems::tasks::{gettskact, TaskName};
@@ -119,7 +120,7 @@ impl AutoEatPlugin {
     take_bot!(index, async |bot| {
       bot.freeze_move(index).await;
       bot.take_item(index, slot, false).await;
-      bot.start_use_item();
+      bot.start_use_item_by(InteractionHand::MainHand);
     });
 
     sleep!(1800);

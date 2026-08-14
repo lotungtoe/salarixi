@@ -1,9 +1,11 @@
 use azalea::entity::Physics;
 use azalea::inventory::components::PotionContents;
 use azalea::inventory::ItemStack;
+use azalea::protocol::packets::game::s_interact::InteractionHand;
 use azalea::registry::builtin::ItemKind;
 use azalea::registry::builtin::Potion as PotionKind;
 
+use crate::bot::extensions::BotInteractExt;
 use crate::bot::extensions::{BotDefaultExt, BotInventoryExt, BotMovementExt, BotPhysicsExt};
 use crate::bot::plugin_manager::PluginName;
 use crate::bot::systems::states::{getst, setmst, setst, State, StateName};
@@ -93,7 +95,7 @@ impl PotionConsumerPlugin {
 
         take_bot!(index, async |bot| {
           bot.freeze_move(index).await;
-          bot.start_use_item();
+          bot.start_use_item_by(InteractionHand::MainHand);
         });
 
         sleep!(2600);
@@ -115,7 +117,7 @@ impl PotionConsumerPlugin {
         sleep!(randnum(400, 600));
 
         take_bot!(index, async |bot| {
-          bot.start_use_item();
+          bot.start_use_item_by(InteractionHand::MainHand);
         });
 
         sleep!(randnum(300, 500));
