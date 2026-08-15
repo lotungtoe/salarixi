@@ -9,7 +9,7 @@ use crate::bot::common::{
   convert_hotbar_slot_to_inventory_slot, convert_inventory_slot_to_hotbar_slot, get_block_state, this_is_solid_block,
 };
 use crate::bot::extensions::{BotDefaultExt, BotInventoryExt, BotMovementExt, BotPhysicsExt};
-use crate::bot::systems::states::{setmst, StateName};
+use crate::bot::systems::states::{getst, setmst, State, StateName};
 use crate::bot::systems::tasks::{gettskact, killtsk, pushetsk, pushrtsk, TaskName};
 use crate::bot::traits::SalarixiModule;
 use crate::tools::*;
@@ -82,7 +82,7 @@ impl ScaffoldModule {
       }
 
       if let Some(slot) = block_slot {
-        bot.take_item(index, slot, true).await;
+        bot.take_item(index, slot, false).await;
         return true;
       }
     }
@@ -123,153 +123,180 @@ impl ScaffoldModule {
   }
 
   async fn noob_bridge_scaffold(bot: &Client, index: &u8, options: &ScaffoldOptions) {
+    let delay = options.delay.unwrap_or(50);
+
     loop {
+      if !getst(index, State::CanLooking).await
+        || !getst(index, State::CanInteracting).await
+        || !Self::take_block(bot, index).await
+      {
+        sleep!(100);
+        continue;
+      }
+
+      setmst(&index, StateName::Looking, true).await;
+      setmst(&index, StateName::Interacting, true).await;
+
       if !bot.crouching() {
         bot.set_crouching(true);
       }
 
-      if Self::take_block(bot, index).await {
-        Self::direct_gaze(bot, options.min_gaze_degree_x, options.max_gaze_degree_x);
+      Self::direct_gaze(bot, options.min_gaze_degree_x, options.max_gaze_degree_x);
 
-        let position = bot.position();
-        let block_under = BlockPos::new(
-          position.x.floor() as i32,
-          (position.y - 0.5).floor() as i32,
-          position.z.floor() as i32,
-        );
+      let pos = bot.position();
+      let block_under = BlockPos::new(pos.x.floor() as i32, (pos.y - 0.5).floor() as i32, pos.z.floor() as i32);
 
-        let is_air = if let Some(state) = get_block_state(bot, block_under) {
-          state.is_air()
-        } else {
-          false
-        };
+      let is_air = if let Some(state) = get_block_state(bot, block_under) {
+        state.is_air()
+      } else {
+        false
+      };
 
-        if is_air {
-          bot.swing_arm();
-
-          bot.start_use_item();
-
-          sleep!(randnum(100, 200));
-
-          Self::simulate_inaccuracy(bot, bot.direction());
-
-          sleep!(randnum(100, 150));
-        }
+      if is_air {
+        bot.block_interact(block_under);
+        bot.swing_arm();
+        sleep!(randnum(50, 100));
+        Self::simulate_inaccuracy(bot, bot.direction());
+        sleep!(randnum(100, 150));
       }
 
-      sleep!(options.delay.unwrap_or(25));
+      setmst(&index, StateName::Looking, false).await;
+      setmst(&index, StateName::Interacting, false).await;
+
+      sleep!(delay);
     }
   }
 
   async fn ninja_bridge_scaffold(bot: &Client, index: &u8, options: &ScaffoldOptions) {
+    let delay = options.delay.unwrap_or(50);
+
     loop {
-      if Self::take_block(bot, index).await {
-        Self::direct_gaze(bot, options.min_gaze_degree_x, options.max_gaze_degree_x);
-
-        let pos = bot.position();
-        let block_under = BlockPos::new(pos.x.floor() as i32, (pos.y - 0.5).floor() as i32, pos.z.floor() as i32);
-
-        let is_air = if let Some(state) = get_block_state(bot, block_under) {
-          state.is_air()
-        } else {
-          false
-        };
-
-        if is_air {
-          bot.set_crouching(true);
-
-          sleep!(50);
-
-          bot.swing_arm();
-
-          bot.start_use_item();
-
-          sleep!(randnum(50, 100));
-
-          Self::simulate_inaccuracy(bot, bot.direction());
-
-          sleep!(50);
-
-          bot.set_crouching(false);
-        }
+      if !getst(index, State::CanLooking).await
+        || !getst(index, State::CanInteracting).await
+        || !Self::take_block(bot, index).await
+      {
+        sleep!(100);
+        continue;
       }
 
-      sleep!(options.delay.unwrap_or(25));
+      setmst(&index, StateName::Looking, true).await;
+      setmst(&index, StateName::Interacting, true).await;
+
+      Self::direct_gaze(bot, options.min_gaze_degree_x, options.max_gaze_degree_x);
+
+      let pos = bot.position();
+      let block_under = BlockPos::new(pos.x.floor() as i32, (pos.y - 0.5).floor() as i32, pos.z.floor() as i32);
+
+      let is_air = if let Some(state) = get_block_state(bot, block_under) {
+        state.is_air()
+      } else {
+        false
+      };
+
+      if is_air {
+        bot.set_crouching(true);
+        bot.block_interact(block_under);
+        bot.swing_arm();
+        sleep!(randnum(50, 100));
+        Self::simulate_inaccuracy(bot, bot.direction());
+        sleep!(50);
+        bot.set_crouching(false);
+      }
+
+      setmst(&index, StateName::Looking, false).await;
+      setmst(&index, StateName::Interacting, false).await;
+
+      sleep!(delay);
     }
   }
 
   async fn god_bridge_scaffold(bot: &Client, index: &u8, options: &ScaffoldOptions) {
+    let delay = options.delay.unwrap_or(50);
+
     loop {
-      if Self::take_block(bot, index).await {
-        Self::direct_gaze(bot, options.min_gaze_degree_x, options.max_gaze_degree_x);
-
-        let position = bot.position();
-        let block_under = BlockPos::new(
-          position.x.floor() as i32,
-          (position.y - 0.5).floor() as i32,
-          position.z.floor() as i32,
-        );
-
-        let is_air = if let Some(state) = get_block_state(bot, block_under) {
-          state.is_air()
-        } else {
-          false
-        };
-
-        if is_air {
-          bot.swing_arm();
-
-          bot.start_use_item();
-
-          Self::simulate_inaccuracy(bot, bot.direction());
-        }
+      if !getst(index, State::CanLooking).await
+        || !getst(index, State::CanInteracting).await
+        || !Self::take_block(bot, index).await
+      {
+        sleep!(100);
+        continue;
       }
 
-      sleep!(options.delay.unwrap_or(25));
+      setmst(&index, StateName::Looking, true).await;
+      setmst(&index, StateName::Interacting, true).await;
+
+      Self::direct_gaze(bot, options.min_gaze_degree_x, options.max_gaze_degree_x);
+
+      let pos = bot.position();
+      let block_under = BlockPos::new(pos.x.floor() as i32, (pos.y - 0.5).floor() as i32, pos.z.floor() as i32);
+
+      let is_air = if let Some(state) = get_block_state(bot, block_under) {
+        state.is_air()
+      } else {
+        false
+      };
+
+      if is_air {
+        bot.block_interact(block_under);
+        bot.swing_arm();
+        Self::simulate_inaccuracy(bot, bot.direction());
+      }
+
+      setmst(&index, StateName::Looking, false).await;
+      setmst(&index, StateName::Interacting, false).await;
+
+      sleep!(delay);
     }
   }
 
   async fn jump_bridge_scaffold(bot: &Client, index: &u8, options: &ScaffoldOptions) {
+    let delay = options.delay.unwrap_or(50);
+
     loop {
-      if Self::take_block(bot, index).await {
-        Self::direct_gaze(bot, options.min_gaze_degree_x, options.max_gaze_degree_x);
-
-        let position = bot.position();
-        let velocity = if let Some(physics) = bot.get_physics() {
-          physics.velocity
-        } else {
-          Vec3::ZERO
-        };
-
-        let block_under = BlockPos::new(
-          position.x.floor() as i32,
-          (if velocity.y != 0.0 {
-            position.y - 1.0
-          } else {
-            position.y - 0.5
-          })
-          .floor() as i32,
-          position.z.floor() as i32,
-        );
-
-        let is_air = if let Some(state) = get_block_state(bot, block_under) {
-          state.is_air()
-        } else {
-          false
-        };
-
-        if is_air {
-          bot.jump();
-
-          bot.swing_arm();
-
-          bot.start_use_item();
-
-          Self::simulate_inaccuracy(bot, bot.direction());
-        }
+      if !getst(index, State::CanLooking).await
+        || !getst(index, State::CanInteracting).await
+        || !Self::take_block(bot, index).await
+      {
+        sleep!(100);
+        continue;
       }
 
-      sleep!(options.delay.unwrap_or(25));
+      setmst(&index, StateName::Looking, true).await;
+      setmst(&index, StateName::Interacting, true).await;
+
+      Self::direct_gaze(bot, options.min_gaze_degree_x, options.max_gaze_degree_x);
+
+      let velocity = if let Some(physics) = bot.get_physics() {
+        physics.velocity
+      } else {
+        Vec3::ZERO
+      };
+
+      let pos = bot.position();
+      let block_under = BlockPos::new(
+        pos.x.floor() as i32,
+        (if velocity.y != 0.0 { pos.y - 1.0 } else { pos.y - 0.5 }).floor() as i32,
+        pos.z.floor() as i32,
+      );
+
+      let is_air = if let Some(state) = get_block_state(bot, block_under) {
+        state.is_air()
+      } else {
+        false
+      };
+
+      if is_air {
+        bot.jump();
+        sleep!(50);
+        bot.block_interact(block_under);
+        bot.swing_arm();
+        Self::simulate_inaccuracy(bot, bot.direction());
+      }
+
+      setmst(&index, StateName::Looking, false).await;
+      setmst(&index, StateName::Interacting, false).await;
+
+      sleep!(delay);
     }
   }
 
@@ -301,8 +328,8 @@ impl SalarixiModule<ScaffoldOptions> for ScaffoldModule {
       killtsk(&index, TaskName::Scaffold).await;
 
       take_bot!(&index, async |bot| {
-        bot.set_crouching(false);
         bot.stop_move(&index).await;
+        bot.set_crouching(false);
       });
 
       setmst(&index, StateName::Looking, false).await;
