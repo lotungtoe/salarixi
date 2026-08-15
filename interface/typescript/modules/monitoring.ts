@@ -290,7 +290,7 @@ class MonitoringModule {
 		health.innerText = profile.health.toString();
 
 		// Если группа по умолчанию её можно и не отображать, это ни на что не повлияет
-		if (profile.group !== "global") group.value = profile.group;
+		group.value = profile.group == "global" ? "" : profile.group;
 	}
 
 	/** Метод инициализации карточки бота */
