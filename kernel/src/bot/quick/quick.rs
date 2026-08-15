@@ -3,13 +3,15 @@ use std::f32::consts::PI;
 use azalea::bot::BotClientExt;
 use azalea::core::position::BlockPos;
 use azalea::prelude::PathfinderClientExt;
-use azalea::{Vec3, WalkDirection};
+use azalea::WalkDirection;
 use once_cell::sync::Lazy;
 use salarixi_extensions::index::IndexExt;
 use salarixi_macros::Index;
 
 use crate::bot::common::{get_average_coordinates_of_bots, this_is_solid_block};
-use crate::bot::extensions::{go_to, BotDefaultExt, BotInventoryExt, BotMovementExt, BotPhysicsExt, ClickMode};
+use crate::bot::extensions::{
+  go_to, BotDefaultExt, BotInventoryExt, BotMovementExt, BotPhysicsExt, BotRotationExt, ClickMode,
+};
 use crate::bot::systems::profile::{BotStatus, PROFILE_SYSTEM};
 use crate::bot::systems::registry::REGISTRY_SYSTEM;
 use crate::bot::systems::states::{getst, setmst, State, StateName, STATE_SYSTEM};
@@ -163,7 +165,7 @@ impl QuickTaskManager {
             });
           }
           QuickTask::Rise => {
-            if getst(&index, State::CanLooking).await && getst(&index, State::CanInteracting).await {
+            if getst(&index, State::CanLooking).await || getst(&index, State::CanInteracting).await {
               let mut block_slot = None;
 
               if let Some(menu) = bot.get_inventory_menu() {
@@ -181,34 +183,29 @@ impl QuickTaskManager {
                 setmst(&index, StateName::Looking, true).await;
                 setmst(&index, StateName::Interacting, true).await;
 
-                bot.take_item(&index, slot, true).await;
+                bot.take_item(&index, slot, false).await;
 
-                let original_direction_1 = bot.direction();
+                let initial_dir = bot.direction();
 
-                bot.set_direction(
-                  original_direction_1.0 + randnum(-5.0, 5.0) as f32,
-                  randnum(40.0, 58.0) as f32,
-                );
+                bot.set_direction(initial_dir.0 + randnum(-5.0, 5.0) as f32, randnum(40.0, 58.0) as f32);
 
                 sleep!(randnum(50, 100));
 
                 bot.jump();
 
-                let original_direction_2 = bot.direction();
-
                 bot.set_direction(
-                  original_direction_2.0 + randnum(-5.0, 5.0) as f32,
+                  bot.direction().0 + randnum(-5.0, 5.0) as f32,
                   randnum(86.0, 90.0) as f32,
                 );
 
-                sleep!(randnum(250, 350));
+                sleep!(randnum(250, 300));
 
-                bot.swing_arm();
-                bot.start_use_item();
+                let feet_pos = bot.feet_pos();
+                bot.block_interact(BlockPos::from(feet_pos));
 
-                sleep!(randnum(150, 250));
+                sleep!(randnum(100, 150));
 
-                bot.set_direction(original_direction_1.0, original_direction_1.1);
+                bot.set_direction(initial_dir.0, initial_dir.1);
 
                 setmst(&index, StateName::Looking, false).await;
                 setmst(&index, StateName::Interacting, false).await;
@@ -292,7 +289,7 @@ impl QuickTaskManager {
                   setmst(&index, StateName::Looking, true).await;
                   setmst(&index, StateName::Interacting, true).await;
 
-                  bot.take_item(&index, slot, true).await;
+                  bot.take_item(&index, slot, false).await;
 
                   count = count + 1;
 
@@ -307,12 +304,9 @@ impl QuickTaskManager {
                     sleep!(randnum(100, 150));
                   }
 
-                  bot.look_at(Vec3::new(pos.x as f64, pos.y as f64, pos.z as f64));
-
+                  bot.look_at_block(pos, false).await;
                   sleep!(randnum(50, 100));
-
-                  bot.swing_arm();
-                  bot.start_use_item();
+                  bot.block_interact(pos);
 
                   if count == 10 {
                     bot.set_crouching(false);
