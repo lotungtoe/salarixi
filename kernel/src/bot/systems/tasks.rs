@@ -34,7 +34,6 @@ pub struct Tasks {
 }
 
 impl Tasks {
-  /// Метод создания нового списка задач
   pub fn new() -> Self {
     Self {
       root: HashMap::new(),
@@ -44,7 +43,7 @@ impl Tasks {
 
   /// Метод получения активности корневой задачи
   pub fn get_root_task_activity(&self, name: TaskName) -> bool {
-    self.root.get(&name).is_some()
+    self.root.contains_key(&name)
   }
 
   /// Метод добавления корневой задачи
@@ -63,17 +62,14 @@ impl Tasks {
 
   /// Метод остановки корневой задачи и её дополнительных задач
   pub fn killtsk(&mut self, name: TaskName) {
-    if let Some(tasks) = self.extra.get_mut(&name) {
+    if let Some(mut tasks) = self.extra.remove(&name) {
       tasks.iter().for_each(|t| t.abort());
       tasks.clear();
     }
 
-    if let Some(handle) = self.root.get(&name) {
+    if let Some(handle) = self.root.remove(&name) {
       handle.abort();
     }
-
-    self.extra.remove(&name);
-    self.root.remove(&name);
   }
 
   /// Метод остановки всех задач
@@ -96,7 +92,6 @@ pub struct TaskSystem {
 }
 
 impl TaskSystem {
-  /// Метод создания системы задач
   pub fn new() -> Self {
     Self {
       map: RwLock::new(HashMap::new()),
@@ -140,10 +135,8 @@ impl TaskSystem {
 pub async fn gettskact(index: &u8, task_name: TaskName) -> bool {
   let guard = TASK_SYSTEM.map.read().await;
 
-  for (i, t) in guard.iter() {
-    if i == index {
-      return t.get_root_task_activity(task_name);
-    }
+  if let Some(t) = guard.get(index) {
+    return t.get_root_task_activity(task_name);
   }
 
   false
