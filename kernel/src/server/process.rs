@@ -27,7 +27,8 @@ async fn process_handshake(socket: &mut TcpStream, addr: &str) -> std::io::Resul
   }
 
   let version = String::from_utf8_lossy(&version_buf);
-  let splitted_version = version.split('.').collect::<Vec<&str>>();
+  let version_without_postfix = version.split('-').collect::<Vec<&str>>();
+  let splitted_version = version_without_postfix[0].split('.').collect::<Vec<&str>>();
 
   if splitted_version.len() != 3 {
     socket.write_u8(0x03).await?;
