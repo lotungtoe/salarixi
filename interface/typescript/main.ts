@@ -510,7 +510,6 @@ export function addOpeningUrlTo(id: string, event: string, url: string): void {
 
 /** Вспомогательная функция инициализации титул бара */
 function initTitleBar(): void {
-	(document.getElementById("title-version") as HTMLElement).innerText = `v${CLIENT_VERSION}`;
 	(document.getElementById("window-minimize") as HTMLButtonElement).addEventListener("click", async () => await getCurrentWindow().minimize());
 	(document.getElementById("window-close") as HTMLButtonElement).addEventListener("click", async () => {
 		await configModule.saveCurrentConfig();

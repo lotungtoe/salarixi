@@ -113,6 +113,9 @@
   --update-notice-warning-bg: #ebbf310d;
   --update-notice-warning-border: #ebc0312c;
 
+  --support-notice-text-bg: #1383042e;
+  --support-notice-text-border: #0a4d01;
+
   --scrollbar-bg: #161616;
   --scrollbar-thumb-bg: #353535;
   --scrollbar-thumb-hover-bg: #5e5e5e;
@@ -165,12 +168,11 @@ body {
   text-align: center;
   font-size: 16px;
   font-weight: 600;
-  font-family: "Inter", sans-serif;
+  font-family: var(--script-font-family);
   background: var(--title-color);
   -webkit-text-fill-color: transparent;
   -webkit-background-clip: text;
   background-clip: text;
-  gap: 6px;
   border-right: 1px solid var(--primary-border);
 }
 
@@ -2264,9 +2266,9 @@ button svg {
   color: var(--default-color);
   margin-top: 24px;
   padding: 12px 16px;
-  background: var(--bright-bg);
+  background: var(--support-notice-text-bg);
   border-radius: 12px;
-  border: 1px solid var(--secondary-border);
+  border: 1px solid var(--support-notice-text-border);
   line-height: 1.5;
   text-align: center;
 }

@@ -23,7 +23,7 @@
   ],
   "data": [
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "main",
       "lang": {
         "ru": "Главная",
@@ -34,7 +34,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "settings",
       "lang": {
         "ru": "Настройки",
@@ -45,7 +45,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "accounts",
       "lang": {
         "ru": "Аккаунты",
@@ -56,7 +56,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "plugins",
       "lang": {
         "ru": "Плагины",
@@ -67,7 +67,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "proxy",
       "lang": {
         "ru": "Прокси",
@@ -78,7 +78,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "anti-captcha",
       "lang": {
         "ru": "Анти-Капча",
@@ -89,7 +89,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "webhook",
       "lang": {
         "ru": "Вебхук",
@@ -100,7 +100,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "control",
       "lang": {
         "ru": "Управление",
@@ -111,7 +111,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "script",
       "lang": {
         "ru": "Сценарий",
@@ -122,7 +122,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "graphic",
       "lang": {
         "ru": "График",
@@ -133,7 +133,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "monitoring",
       "lang": {
         "ru": "Мониторинг",
@@ -144,7 +144,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "analysis",
       "lang": {
         "ru": "Анализ",
@@ -155,7 +155,7 @@
       }
     },
     {
-      "versions": "1.1.1",
+      "versions": "1.2.0-rc1",
       "tag": "scanner",
       "lang": {
       "ru": "Сканер",
@@ -166,7 +166,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "radar",
       "lang": {
         "ru": "Радар",
@@ -177,7 +177,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "ping",
       "lang": {
         "ru": "Пинг",
@@ -188,7 +188,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "journal",
       "lang": {
         "ru": "Журнал",
@@ -210,7 +210,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "config",
       "lang": {
         "ru": "Конфиг",
@@ -221,7 +221,7 @@
       }
     },
     {
-      "versions": "1.1.1",
+      "versions": "1.2.0-rc1",
       "tag": "session",
       "lang": {
         "ru": "Сессия",
@@ -232,7 +232,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "about",
       "lang": {
         "ru": "О проекте",
@@ -243,7 +243,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "documentation",
       "lang": {
         "ru": "Документация",
@@ -254,7 +254,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "server-address",
       "lang": {
         "ru": "Адрес сервера",
@@ -265,7 +265,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "bots-count",
       "lang": {
         "ru": "Кол-во ботов",
@@ -276,7 +276,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "join-delay",
       "lang": {
         "ru": "Задержка подключений",
@@ -287,7 +287,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "launch",
       "lang": {
         "ru": "Запустить",
@@ -298,7 +298,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "stop",
       "lang": {
         "ru": "Остановить",
@@ -309,7 +309,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "generate",
       "lang": {
         "ru": "Генерация",
@@ -320,7 +320,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "clear",
       "lang": {
         "ru": "Очистить",
@@ -331,7 +331,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "basic-settings",
       "lang": {
         "ru": "Основные настройки",
@@ -342,7 +342,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "nickname-type",
       "lang": {
         "ru": "Никнейм",
@@ -353,7 +353,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "nickname-legit",
       "lang": {
         "ru": "Легитный",
@@ -364,7 +364,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "nickname-random",
       "lang": {
         "ru": "Случайный",
@@ -375,7 +375,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "nickname-custom",
       "lang": {
         "ru": "Кастомный",
@@ -386,7 +386,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "password-type",
       "lang": {
         "ru": "Пароль",
@@ -397,7 +397,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "without-password",
       "lang": {
         "ru": "Без пароля",
@@ -408,7 +408,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "password-legit",
       "lang": {
         "ru": "Легитный",
@@ -419,7 +419,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "password-random",
       "lang": {
         "ru": "Случайный",
@@ -430,7 +430,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "password-custom",
       "lang": {
         "ru": "Кастомный",
@@ -441,7 +441,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "email-type",
       "lang": {
         "ru": "Эл. почта",
@@ -452,7 +452,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "without-email",
       "lang": {
         "ru": "Без почты",
@@ -463,7 +463,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "email-random",
       "lang": {
         "ru": "Случайная",
@@ -474,7 +474,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "nickname-template",
       "lang": {
         "ru": "Шаблон никнейма",
@@ -485,7 +485,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "password-template",
       "lang": {
         "ru": "Шаблон пароля",
@@ -496,7 +496,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "register-settings",
       "lang": {
         "ru": "Настройки регистрации",
@@ -507,7 +507,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "register-command",
       "lang": {
         "ru": "Команда регистрации",
@@ -518,7 +518,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "register-template",
       "lang": {
         "ru": "Шаблон регистрации",
@@ -529,7 +529,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "login-settings",
       "lang": {
         "ru": "Настройки логина",
@@ -540,7 +540,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "login-command",
       "lang": {
         "ru": "Команда логина",
@@ -551,7 +551,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "login-template",
       "lang": {
         "ru": "Шаблон логина",
@@ -562,7 +562,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "mode",
       "lang": {
         "ru": "Режим",
@@ -573,7 +573,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "mode-default",
       "lang": {
         "ru": "Обычный",
@@ -584,7 +584,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "mode-trigger",
       "lang": {
         "ru": "Триггер",
@@ -595,7 +595,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "min-delay",
       "lang": {
         "ru": "Задержка (минимум)",
@@ -606,7 +606,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "max-delay",
       "lang": {
         "ru": "Задержка (максимум)",
@@ -617,7 +617,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "trigger-message",
       "lang": {
         "ru": "Триггер (сообщение)",
@@ -628,7 +628,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "reconnection-settings",
       "lang": {
         "ru": "Настройки переподключения",
@@ -639,7 +639,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "rejoin-delay",
       "lang": {
         "ru": "Задержка переподключения",
@@ -650,7 +650,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "monitoring-settings",
       "lang": {
         "ru": "Настройки мониторинга",
@@ -661,7 +661,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "chat-history-length",
       "lang": {
         "ru": "Длина истории чата",
@@ -672,7 +672,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "update-frequency",
       "lang": {
         "ru": "Частота обновлений",
@@ -683,7 +683,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "additional-settings",
       "lang": {
         "ru": "Дополнительные настройки",
@@ -694,7 +694,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "view-distance",
       "lang": {
         "ru": "Дистанция прогрузки",
@@ -705,7 +705,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "chat-colors",
       "lang": {
         "ru": "Включить цвета в чате",
@@ -716,7 +716,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "dominant-hand",
       "lang": {
         "ru": "Ведущая рука",
@@ -727,7 +727,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "use-auto-register",
       "lang": {
         "ru": "Использовать Auto-Register",
@@ -738,7 +738,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "use-auto-login",
       "lang": {
         "ru": "Использовать Auto-Login",
@@ -749,7 +749,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "use-double-auth",
       "lang": {
         "ru": "Использовать Double-Auth",
@@ -760,7 +760,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "use-auto-rejoin",
       "lang": {
         "ru": "Использовать Auto-Rejoin",
@@ -771,7 +771,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "use-chat-signing",
       "lang": {
         "ru": "Использовать Chat-Signing",
@@ -782,7 +782,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "use-auto-respawn",
       "lang": {
         "ru": "Использовать Auto-Respawn",
@@ -793,7 +793,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "use-accept-rp",
       "lang": {
         "ru": "Использовать Accept-RP",
@@ -804,7 +804,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "use-pathfinder",
       "lang": {
         "ru": "Использовать Pathfinder",
@@ -815,7 +815,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "use-auto-script",
       "lang": {
         "ru": "Использовать Auto-Script",
@@ -826,7 +826,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "use-proxy",
       "lang": {
         "ru": "Использовать прокси",
@@ -837,7 +837,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "use-anti-captcha",
       "lang": {
         "ru": "Использовать анти-капчу",
@@ -848,7 +848,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "use-webhook",
       "lang": {
         "ru": "Использовать вебхук",
@@ -859,7 +859,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "use-accounts",
       "lang": {
         "ru": "Использовать аккаунты",
@@ -870,7 +870,7 @@
       }
     },
     {
-      "versions": "1.1.1",
+      "versions": "1.2.0-rc1",
       "tag": "monitoring-optimization",
       "lang": {
         "ru": "Использовать аккаунты",
@@ -881,7 +881,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "import",
       "lang": {
         "ru": "Импорт",
@@ -892,7 +892,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "export",
       "lang": {
         "ru": "Экспорт",
@@ -903,7 +903,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "total-accounts",
       "lang": {
         "ru": "Всего аккаунтов",
@@ -914,7 +914,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "username",
       "lang": {
         "ru": "Имя пользователя",
@@ -925,7 +925,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "creation-date",
       "lang": {
         "ru": "Дата создания",
@@ -936,7 +936,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "dominant-hand",
       "lang": {
         "ru": "Ведущая рука",
@@ -947,7 +947,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "script-for-bots",
       "lang": {
         "ru": "Сценарий для ботов",
@@ -958,7 +958,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "proxy-list",
       "lang": {
         "ru": "Список прокси",
@@ -969,7 +969,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "clear-list",
       "lang": {
         "ru": "Очистить список",
@@ -980,7 +980,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "check-proxies",
       "lang": {
         "ru": "Проверить прокси",
@@ -991,7 +991,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "algorithm",
       "lang": {
         "ru": "Алгоритм",
@@ -1002,7 +1002,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "country",
       "lang": {
         "ru": "Страна",
@@ -1013,7 +1013,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "country-any",
       "lang": {
         "ru": "Любая",
@@ -1024,7 +1024,7 @@
       }
     },
     {
-      "versions": "1.1.1",
+      "versions": "1.2.0-rc1",
       "tag": "country-ru",
       "lang": {
         "ru": "Россия",
@@ -1035,7 +1035,7 @@
       }
     },
     {
-      "versions": "1.1.1",
+      "versions": "1.2.0-rc1",
       "tag": "country-us",
       "lang": {
         "ru": "США",
@@ -1046,7 +1046,7 @@
       }
     },
     {
-      "versions": "1.1.1",
+      "versions": "1.2.0-rc1",
       "tag": "country-cn",
       "lang": {
         "ru": "Китай",
@@ -1057,7 +1057,7 @@
       }
     },
     {
-      "versions": "1.1.1",
+      "versions": "1.2.0-rc1",
       "tag": "country-fr",
       "lang": {
         "ru": "Франция",
@@ -1068,7 +1068,7 @@
       }
     },
     {
-      "versions": "1.1.1",
+      "versions": "1.2.0-rc1",
       "tag": "country-de",
       "lang": {
         "ru": "Германия",
@@ -1079,7 +1079,7 @@
       }
     },
     {
-      "versions": "1.1.1",
+      "versions": "1.2.0-rc1",
       "tag": "country-jp",
       "lang": {
         "ru": "Япония",
@@ -1090,7 +1090,7 @@
       }
     },
     {
-      "versions": "1.1.1",
+      "versions": "1.2.0-rc1",
       "tag": "country-br",
       "lang": {
         "ru": "Бразилия",
@@ -1101,7 +1101,7 @@
       }
     },
     {
-      "versions": "1.1.1",
+      "versions": "1.2.0-rc1",
       "tag": "country-ua",
       "lang": {
         "ru": "Украина",
@@ -1112,7 +1112,7 @@
       }
     },
     {
-      "versions": "1.1.1",
+      "versions": "1.2.0-rc1",
       "tag": "country-nl",
       "lang": {
         "ru": "Нидерланды",
@@ -1123,7 +1123,7 @@
       }
     },
     {
-      "versions": "1.1.1",
+      "versions": "1.2.0-rc1",
       "tag": "country-ca",
       "lang": {
         "ru": "Канада",
@@ -1134,7 +1134,7 @@
       }
     },
     {
-      "versions": "1.1.1",
+      "versions": "1.2.0-rc1",
       "tag": "country-id",
       "lang": {
         "ru": "Индонезия",
@@ -1145,7 +1145,7 @@
       }
     },
     {
-      "versions": "1.1.1",
+      "versions": "1.2.0-rc1",
       "tag": "country-th",
       "lang": {
         "ru": "Таиланд",
@@ -1156,7 +1156,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "port",
       "lang": {
         "ru": "Порт",
@@ -1167,7 +1167,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "port-any",
       "lang": {
         "ru": "Любой",
@@ -1178,7 +1178,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "count",
       "lang": {
         "ru": "Кол-во",
@@ -1189,7 +1189,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "count-max",
       "lang": {
         "ru": "Максимум",
@@ -1200,7 +1200,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "find-proxies",
       "lang": {
         "ru": "Найти прокси",
@@ -1211,7 +1211,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "proxy-counter",
       "lang": {
         "ru": "Кол-во прокси",
@@ -1222,7 +1222,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "captcha-type",
       "lang": {
         "ru": "Тип капчи",
@@ -1233,7 +1233,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "captcha-subtype",
       "lang": {
         "ru": "Подтип капчи",
@@ -1244,7 +1244,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "api-service",
       "lang": {
         "ru": "API сервис",
@@ -1255,7 +1255,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "captcha-solve-mode",
       "lang": {
         "ru": "Режим",
@@ -1266,7 +1266,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "captcha-regex",
       "lang": {
         "ru": "Регулярное выражение",
@@ -1277,7 +1277,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "captcha-url-part",
       "lang": {
         "ru": "Обязательная часть ссылки",
@@ -1288,7 +1288,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "number-of-columns",
       "lang": {
         "ru": "Количество колонн",
@@ -1299,7 +1299,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "number-of-rows",
       "lang": {
         "ru": "Количество рядов",
@@ -1310,7 +1310,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "api-key",
       "lang": {
         "ru": "API ключ",
@@ -1321,7 +1321,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "webhook-link",
       "lang": {
         "ru": "Ссылка",
@@ -1332,7 +1332,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "webhook-information",
       "lang": {
         "ru": "Информация",
@@ -1343,7 +1343,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "webhook-data",
       "lang": {
         "ru": "Данные",
@@ -1354,7 +1354,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "webhook-actions",
       "lang": {
         "ru": "Действия",
@@ -1365,7 +1365,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "chat",
       "lang": {
         "ru": "Чат",
@@ -1376,7 +1376,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "actions",
       "lang": {
         "ru": "Действия",
@@ -1387,7 +1387,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "inventory",
       "lang": {
         "ru": "Инвентарь",
@@ -1398,7 +1398,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "movement",
       "lang": {
         "ru": "Движение",
@@ -1409,7 +1409,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "imitation",
       "lang": {
         "ru": "Имитация",
@@ -1420,7 +1420,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "anti-afk",
       "lang": {
         "ru": "Анти-АФК",
@@ -1431,7 +1431,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "stalker",
       "lang": {
         "ru": "Сталкер",
@@ -1442,7 +1442,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "flight",
       "lang": {
         "ru": "Полёт",
@@ -1453,7 +1453,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "killaura",
       "lang": {
         "ru": "Киллаура",
@@ -1464,7 +1464,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "scaffold",
       "lang": {
         "ru": "Скаффолд",
@@ -1475,7 +1475,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "anti-fall",
       "lang": {
         "ru": "Анти-Падение",
@@ -1486,7 +1486,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "bow-aim",
       "lang": {
         "ru": "Лук аим",
@@ -1497,7 +1497,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "stealer",
       "lang": {
         "ru": "Стиллер",
@@ -1508,7 +1508,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "miner",
       "lang": {
         "ru": "Майнер",
@@ -1519,7 +1519,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "farmer",
       "lang": {
         "ru": "Фермер",
@@ -1530,7 +1530,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "info-text",
       "lang": {
         "ru": "Данный раздел не работает",
@@ -1541,7 +1541,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "radar-update-frequency",
       "lang": {
         "ru": "Частота обновления",
@@ -1552,7 +1552,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "radar-full-path",
       "lang": {
         "ru": "Полный путь",
@@ -1563,7 +1563,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "radar-file-name",
       "lang": {
         "ru": "Имя файла",
@@ -1574,7 +1574,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "radar-auto-save",
       "lang": {
         "ru": "Авто сохранение",
@@ -1585,7 +1585,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "journal-system-logs",
       "lang": {
         "ru": "Системные логи",
@@ -1596,7 +1596,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "journal-extended-logs",
       "lang": {
         "ru": "Расширенные логи",
@@ -1607,7 +1607,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "journal-auto-scroll",
       "lang": {
         "ru": "Авто скролл",
@@ -1618,7 +1618,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "execute",
       "lang": {
         "ru": "Выполнить",
@@ -1629,7 +1629,7 @@
       }
     },
     {
-      "versions": "1.1.1",
+      "versions": "1.2.0-rc1",
       "tag": "execute-separately",
       "lang": {
         "ru": "Выполнить отдельно",
@@ -1640,7 +1640,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "interface-section-global",
       "lang": {
         "ru": "Глобальные",
@@ -1651,7 +1651,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "interface-particles",
       "lang": {
         "ru": "Партиклы",
@@ -1662,7 +1662,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "interface-theme",
       "lang": {
         "ru": "Тема",
@@ -1673,7 +1673,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "interface-font",
       "lang": {
         "ru": "Шрифт",
@@ -1684,7 +1684,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "interface-messages",
       "lang": {
         "ru": "Сообщения",
@@ -1695,7 +1695,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "interface-section-panel",
       "lang": {
         "ru": "Панель",
@@ -1706,7 +1706,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "interface-icons",
       "lang": {
         "ru": "Иконки",
@@ -1717,7 +1717,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "interface-show",
       "lang": {
         "ru": "Показать",
@@ -1728,7 +1728,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "interface-hide",
       "lang": {
         "ru": "Скрыть",
@@ -1739,7 +1739,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "interface-font-size",
       "lang": {
         "ru": "Размер шрифта",
@@ -1750,7 +1750,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "interface-internal-gap",
       "lang": {
         "ru": "Внутренний отступ",
@@ -1761,7 +1761,7 @@
       }
     },
     {
-      "versions": "1.1.1",
+      "versions": "1.1.1:1.2.0-rc1",
       "tag": "interface-separators",
       "lang": {
         "ru": "Разделители",
@@ -1772,7 +1772,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "interface-language",
       "lang": {
         "ru": "Язык",
@@ -1783,7 +1783,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "stylekit",
       "lang": {
         "ru": "Набор стилей",
@@ -1794,7 +1794,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "enable",
       "lang": {
         "ru": "Включить",
@@ -1805,7 +1805,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "disable",
       "lang": {
         "ru": "Выключить",
@@ -1816,7 +1816,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "upload-config",
       "lang": {
         "ru": "Загрузить конфиг",
@@ -1827,7 +1827,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "share-config",
       "lang": {
         "ru": "Поделиться конфигом",
@@ -1838,7 +1838,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "mode",
       "lang": {
         "ru": "Режим",
@@ -1849,7 +1849,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "message",
       "lang": {
         "ru": "Сообщение",
@@ -1860,7 +1860,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "spamming",
       "lang": {
         "ru": "Спамминг",
@@ -1871,7 +1871,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "send",
       "lang": {
         "ru": "Отправить",
@@ -1882,7 +1882,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "control-start",
       "lang": {
         "ru": "Старт",
@@ -1893,7 +1893,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "control-stop",
       "lang": {
         "ru": "Стоп",
@@ -1904,7 +1904,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "sync",
       "lang": {
         "ru": "Синхронность",
@@ -1915,7 +1915,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "global-chat",
       "lang": {
         "ru": "Глобальный чат",
@@ -1926,7 +1926,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "text-mutation",
       "lang": {
         "ru": "Мутация текста",
@@ -1937,7 +1937,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "magic-text",
       "lang": {
         "ru": "Магический текст",
@@ -1948,7 +1948,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "anti-repetition",
       "lang": {
         "ru": "Анти-Повтор",
@@ -1959,7 +1959,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "bypass",
       "lang": {
         "ru": "Обход",
@@ -1970,7 +1970,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "action",
       "lang": {
         "ru": "Действие",
@@ -1981,7 +1981,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "jumping",
       "lang": {
         "ru": "Джампинг",
@@ -1992,7 +1992,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "shifting",
       "lang": {
         "ru": "Шифтинг",
@@ -2003,7 +2003,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "waving",
       "lang": {
         "ru": "Махание рукой",
@@ -2014,7 +2014,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "impulsiveness",
       "lang": {
         "ru": "Импульсивность",
@@ -2025,7 +2025,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "basic",
       "lang": {
         "ru": "Базовый",
@@ -2036,7 +2036,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "swap",
       "lang": {
         "ru": "Перемещение",
@@ -2047,7 +2047,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "interaction",
       "lang": {
         "ru": "Взаимодействие",
@@ -2058,7 +2058,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "slot-index",
       "lang": {
         "ru": "Индекс слота",
@@ -2069,7 +2069,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "target-slot",
       "lang": {
         "ru": "Заменить на",
@@ -2080,7 +2080,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "select",
       "lang": {
         "ru": "Выбрать",
@@ -2091,7 +2091,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "drop",
       "lang": {
         "ru": "Выбросить",
@@ -2102,7 +2102,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "left-click",
       "lang": {
         "ru": "Клик (ЛКМ)",
@@ -2113,7 +2113,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "right-click",
       "lang": {
         "ru": "Клик (ПКМ)",
@@ -2124,7 +2124,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "move",
       "lang": {
         "ru": "Переместить",
@@ -2135,7 +2135,7 @@
       }
     },
     {
-      "versions": "1.1.1",
+      "versions": "1.2.0-rc1",
       "tag": "start-use",
       "lang": {
         "ru": "Использовать",
@@ -2146,7 +2146,7 @@
       }
     },
     {
-      "versions": "1.1.1",
+      "versions": "1.2.0-rc1",
       "tag": "release-use",
       "lang": {
         "ru": "Завершить",
@@ -2157,7 +2157,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "default",
       "lang": {
         "ru": "Обычный",
@@ -2168,7 +2168,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "pathfinder",
       "lang": {
         "ru": "Pathfinder",
@@ -2179,7 +2179,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "direction",
       "lang": {
         "ru": "Движение",
@@ -2190,7 +2190,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "forward",
       "lang": {
         "ru": "Вперёд",
@@ -2201,7 +2201,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "backward",
       "lang": {
         "ru": "Назад",
@@ -2212,7 +2212,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "left",
       "lang": {
         "ru": "Влево",
@@ -2223,7 +2223,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "right",
       "lang": {
         "ru": "Вправо",
@@ -2234,7 +2234,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "forward-left",
       "lang": {
         "ru": "Вперёд и влево",
@@ -2245,7 +2245,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "forward-right",
       "lang": {
         "ru": "Вперёд и вправо",
@@ -2256,7 +2256,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "backward-left",
       "lang": {
         "ru": "Назад и влево",
@@ -2267,7 +2267,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "backward-right",
       "lang": {
         "ru": "Назад и вправо",
@@ -2278,7 +2278,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "coord-x",
       "lang": {
         "ru": "Координата X",
@@ -2289,7 +2289,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "coord-z",
       "lang": {
         "ru": "Координата Z",
@@ -2300,7 +2300,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "minimal",
       "lang": {
         "ru": "Минимальный",
@@ -2311,7 +2311,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "normal",
       "lang": {
         "ru": "Нормальный",
@@ -2322,7 +2322,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "advanced",
       "lang": {
         "ru": "Продвинутый",
@@ -2333,7 +2333,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "target-nickname",
       "lang": {
         "ru": "Никнейм цели",
@@ -2344,7 +2344,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "min-distance",
       "lang": {
         "ru": "Минимальная дистанция",
@@ -2355,7 +2355,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "max-distance",
       "lang": {
         "ru": "Максимальная дистанция",
@@ -2366,7 +2366,7 @@
       }
     },
     {
-      "versions": "1.1.1",
+      "versions": "1.2.0-rc1",
       "tag": "prediction",
       "lang": {
         "ru": "Предугадывание",
@@ -2377,7 +2377,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "vanilla",
       "lang": {
         "ru": "Vanilla",
@@ -2388,7 +2388,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "jump-fly",
       "lang": {
         "ru": "Jump-Fly",
@@ -2399,7 +2399,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "teleport-fly",
       "lang": {
         "ru": "Teleport-Fly",
@@ -2410,7 +2410,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "bug-fly",
       "lang": {
         "ru": "Bug-Fly",
@@ -2421,7 +2421,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "settings",
       "lang": {
         "ru": "Настройки",
@@ -2432,7 +2432,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "adaptive-settings",
       "lang": {
         "ru": "Адаптивные",
@@ -2443,7 +2443,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "manual-settings",
       "lang": {
         "ru": "Ручные",
@@ -2454,7 +2454,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "auto-mode",
       "lang": {
         "ru": "Авто",
@@ -2465,7 +2465,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "manual-mode",
       "lang": {
         "ru": "Ручной",
@@ -2476,7 +2476,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "anti-cheat",
       "lang": {
         "ru": "Анти-чит",
@@ -2487,7 +2487,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "min-change-y",
       "lang": {
         "ru": "Изменение по Y (минимум)",
@@ -2498,7 +2498,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "max-change-y",
       "lang": {
         "ru": "Изменение по Y (максимум)",
@@ -2509,7 +2509,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "use-ground-spoof",
       "lang": {
         "ru": "Использовать Ground-Spoof",
@@ -2520,7 +2520,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "behavior",
       "lang": {
         "ru": "Поведение",
@@ -2531,7 +2531,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "moderate",
       "lang": {
         "ru": "Умеренное",
@@ -2542,7 +2542,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "aggressive",
       "lang": {
         "ru": "Агрессивное",
@@ -2553,7 +2553,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "target",
       "lang": {
         "ru": "Цель",
@@ -2564,7 +2564,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "player",
       "lang": {
         "ru": "Игрок",
@@ -2575,7 +2575,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "monster",
       "lang": {
         "ru": "Монстр",
@@ -2586,7 +2586,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "animal",
       "lang": {
         "ru": "Животное",
@@ -2597,7 +2597,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "vehicle",
       "lang": {
         "ru": "Транспорт",
@@ -2608,7 +2608,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "any",
       "lang": {
         "ru": "Любая",
@@ -2619,7 +2619,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "custom-target",
       "lang": {
         "ru": "Своя цель",
@@ -2630,7 +2630,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "weapon",
       "lang": {
         "ru": "Оружие",
@@ -2641,7 +2641,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "sword",
       "lang": {
         "ru": "Меч",
@@ -2652,7 +2652,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "axe",
       "lang": {
         "ru": "Топор",
@@ -2663,7 +2663,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "weapon-slot",
       "lang": {
         "ru": "Слот оружия",
@@ -2674,7 +2674,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "attack-distance",
       "lang": {
         "ru": "Дистанция атаки",
@@ -2685,7 +2685,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "delay",
       "lang": {
         "ru": "Задержка",
@@ -2696,7 +2696,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "max-chase-distance",
       "lang": {
         "ru": "Макс. дистанция преследования",
@@ -2707,7 +2707,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "min-chase-distance",
       "lang": {
         "ru": "Мин. дистанция преследования",
@@ -2718,7 +2718,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "auto-weapon",
       "lang": {
         "ru": "Авто оружие",
@@ -2729,7 +2729,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "dodging",
       "lang": {
         "ru": "Доджинг",
@@ -2740,7 +2740,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "chase",
       "lang": {
         "ru": "Преследование",
@@ -2751,7 +2751,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "critical-hits",
       "lang": {
         "ru": "Критические удары",
@@ -2762,7 +2762,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "noob-bridge",
       "lang": {
         "ru": "Noob Bridge",
@@ -2773,7 +2773,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "ninja-bridge",
       "lang": {
         "ru": "Ninja Bridge",
@@ -2784,7 +2784,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "god-bridge",
       "lang": {
         "ru": "God Bridge",
@@ -2795,7 +2795,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "jump-bridge",
       "lang": {
         "ru": "Jump Bridge",
@@ -2806,7 +2806,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "min-gaze-x",
       "lang": {
         "ru": "Взгляд по X (минимум)",
@@ -2817,7 +2817,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "max-gaze-x",
       "lang": {
         "ru": "Взгляд по X (максимум)",
@@ -2828,7 +2828,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "hovering",
       "lang": {
         "ru": "Hovering",
@@ -2839,7 +2839,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "teleport",
       "lang": {
         "ru": "Teleport",
@@ -2850,7 +2850,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "water-drop",
       "lang": {
         "ru": "Water-Drop",
@@ -2861,7 +2861,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "fall-spoof",
       "lang": {
         "ru": "Fall-Spoof",
@@ -2872,7 +2872,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "trigger-distance",
       "lang": {
         "ru": "Триггер (расстояние до земли)",
@@ -2883,7 +2883,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "trigger-velocity",
       "lang": {
         "ru": "Триггер (скорость падения)",
@@ -2894,7 +2894,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "chest",
       "lang": {
         "ru": "Сундук",
@@ -2905,7 +2905,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "barrel",
       "lang": {
         "ru": "Бочка",
@@ -2916,7 +2916,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "shulker",
       "lang": {
         "ru": "Шалкер",
@@ -2927,7 +2927,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "interaction-radius",
       "lang": {
         "ru": "Радиус взаимодействия",
@@ -2938,7 +2938,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "tunnel",
       "lang": {
         "ru": "Тунель",
@@ -2949,7 +2949,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "extended",
       "lang": {
         "ru": "Расширенный",
@@ -2960,7 +2960,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "look",
       "lang": {
         "ru": "Поворот",
@@ -2971,7 +2971,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "smooth",
       "lang": {
         "ru": "Плавный",
@@ -2982,7 +2982,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "cutting",
       "lang": {
         "ru": "Резкий",
@@ -2993,7 +2993,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "direction-y",
       "lang": {
         "ru": "Направление взгляда по Y",
@@ -3004,7 +3004,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "tool-slot",
       "lang": {
         "ru": "Слот с инструментом",
@@ -3015,7 +3015,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "quick",
       "lang": {
         "ru": "Быстрый",
@@ -3026,7 +3026,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "ultra",
       "lang": {
         "ru": "Ультра",
@@ -3037,7 +3037,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "client-description",
       "lang": {
         "ru": "современный, функциональный и оптимизированный клиент, который позволяет запускать ботов на сервера Minecraft и управлять ими в реальном времени.",
@@ -3048,7 +3048,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "why-choose-us",
       "lang": {
         "ru": "Почему нас стоит выбрать?",
@@ -3059,7 +3059,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "optimization",
       "lang": {
         "ru": "Оптимизация",
@@ -3070,7 +3070,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "flexibility",
       "lang": {
         "ru": "Гибкость",
@@ -3081,7 +3081,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "speed",
       "lang": {
         "ru": "Скорость",
@@ -3103,7 +3103,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "total-releases",
       "lang": {
         "ru": "Всего выпусков",
@@ -3114,7 +3114,7 @@
       }
     },
     {
-      "versions": "1.1.1",
+      "versions": "1.1.1:1.2.0-rc1",
       "tag": "stars-count",
       "lang": {
         "ru": "Количество звёзд",
@@ -3125,7 +3125,7 @@
       }
     },
     {
-      "versions": "1.1.1",
+      "versions": "1.1.1:1.2.0-rc1",
       "tag": "forks-count",
       "lang": {
         "ru": "Количество форков",
@@ -3136,7 +3136,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "update-available",
       "lang": {
         "ru": "Доступно обновление",
@@ -3147,7 +3147,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "version",
       "lang": {
         "ru": "Версия",
@@ -3158,7 +3158,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "published",
       "lang": {
         "ru": "Опубликовано",
@@ -3169,7 +3169,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "tag",
       "lang": {
         "ru": "Бирка",
@@ -3180,7 +3180,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "download-new-version",
       "lang": {
         "ru": "Скачать новую версию",
@@ -3191,7 +3191,7 @@
       }
     },
     {
-      "versions": "1.1.0:1.1.1",
+      "versions": "1.1.0:1.2.0-rc1",
       "tag": "update-warning",
       "lang": {
         "ru": "ПРЕДУПРЕЖДЕНИЕ: Мы не заставляем вас срочно обновить данный клиент, мы лишь предлагаем более оптимизированную и универсальную версию! Выбор комфортной версии никак не ограничен.",
@@ -3202,7 +3202,7 @@
       }
     },
     {
-      "versions": "1.1.1",
+      "versions": "1.2.0-rc1",
       "tag": "cidr",
       "lang": {
       "ru": "Диапазон (CIDR)",
@@ -3213,7 +3213,7 @@
       }
     },
     {
-      "versions": "1.1.1",
+      "versions": "1.2.0-rc1",
       "tag": "task-count",
       "lang": {
         "ru": "Количество задач",
@@ -3224,7 +3224,7 @@
       }
     },
     {
-      "versions": "1.1.1",
+      "versions": "1.2.0-rc1",
       "tag": "target-port",
       "lang": {
         "ru": "Целевой порт",
@@ -3235,7 +3235,7 @@
       }
     },
     {
-      "versions": "1.1.1",
+      "versions": "1.2.0-rc1",
       "tag": "timeout-ms",
       "lang": {
         "ru": "Таймаут (мс)",
@@ -3246,7 +3246,7 @@
       }
     },
     {
-      "versions": "1.1.1",
+      "versions": "1.2.0-rc1",
       "tag": "scan",
       "lang": {
         "ru": "Сканировать",
@@ -3257,7 +3257,7 @@
       }
     },
     {
-      "versions": "1.1.1",
+      "versions": "1.2.0-rc1",
       "tag": "status",
       "lang": {
         "ru": "Статус",
@@ -3268,7 +3268,7 @@
       }
     },
     {
-      "versions": "1.1.1",
+      "versions": "1.2.0-rc1",
       "tag": "hosts-scanned",
       "lang": {
         "ru": "Хостов просканировано",
@@ -3279,7 +3279,7 @@
       }
     },
     {
-    "versions": "1.1.1",
+    "versions": "1.2.0-rc1",
       "tag": "servers-found",
       "lang": {
         "ru": "Найдено серверов",
@@ -3290,7 +3290,7 @@
       }
     },
     {
-      "versions": "1.1.1",
+      "versions": "1.2.0-rc1",
       "tag": "password",
       "lang": {
         "ru": "Пароль",
@@ -3301,7 +3301,7 @@
       }
     },
     {
-      "versions": "1.1.1",
+      "versions": "1.2.0-rc1",
       "tag": "connect",
       "lang": {
         "ru": "Подключиться",
@@ -3312,7 +3312,7 @@
       }
     },
     {
-      "versions": "1.1.1",
+      "versions": "1.2.0-rc1",
       "tag": "reset",
       "lang": {
         "ru": "Сбросить",
@@ -3323,7 +3323,7 @@
       }
     },
     {
-      "versions": "1.1.1",
+      "versions": "1.2.0-rc1",
       "tag": "current-address",
       "lang": {
         "ru": "Текущий адрес",
@@ -3334,7 +3334,7 @@
       }
     },
     {
-      "versions": "1.1.1",
+      "versions": "1.2.0-rc1",
       "tag": "current-password",
       "lang": {
         "ru": "Текущий пароль",
@@ -3345,7 +3345,7 @@
       }
     },
     {
-      "versions": "1.1.1",
+      "versions": "1.2.0-rc1",
       "tag": "bots-objects-missing",
       "lang": {
         "ru": "Объекты ботов отсутствуют",
@@ -3356,7 +3356,7 @@
       }
     },
     {
-      "versions": "1.1.1",
+      "versions": "1.2.0-rc1",
       "tag": "size",
       "lang": {
         "ru": "Размер",
@@ -3367,7 +3367,7 @@
       }
     },
     {
-      "versions": "1.1.1",
+      "versions": "1.2.0-rc1",
       "tag": "size-fixed",
       "lang": {
         "ru": "Фиксированный",
@@ -3378,7 +3378,7 @@
       }
     },
     {
-      "versions": "1.1.1",
+      "versions": "1.2.0-rc1",
       "tag": "size-dynamic",
       "lang": {
         "ru": "Динамический",
@@ -3389,7 +3389,7 @@
       }
     },
     {
-      "versions": "1.1.1",
+      "versions": "1.2.0-rc1",
       "tag": "max-pause",
       "lang": {
         "ru": "Максимальная пауза",
@@ -3400,7 +3400,7 @@
       }
     },
     {
-      "versions": "1.1.1",
+      "versions": "1.2.0-rc1",
       "tag": "support-project",
       "lang": {
         "ru": "Поддержи проект",
@@ -3411,7 +3411,7 @@
       }
     },
     {
-      "versions": "1.1.1",
+      "versions": "1.2.0-rc1",
       "tag": "support-text",
       "lang": {
         "ru": "salarixi - это некоммерческий проект с открытым исходным кодом. Поддержка в виде доната может улучшить мою мотивацию, соответственно и качество проекта!",
@@ -3422,7 +3422,7 @@
       }
     },
     {
-      "versions": "1.1.1",
+      "versions": "1.2.0-rc1",
       "tag": "support",
       "lang": {
         "ru": "Поддержать",

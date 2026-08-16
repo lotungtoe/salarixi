@@ -2,7 +2,7 @@
 
 ## About
 
-**Salarixi** - A feature-rich, multi-task, and lightweight tool for bottling in Minecraft. It has a lot of settings that can be quickly adjusted to your goals. This tool also offers a lot of features for managing bots, there are many separate management modules, scripting, and it is also unique for its optimized and fast monitoring capabilities (graphs, bot profiles, chats with bots), they allow you to filter data on the fly, manage specific bots.
+**salarixi** - a feature-rich, multi-task, and lightweight tool for bottling in Minecraft. It has a lot of settings that can be quickly adjusted to your goals. This tool also offers a lot of features for managing bots, there are many separate management modules, scripting, and it is also unique for its optimized and fast monitoring capabilities (graphs, bot profiles, chats with bots), they allow you to filter data on the fly, manage specific bots.
 
 ---
 
@@ -72,7 +72,7 @@ You can read usage documentation on our [website](https://salarixi.freedev.app/p
 - **Proxy support:** Tool supports SOCKS5 proxy.
 - **Proxy finder:** Tool has a proxy collector that can find up to 50,000 at a time.
 - **Script writing:** You can write your own scripts for bots.
-- **Utilities:** Anti-captcha, radar, ping.
+- **Utilities:** Anti-captcha, scanner, radar, ping.
 - **Plugins:** Tool has many built-in plugins for bots.
 - **Multi-task:** Tool allows bots to perform dozens of actions simultaneously and avoid conflicts.
 
@@ -80,9 +80,8 @@ In short: The client is suitable for you if you don't want to bother with instal
 
 ## Screenshots
 
-![](./assets/main.avif)
-![](./assets/accounts.avif)
-![](./assets/control.avif)
+![](./assets/main-page.png)
+![](./assets/accounts-page.png)
 
 ## Installation
 
@@ -150,7 +149,7 @@ In the root directory of the project, write in the terminal (installing NodeJS m
 npm i
 ```
 
-Then create binary files (will create files along the path `./src-tauri/target/release/bundle`):
+Then create binary files (will create files along the path `./target/release/bundle`):
 
 ```bash
 npm run tauri build
@@ -165,4 +164,4 @@ npm run tauri dev
 ## Additional information
 
 - **License:** [Apache-2.0 license](./LICENSE)
-- **Latest release:** [Release](https://codeberg.org/nullclyze/salarixi/releases/tag/v1.1.1)
+- **Latest version:** [Open](https://codeberg.org/nullclyze/salarixi/releases/tag/v1.2.0-rc1)

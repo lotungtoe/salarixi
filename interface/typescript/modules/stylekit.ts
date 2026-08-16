@@ -97,6 +97,8 @@ class StylekitModule {
 		"update-notice-warning-color": "#ebbf31",
 		"update-notice-warning-bg": "#ebbf310d",
 		"update-notice-warning-border": "#ebc0312c",
+		"support-notice-text-bg": "#1383042e",
+		"support-notice-text-border": "#0a4d01",
 		"scrollbar-bg": "#161616",
 		"scrollbar-thumb-bg": "#353535",
 		"scrollbar-thumb-hover-bg": "#5e5e5e",
