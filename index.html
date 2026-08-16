@@ -44,11 +44,11 @@
     <canvas class="particle-backgroud" id="particle-background"></canvas>
   </div>
 
-  <div class="notice-wrap" id="notice" style="display: none;">
-    <div class="notice">
-      <button class="close-notice-btn" id="close-notice-btn">✕</button>
+  <div class="notice-wrapper" id="update-notice" style="display: none;">
+    <div class="notice update">
+      <button class="close-notice-btn" id="close-update-notice-btn">✕</button>
 
-      <div id="update-title" class="title" tt="update-available">Доступно обновление</div>
+      <div class="header" tt="update-available">Доступно обновление</div>
 
       <div class="info-wrapper">
         <div class="head">
@@ -61,13 +61,28 @@
           </div>
         </div>
 
-        <div id="open-client-release" class="open-client-release" tt="download-new-version">Скачать новую версию</div>
+        <div id="open-client-release" class="open-url-btn" tt="download-new-version">Скачать новую версию</div>
       </div>
 
       <div class="warning" tt="update-warning">
         ПРЕДУПРЕЖДЕНИЕ: Мы не заставляем вас срочно обновить данный клиент, мы лишь предлагаем более оптимизированную и универсальную версию!
         Выбор комфортной версии никак не ограничен.
       </div>
+    </div>
+  </div>
+
+  <div class="notice-wrapper" id="support-notice" style="display: none;">
+    <div class="notice support">
+      <button class="close-notice-btn" id="close-support-notice-btn">✕</button>
+
+      <div class="header" tt="support-project">Поддержи проект</div>
+
+      <div class="text" tt="support-text">
+        salarixi - это некоммерческий проект с открытым исходным кодом.
+        Поддержка в виде доната может улучшить мою мотивацию, соответственно и качество проекта!
+      </div>
+
+      <div id="open-donate-page" class="open-url-btn" tt="support">Поддержать</div>
     </div>
   </div>
 

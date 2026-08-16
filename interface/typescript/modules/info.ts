@@ -26,11 +26,12 @@ class InfoModule {
 			addOpeningUrlTo("codeberg", "click", "https://codeberg.org/nullclyze/salarixi");
 
 			const releaseCountEl = document.getElementById("release-count") as HTMLSpanElement;
-			const startCountEl = document.getElementById("stars-count") as HTMLSpanElement;
+			const starsCountEl = document.getElementById("stars-count") as HTMLSpanElement;
 			const forksCountEl = document.getElementById("forks-count") as HTMLSpanElement;
 
 			const onerr = (err: string) => {
 				["telegram", "discord", "youtube"].forEach(id => document.getElementById(id)?.remove());
+				document.getElementById("support-notice")?.remove();
 				logger.log(`Ошибка загрузки информации о клиенте (не критично): ${err}`, "non-critical-error");
 			};
 
@@ -38,12 +39,21 @@ class InfoModule {
 			if (!result.data) return;
 
 			releaseCountEl.innerText = result.data.repo.releases > 0 ? String(result.data.repo.releases) : "?";
-			startCountEl.innerText = result.data.repo.stars > 0 ? String(result.data.repo.stars) : "?";
+			starsCountEl.innerText = result.data.repo.stars > 0 ? String(result.data.repo.stars) : "?";
 			forksCountEl.innerText = result.data.repo.forks > 0 ? String(result.data.repo.forks) : "?";
 
 			for (const key in result.data.social) {
-				const link = result.data.social[key] as string;
-				addOpeningUrlTo(key, "click", link);
+				const url = result.data.social[key] as string;
+
+				if (key === "donate") {
+					const supportNotice = document.getElementById("support-notice");
+					if (!supportNotice) continue;
+					addOpeningUrlTo("open-donate-page", "click", url);
+					document.getElementById("close-support-notice-btn")?.addEventListener("click", () => supportNotice.remove());
+					setTimeout(() => document.getElementById("update-notice")?.style.display === "flex" ? supportNotice.remove() : supportNotice.style.display = "flex", 6000);
+				} else {
+					addOpeningUrlTo(key, "click", url);
+				}
 			}
 
 			logger.log(`Информация о клиенте загружена (размер ${result.size})`, "system");

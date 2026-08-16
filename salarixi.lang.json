@@ -3398,6 +3398,39 @@
         "ja": "最大一時停止",
         "zh": "最大暫停"
       }
+    },
+    {
+      "versions": "1.1.1",
+      "tag": "support-project",
+      "lang": {
+        "ru": "Поддержи проект",
+        "en": "Support the project",
+        "tr": "Projeyi destekleyin",
+        "ja": "プロジェクトを支援する",
+        "zh": "支持該項目"
+      }
+    },
+    {
+      "versions": "1.1.1",
+      "tag": "support-text",
+      "lang": {
+        "ru": "salarixi - это некоммерческий проект с открытым исходным кодом. Поддержка в виде доната может улучшить мою мотивацию, соответственно и качество проекта!",
+        "en": "salarixi is a non-profit, open-source project. Donating can improve my motivation and, consequently, the quality of the project!",
+        "tr": "salarixi, kar amacı gütmeyen, açık kaynaklı bir projedir. Bağış yapmak motivasyonumu ve dolayısıyla projenin kalitesini artırabilir!",
+        "ja": "salarixiは非営利のオープンソースプロジェクトです。ご寄付いただくことで、私のモチベーションが高まり、結果としてプロジェクトの品質向上につながります！",
+        "zh": "salarixi 是一個非營利的開源專案。您的捐贈可以提升我的工作動力，從而提升專案品質！"
+      }
+    },
+    {
+      "versions": "1.1.1",
+      "tag": "support",
+      "lang": {
+        "ru": "Поддержать",
+        "en": "Support",
+        "tr": "Destek",
+        "ja": "サポート",
+        "zh": "支援"
+      }
     }
   ]
 }

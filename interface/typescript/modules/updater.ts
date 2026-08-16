@@ -11,12 +11,12 @@ class UpdaterModule {
 	public init(): void {
 		setTimeout(async () => {
 			try {
-				const notice = document.getElementById("notice") as HTMLElement;
+				const updateNotice = document.getElementById("update-notice") as HTMLElement;
 
-				document.getElementById("close-notice-btn")?.addEventListener("click", () => notice.remove());
+				document.getElementById("close-update-notice-btn")?.addEventListener("click", () => updateNotice.remove());
 
 				const onerr = (err: string) => {
-					notice.remove();
+					updateNotice.remove();
 					logger.log(`Ошибка проверки обновлений (не критично): ${err}`, "non-critical-error");
 				};
 
@@ -30,7 +30,7 @@ class UpdaterModule {
 				const published = data["published"] ?? data["released"] ?? data["release_date"] ?? data["date"];
 
 				if (!isVersionNewer(version)) {
-					notice.remove();
+					updateNotice.remove();
 					return;
 				}
 
@@ -41,7 +41,9 @@ class UpdaterModule {
 				const releaseUrl = url ? url : `https://codeberg.org/nullclyze/salarixi/releases/tag/${tag}`;
 				addOpeningUrlTo("open-client-release", "click", releaseUrl);
 
-				notice.style.display = "flex";
+				const supportNotice = document.getElementById("support-notice");
+				if (supportNotice && supportNotice.style.display === "flex") supportNotice.remove();
+				updateNotice.style.display = "flex";
 			} catch (error) {
 				logger.log(`Ошибка проверки обновлений (не критично): ${error}`, "non-critical-error");
 			}

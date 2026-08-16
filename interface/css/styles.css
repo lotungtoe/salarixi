@@ -2109,7 +2109,7 @@ button svg {
   background: var(--hover-bg);
 }
 
-.notice-wrap {
+.notice-wrapper {
   position: fixed;
   inset: 0; 
   display: flex;
@@ -2123,8 +2123,12 @@ button svg {
   width: 100%;
 }
 
-.notice {       
+.notice-wrapper .notice {       
   position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   width: 520px;
   max-width: 90%;
   background: var(--secondary-bg);
@@ -2135,7 +2139,7 @@ button svg {
   font-family: var(--global-font-family);
 }
 
-.notice .close-notice-btn {
+.notice-wrapper .notice .close-notice-btn {
   position: absolute;
   right: 14px;
   top: 14px;
@@ -2154,12 +2158,12 @@ button svg {
   transition: background 0.12s ease, color 0.12s ease;
 }
 
-.notice .close-notice-btn:hover { 
+.notice-wrapper .notice .close-notice-btn:hover { 
   color: var(--default-color);
   background: var(--hover-bg);
 }
 
-.notice .title {
+.notice-wrapper .notice .header {
   margin-top: -8px;
   font-weight: bold;
   font-size: 18px;
@@ -2167,8 +2171,30 @@ button svg {
   letter-spacing: 0.2px;
 }
 
-.notice .info-wrapper {
-  display: flex; 
+.notice-wrapper .notice .open-url-btn {
+  width: min-content;
+  text-align: center;
+  padding: 10px 24px;
+  background: transparent;
+  color: var(--highlight-color);
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  background: var(--button-bg);
+  border: 1px solid var(--button-border);
+  border-radius: 14px;
+  margin-top: 30px;
+  white-space: nowrap;
+  transition: color 0.12s ease;
+}
+
+.notice-wrapper .notice .open-url-btn:hover {
+  background: var(--button-hover-bg);
+  border-color: var(--button-hover-border);
+}
+
+.notice-wrapper .notice.update .info-wrapper {
+  display: flex;
   flex-direction: column;
   justify-content: center; 
   align-items: center; 
@@ -2177,26 +2203,26 @@ button svg {
   padding: 20px;
 }
 
-.notice .info-wrapper .head {
+.notice-wrapper .notice.update .info-wrapper .head {
   display: flex; 
   gap: 12px; 
   justify-content: center; 
   align-items: center;
   border: 1px solid var(--secondary-border);
   border-radius: 12px;
-  box-shadow: 0 0 16px #00000098
+  box-shadow: 0 0 16px #00000098;
 }
 
-.notice .info-wrapper .logo {
-  width: 98px; 
-  height: 98px; 
+.notice-wrapper .notice.update .info-wrapper .logo {
+  width: 98px;
+  height: 98px;
   margin: 0;
   border-top-left-radius: 12px;
   border-bottom-left-radius: 12px;
   border-right: 1px solid var(--secondary-border);
 }
 
-.notice .info-wrapper .text {
+.notice-wrapper .notice.update .info-wrapper .text {
   display: flex;
   flex-direction: column;
   text-align: left;
@@ -2206,37 +2232,22 @@ button svg {
   border-radius: 12px;
 }
 
-.notice .info-wrapper .text span {
+.notice-wrapper .notice.update .info-wrapper .text span {
   font-family: var(--global-font-family);
   font-size: 15px;
   font-weight: 500;
   color: var(--muted-color);
 }
 
-.notice .info-wrapper .open-client-release {
-  text-align: center;
-  padding: 10px 24px;
-  background: transparent;
-  color: var(--button-color);
-  font-weight: 500;
-  font-size: 13px;
-  border-radius: 16px;
-  cursor: pointer;
-  border: 1px solid var(--button-border);
-  margin-top: 30px;
-  transition: color 0.12s ease;
-  text-transform: uppercase;
-}
-
-.notice .info-wrapper .open-client-release:hover {
+.notice-wrapper .notice.update .info-wrapper .open-client-release:hover {
   color: var(--highlight-color);
 }
 
-.notice .info-wrapper .open-client-release:active {
+.notice-wrapper .notice.update .info-wrapper .open-client-release:active {
   color: var(--dull-spec-color);
 }
 
-.notice .warning {
+.notice-wrapper .notice.update .warning {
   font-size: 13px;
   color: var(--update-notice-warning-color);
   margin-top: 24px;
@@ -2246,6 +2257,18 @@ button svg {
   border: 1px solid var(--update-notice-warning-border);
   line-height: 1.5;
   text-align: left;
+}
+
+.notice-wrapper .notice.support .text {
+  font-size: 15px;
+  color: var(--default-color);
+  margin-top: 24px;
+  padding: 12px 16px;
+  background: var(--bright-bg);
+  border-radius: 12px;
+  border: 1px solid var(--secondary-border);
+  line-height: 1.5;
+  text-align: center;
 }
 
 .column-wrap {
