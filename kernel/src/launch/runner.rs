@@ -148,18 +148,11 @@ pub async fn launch_bots_on_server(options: LaunchOptions) -> u8 {
     return 0x03;
   }
 
-  emit_log("Подготовка к запуску...", "extended");
+  emit_log("Подготовка к запуску...", "system");
 
   set_options(options.clone()).await;
   set_process_activity(true);
   update_process_status().await;
-
-  PROFILE_SYSTEM
-    .activate(
-      options.basic.monitoring_update_rate as u64,
-      options.basic.monitoring_optimization,
-    )
-    .await;
 
   if options.basic.use_webhook {
     send_webhook(
@@ -305,7 +298,14 @@ pub async fn launch_bots_on_server(options: LaunchOptions) -> u8 {
           }
         }
 
-        emit_log("Подготовка окончена", "extended");
+        PROFILE_SYSTEM
+          .activate(
+            options.basic.monitoring_update_rate as u64,
+            options.basic.monitoring_optimization,
+          )
+          .await;
+
+        emit_log("Подготовка окончена", "system");
 
         let _ = flow.start(options.basic.address).await;
       });

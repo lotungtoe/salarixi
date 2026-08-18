@@ -3,8 +3,8 @@ use hashbrown::HashMap;
 use md5::{digest::Update, Digest, Md5};
 use once_cell::sync::Lazy;
 use salarixi_extensions::buffer::BufferExt;
-use serde::Serialize;
-use tokio::{sync::RwLock, task::JoinHandle};
+use tokio::sync::RwLock;
+use tokio::task::JoinHandle;
 
 use crate::bot::systems::index::INDEX_SYSTEM;
 use crate::server::transfer::{emit_log, TransferEvent, UpdateBotProfilePayload, TRANSFER};
@@ -41,7 +41,7 @@ impl Profile {
   }
 }
 
-#[derive(Clone, Serialize, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum BotStatus {
   Waiting,
   Connected,
@@ -58,7 +58,7 @@ impl BotStatus {
   }
 }
 
-#[derive(Clone, Serialize)]
+#[derive(Clone)]
 pub struct ProfileProxy {
   pub ip_address: Option<String>,
   pub proxy: Option<String>,
@@ -112,12 +112,12 @@ impl ProfileSystem {
 
   /// Метод активации системы
   pub async fn activate(&self, update_rate: u64, optimized: bool) {
-    let updater_task = tokio::spawn(async move {
-      let mut last_hashes = HashMap::new();
+    let updater_task = if optimized {
+      tokio::spawn(async move {
+        let mut last_hashes = HashMap::new();
 
-      loop {
-        for (index, profile) in PROFILE_SYSTEM.map.read().await.iter() {
-          if optimized {
+        loop {
+          for (index, profile) in PROFILE_SYSTEM.map.read().await.iter() {
             let mut buf = BytesMut::new();
             profile.group.write(&mut buf);
             profile.health.write(&mut buf);
@@ -131,29 +131,46 @@ impl ProfileSystem {
 
             if let Some((last_status, last_hash)) = last_hashes.get(index) {
               if profile.status == *last_status && hash == *last_hash {
-                // println!("[debug :: monitoring] {} skipped", username);
+                // println!("[debug :: monitoring] {} skipped (status: {:?}, hash: {:?})", username, profile.status, hash);
                 continue;
               }
             };
 
+            // println!("[debug :: monitoring] {} updated (status: {:?}, hash: {:?})", username, profile.status, hash);
+
+            let Some(username) = INDEX_SYSTEM.username_by_index(index).await else {
+              continue;
+            };
+
             last_hashes.insert(*index, (profile.status.clone(), hash));
 
-            // println!("[debug :: monitoring] {} updated", username);
+            TRANSFER.emit(TransferEvent::UpdateBotProfile(UpdateBotProfilePayload {
+              username,
+              profile: profile.clone(),
+            }));
           }
 
-          let Some(username) = INDEX_SYSTEM.username_by_index(index).await else {
-            continue;
-          };
-
-          TRANSFER.emit(TransferEvent::UpdateBotProfile(UpdateBotProfilePayload {
-            username,
-            profile: profile.clone(),
-          }));
+          sleep!(update_rate);
         }
+      })
+    } else {
+      tokio::spawn(async move {
+        loop {
+          for (index, profile) in PROFILE_SYSTEM.map.read().await.iter() {
+            let Some(username) = INDEX_SYSTEM.username_by_index(index).await else {
+              continue;
+            };
 
-        sleep!(update_rate);
-      }
-    });
+            TRANSFER.emit(TransferEvent::UpdateBotProfile(UpdateBotProfilePayload {
+              username,
+              profile: profile.clone(),
+            }));
+          }
+
+          sleep!(update_rate);
+        }
+      })
+    };
 
     *self.updater_task.write().await = Some(updater_task);
   }
