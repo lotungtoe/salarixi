@@ -125,7 +125,7 @@ impl StateSystem {
   /// Метод очистки хранилища состояний
   pub async fn clear(&self) {
     self.map.write().await.clear();
-    emit_log("Состояния ботов очищены", "extended");
+    emit_log("Состояния ботов очищены", "system");
   }
 
   /// Метод сброса состояний указанного бота

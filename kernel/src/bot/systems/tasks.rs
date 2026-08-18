@@ -127,7 +127,7 @@ impl TaskSystem {
     guard.iter_mut().for_each(|(_, t)| t.kill_all_tasks());
     guard.clear();
 
-    emit_log("Активные задачи ботов остановлены", "extended");
+    emit_log("Активные задачи ботов остановлены", "system");
   }
 }
 

@@ -64,7 +64,7 @@ impl RegistrySystem {
     self.bots.clear();
     *self.swarm.write().await = None;
 
-    emit_log("Реестр ботов очищен", "extended");
+    emit_log("Реестр ботов очищен", "system");
   }
 }
 

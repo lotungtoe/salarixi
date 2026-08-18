@@ -64,6 +64,6 @@ impl IndexSystem {
   /// Метод очистки хранилища состояний
   pub async fn clear(&self) {
     self.map.write().await.clear();
-    emit_log("Реестр индексов ботов очищен", "extended");
+    emit_log("Реестр индексов ботов очищен", "system");
   }
 }
