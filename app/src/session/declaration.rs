@@ -1,10 +1,12 @@
 use std::io::{Error, ErrorKind};
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 
 use aes_gcm::Aes256Gcm;
 use bytes::{Buf, BufMut, Bytes, BytesMut};
 use once_cell::sync::Lazy;
 use salarixi_extensions::encryption::{decrypt_data, encrypt_data};
+use salarixi_kernel::launch::runner::stop_bots_and_destroy_data;
 use salarixi_kernel::server::Server;
 use salarixi_kernel::sleep;
 use salarixi_kernel::tools::{randnum, randstr, CharClass};
@@ -28,6 +30,8 @@ pub struct Session {
   reader: Arc<RwLock<Option<OwnedReadHalf>>>,
   writer: Arc<RwLock<Option<OwnedWriteHalf>>>,
   cipher: Arc<RwLock<Option<Aes256Gcm>>>,
+  stopping: AtomicBool,
+  establishing: AtomicBool,
 }
 
 impl Session {
@@ -38,12 +42,22 @@ impl Session {
       reader: Arc::new(RwLock::new(None)),
       writer: Arc::new(RwLock::new(None)),
       cipher: Arc::new(RwLock::new(None)),
+      stopping: AtomicBool::new(false),
+      establishing: AtomicBool::new(false),
     }
   }
 
   /// Метод запуска локального сервера
   pub async fn run_local_server(&self) -> CommandResult<(String, String)> {
-    self.shutdown().await;
+    if self.establishing.load(Ordering::SeqCst) {
+      failed!("session is already being established");
+    }
+
+    if !self.shutdown().await {
+      failed!("it is not possible to establish a new session until the current one is terminated");
+    }
+
+    self.establishing.store(true, Ordering::SeqCst);
 
     let mut data = None;
     let mut error = None;
@@ -71,12 +85,16 @@ impl Session {
         .connect_to_remote_server(addr.clone(), Some(random_password.clone()), false)
         .await;
 
+      self.establishing.store(false, Ordering::SeqCst);
+
       if let Some(e) = result.error {
         failed!("{}", e);
       } else {
         success!((addr, random_password));
       }
     } else {
+      self.establishing.store(false, Ordering::SeqCst);
+
       if let Some(e) = error {
         failed!("{}", e);
       } else {
@@ -93,7 +111,13 @@ impl Session {
     is_changing: bool,
   ) -> CommandResult<()> {
     if is_changing {
-      self.shutdown().await;
+      if self.establishing.load(Ordering::SeqCst) {
+        failed!("session is already being established");
+      }
+
+      if !self.shutdown().await {
+        failed!("it is not possible to establish a new session until the current one is terminated");
+      }
     }
 
     let mut socket = match TcpStream::connect(addr).await {
@@ -121,7 +145,13 @@ impl Session {
   }
 
   /// Метод выключения сессии
-  pub async fn shutdown(&self) {
+  pub async fn shutdown(&self) -> bool {
+    if self.stopping.load(Ordering::SeqCst) {
+      return false;
+    }
+
+    self.stopping.store(true, Ordering::SeqCst);
+
     let mut task_guard = self.reader_task.write().await;
     if let Some(t) = task_guard.as_ref() {
       t.abort();
@@ -142,14 +172,18 @@ impl Session {
 
     let mut server_guard = self.local_server.write().await;
     if let Some(s) = server_guard.as_ref() {
+      stop_bots_and_destroy_data(false).await;
       s.stop_processing().await;
-      // TODO: Грамотная и тихая остановка ботов (если процесс активен)
     }
 
     *server_guard = None;
     drop(server_guard);
 
     *self.cipher.write().await = None;
+
+    self.stopping.store(false, Ordering::SeqCst);
+
+    true
   }
 
   /// Метод запуска цикла чтения входящих пакетов

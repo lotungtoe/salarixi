@@ -81,7 +81,7 @@ pub async fn execute_client_command(
       synchronize_all(sockets).await;
     }
     ClientCommand::StopBots => {
-      let status = stop_bots_and_destroy_data().await;
+      let status = stop_bots_and_destroy_data(true).await;
 
       let mut buf = BytesMut::new();
       buf.put_u8(0x0A);

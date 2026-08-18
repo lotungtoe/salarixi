@@ -318,11 +318,13 @@ pub async fn launch_bots_on_server(options: LaunchOptions) -> u8 {
 }
 
 /// Функция остановки ботов
-pub async fn stop_bots_and_destroy_data() -> u8 {
+pub async fn stop_bots_and_destroy_data(logging: bool) -> u8 {
   let total_bots = PROFILE_SYSTEM.len().await;
 
-  emit_msg("Система", "Остановка ботов...");
-  emit_log(format!("Остановка {} ботов...", total_bots), "info");
+  if logging {
+    emit_msg("Система", "Остановка ботов...");
+    emit_log(format!("Остановка {} ботов...", total_bots), "info");
+  }
 
   sleep!(500);
 
@@ -355,12 +357,14 @@ pub async fn stop_bots_and_destroy_data() -> u8 {
 
   update_process_status().await;
 
-  if let Some(options) = current_options().await {
-    if options.basic.use_webhook {
-      send_webhook(
-        options.webhook.url.clone(),
-        format!("{} ботов было остановлено", total_bots),
-      );
+  if logging {
+    if let Some(options) = current_options().await {
+      if options.basic.use_webhook {
+        send_webhook(
+          options.webhook.url.clone(),
+          format!("{} ботов было остановлено", total_bots),
+        );
+      }
     }
   }
 
