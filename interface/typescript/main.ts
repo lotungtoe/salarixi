@@ -222,7 +222,7 @@ async function startBots(): Promise<void> {
 		buf.writeOption<string>(options.captcha_bypass["api_key"], (some) => buf.writeString(some));
 		buf.writeU8(options.captcha_bypass["api_service"]);
 
-		buf.writeOption<string>(options.captcha_bypass["url"], (some) => buf.writeString(some));
+		buf.writeOption<string>(options.webhook["url"], (some) => buf.writeString(some));
 		buf.writeBoolean(options.plugins["send_information"]);
 		buf.writeBoolean(options.plugins["send_data"]);
 		buf.writeBoolean(options.plugins["send_actions"]);
