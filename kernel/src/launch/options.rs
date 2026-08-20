@@ -1,5 +1,6 @@
 use hashbrown::HashMap;
-use salarixi_extensions::{buffer::BufferExt, index::IndexExt};
+use salarixi_extensions::buffer::BufferExt;
+use salarixi_extensions::index::IndexExt;
 use salarixi_macros::Index;
 
 #[derive(Clone)]

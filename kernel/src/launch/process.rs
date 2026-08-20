@@ -3,10 +3,9 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use once_cell::sync::Lazy;
 use tokio::sync::RwLock;
 
-use crate::{
-  bot::systems::{index::INDEX_SYSTEM, profile::PROFILE_SYSTEM},
-  server::transfer::{ProcessStatusPayload, TransferEvent, TRANSFER},
-};
+use crate::bot::systems::index::INDEX_SYSTEM;
+use crate::bot::systems::profile::PROFILE_SYSTEM;
+use crate::server::transfer::{ProcessStatusPayload, TransferEvent, TRANSFER};
 
 use super::options::LaunchOptions;
 

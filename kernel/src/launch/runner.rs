@@ -196,7 +196,7 @@ pub async fn launch_bots_on_server(options: LaunchOptions) -> u8 {
       }
 
       local_set.spawn_local(async move {
-        let mut flow = SwarmBuilder::new_without_plugins()
+        let mut swarm = SwarmBuilder::new_without_plugins()
           .add_plugins(swarm_plugins)
           .add_plugins(bot_plugins)
           .add_plugins(azalea::swarm::DefaultSwarmPlugins)
@@ -290,11 +290,11 @@ pub async fn launch_bots_on_server(options: LaunchOptions) -> u8 {
           }
 
           for (account, opts) in accounts_with_opts {
-            flow = flow.add_account_with_opts(account.object, opts);
+            swarm = swarm.add_account_with_opts(account.object, opts);
           }
         } else {
           for account in accounts {
-            flow = flow.add_account(account.object);
+            swarm = swarm.add_account(account.object);
           }
         }
 
@@ -307,7 +307,7 @@ pub async fn launch_bots_on_server(options: LaunchOptions) -> u8 {
 
         emit_log("Подготовка окончена", "system");
 
-        let _ = flow.start(options.basic.address).await;
+        let _ = swarm.start(options.basic.address).await;
       });
 
       local_set.await;
