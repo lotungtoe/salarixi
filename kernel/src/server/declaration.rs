@@ -116,35 +116,49 @@ impl Server {
       loop {
         if let Ok(event) = emit_rx.recv().await {
           let bytes;
+          let name;
 
           match event {
             TransferEvent::Log(payload) => {
               bytes = payload.to_bytes();
+              name = "log";
             }
             TransferEvent::Message(payload) => {
               bytes = payload.to_bytes();
+              name = "message";
             }
             TransferEvent::SessionChat(payload) => {
               bytes = payload.to_bytes();
+              name = "session-chat";
             }
             TransferEvent::ProcessStatus(payload) => {
               bytes = payload.to_bytes();
+              name = "process-chat";
             }
             TransferEvent::BotChat(payload) => {
               bytes = payload.to_bytes();
+              name = "bot-chat";
             }
             TransferEvent::AntiWebCaptcha(payload) => {
               bytes = payload.to_bytes();
+              name = "anti-web-captcha";
             }
             TransferEvent::AntiMapCaptcha(payload) => {
               bytes = payload.to_bytes();
+              name = "anti-map-captcha";
             }
             TransferEvent::UpdateBotProfile(payload) => {
               bytes = payload.to_bytes();
+              name = "update-bot-profile";
             }
           }
 
+          let payload_len = bytes.len();
           write_to_sockets(&sockets, &bytes).await;
+          println!(
+            "[info] event \"{}\" sent to all active sockets | length={}",
+            name, payload_len
+          );
         }
       }
     });

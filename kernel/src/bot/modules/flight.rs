@@ -211,50 +211,54 @@ impl FlightModule {
     let mut counter = 0;
 
     loop {
-      if let Some(physics) = bot.get_physics() {
-        counter += 1;
+      let Some(physics) = bot.get_physics() else {
+        continue;
+      };
 
-        if config.use_ground_spoof {
-          bot.set_on_ground(true);
+      counter += 1;
+
+      if config.use_ground_spoof {
+        bot.set_on_ground(true);
+      }
+
+      if counter == 2 {
+        bot.jump();
+        counter = 0;
+      }
+
+      sleep!(randnum(50, 80));
+
+      let Some(foot_pos) = bot.foot_pos() else {
+        continue;
+      };
+
+      let packet = ServerboundMovePlayerPos {
+        pos: Vec3::new(
+          foot_pos.x,
+          foot_pos.y + randnum(config.min_change_y + 0.8, config.max_change_y + 0.8),
+          foot_pos.z,
+        ),
+        flags: MoveFlags {
+          on_ground: physics.on_ground(),
+          horizontal_collision: physics.horizontal_collision,
+        },
+      };
+
+      if config.use_jitter {
+        for _ in 0..randnum(4, 6) {
+          bot.write_packet(packet.clone());
+          sleep!(50);
         }
+      } else {
+        bot.write_packet(packet);
+      }
 
-        if counter == 2 {
-          bot.jump();
-          counter = 0;
-        }
+      sleep!(randnum(config.min_delay, config.max_delay));
 
-        sleep!(randnum(50, 80));
+      Self::hover(bot, Instant::now() + Duration::from_millis(randnum(100, 150))).await;
 
-        let pos = bot.feet_pos();
-
-        let packet = ServerboundMovePlayerPos {
-          pos: Vec3::new(
-            pos.x,
-            pos.y + randnum(config.min_change_y + 0.8, config.max_change_y + 0.8),
-            pos.z,
-          ),
-          flags: MoveFlags {
-            on_ground: physics.on_ground(),
-            horizontal_collision: physics.horizontal_collision,
-          },
-        };
-
-        if config.use_jitter {
-          for _ in 0..randnum(4, 6) {
-            bot.write_packet(packet.clone());
-            sleep!(50);
-          }
-        } else {
-          bot.write_packet(packet);
-        }
-
-        sleep!(randnum(config.min_delay, config.max_delay));
-
-        Self::hover(bot, Instant::now() + Duration::from_millis(randnum(100, 150))).await;
-
-        if config.use_ground_spoof {
-          bot.set_on_ground(false);
-        }
+      if config.use_ground_spoof {
+        bot.set_on_ground(false);
       }
     }
   }
@@ -280,41 +284,45 @@ impl FlightModule {
     loop {
       sleep!(randnum(50, 100));
 
-      if let Some(physics) = bot.get_physics() {
-        if config.use_ground_spoof {
-          bot.set_on_ground(true);
+      let Some(physics) = bot.get_physics() else {
+        continue;
+      };
+
+      if config.use_ground_spoof {
+        bot.set_on_ground(true);
+      }
+
+      let Some(foot_pos) = bot.foot_pos() else {
+        continue;
+      };
+
+      let packet = ServerboundMovePlayerPos {
+        pos: Vec3::new(
+          foot_pos.x,
+          foot_pos.y + randnum(config.min_change_y + 0.8, config.max_change_y + 0.8),
+          foot_pos.z,
+        ),
+        flags: MoveFlags {
+          on_ground: physics.on_ground(),
+          horizontal_collision: physics.horizontal_collision,
+        },
+      };
+
+      if config.use_jitter {
+        for _ in 0..randnum(4, 6) {
+          bot.write_packet(packet.clone());
+          sleep!(50);
         }
+      } else {
+        bot.write_packet(packet);
+      }
 
-        let pos = bot.feet_pos();
+      sleep!(randnum(config.min_delay, config.max_delay));
 
-        let packet = ServerboundMovePlayerPos {
-          pos: Vec3::new(
-            pos.x,
-            pos.y + randnum(config.min_change_y + 0.8, config.max_change_y + 0.8),
-            pos.z,
-          ),
-          flags: MoveFlags {
-            on_ground: physics.on_ground(),
-            horizontal_collision: physics.horizontal_collision,
-          },
-        };
+      Self::hover(bot, Instant::now() + Duration::from_millis(randnum(100, 150))).await;
 
-        if config.use_jitter {
-          for _ in 0..randnum(4, 6) {
-            bot.write_packet(packet.clone());
-            sleep!(50);
-          }
-        } else {
-          bot.write_packet(packet);
-        }
-
-        sleep!(randnum(config.min_delay, config.max_delay));
-
-        Self::hover(bot, Instant::now() + Duration::from_millis(randnum(100, 150))).await;
-
-        if config.use_ground_spoof {
-          bot.set_on_ground(false);
-        }
+      if config.use_ground_spoof {
+        bot.set_on_ground(false);
       }
     }
   }
@@ -342,14 +350,16 @@ impl FlightModule {
         bot.set_on_ground(true);
       }
 
-      let pos = bot.feet_pos();
+      let Some(foot_pos) = bot.foot_pos() else {
+        continue;
+      };
 
-      let block_under = BlockPos::new(pos.x as i32, (pos.y - 1.0) as i32, pos.z as i32);
+      let block_under = BlockPos::new(foot_pos.x as i32, (foot_pos.y - 1.0) as i32, foot_pos.z as i32);
 
       let distance_vec = Vec3::new(
-        pos.x - (block_under.x as f64 + 0.5),
-        pos.y - (block_under.y as f64 + 0.5),
-        pos.z - (block_under.z as f64 + 0.5),
+        foot_pos.x - (block_under.x as f64 + 0.5),
+        foot_pos.y - (block_under.y as f64 + 0.5),
+        foot_pos.z - (block_under.z as f64 + 0.5),
       );
 
       let distance = distance_vec.length().max(0.1);

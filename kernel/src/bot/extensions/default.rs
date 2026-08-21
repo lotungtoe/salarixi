@@ -1,15 +1,20 @@
 use azalea::ecs::entity::Entity;
 use azalea::ecs::query::{With, Without};
+use azalea::entity::dimensions::EntityDimensions;
+use azalea::entity::metadata::Health;
 use azalea::entity::metadata::{AbstractAnimal, AbstractMonster, AbstractVehicle, Player};
-use azalea::entity::{dimensions::EntityDimensions, metadata::Health, Crouching, Jumping, LookDirection, Position};
+use azalea::entity::{Crouching, Jumping, LookDirection, Position};
 use azalea::entity::{Dead, LocalEntity};
 use azalea::local_player::{Hunger, TabList};
 use azalea::player::GameProfileComponent;
-use azalea::protocol::packets::game::{s_interact::InteractionHand, ServerboundSwing};
+use azalea::protocol::packets::game::s_interact::InteractionHand;
+use azalea::protocol::packets::game::ServerboundSwing;
 use azalea::world::MinecraftEntityId;
 use azalea::{Client, InGameState, Vec3};
+use salarixi_extensions::buffer::BufferExt;
 
-pub enum EntityType {
+#[derive(Clone)]
+pub enum EntityFilter {
   Player,
   Monster,
   Animal,
@@ -18,15 +23,25 @@ pub enum EntityType {
   Custom(String),
 }
 
-impl From<String> for EntityType {
-  fn from(value: String) -> Self {
-    match value.as_str() {
-      "player" => EntityType::Player,
-      "monster" => EntityType::Monster,
-      "animal" => EntityType::Animal,
-      "vehicle" => EntityType::Vehicle,
-      "any" => EntityType::Any,
-      _ => EntityType::Custom(value),
+impl EntityFilter {
+  pub fn read(buf: &mut bytes::Bytes) -> Option<Self> {
+    let index = u8::read(buf)?;
+    let username = Option::read(buf)?;
+
+    match index {
+      0x00 => Some(Self::Player),
+      0x01 => Some(Self::Monster),
+      0x02 => Some(Self::Animal),
+      0x03 => Some(Self::Vehicle),
+      0x04 => Some(Self::Any),
+      0x05 => {
+        if let Some(u) = username {
+          Some(Self::Custom(u))
+        } else {
+          None
+        }
+      }
+      _ => None,
     }
   }
 }
@@ -35,8 +50,8 @@ pub trait BotDefaultExt {
   fn workable(&self) -> bool;
   fn id(&self) -> MinecraftEntityId;
   fn ping(&self) -> u32;
-  fn feet_pos(&self) -> Vec3;
-  fn eye_pos(&self) -> Vec3;
+  fn foot_pos(&self) -> Option<Vec3>;
+  fn eye_pos(&self) -> Option<Vec3>;
   fn get_health(&self) -> f32;
   fn get_satiety(&self) -> u32;
   fn get_players(&self) -> Option<TabList>;
@@ -47,7 +62,7 @@ pub trait BotDefaultExt {
   fn stop_crouching(&self);
   fn get_entity_eye_height(&self, entity: Entity) -> f64;
   fn get_entity_position(&self, entity: Entity) -> Vec3;
-  fn find_nearest_entity(&self, entity_type: EntityType, distance: f64) -> Option<Entity>;
+  fn find_nearest_entity(&self, filter: &EntityFilter, distance: f64) -> Option<Entity>;
 }
 
 impl BotDefaultExt for Client {
@@ -90,22 +105,26 @@ impl BotDefaultExt for Client {
     }
   }
 
-  fn feet_pos(&self) -> Vec3 {
-    *self.get_component::<Position>().unwrap_or(Position::new(Vec3::ZERO))
+  fn foot_pos(&self) -> Option<Vec3> {
+    if let Some(pos) = self.get_component::<Position>() {
+      return Some(Vec3::new(pos.x, pos.y, pos.z));
+    }
+
+    None
   }
 
-  fn eye_pos(&self) -> Vec3 {
-    let feet_pos = *self.get_component::<Position>().unwrap_or(Position::new(Vec3::ZERO));
-
+  fn eye_pos(&self) -> Option<Vec3> {
     let Some(dimensions) = self.get_component::<EntityDimensions>() else {
-      return feet_pos;
+      return None;
     };
 
-    Vec3 {
-      x: feet_pos.x,
-      y: feet_pos.y + dimensions.eye_height as f64,
-      z: feet_pos.z,
-    }
+    let foot_pos = self.foot_pos()?;
+
+    Some(Vec3 {
+      x: foot_pos.x,
+      y: foot_pos.y + dimensions.eye_height as f64,
+      z: foot_pos.z,
+    })
   }
 
   fn get_health(&self) -> f32 {
@@ -180,43 +199,46 @@ impl BotDefaultExt for Client {
     0.0
   }
 
-  fn find_nearest_entity(&self, entity_type: EntityType, distance: f64) -> Option<Entity> {
+  fn find_nearest_entity(&self, filter: &EntityFilter, distance: f64) -> Option<Entity> {
     let excluded_name = self.username();
     let excluded_id = self.id();
-    let eye_pos = self.eye_pos();
+    let Some(eye_pos) = self.eye_pos() else {
+      return None;
+    };
 
-    match entity_type {
-      EntityType::Player => {
+    match filter {
+      EntityFilter::Player => {
         return self.nearest_entity_by::<(&GameProfileComponent, &Position, &MinecraftEntityId), (With<Player>, Without<LocalEntity>, Without<Dead>)>(
           |data: (&GameProfileComponent, &Position, &MinecraftEntityId)| {
             *data.0 .0.name != excluded_name && eye_pos.distance_to(**data.1) <= distance && *data.2 != excluded_id
           },
         );
       }
-      EntityType::Monster => {
+      EntityFilter::Monster => {
         return self.nearest_entity_by::<(&Position, &MinecraftEntityId), (With<AbstractMonster>, Without<LocalEntity>, Without<Dead>)>(
           |data: (&Position, &MinecraftEntityId)| eye_pos.distance_to(**data.0) <= distance && *data.1 != excluded_id,
         );
       }
-      EntityType::Animal => {
+      EntityFilter::Animal => {
         return self.nearest_entity_by::<(&Position, &MinecraftEntityId), (With<AbstractAnimal>, Without<LocalEntity>, Without<Dead>)>(
           |data: (&Position, &MinecraftEntityId)| eye_pos.distance_to(**data.0) <= distance && *data.1 != excluded_id,
         );
       }
-      EntityType::Vehicle => {
+      EntityFilter::Vehicle => {
         return self.nearest_entity_by::<(&Position, &MinecraftEntityId), (With<AbstractVehicle>, Without<LocalEntity>, Without<Dead>)>(
           |data: (&Position, &MinecraftEntityId)| eye_pos.distance_to(**data.0) <= distance && *data.1 != excluded_id,
         );
       }
-      EntityType::Any => {
+      EntityFilter::Any => {
         return self.nearest_entity_by::<(&Position, &MinecraftEntityId), (Without<LocalEntity>, Without<Dead>)>(
           |data: (&Position, &MinecraftEntityId)| eye_pos.distance_to(**data.0) <= distance && *data.1 != excluded_id,
         );
       }
-      EntityType::Custom(username) => {
+      EntityFilter::Custom(username) => {
+        let username_clone = username.clone();
         return self.nearest_entity_by::<(&GameProfileComponent, &Position, &MinecraftEntityId), (With<Player>, Without<LocalEntity>, Without<Dead>)>(
           |data: (&GameProfileComponent, &Position, &MinecraftEntityId)| {
-            data.0 .0.name == username && eye_pos.distance_to(**data.1) <= distance && *data.2 != excluded_id
+            data.0 .0.name == username_clone && eye_pos.distance_to(**data.1) <= distance && *data.2 != excluded_id
           },
         );
       }

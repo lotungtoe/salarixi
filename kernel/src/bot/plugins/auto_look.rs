@@ -1,6 +1,6 @@
 use azalea::prelude::*;
 
-use crate::bot::extensions::{BotDefaultExt, BotRotationExt, EntityType};
+use crate::bot::extensions::{BotDefaultExt, BotRotationExt, EntityFilter};
 use crate::bot::plugin_manager::PluginName;
 use crate::bot::systems::states::{getst, setmst, State, StateName};
 use crate::bot::traits::SalarixiPlugin;
@@ -24,7 +24,7 @@ impl AutoLookPlugin {
         return;
       }
 
-      if let Some(entity) = bot.find_nearest_entity(EntityType::Any, 14.0) {
+      if let Some(entity) = bot.find_nearest_entity(&EntityFilter::Any, 14.0) {
         bot.look_at_entity(entity, true);
       }
     });

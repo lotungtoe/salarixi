@@ -27,7 +27,6 @@ impl Radar {
     Self
   }
 
-  /// Метод поиска цели
   pub async fn find_target(&self, target: String) -> Option<RadarInfo> {
     let mut info = None;
 
@@ -46,19 +45,23 @@ impl Radar {
             continue;
           };
 
-          if profile.0.name == target {
-            let player_pos = bot.get_entity_position(entity);
-            let client_pos = bot.feet_pos();
-
-            info = Some(RadarInfo {
-              uuid: uuid.to_string(),
-              tx: player_pos.x,
-              ty: player_pos.y,
-              tz: player_pos.z,
-              ox: client_pos.x,
-              oz: client_pos.z,
-            });
+          if profile.0.name != target {
+            continue;
           }
+
+          let player_pos = bot.get_entity_position(entity);
+          let Some(client_pos) = bot.foot_pos() else {
+            return;
+          };
+
+          info = Some(RadarInfo {
+            uuid: uuid.to_string(),
+            tx: player_pos.x,
+            ty: player_pos.y,
+            tz: player_pos.z,
+            ox: client_pos.x,
+            oz: client_pos.z,
+          });
         }
       });
     }
@@ -66,7 +69,6 @@ impl Radar {
     info
   }
 
-  /// Метод сохранения данных в указанный файл
   pub fn save_data(&self, target: String, mut path: String, filename: String, x: f64, y: f64, z: f64) {
     let date = Local::now().format("%H:%M:%S").to_string();
     let content = format!("[ {} ] {} ~ X: {}, Y: {}, Z: {}", date, target, x, y, z);
@@ -79,7 +81,6 @@ impl Radar {
     writeln!(&mut file, "{}", content).unwrap();
   }
 
-  /// Метод преследования цели
   pub async fn follow(&self, x: i32, z: i32) {
     for (index, _) in PROFILE_SYSTEM.get_all_connected().await.iter() {
       go_to(*index, x, z);

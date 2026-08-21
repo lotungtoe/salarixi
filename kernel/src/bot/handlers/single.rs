@@ -23,10 +23,9 @@ use crate::launch::options::CaptchaType;
 use crate::launch::process::current_options;
 use crate::launch::process::update_process_status;
 use crate::server::transfer::*;
-use crate::sleep;
 use crate::tools::*;
 use crate::webhook::*;
-use crate::{take_bot, take_profile};
+use crate::{sleep, take_profile};
 
 /// Обработчик для одного бота
 pub async fn single_handler(bot: Client, event: Event, _state: NoState) {
@@ -96,34 +95,12 @@ async fn process_spawn(bot: Client) {
 
   update_process_status().await;
 
-  take_bot!(&index, async |bot| {
-    let pos = bot.feet_pos();
-    let health = bot.get_health();
-    let str_pos = format!("{}, {}, {}", pos.x as i32, pos.y as i32, pos.z as i32);
+  if opts.basic.use_webhook {
+    send_webhook(opts.webhook.url, format!("Бот {} заспавнился", username));
+  }
 
-    if opts.basic.use_webhook {
-      send_webhook(
-        opts.webhook.url,
-        format!(
-          "Бот {} заспавнился | Координаты (XYZ): {} | Здоровье: {} / 20",
-          username, str_pos, health
-        ),
-      );
-    }
-
-    emit_log(
-      format!("Бот {} заспавнился, координаты (XYZ): {}", username, str_pos),
-      "info",
-    );
-
-    emit_msg(
-      "Система",
-      format!(
-        "Бот {} заспавнился<br><br>Координаты (XYZ): {}<br>Здоровье: {} / 20",
-        username, str_pos, health
-      ),
-    );
-  });
+  emit_log(format!("Бот {} заспавнился", username), "info");
+  emit_msg("Система", format!("Бот {} заспавнился", username));
 
   // Я без понятия что ставить в приоретет - сценарий пользователя или авторизацию.
   // Если я оберну авторизацию и сценарий в отдельные асинхронные задачи, то в таком

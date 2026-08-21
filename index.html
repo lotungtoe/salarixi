@@ -1553,7 +1553,7 @@
           <div class="input-wrap">
             <div class="form-input">
               <label for="module_stalker_option_target-nickname" class="text" tt="target-nickname">Никнейм цели</label>
-              <input type="text" module-index="5" ordinal="1" optional="true" id="module_stalker_option_target-nickname" placeholder="player_123" keep>
+              <input type="text" module-index="5" ordinal="1" id="module_stalker_option_target-nickname" placeholder="player_123" keep>
             </div>
 
             <div class="form-input">
@@ -1665,23 +1665,23 @@
               </select>
             </div>
 
+            <div class="custom-select between" id="select-killaura-weapon-container">
+              <label tt="weapon:">Оружие:</label>
+              <select id="module_killaura_select_weapon" module-index="7" ordinal="2" keep>
+                <option value="sword" tt="sword">Меч</option>
+                <option value="axe" tt="axe">Топор</option>
+              </select>
+            </div>
+
             <div class="custom-select between">
               <label tt="target:">Цель:</label>
-              <select id="module_killaura_select_target" module-index="7" ordinal="2" keep trigger>
+              <select id="module_killaura_select_target" module-index="7" ordinal="3" keep trigger>
                 <option value="player" tt="player">Игрок</option>
                 <option value="monster" tt="monster">Монстр</option>
                 <option value="animal" tt="animal">Животное</option>
                 <option value="vehicle" tt="vehicle">Транспорт</option>
                 <option value="any" tt="any">Любая</option>
                 <option value="custom" tt="custom-target">Своя цель</option>
-              </select>
-            </div>
-
-            <div class="custom-select between" id="select-killaura-weapon-container">
-              <label tt="weapon:">Оружие:</label>
-              <select id="module_killaura_select_weapon" module-index="7" ordinal="3" keep>
-                <option value="sword" tt="sword">Меч</option>
-                <option value="axe" tt="axe">Топор</option>
               </select>
             </div>
           </div>
@@ -1852,6 +1852,7 @@
               <option value="monster" tt="monster">Монстр</option>
               <option value="animal" tt="animal">Животное</option>
               <option value="vehicle" tt="vehicle">Транспорт</option>
+              <option value="any" tt="any">Любая</option>
               <option value="custom" tt="custom-target">Своя цель</option>
             </select>
           </div>

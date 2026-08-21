@@ -309,9 +309,11 @@ impl FarmerModule {
       setmst(index, StateName::Looking, true).await;
 
       for y in -1..=1 {
-        let pos = bot.feet_pos();
+        let Some(foot_pos) = bot.foot_pos() else {
+          continue;
+        };
 
-        let block_pos = BlockPos::from(Vec3::new(pos.x, pos.y + y as f64, pos.z));
+        let block_pos = BlockPos::from(Vec3::new(foot_pos.x, foot_pos.y + y as f64, foot_pos.z));
 
         Self::interact_with_block(bot, index, block_pos, &options).await;
       }
@@ -319,11 +321,17 @@ impl FarmerModule {
       for x in -1..=1 {
         for y in -1..=1 {
           for z in -1..=1 {
-            let pos = bot.feet_pos();
+            let Some(foot_pos) = bot.foot_pos() else {
+              continue;
+            };
 
-            let block_pos = BlockPos::from(Vec3::new(pos.x + x as f64, pos.y + y as f64, pos.z + z as f64));
+            let block_pos = BlockPos::from(Vec3::new(
+              foot_pos.x + x as f64,
+              foot_pos.y + y as f64,
+              foot_pos.z + z as f64,
+            ));
 
-            if block_pos != BlockPos::from(Vec3::new(pos.x, pos.y + y as f64, pos.z)) {
+            if block_pos != BlockPos::from(Vec3::new(foot_pos.x, foot_pos.y + y as f64, foot_pos.z)) {
               Self::interact_with_block(bot, index, block_pos, &options).await;
             }
           }

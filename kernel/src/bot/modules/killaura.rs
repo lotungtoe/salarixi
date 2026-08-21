@@ -1,4 +1,3 @@
-use azalea::ecs::entity::Entity;
 use azalea::registry::builtin::ItemKind;
 use azalea::SprintDirection;
 use azalea::{prelude::*, WalkDirection};
@@ -6,7 +5,7 @@ use salarixi_extensions::buffer::BufferExt;
 use salarixi_extensions::index::IndexExt;
 use salarixi_macros::Index;
 
-use crate::bot::extensions::{BotDefaultExt, BotInventoryExt, BotMovementExt, BotRotationExt, EntityType};
+use crate::bot::extensions::{BotDefaultExt, BotInventoryExt, BotMovementExt, BotRotationExt, EntityFilter};
 use crate::bot::systems::states::{getst, setmst, setst, State, StateName};
 use crate::bot::systems::tasks::{gettskact, killtsk, pushetsk, pushrtsk, TaskName};
 use crate::bot::traits::SalarixiModule;
@@ -31,31 +30,6 @@ enum Settings {
   Manual = 1,
 }
 
-#[derive(Clone, PartialEq, Index)]
-enum Target {
-  Player = 0,
-  Monster = 1,
-  Animal = 2,
-  Vehicle = 3,
-  Any = 4,
-  Custom = 5,
-}
-
-impl Target {
-  pub fn to_string(&self) -> String {
-    let str = match self {
-      Self::Player => "player",
-      Self::Monster => "monster",
-      Self::Animal => "animal",
-      Self::Vehicle => "vehicle",
-      Self::Any => "any",
-      Self::Custom => "custom",
-    };
-
-    str.to_string()
-  }
-}
-
 #[derive(PartialEq, Index)]
 enum WeaponType {
   Sword = 0,
@@ -65,9 +39,8 @@ enum WeaponType {
 pub struct KillauraOptions {
   behavior: Behavior,
   settings: Settings,
-  target: Target,
   weapon: WeaponType,
-  target_nickname: Option<String>,
+  entity_filter: EntityFilter,
   weapon_slot: Option<u8>,
   attack_distance: Option<f64>,
   attack_delay: Option<u64>,
@@ -85,9 +58,8 @@ impl KillauraOptions {
     Some(Self {
       behavior: Behavior::from_index(u8::read(buf)?)?,
       settings: Settings::from_index(u8::read(buf)?)?,
-      target: Target::from_index(u8::read(buf)?)?,
       weapon: WeaponType::from_index(u8::read(buf)?)?,
-      target_nickname: Option::read(buf)?,
+      entity_filter: EntityFilter::read(buf)?,
       weapon_slot: Option::read(buf)?,
       attack_distance: Option::read(buf)?,
       attack_delay: Option::read(buf)?,
@@ -103,7 +75,6 @@ impl KillauraOptions {
 }
 
 struct KillauraConfig {
-  target: Target,
   weapon_slot: Option<u8>,
   attack_distance: f64,
   attack_delay: u64,
@@ -122,7 +93,6 @@ impl KillauraModule {
   fn create_config(options: &KillauraOptions) -> KillauraConfig {
     if options.settings == Settings::Adaptive {
       KillauraConfig {
-        target: options.target.clone(),
         weapon_slot: options.weapon_slot,
         attack_distance: 3.1,
         attack_delay: if options.behavior == Behavior::Moderate {
@@ -135,7 +105,6 @@ impl KillauraModule {
       }
     } else {
       KillauraConfig {
-        target: options.target.clone(),
         weapon_slot: options.weapon_slot,
         attack_distance: options.attack_distance.unwrap_or(3.1),
         attack_delay: options.attack_delay.unwrap_or(500),
@@ -143,26 +112,6 @@ impl KillauraModule {
         min_distance_to_target: options.min_distance_to_target.unwrap_or(3.0),
       }
     }
-  }
-
-  /// Метод поиска ближайшей сущности
-  fn find_nearest_entity(
-    bot: &Client,
-    target: Target,
-    target_nickname: Option<String>,
-    max_distance: f64,
-  ) -> Option<Entity> {
-    let target = if target == Target::Custom {
-      target_nickname
-    } else {
-      Some(target.to_string())
-    };
-
-    let Some(target) = target else {
-      return None;
-    };
-
-    bot.find_nearest_entity(EntityType::from(target), max_distance)
   }
 
   /// Метод вычисления приоретета предмета по чарам
@@ -330,20 +279,16 @@ impl KillauraModule {
   }
 
   /// Метод включения преследования
-  async fn start_chase(
-    index: u8,
-    target: Target,
-    target_nickname: Option<String>,
-    distance: f64,
-    min_distance_to_target: f64,
-  ) {
+  async fn start_chase(index: u8, entity_filter: EntityFilter, distance: f64, min_distance_to_target: f64) {
     let extra_task = tokio::spawn(async move {
       loop {
         let mut target_entity_exist = false;
 
         take_bot!(&index, async |bot| {
-          if let Some(entity) = Self::find_nearest_entity(&bot, target.clone(), target_nickname.clone(), distance) {
-            let eye_pos = bot.eye_pos();
+          if let Some(entity) = bot.find_nearest_entity(&entity_filter, distance) {
+            let Some(eye_pos) = bot.eye_pos() else {
+              return;
+            };
 
             if eye_pos.distance_to(bot.get_entity_position(entity)) > min_distance_to_target {
               target_entity_exist = true;
@@ -387,7 +332,7 @@ impl KillauraModule {
   }
 
   /// Метод включения автоматической наводки
-  async fn start_aiming(index: u8, target: Target, target_nickname: Option<String>, distance: f64) {
+  async fn start_aiming(index: u8, entity_filter: EntityFilter, distance: f64) {
     let extra_task = tokio::spawn(async move {
       loop {
         if !getst(&index, State::CanLooking).await {
@@ -398,7 +343,7 @@ impl KillauraModule {
         let mut target_entity_exist = false;
 
         take_bot!(&index, async |bot| {
-          if let Some(entity) = Self::find_nearest_entity(&bot, target.clone(), target_nickname.clone(), distance) {
+          if let Some(entity) = bot.find_nearest_entity(&entity_filter, distance) {
             target_entity_exist = true;
 
             setmst(&index, StateName::Looking, true).await;
@@ -456,12 +401,7 @@ impl KillauraModule {
       return;
     }
 
-    let Some(entity) = Self::find_nearest_entity(
-      bot,
-      config.target.clone(),
-      options.target_nickname.clone(),
-      config.attack_distance,
-    ) else {
+    let Some(entity) = bot.find_nearest_entity(&options.entity_filter, config.attack_distance) else {
       return;
     };
 
@@ -485,9 +425,12 @@ impl KillauraModule {
 
       sleep!(randnum(400, 500));
 
-      let bot_pos = bot.feet_pos();
+      let Some(eye_pos) = bot.eye_pos() else {
+        return;
+      };
+
       let entity_pos = bot.get_entity_position(entity);
-      let distance = bot_pos.distance_to(entity_pos);
+      let distance = eye_pos.distance_to(entity_pos);
 
       if distance <= config.attack_distance {
         bot.attack(entity);
@@ -511,19 +454,12 @@ impl KillauraModule {
   async fn moderate_killaura(bot: &Client, index: u8, options: &KillauraOptions) {
     let config = Self::create_config(options);
 
-    Self::start_aiming(
-      index,
-      config.target.clone(),
-      options.target_nickname.clone(),
-      config.attack_distance,
-    )
-    .await;
+    Self::start_aiming(index, options.entity_filter.clone(), config.attack_distance).await;
 
     if options.use_chase {
       Self::start_chase(
         index,
-        config.target.clone(),
-        options.target_nickname.clone(),
+        options.entity_filter.clone(),
         config.chase_distance,
         config.min_distance_to_target,
       )
@@ -543,8 +479,7 @@ impl KillauraModule {
     if options.use_chase {
       Self::start_chase(
         index,
-        config.target.clone(),
-        options.target_nickname.clone(),
+        options.entity_filter.clone(),
         config.chase_distance,
         config.min_distance_to_target,
       )

@@ -341,9 +341,10 @@ pub async fn stop_bots_and_destroy_data(logging: bool) -> u8 {
 
   PLUGINS.clear().await;
   TASK_SYSTEM.clear().await;
+
   sleep!(1000);
+
   REGISTRY_SYSTEM.destroy_swarm().await;
-  sleep!(1000);
   STATE_SYSTEM.clear().await;
   PROFILE_SYSTEM.shutdown().await;
   MAP_CAPTCHA_BYPASS.shutdown().await;
@@ -354,6 +355,8 @@ pub async fn stop_bots_and_destroy_data(logging: bool) -> u8 {
 
   STOPPING.store(false, Ordering::SeqCst);
   BOTS_WERE_FULLY_CONNECTED.store(false, Ordering::SeqCst);
+
+  sleep!(300);
 
   update_process_status().await;
 

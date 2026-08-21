@@ -13,7 +13,7 @@ use rhai::{Dynamic, Engine, EvalAltResult, Map};
 use crate::bot::common::convert_hotbar_slot_to_inventory_slot;
 use crate::bot::extensions::{
   go_to, BotDefaultExt, BotInteractExt, BotInventoryExt, BotMovementExt, BotPhysicsExt, BotRotationExt, ClickMode,
-  EntityType, ItemMeta,
+  EntityFilter, ItemMeta,
 };
 use crate::bot::systems::index::INDEX_SYSTEM;
 use crate::bot::systems::profile::PROFILE_SYSTEM;
@@ -604,11 +604,24 @@ impl ScriptExecutor {
   }
 
   fn attack(code: i16, target: String, distance: f64, look_at_target: bool) {
+    let entity_filter = if target.chars().nth(0) == Some('$') {
+      EntityFilter::Custom((&target[1..target.len()]).to_string())
+    } else {
+      match target.as_str() {
+        "player" => EntityFilter::Player,
+        "monster" => EntityFilter::Monster,
+        "animal" => EntityFilter::Animal,
+        "vehicle" => EntityFilter::Vehicle,
+        "any" => EntityFilter::Any,
+        _ => return,
+      }
+    };
+
     tokio::spawn(async move {
       if code == -1 {
         for index in PROFILE_SYSTEM.try_get_all_connected().keys() {
           if let Some(bot) = REGISTRY_SYSTEM.get_bot(index) {
-            if let Some(entity) = bot.find_nearest_entity(EntityType::from(target.clone()), distance) {
+            if let Some(entity) = bot.find_nearest_entity(&entity_filter, distance) {
               if look_at_target {
                 bot.look_at_entity(entity, false);
               }
@@ -619,7 +632,7 @@ impl ScriptExecutor {
         }
       } else {
         if let Some(bot) = REGISTRY_SYSTEM.get_bot(&(code as u8)) {
-          if let Some(entity) = bot.find_nearest_entity(EntityType::from(target), distance) {
+          if let Some(entity) = bot.find_nearest_entity(&entity_filter, distance) {
             if look_at_target {
               bot.look_at_entity(entity, false);
             }
@@ -754,32 +767,36 @@ impl ScriptExecutor {
         let su = su.clone();
         move |mu: &str| {
           if mu == "*" {
-            return create_dynamic_vec(0.0, 0.0, 0.0);
+            return Dynamic::ZERO;
           }
 
-          REGISTRY_SYSTEM
-            .get_bot(&(generate_code(&su, mu) as u8))
-            .map(|b| {
-              let pos = b.feet_pos();
-              create_dynamic_vec(pos.x, pos.y, pos.z)
-            })
-            .unwrap_or(create_dynamic_vec(0.0, 0.0, 0.0))
+          let Some(bot) = REGISTRY_SYSTEM.get_bot(&(generate_code(&su, mu) as u8)) else {
+            return Dynamic::ZERO;
+          };
+
+          let Some(foot_pos) = bot.foot_pos() else {
+            return Dynamic::ZERO;
+          };
+
+          create_dynamic_vec(foot_pos.x, foot_pos.y, foot_pos.z)
         }
       })
       .register_fn("get_bot_eye_pos", {
         let su = su.clone();
         move |mu: &str| {
           if mu == "*" {
-            return create_dynamic_vec(0.0, 0.0, 0.0);
+            return Dynamic::ZERO;
           }
 
-          REGISTRY_SYSTEM
-            .get_bot(&(generate_code(&su, mu) as u8))
-            .map(|b| {
-              let pos = b.eye_pos();
-              create_dynamic_vec(pos.x, pos.y, pos.z)
-            })
-            .unwrap_or(create_dynamic_vec(0.0, 0.0, 0.0))
+          let Some(bot) = REGISTRY_SYSTEM.get_bot(&(generate_code(&su, mu) as u8)) else {
+            return Dynamic::ZERO;
+          };
+
+          let Some(eye_pos) = bot.eye_pos() else {
+            return Dynamic::ZERO;
+          };
+
+          create_dynamic_vec(eye_pos.x, eye_pos.y, eye_pos.z)
         }
       })
       .register_fn("get_bot_health", {
@@ -848,22 +865,26 @@ impl ScriptExecutor {
           REGISTRY_SYSTEM.get_bot(&si).map(|b| b.ping() as i64).unwrap_or(0)
         })
         .register_fn("current_bot_feet_pos", move || {
-          REGISTRY_SYSTEM
-            .get_bot(&si)
-            .map(|b| {
-              let pos = b.feet_pos();
-              create_dynamic_vec(pos.x, pos.y, pos.z)
-            })
-            .unwrap_or(create_dynamic_vec(0.0, 0.0, 0.0))
+          let Some(bot) = REGISTRY_SYSTEM.get_bot(&si) else {
+            return Dynamic::ZERO;
+          };
+
+          let Some(foot_pos) = bot.foot_pos() else {
+            return Dynamic::ZERO;
+          };
+
+          create_dynamic_vec(foot_pos.x, foot_pos.y, foot_pos.z)
         })
         .register_fn("current_bot_eye_pos", move || {
-          REGISTRY_SYSTEM
-            .get_bot(&si)
-            .map(|b| {
-              let pos = b.eye_pos();
-              create_dynamic_vec(pos.x, pos.y, pos.z)
-            })
-            .unwrap_or(create_dynamic_vec(0.0, 0.0, 0.0))
+          let Some(bot) = REGISTRY_SYSTEM.get_bot(&si) else {
+            return Dynamic::ZERO;
+          };
+
+          let Some(eye_pos) = bot.eye_pos() else {
+            return Dynamic::ZERO;
+          };
+
+          create_dynamic_vec(eye_pos.x, eye_pos.y, eye_pos.z)
         })
         .register_fn("current_bot_health", move || {
           REGISTRY_SYSTEM

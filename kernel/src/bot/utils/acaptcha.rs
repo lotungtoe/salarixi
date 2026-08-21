@@ -578,7 +578,10 @@ impl MapCaptchaBypass {
     }
 
     if options.captcha_bypass.captcha_subtype == CaptchaSubtype::Frame {
-      let pos = bot.feet_pos();
+      let Some(foot_pos) = bot.foot_pos() else {
+        return;
+      };
+
       let yaw = if let Some(look_dir) = bot.get_component::<LookDirection>() {
         look_dir.y_rot()
       } else {
@@ -592,8 +595,8 @@ impl MapCaptchaBypass {
           map_patch.width as u32,
           map_patch.height as u32,
           map_patch.map_colors.clone(),
-          pos.x,
-          pos.z,
+          foot_pos.x,
+          foot_pos.z,
           yaw,
         )
         .await;

@@ -3,7 +3,7 @@ use azalea::prelude::*;
 use azalea::protocol::packets::game::s_interact::InteractionHand;
 use azalea::registry::builtin::ItemKind;
 
-use crate::bot::extensions::{BotDefaultExt, BotInteractExt, BotInventoryExt, BotRotationExt, EntityType};
+use crate::bot::extensions::{BotDefaultExt, BotInteractExt, BotInventoryExt, BotRotationExt, EntityFilter};
 use crate::bot::plugin_manager::PluginName;
 use crate::bot::systems::states::{getst, setmst, setst, State, StateName};
 use crate::bot::traits::SalarixiPlugin;
@@ -32,10 +32,10 @@ impl AutoShieldPlugin {
   fn get_nearest_dangerous_entity(&self, bot: &Client) -> Option<Entity> {
     let mut nearest_entity = None;
 
-    if let Some(nearest_player) = bot.find_nearest_entity(EntityType::Player, 8.0) {
+    if let Some(nearest_player) = bot.find_nearest_entity(&EntityFilter::Player, 8.0) {
       nearest_entity = Some(nearest_player);
     } else {
-      if let Some(nearest_monster) = bot.find_nearest_entity(EntityType::Monster, 8.0) {
+      if let Some(nearest_monster) = bot.find_nearest_entity(&EntityFilter::Monster, 8.0) {
         nearest_entity = Some(nearest_monster);
       }
     }

@@ -4,7 +4,7 @@ use salarixi_extensions::buffer::BufferExt;
 use salarixi_extensions::index::IndexExt;
 use salarixi_macros::Index;
 
-use crate::bot::extensions::{go_to, BotDefaultExt, BotMovementExt, EntityType};
+use crate::bot::extensions::{go_to, BotDefaultExt, BotMovementExt, EntityFilter};
 use crate::bot::systems::states::{getst, setmst, State, StateName};
 use crate::bot::systems::tasks::{gettskact, killtsk, pushrtsk, TaskName};
 use crate::bot::traits::SalarixiModule;
@@ -18,7 +18,7 @@ enum Mode {
 
 pub struct StalkerOptions {
   mode: Mode,
-  target_nickname: Option<String>,
+  target_username: String,
   min_distance: Option<f64>,
   max_distance: Option<f64>,
   state: u8,
@@ -28,7 +28,7 @@ impl StalkerOptions {
   pub fn from_bytes(buf: &mut bytes::Bytes) -> Option<Self> {
     Some(Self {
       mode: Mode::from_index(u8::read(buf)?)?,
-      target_nickname: Option::read(buf)?,
+      target_username: String::read(buf)?,
       min_distance: Option::read(buf)?,
       max_distance: Option::read(buf)?,
       state: u8::read(buf)?,
@@ -44,19 +44,19 @@ impl StalkerModule {
   }
 
   async fn default_stalking(bot: &Client, index: &u8, options: &StalkerOptions) {
-    loop {
-      let Some(target_nickname) = options.target_nickname.clone() else {
-        return;
-      };
+    let entity_filter = EntityFilter::Custom(options.target_username.clone());
 
-      if let Some(target) = bot.find_nearest_entity(
-        EntityType::Custom(target_nickname),
-        options.max_distance.unwrap_or(100.0),
-      ) {
+    loop {
+      if let Some(target) = bot.find_nearest_entity(&entity_filter, options.max_distance.unwrap_or(100.0)) {
         let target_pos = bot.get_entity_position(target);
         let min_distance = options.min_distance.unwrap_or(6.0);
 
-        if bot.feet_pos().distance_to(target_pos) > min_distance {
+        let Some(foot_pos) = bot.foot_pos() else {
+          sleep!(200);
+          continue;
+        };
+
+        if foot_pos.distance_to(target_pos) > min_distance {
           bot.look_at(target_pos);
           bot.start_jumping();
           bot.start_sprinting(index, SprintDirection::Forward).await;
@@ -80,19 +80,19 @@ impl StalkerModule {
   }
 
   async fn advanced_stalking(bot: &Client, index: u8, options: &StalkerOptions) {
-    let Some(target_nickname) = options.target_nickname.clone() else {
-      return;
-    };
+    let entity_filter = EntityFilter::Custom(options.target_username.clone());
 
     loop {
-      if let Some(target) = bot.find_nearest_entity(
-        EntityType::Custom(target_nickname.clone()),
-        options.max_distance.unwrap_or(100.0),
-      ) {
+      if let Some(target) = bot.find_nearest_entity(&entity_filter, options.max_distance.unwrap_or(100.0)) {
         let target_pos = bot.get_entity_position(target);
         let min_distance = options.min_distance.unwrap_or(6.0);
 
-        if bot.feet_pos().distance_to(target_pos) > min_distance {
+        let Some(foot_pos) = bot.foot_pos() else {
+          sleep!(200);
+          continue;
+        };
+
+        if foot_pos.distance_to(target_pos) > min_distance {
           if bot.is_goto_target_reached() {
             go_to(
               index,

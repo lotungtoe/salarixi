@@ -200,122 +200,123 @@ impl QuickTaskManager {
 
                 sleep!(randnum(250, 300));
 
-                let feet_pos = bot.feet_pos();
-                bot.block_interact(BlockPos::from(feet_pos));
+                if let Some(foot_pos) = bot.foot_pos() {
+                  bot.block_interact(BlockPos::from(foot_pos));
 
-                sleep!(randnum(100, 150));
+                  sleep!(randnum(100, 150));
 
-                bot.set_direction(initial_dir.0, initial_dir.1);
+                  bot.set_direction(initial_dir.0, initial_dir.1);
 
-                setmst(&index, StateName::Looking, false).await;
-                setmst(&index, StateName::Interacting, false).await;
+                  setmst(&index, StateName::Looking, false).await;
+                  setmst(&index, StateName::Interacting, false).await;
+                }
               }
             }
           }
           QuickTask::Capsule => {
-            let position = bot.feet_pos();
+            if let Some(foot_pos) = bot.foot_pos() {
+              let block_positions = vec![
+                BlockPos {
+                  x: (foot_pos.x - 1.0).floor() as i32,
+                  y: foot_pos.y.floor() as i32,
+                  z: foot_pos.z.floor() as i32,
+                },
+                BlockPos {
+                  x: (foot_pos.x + 1.0).floor() as i32,
+                  y: foot_pos.y.floor() as i32,
+                  z: foot_pos.z.floor() as i32,
+                },
+                BlockPos {
+                  x: foot_pos.x.floor() as i32,
+                  y: foot_pos.y.floor() as i32,
+                  z: (foot_pos.z - 1.0).floor() as i32,
+                },
+                BlockPos {
+                  x: foot_pos.x.floor() as i32,
+                  y: foot_pos.y.floor() as i32,
+                  z: (foot_pos.z + 1.0).floor() as i32,
+                },
+                BlockPos {
+                  x: (foot_pos.x - 1.0).floor() as i32,
+                  y: (foot_pos.y + 1.0).floor() as i32,
+                  z: foot_pos.z.floor() as i32,
+                },
+                BlockPos {
+                  x: (foot_pos.x + 1.0).floor() as i32,
+                  y: (foot_pos.y + 1.0).floor() as i32,
+                  z: foot_pos.z.floor() as i32,
+                },
+                BlockPos {
+                  x: foot_pos.x.floor() as i32,
+                  y: (foot_pos.y + 1.0).floor() as i32,
+                  z: (foot_pos.z - 1.0).floor() as i32,
+                },
+                BlockPos {
+                  x: foot_pos.x.floor() as i32,
+                  y: (foot_pos.y + 1.0).floor() as i32,
+                  z: (foot_pos.z + 1.0).floor() as i32,
+                },
+                BlockPos {
+                  x: (foot_pos.x - 1.0).floor() as i32,
+                  y: (foot_pos.y + 2.0).floor() as i32,
+                  z: foot_pos.z.floor() as i32,
+                },
+                BlockPos {
+                  x: foot_pos.x.floor() as i32,
+                  y: (foot_pos.y + 2.0).floor() as i32,
+                  z: foot_pos.z.floor() as i32,
+                },
+              ];
 
-            let block_positions = vec![
-              BlockPos {
-                x: (position.x - 1.0).floor() as i32,
-                y: position.y.floor() as i32,
-                z: position.z.floor() as i32,
-              },
-              BlockPos {
-                x: (position.x + 1.0).floor() as i32,
-                y: position.y.floor() as i32,
-                z: position.z.floor() as i32,
-              },
-              BlockPos {
-                x: position.x.floor() as i32,
-                y: position.y.floor() as i32,
-                z: (position.z - 1.0).floor() as i32,
-              },
-              BlockPos {
-                x: position.x.floor() as i32,
-                y: position.y.floor() as i32,
-                z: (position.z + 1.0).floor() as i32,
-              },
-              BlockPos {
-                x: (position.x - 1.0).floor() as i32,
-                y: (position.y + 1.0).floor() as i32,
-                z: position.z.floor() as i32,
-              },
-              BlockPos {
-                x: (position.x + 1.0).floor() as i32,
-                y: (position.y + 1.0).floor() as i32,
-                z: position.z.floor() as i32,
-              },
-              BlockPos {
-                x: position.x.floor() as i32,
-                y: (position.y + 1.0).floor() as i32,
-                z: (position.z - 1.0).floor() as i32,
-              },
-              BlockPos {
-                x: position.x.floor() as i32,
-                y: (position.y + 1.0).floor() as i32,
-                z: (position.z + 1.0).floor() as i32,
-              },
-              BlockPos {
-                x: (position.x - 1.0).floor() as i32,
-                y: (position.y + 2.0).floor() as i32,
-                z: position.z.floor() as i32,
-              },
-              BlockPos {
-                x: position.x.floor() as i32,
-                y: (position.y + 2.0).floor() as i32,
-                z: position.z.floor() as i32,
-              },
-            ];
+              let mut count = 0;
 
-            let mut count = 0;
+              for pos in block_positions {
+                let mut block_slot = None;
 
-            for pos in block_positions {
-              let mut block_slot = None;
-
-              if let Some(menu) = bot.get_inventory_menu() {
-                for (slot, item) in menu.slots().iter().enumerate() {
-                  if !item.is_empty() {
-                    if this_is_solid_block(item.kind()) {
-                      block_slot = Some(slot);
-                      break;
+                if let Some(menu) = bot.get_inventory_menu() {
+                  for (slot, item) in menu.slots().iter().enumerate() {
+                    if !item.is_empty() {
+                      if this_is_solid_block(item.kind()) {
+                        block_slot = Some(slot);
+                        break;
+                      }
                     }
                   }
                 }
-              }
 
-              if let Some(slot) = block_slot {
-                if getst(&index, State::CanLooking).await && getst(&index, State::CanInteracting).await {
-                  setmst(&index, StateName::Looking, true).await;
-                  setmst(&index, StateName::Interacting, true).await;
+                if let Some(slot) = block_slot {
+                  if getst(&index, State::CanLooking).await && getst(&index, State::CanInteracting).await {
+                    setmst(&index, StateName::Looking, true).await;
+                    setmst(&index, StateName::Interacting, true).await;
 
-                  bot.take_item(&index, slot, false).await;
+                    bot.take_item(&index, slot, false).await;
 
-                  count = count + 1;
+                    count = count + 1;
 
-                  if count == 10 {
-                    sleep!(randnum(150, 200));
-                  }
+                    if count == 10 {
+                      sleep!(randnum(150, 200));
+                    }
 
-                  if count == 9 {
-                    bot.jump();
-                    sleep!(50);
-                    bot.set_crouching(true);
+                    if count == 9 {
+                      bot.jump();
+                      sleep!(50);
+                      bot.set_crouching(true);
+                      sleep!(randnum(100, 150));
+                    }
+
+                    bot.look_at_block(pos, false).await;
+                    sleep!(randnum(50, 100));
+                    bot.block_interact(pos);
+
+                    if count == 10 {
+                      bot.set_crouching(false);
+                    }
+
+                    setmst(&index, StateName::Looking, false).await;
+                    setmst(&index, StateName::Interacting, false).await;
+
                     sleep!(randnum(100, 150));
                   }
-
-                  bot.look_at_block(pos, false).await;
-                  sleep!(randnum(50, 100));
-                  bot.block_interact(pos);
-
-                  if count == 10 {
-                    bot.set_crouching(false);
-                  }
-
-                  setmst(&index, StateName::Looking, false).await;
-                  setmst(&index, StateName::Interacting, false).await;
-
-                  sleep!(randnum(100, 150));
                 }
               }
             }
@@ -328,7 +329,11 @@ impl QuickTaskManager {
                 continue;
               };
 
-              positions.push(b.feet_pos());
+              let Some(foot_pos) = b.foot_pos() else {
+                continue;
+              };
+
+              positions.push(foot_pos);
             }
 
             let average_cords = get_average_coordinates_of_bots(&positions);
@@ -350,7 +355,11 @@ impl QuickTaskManager {
                 continue;
               };
 
-              positions.push(b.feet_pos());
+              let Some(foot_pos) = b.foot_pos() else {
+                continue;
+              };
+
+              positions.push(foot_pos);
             }
 
             let average_cords = get_average_coordinates_of_bots(&positions);
@@ -369,7 +378,11 @@ impl QuickTaskManager {
                 continue;
               };
 
-              positions.push(b.feet_pos());
+              let Some(foot_pos) = b.foot_pos() else {
+                continue;
+              };
+
+              positions.push(foot_pos);
             }
 
             let average_cords = get_average_coordinates_of_bots(&positions);

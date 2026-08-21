@@ -209,10 +209,13 @@ impl MinerModule {
   }
 
   async fn extended_mine(bot: &Client, options: &MinerOptions) {
-    loop {
-      let position = bot.feet_pos();
+    'circles: loop {
+      let Some(foot_pos) = bot.foot_pos() else {
+        sleep!(200);
+        continue;
+      };
 
-      let territory = Self::get_territory(position, &options.tunnel);
+      let territory = Self::get_territory(foot_pos, &options.tunnel);
 
       for pos in territory.clone() {
         let heights = match options.tunnel {
@@ -223,11 +226,12 @@ impl MinerModule {
         for height in heights {
           let block_pos = BlockPos::new(pos.x, pos.y + height, pos.z);
 
+          let Some(eye_pos) = bot.eye_pos() else {
+            continue 'circles;
+          };
+
           if let Some(state) = get_block_state(bot, block_pos) {
-            if !state.is_air()
-              && Self::is_breakable_block(state.id())
-              && Self::can_reach_block(bot.eye_pos(), block_pos)
-            {
+            if !state.is_air() && Self::is_breakable_block(state.id()) && Self::can_reach_block(eye_pos, block_pos) {
               let should_shift = randchance(0.2);
 
               if should_shift {
