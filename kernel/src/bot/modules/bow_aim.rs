@@ -95,15 +95,15 @@ impl BowAimModule {
     predicted_pos.z += diff_z.powi(1);
 
     if diff_x != 0.0 {
-      predicted_pos.x += diff_x + distance * ((diff_x / 100.0) * 11.0);
+      predicted_pos.x += diff_x + distance * ((diff_x / 100.0) * 13.0);
     }
 
     if diff_y != 0.0 {
-      predicted_pos.y += diff_y + distance * ((diff_x / 100.0) * 10.0);
+      predicted_pos.y += diff_y + distance * ((diff_y / 100.0) * 13.0);
     }
 
     if diff_z != 0.0 {
-      predicted_pos.z += diff_z + distance * ((diff_z / 100.0) * 11.0);
+      predicted_pos.z += diff_z + distance * ((diff_z / 100.0) * 13.0);
     }
 
     predicted_pos
