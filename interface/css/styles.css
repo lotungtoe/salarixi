@@ -788,11 +788,8 @@ body {
   font-family: var(--global-font-family);
   font-size: 15px;
   font-weight: 500;
-  color: var(--default-color);
-}
-
-.account-table-header .header-cell.username-header {
   white-space: nowrap;
+  color: var(--default-color);
 }
 
 .account-table-header .header-cell.date-header {
