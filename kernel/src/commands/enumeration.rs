@@ -10,7 +10,7 @@ pub enum ClientCommand {
   QuickAction = 0x05,
   SetGroup = 0x06,
   ChangeModuleState = 0x07,
-  RadarFindTarget = 0x08,
+  FindRadarTarget = 0x08,
   SaveRadarData = 0x09,
   FollowRadarTarget = 0x0A,
   QuickTask = 0x0B,
