@@ -119,15 +119,15 @@ impl ProfileSystem {
         loop {
           for (index, profile) in PROFILE_SYSTEM.map.read().await.iter() {
             let mut buf = BytesMut::new();
-            profile.group.write(&mut buf);
-            profile.health.write(&mut buf);
-            profile.ping.write(&mut buf);
+            profile.write(&mut buf);
 
             let finalized = Md5::new().chain(&buf).finalize();
             let hash: [u8; 16] = match finalized.as_slice()[..16].try_into() {
               Ok(h) => h,
               Err(_) => continue,
             };
+
+            drop(buf);
 
             if let Some((last_status, last_hash)) = last_hashes.get(index) {
               if profile.status == *last_status && hash == *last_hash {
