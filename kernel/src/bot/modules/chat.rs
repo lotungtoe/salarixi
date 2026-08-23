@@ -153,8 +153,7 @@ impl ChatModule {
 
           if let Some(radar_info) = RADAR.find_target(target_nickname.clone()).await {
             let msg = format!(
-              "{} > X: {}, Y: {}, Z: {}",
-              target_nickname,
+              "{}, {}, {}",
               radar_info.tx.round(),
               radar_info.ty.round(),
               radar_info.tz.round()
@@ -176,8 +175,7 @@ impl ChatModule {
           let target_nickname = target.replace("]", "").replace(" ", "");
 
           if let Some(uuid) = get_player_uuid(target_nickname.clone()).await {
-            let msg = format!("{} > UUID: {}", target_nickname, uuid);
-            result = text.replace(tag.as_str(), msg.as_str());
+            result = text.replace(tag.as_str(), &uuid);
           } else {
             result = text.replace(tag.as_str(), "");
           }
@@ -185,7 +183,7 @@ impl ChatModule {
       }
     }
 
-    for tag in Regex::new(r"#pass").unwrap().find_iter(&text) {
+    for tag in Regex::new(r"#password").unwrap().find_iter(&text) {
       if !tag.is_empty() {
         if let Some(profile) = PROFILE_SYSTEM.get(index).await {
           result = text.replace(tag.as_str(), profile.password.unwrap_or("".to_string()).as_str());
