@@ -1,3 +1,4 @@
+use salarixi_kernel::version::KERNEL_VERSION_STR;
 use std::fs;
 use std::path::PathBuf;
 
@@ -17,7 +18,7 @@ fn cache_dir() -> Option<PathBuf> {
 
 /// Команда сохранения текущего кэша в файл
 #[tauri::command]
-pub fn save_cache(cache: Vec<u8>, filename: String, client_version: String, date: String) -> CommandResult<()> {
+pub fn save_cache(cache: Vec<u8>, filename: String, date: String) -> CommandResult<()> {
   let Some(cache_dir) = cache_dir() else {
     failed!("cache directory is missing");
   };
@@ -29,7 +30,7 @@ pub fn save_cache(cache: Vec<u8>, filename: String, client_version: String, date
 
   let filename_split = filename.split('.').collect::<Vec<&str>>();
   let meta_path = cache_dir.join(format!("{}.meta.txt", filename_split[0]));
-  if fs::write(meta_path, format!("{} {}", client_version, date).as_bytes()).is_err() {
+  if fs::write(meta_path, format!("{} {}", KERNEL_VERSION_STR, date).as_bytes()).is_err() {
     failed!("failed to save cache meta to specified file");
   }
 

@@ -1,7 +1,9 @@
 use once_cell::sync::Lazy;
+use salarixi_kernel::version::KERNEL_VERSION_STR;
 use tokio::sync::RwLock;
 
-use crate::{failed, result::CommandResult, success, version::CLIENT_VERSION_STR};
+use crate::result::CommandResult;
+use crate::{failed, success};
 
 static DISCORD_RPC: Lazy<DiscordRpc> = Lazy::new(|| DiscordRpc::new());
 
@@ -25,7 +27,7 @@ impl DiscordRpc {
 
       match client.set_activity(|act| {
         act
-          .details(format!("Версия: {}", CLIENT_VERSION_STR))
+          .details(format!("Версия: {}", KERNEL_VERSION_STR))
           .state("Сайт: https://salarixi.freedev.app/")
       }) {
         Ok(_) => success!(()),

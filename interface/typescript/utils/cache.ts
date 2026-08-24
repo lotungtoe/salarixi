@@ -65,7 +65,6 @@ export async function saveCache(cache: string, filename: string): Promise<Comman
 	return await invoke("save_cache", {
 		cache: Array.from(uint8),
 		filename: filename,
-		clientVersion: CLIENT_VERSION,
 		date: `${date("exact")}-${date("common")}`,
 	});
 }

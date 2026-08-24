@@ -20,7 +20,7 @@ Uses [azalea](https://github.com/azalea-rs/azalea) library as a base.
 
 ## Donate
 
-Liked the project? Support me: [click](https://www.tinkoff.ru/rm/r_RLPlAMDRde.PvdqgZSnCT/bEUIT9180)
+Liked the project? Support me: [donate on yoomoney](https://yoomoney.ru/to/4100119457054397/0)
 
 ## Philosophy
 
@@ -66,6 +66,7 @@ You can read usage documentation on our [website](https://salarixi.freedev.app/p
 - **Customization:** You can customize any interface color using a style kit.
 - **Event logging:** Tool has a log in which any information is logged.
 - **Feature-rich:** Tool has many features for working with bots.
+- **Crazy optimizations:** I try to optimize the tool as much as possible, one proof of which is the implementation of a bot index system.
 - **Visualization:** For convenience, tool visualizes the data in form of charts.
 - **Monitoring:** Tool has real-time bot monitoring (health, food, chat...).
 - **Cheat functions:** Tool contains unique functionality in form of real cheats for bots.
@@ -74,9 +75,12 @@ You can read usage documentation on our [website](https://salarixi.freedev.app/p
 - **Script writing:** You can write your own scripts for bots.
 - **Utilities:** Anti-captcha, scanner, radar, ping.
 - **Plugins:** Tool has many built-in plugins for bots.
-- **Multi-task:** Tool allows bots to perform dozens of actions simultaneously and avoid conflicts.
+- **State system:** Tool tries to establish mutual states for bots so that they do not have conflicts (for example, a bot cannot walk and interact with inventory in the same tick).
+- **Multi-task:** Thanks to the state system, bots can be given multiple tasks at once.
+- **Config management:** Tool allows you to easily manage configs and apply any saved configuration in seconds, right on the fly.
+- **Session:** You can run the `salarixi-kernel` anywhere and connect to it from anywhere, simultaneously control bots with your friends, and much more!
 
-In short: The client is suitable for you if you don't want to bother with installation, need minimal resource consumption, need advanced customization, and need a lot of built-in features.
+**In short:** The client is suitable for you if you don't want to bother with installation, need minimal resource consumption, need advanced customization, and need a lot of built-in features.
 
 ## Screenshots
 

@@ -1,10 +1,9 @@
 use std::io::{Error, ErrorKind};
 
 use aes_gcm::{Aes256Gcm, KeyInit};
+use salarixi_kernel::version::KERNEL_VERSION_STR;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
-
-use crate::version::CLIENT_VERSION_STR;
 
 pub async fn client_process(socket: &mut TcpStream, password: Option<String>) -> std::io::Result<Aes256Gcm> {
   process_handshake(socket).await?;
@@ -13,8 +12,8 @@ pub async fn client_process(socket: &mut TcpStream, password: Option<String>) ->
 }
 
 async fn process_handshake(socket: &mut TcpStream) -> std::io::Result<()> {
-  socket.write_u8(CLIENT_VERSION_STR.len() as u8).await?;
-  socket.write_all(CLIENT_VERSION_STR.as_bytes()).await?;
+  socket.write_u8(KERNEL_VERSION_STR.len() as u8).await?;
+  socket.write_all(KERNEL_VERSION_STR.as_bytes()).await?;
 
   let resp = socket.read_u8().await?;
 

@@ -5,7 +5,6 @@ mod emit;
 mod modules;
 mod result;
 mod session;
-mod version;
 
 use commands::*;
 use modules::cache::{extract_cache_meta, load_cache, save_cache};
