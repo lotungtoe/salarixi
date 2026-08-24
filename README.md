@@ -164,4 +164,4 @@ npm run tauri dev
 ## Additional information
 
 - **License:** [Apache-2.0 license](./LICENSE)
-- **Latest version:** [Open](https://codeberg.org/nullclyze/salarixi/releases/tag/v1.2.0-rc1)
+- **Latest release:** [Open](https://codeberg.org/nullclyze/salarixi/releases/latest)

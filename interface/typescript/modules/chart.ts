@@ -64,7 +64,7 @@ class ChartModule {
 		if (data.length > this.maxBarCount) data.shift();
 
 		const padded = new Array(this.maxBarCount - data.length).fill(0).concat(data);
-		const maxValue = chart === "ram" ? 1024 : 50;
+		const maxValue = chart === "ram" ? 1024 : 100;
 
 		for (let i = 0; i < this.maxBarCount; i++) {
 			const height = Math.round((Math.min(maxValue, Math.max(0, padded[i])) - 0) / (maxValue - 0) * 20);
