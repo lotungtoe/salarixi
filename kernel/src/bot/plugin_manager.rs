@@ -132,6 +132,6 @@ impl PluginManager {
       self.kill_all_tasks_for(index).await;
     }
 
-    emit_log("Активные задачи плагинов остановлены", "extended");
+    emit_log("Активные задачи плагинов остановлены", "system");
   }
 }
