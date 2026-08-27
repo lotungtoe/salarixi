@@ -177,19 +177,23 @@ class StylekitModule {
 
 	/** Метод загрузки сохранённого набора стилей */
 	private loadSaved(): void {
-		const stylekit = localStorage.getItem("stylekit");
-		if (!stylekit || stylekit.length < 1) return;
+		try {
+			const stylekit = localStorage.getItem("stylekit");
+			if (!stylekit || stylekit.length < 1) return;
 
-		const stylekitJson = JSON.parse(stylekit);
-		const name = stylekitJson["name"] ?? "unknown";
-		const kit = stylekitJson["kit"] ?? {};
-		const result = this.apply(kit);
+			const stylekitJson = JSON.parse(stylekit);
+			const name = stylekitJson["name"] ?? "unknown";
+			const kit = stylekitJson["kit"] ?? {};
+			const result = this.apply(kit);
 
-		if (result.coincidences < 1) return;
+			if (result.coincidences < 1) return;
 
-		this.setStylekitName(name);
+			this.setStylekitName(name);
 
-		logger.log(`Сохранённый набор стилей "${name}" загружен (${result.coincidences} из ${result.total} совпадений)`, "system");
+			logger.log(`Сохранённый набор стилей "${name}" загружен (${result.coincidences} из ${result.total} совпадений)`, "system");
+		} catch (err) {
+			logger.log(`Ошибка загрузки сохранённого набора стилей: ${err}`, "error");
+		}
 	}
 
 	/** Метод установки имени набора стилей */
