@@ -144,7 +144,6 @@ class MonitoringModule {
 		this.chatHistoryFilters = {};
 		this.usernameList = [];
 
-		this.statusText!.innerText = "Объекты ботов отсутствуют";
 		this.statusText!.style.display = "flex";
 	}
 
@@ -255,11 +254,20 @@ class MonitoringModule {
 
 	/** Метод обновления карточки бота */
 	private updateBotCard(username: string, profile: BotProfile): void {
-		const status = document.getElementById(`monitoring-status-${username}`) as HTMLSpanElement;
-		const proxy = document.getElementById(`monitoring-proxy-${username}`) as HTMLSpanElement;
-		const ping = document.getElementById(`monitoring-ping-${username}`) as HTMLSpanElement;
-		const health = document.getElementById(`monitoring-health-${username}`) as HTMLSpanElement;
-		const group = document.getElementById(`bot-group-${username}`) as HTMLInputElement;
+		const status = document.getElementById(`monitoring-status-${username}`) as HTMLSpanElement | undefined;
+		if (!status) return;
+
+		const proxy = document.getElementById(`monitoring-proxy-${username}`) as HTMLSpanElement | undefined;
+		if (!proxy) return;
+
+		const ping = document.getElementById(`monitoring-ping-${username}`) as HTMLSpanElement | undefined;
+		if (!ping) return;
+
+		const health = document.getElementById(`monitoring-health-${username}`) as HTMLSpanElement | undefined;
+		if (!health) return;
+
+		const group = document.getElementById(`bot-group-${username}`) as HTMLInputElement | undefined;
+		if (!group) return;
 
 		if (health.innerText.split("/")[0].replace(" ", "") != profile.health.toString()) {
 			const card = document.getElementById(`profile-${username}`);
