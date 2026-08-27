@@ -220,27 +220,32 @@ class AccountModule {
 
 	/** Метод загрузки сохранённых аккаунтов из локального хранилища */
 	private async loadSavedAccounts(): Promise<void> {
-		const result = await invoke<CommandResult<number[]>>("read_file", { path: "accounts.json" });
+		try {
+			const result = await invoke<CommandResult<number[]>>("read_file", { path: "accounts.json" });
 
-		if (result.error) {
-			logger.log(`Ошибка загрузки контента из файла "accounts.json": ${result.error}`, "error");
-			return;
+			if (result.error) {
+				logger.log(`Ошибка загрузки контента из файла "accounts.json": ${result.error}`, "error");
+				return;
+			}
+
+			if (!result.data || result.data.length < 1) return;
+
+			const uint8arr = new Uint8Array(result.data);
+			const decoder = new TextDecoder("utf-8");
+			const decoded = decoder.decode(uint8arr);
+			const accounts = Object.entries<Account>(JSON.parse(decoded));
+
+			if (accounts.length < 1) return;
+
+			for (const [username, account] of accounts) this.createAccountCard(username, account);
+
+			this.updateAccountCounter();
+
+			logger.log(`Сохранённые аккаунты загружены (${accounts.length > 255 ? 255 : accounts.length} штук)`, "system");
+		} catch (err) {
+			logger.log(`Ошибка загрузки сохранённых аккаунтов: ${err}`, "error");
+			await invoke<CommandResult<null>>("remove_file", { path: "accounts.json" });
 		}
-
-		if (!result.data || result.data.length < 1) return;
-
-		const uint8arr = new Uint8Array(result.data);
-		const decoder = new TextDecoder("utf-8");
-		const decoded = decoder.decode(uint8arr);
-		const accounts = Object.entries<Account>(JSON.parse(decoded));
-
-		if (accounts.length < 1) return;
-
-		for (const [username, account] of accounts) this.createAccountCard(username, account);
-
-		this.updateAccountCounter();
-
-		logger.log(`Сохранённые аккаунты загружены (${accounts.length > 255 ? 255 : accounts.length} штук)`, "system");
 	}
 
 	/** Метод добавления аккаунта */
