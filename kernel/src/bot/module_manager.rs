@@ -1,14 +1,15 @@
 use std::sync::Arc;
 
 use bytes::Bytes;
+use hashbrown::HashMap;
 use once_cell::sync::Lazy;
 use salarixi_extensions::buffer::BufferExt;
 use salarixi_extensions::index::IndexExt;
 use salarixi_macros::Index;
 
 use crate::bot::modules::*;
-use crate::bot::systems::profile::PROFILE_SYSTEM;
-use crate::bot::traits::SalarixiModule;
+use crate::bot::systems::profile::{Profile, PROFILE_SYSTEM};
+use crate::bot::traits::{ModuleOptions, SalarixiModule};
 use crate::launch::process::current_options;
 use crate::server::transfer::{emit_log, emit_msg};
 use crate::webhook::send_webhook;
@@ -113,226 +114,28 @@ impl ModuleManager {
     }
   }
 
-  /// Метод взаимодействия с указанным модулем управления
   pub async fn control(&self, bytes: Bytes) -> Option<()> {
     let mut message = ControlMessage::from_bytes(bytes)?;
 
     let profiles = PROFILE_SYSTEM.get_all_connected().await;
     let total_count = profiles.len();
-    let mut success_count = 0;
 
-    match message.module_name {
-      ModuleName::Chat => {
-        let options = Arc::new(ChatOptions::from_bytes(&mut message.raw_options)?);
-
-        for (index, _) in profiles {
-          if let Some(profile) = PROFILE_SYSTEM.get(&index).await {
-            if profile.group != message.group {
-              continue;
-            }
-          }
-
-          if self.chat.switch(index, options.clone()).await {
-            success_count += 1;
-          }
-        }
-      }
-      ModuleName::Action => {
-        let options = Arc::new(ActionOptions::from_bytes(&mut message.raw_options)?);
-
-        for (index, _) in profiles {
-          if let Some(profile) = PROFILE_SYSTEM.get(&index).await {
-            if profile.group != message.group {
-              continue;
-            }
-          }
-
-          if self.action.switch(index, options.clone()).await {
-            success_count += 1;
-          }
-        }
-      }
-      ModuleName::Inventory => {
-        let options = Arc::new(InventoryOptions::from_bytes(&mut message.raw_options)?);
-
-        for (index, _) in profiles {
-          if let Some(profile) = PROFILE_SYSTEM.get(&index).await {
-            if profile.group != message.group {
-              continue;
-            }
-          }
-
-          if self.inventory.switch(index, options.clone()).await {
-            success_count += 1;
-          }
-        }
-      }
-      ModuleName::Movement => {
-        let options = Arc::new(MovementOptions::from_bytes(&mut message.raw_options)?);
-
-        for (index, _) in profiles {
-          if let Some(profile) = PROFILE_SYSTEM.get(&index).await {
-            if profile.group != message.group {
-              continue;
-            }
-          }
-
-          if self.movement.switch(index, options.clone()).await {
-            success_count += 1;
-          }
-        }
-      }
-      ModuleName::AntiAfk => {
-        let options = Arc::new(AntiAfkOptions::from_bytes(&mut message.raw_options)?);
-
-        for (index, _) in profiles {
-          if let Some(profile) = PROFILE_SYSTEM.get(&index).await {
-            if profile.group != message.group {
-              continue;
-            }
-          }
-
-          if self.anti_afk.switch(index, options.clone()).await {
-            success_count += 1;
-          }
-        }
-      }
-      ModuleName::Stalker => {
-        let options = Arc::new(StalkerOptions::from_bytes(&mut message.raw_options)?);
-
-        for (index, _) in profiles {
-          if let Some(profile) = PROFILE_SYSTEM.get(&index).await {
-            if profile.group != message.group {
-              continue;
-            }
-          }
-
-          if self.stalker.switch(index, options.clone()).await {
-            success_count += 1;
-          }
-        }
-      }
-      ModuleName::Flight => {
-        let options = Arc::new(FlightOptions::from_bytes(&mut message.raw_options)?);
-
-        for (index, _) in profiles {
-          if let Some(profile) = PROFILE_SYSTEM.get(&index).await {
-            if profile.group != message.group {
-              continue;
-            }
-          }
-
-          if self.flight.switch(index, options.clone()).await {
-            success_count += 1;
-          }
-        }
-      }
-      ModuleName::Killaura => {
-        let options = Arc::new(KillauraOptions::from_bytes(&mut message.raw_options)?);
-
-        for (index, _) in profiles {
-          if let Some(profile) = PROFILE_SYSTEM.get(&index).await {
-            if profile.group != message.group {
-              continue;
-            }
-          }
-
-          if self.killaura.switch(index, options.clone()).await {
-            success_count += 1;
-          }
-        }
-      }
-      ModuleName::Scaffold => {
-        let options = Arc::new(ScaffoldOptions::from_bytes(&mut message.raw_options)?);
-
-        for (index, _) in profiles {
-          if let Some(profile) = PROFILE_SYSTEM.get(&index).await {
-            if profile.group != message.group {
-              continue;
-            }
-          }
-
-          if self.scaffold.switch(index, options.clone()).await {
-            success_count += 1;
-          }
-        }
-      }
-      ModuleName::AntiFall => {
-        let options = Arc::new(AntiFallOptions::from_bytes(&mut message.raw_options)?);
-
-        for (index, _) in profiles {
-          if let Some(profile) = PROFILE_SYSTEM.get(&index).await {
-            if profile.group != message.group {
-              continue;
-            }
-          }
-
-          if self.anti_fall.switch(index, options.clone()).await {
-            success_count += 1;
-          }
-        }
-      }
-      ModuleName::BowAim => {
-        let options = Arc::new(BowAimOptions::from_bytes(&mut message.raw_options)?);
-
-        for (index, _) in profiles {
-          if let Some(profile) = PROFILE_SYSTEM.get(&index).await {
-            if profile.group != message.group {
-              continue;
-            }
-          }
-
-          if self.bow_aim.switch(index, options.clone()).await {
-            success_count += 1;
-          }
-        }
-      }
-      ModuleName::Stealer => {
-        let options = Arc::new(StealerOptions::from_bytes(&mut message.raw_options)?);
-
-        for (index, _) in profiles {
-          if let Some(profile) = PROFILE_SYSTEM.get(&index).await {
-            if profile.group != message.group {
-              continue;
-            }
-          }
-
-          if self.stealer.switch(index, options.clone()).await {
-            success_count += 1;
-          }
-        }
-      }
-      ModuleName::Miner => {
-        let options = Arc::new(MinerOptions::from_bytes(&mut message.raw_options)?);
-
-        for (index, _) in profiles {
-          if let Some(profile) = PROFILE_SYSTEM.get(&index).await {
-            if profile.group != message.group {
-              continue;
-            }
-          }
-
-          if self.miner.switch(index, options.clone()).await {
-            success_count += 1;
-          }
-        }
-      }
-      ModuleName::Farmer => {
-        let options = Arc::new(FarmerOptions::from_bytes(&mut message.raw_options)?);
-
-        for (index, _) in profiles {
-          if let Some(profile) = PROFILE_SYSTEM.get(&index).await {
-            if profile.group != message.group {
-              continue;
-            }
-          }
-
-          if self.farmer.switch(index, options.clone()).await {
-            success_count += 1;
-          }
-        }
-      }
-    }
+    let success_count = match message.module_name {
+      ModuleName::Chat => self.switch_module(&self.chat, profiles, &mut message).await,
+      ModuleName::Action => self.switch_module(&self.action, profiles, &mut message).await,
+      ModuleName::Inventory => self.switch_module(&self.inventory, profiles, &mut message).await,
+      ModuleName::Movement => self.switch_module(&self.movement, profiles, &mut message).await,
+      ModuleName::AntiAfk => self.switch_module(&self.anti_afk, profiles, &mut message).await,
+      ModuleName::Stalker => self.switch_module(&self.stalker, profiles, &mut message).await,
+      ModuleName::Flight => self.switch_module(&self.flight, profiles, &mut message).await,
+      ModuleName::Killaura => self.switch_module(&self.killaura, profiles, &mut message).await,
+      ModuleName::Scaffold => self.switch_module(&self.scaffold, profiles, &mut message).await,
+      ModuleName::AntiFall => self.switch_module(&self.anti_fall, profiles, &mut message).await,
+      ModuleName::BowAim => self.switch_module(&self.bow_aim, profiles, &mut message).await,
+      ModuleName::Stealer => self.switch_module(&self.stealer, profiles, &mut message).await,
+      ModuleName::Miner => self.switch_module(&self.miner, profiles, &mut message).await,
+      ModuleName::Farmer => self.switch_module(&self.farmer, profiles, &mut message).await,
+    };
 
     let module_name = message.module_name.to_string();
 
@@ -365,5 +168,30 @@ impl ModuleManager {
     );
 
     Some(())
+  }
+
+  async fn switch_module<M, O>(&self, module: &M, profiles: HashMap<u8, Profile>, message: &mut ControlMessage) -> u8
+  where
+    M: SalarixiModule<O>,
+    O: ModuleOptions,
+  {
+    let options = Arc::new(match O::from_bytes(&mut message.raw_options) {
+      Some(o) => o,
+      None => return 0,
+    });
+
+    let mut success_count = 0;
+
+    for (index, profile) in profiles {
+      if profile.group != message.group {
+        continue;
+      }
+
+      if module.switch(index, options.clone()).await {
+        success_count += 1;
+      }
+    }
+
+    success_count
   }
 }

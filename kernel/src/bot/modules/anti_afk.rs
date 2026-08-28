@@ -7,6 +7,7 @@ use salarixi_macros::Index;
 use crate::bot::extensions::{BotDefaultExt, BotMovementExt};
 use crate::bot::systems::states::{setmst, StateName};
 use crate::bot::systems::tasks::{gettskact, killtsk, pushetsk, pushrtsk, TaskName};
+use crate::bot::traits::ModuleOptions;
 use crate::bot::traits::SalarixiModule;
 use crate::sleep;
 use crate::take_bot;
@@ -26,8 +27,8 @@ pub struct AntiAfkOptions {
   state: u8,
 }
 
-impl AntiAfkOptions {
-  pub fn from_bytes(buf: &mut bytes::Bytes) -> Option<Self> {
+impl ModuleOptions for AntiAfkOptions {
+  fn from_bytes(buf: &mut bytes::Bytes) -> Option<Self> {
     Some(Self {
       mode: Mode::from_index(u8::read(buf)?)?,
       min_delay: Option::read(buf)?,

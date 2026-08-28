@@ -15,6 +15,7 @@ use salarixi_macros::Index;
 use crate::bot::common::get_block_state;
 use crate::bot::extensions::{BotInventoryExt, BotPhysicsExt};
 use crate::bot::systems::tasks::{gettskact, killtsk, pushrtsk, TaskName};
+use crate::bot::traits::ModuleOptions;
 use crate::bot::traits::SalarixiModule;
 use crate::tools::*;
 use crate::{sleep, take_bot};
@@ -34,8 +35,8 @@ pub struct AntiFallOptions {
   state: u8,
 }
 
-impl AntiFallOptions {
-  pub fn from_bytes(buf: &mut bytes::Bytes) -> Option<Self> {
+impl ModuleOptions for AntiFallOptions {
+  fn from_bytes(buf: &mut bytes::Bytes) -> Option<Self> {
     Some(Self {
       mode: Mode::from_index(u8::read(buf)?)?,
       distance_to_ground: Option::read(buf)?,

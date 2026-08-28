@@ -8,7 +8,7 @@ use salarixi_macros::Index;
 use crate::bot::extensions::{BotDefaultExt, BotInventoryExt, BotMovementExt, BotRotationExt, EntityFilter};
 use crate::bot::systems::states::{getst, setmst, setst, State, StateName};
 use crate::bot::systems::tasks::{gettskact, killtsk, pushetsk, pushrtsk, TaskName};
-use crate::bot::traits::SalarixiModule;
+use crate::bot::traits::{ModuleOptions, SalarixiModule};
 use crate::tools::*;
 use crate::{sleep, take_bot};
 
@@ -53,8 +53,8 @@ pub struct KillauraOptions {
   state: u8,
 }
 
-impl KillauraOptions {
-  pub fn from_bytes(buf: &mut bytes::Bytes) -> Option<Self> {
+impl ModuleOptions for KillauraOptions {
+  fn from_bytes(buf: &mut bytes::Bytes) -> Option<Self> {
     Some(Self {
       behavior: Behavior::from_index(u8::read(buf)?)?,
       settings: Settings::from_index(u8::read(buf)?)?,

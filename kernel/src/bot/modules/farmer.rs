@@ -10,7 +10,7 @@ use crate::bot::common::get_block_state;
 use crate::bot::extensions::{BotDefaultExt, BotInventoryExt, BotRotationExt};
 use crate::bot::systems::states::{getst, setmst, setst, State, StateName};
 use crate::bot::systems::tasks::{gettskact, killtsk, pushrtsk, TaskName};
-use crate::bot::traits::SalarixiModule;
+use crate::bot::traits::{ModuleOptions, SalarixiModule};
 use crate::tools::*;
 use crate::{sleep, take_bot};
 
@@ -32,8 +32,8 @@ pub struct FarmerOptions {
   state: u8,
 }
 
-impl FarmerOptions {
-  pub fn from_bytes(buf: &mut bytes::Bytes) -> Option<Self> {
+impl ModuleOptions for FarmerOptions {
+  fn from_bytes(buf: &mut bytes::Bytes) -> Option<Self> {
     Some(Self {
       mode: Mode::from_index(u8::read(buf)?)?,
       delay: Option::read(buf)?,

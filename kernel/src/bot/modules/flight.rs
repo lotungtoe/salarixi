@@ -11,7 +11,7 @@ use salarixi_macros::Index;
 
 use crate::bot::extensions::{BotDefaultExt, BotPhysicsExt};
 use crate::bot::systems::tasks::{gettskact, killtsk, pushrtsk, TaskName};
-use crate::bot::traits::SalarixiModule;
+use crate::bot::traits::{ModuleOptions, SalarixiModule};
 use crate::tools::*;
 use crate::{sleep, take_bot};
 
@@ -49,8 +49,8 @@ pub struct FlightOptions {
   state: u8,
 }
 
-impl FlightOptions {
-  pub fn from_bytes(buf: &mut bytes::Bytes) -> Option<Self> {
+impl ModuleOptions for FlightOptions {
+  fn from_bytes(buf: &mut bytes::Bytes) -> Option<Self> {
     Some(Self {
       mode: Mode::from_index(u8::read(buf)?)?,
       settings: Settings::from_index(u8::read(buf)?)?,

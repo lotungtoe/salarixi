@@ -3,7 +3,7 @@ use salarixi_extensions::buffer::BufferExt;
 
 use crate::bot::extensions::{BotInteractExt, BotInventoryExt, ClickMode};
 use crate::bot::systems::index::INDEX_SYSTEM;
-use crate::bot::traits::SalarixiModule;
+use crate::bot::traits::{ModuleOptions, SalarixiModule};
 use crate::server::transfer::*;
 use crate::take_bot;
 
@@ -13,8 +13,8 @@ pub struct InventoryOptions {
   state: u8,
 }
 
-impl InventoryOptions {
-  pub fn from_bytes(buf: &mut bytes::Bytes) -> Option<Self> {
+impl ModuleOptions for InventoryOptions {
+  fn from_bytes(buf: &mut bytes::Bytes) -> Option<Self> {
     Some(Self {
       slot: Option::read(buf)?,
       target_slot: Option::read(buf)?,

@@ -10,7 +10,7 @@ use crate::bot::systems::index::INDEX_SYSTEM;
 use crate::bot::systems::profile::PROFILE_SYSTEM;
 use crate::bot::systems::registry::REGISTRY_SYSTEM;
 use crate::bot::systems::tasks::{gettskact, killtsk, pushrtsk, TaskName};
-use crate::bot::traits::SalarixiModule;
+use crate::bot::traits::{ModuleOptions, SalarixiModule};
 use crate::bot::utils::radar::RADAR;
 use crate::tools::*;
 use crate::{sleep, take_bot};
@@ -35,8 +35,8 @@ pub struct ChatOptions {
   state: u8,
 }
 
-impl ChatOptions {
-  pub fn from_bytes(buf: &mut bytes::Bytes) -> Option<Self> {
+impl ModuleOptions for ChatOptions {
+  fn from_bytes(buf: &mut bytes::Bytes) -> Option<Self> {
     Some(Self {
       mode: Mode::from_index(u8::read(buf)?)?,
       message: String::read(buf)?,

@@ -10,6 +10,7 @@ use crate::bot::common::get_block_state;
 use crate::bot::extensions::BotMovementExt;
 use crate::bot::systems::states::{getst, setmst, setst, State, StateName};
 use crate::bot::systems::tasks::{gettskact, killtsk, pushrtsk, TaskName};
+use crate::bot::traits::ModuleOptions;
 use crate::bot::traits::SalarixiModule;
 use crate::tools::*;
 use crate::{sleep, take_bot};
@@ -28,8 +29,8 @@ pub struct StealerOptions {
   state: u8,
 }
 
-impl StealerOptions {
-  pub fn from_bytes(buf: &mut bytes::Bytes) -> Option<Self> {
+impl ModuleOptions for StealerOptions {
+  fn from_bytes(buf: &mut bytes::Bytes) -> Option<Self> {
     Some(Self {
       target: Target::from_index(u8::read(buf)?)?,
       radius: Option::read(buf)?,

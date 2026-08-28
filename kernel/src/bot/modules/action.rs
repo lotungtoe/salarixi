@@ -8,7 +8,7 @@ use tokio::time::sleep;
 
 use crate::bot::extensions::BotDefaultExt;
 use crate::bot::systems::tasks::{gettskact, killtsk, pushrtsk, TaskName};
-use crate::bot::traits::SalarixiModule;
+use crate::bot::traits::{ModuleOptions, SalarixiModule};
 use crate::tools::*;
 use crate::{sleep, take_bot};
 
@@ -26,8 +26,8 @@ pub struct ActionOptions {
   state: u8,
 }
 
-impl ActionOptions {
-  pub fn from_bytes(buf: &mut bytes::Bytes) -> Option<Self> {
+impl ModuleOptions for ActionOptions {
+  fn from_bytes(buf: &mut bytes::Bytes) -> Option<Self> {
     Some(Self {
       action: Action::from_index(u8::read(buf)?)?,
       use_sync: bool::read(buf)?,

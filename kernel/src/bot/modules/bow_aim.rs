@@ -8,7 +8,7 @@ use salarixi_extensions::buffer::BufferExt;
 use crate::bot::extensions::{BotDefaultExt, BotInteractExt, BotInventoryExt, BotMovementExt, EntityFilter};
 use crate::bot::systems::states::{getst, setmst, setst, State, StateName};
 use crate::bot::systems::tasks::{gettskact, killtsk, pushetsk, pushrtsk, TaskName};
-use crate::bot::traits::SalarixiModule;
+use crate::bot::traits::{ModuleOptions, SalarixiModule};
 use crate::tools::*;
 use crate::{sleep, take_bot};
 
@@ -20,8 +20,8 @@ pub struct BowAimOptions {
   state: u8,
 }
 
-impl BowAimOptions {
-  pub fn from_bytes(buf: &mut bytes::Bytes) -> Option<Self> {
+impl ModuleOptions for BowAimOptions {
+  fn from_bytes(buf: &mut bytes::Bytes) -> Option<Self> {
     Some(Self {
       entity_filter: EntityFilter::read(buf)?,
       shoot_delay: Option::read(buf)?,
