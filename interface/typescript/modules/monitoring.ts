@@ -408,7 +408,7 @@ class MonitoringModule {
 		});
 
 		document.getElementById(`clear-chat-${index}`)?.addEventListener("click", () => {
-			const messages = document.querySelectorAll(`[monitoring-message="${index}"]`);
+			const messages = document.querySelectorAll(`[cmi="${index}"]`);
 			messages.forEach(msg => msg.remove());
 			this.chatMessageCounter[index] = 0;
 		});
