@@ -3,6 +3,7 @@ import { listen } from "@tauri-apps/api/event";
 
 import { logger } from "../utils/logger";
 import { Buffer } from "../utils/buffer";
+import { indexSystem } from "../systems/index";
 
 /** Структура информации о боте */
 interface BotProfile {
@@ -31,7 +32,7 @@ enum BotStatus {
 
 /** Модуль управления мониторингом */
 class MonitoringModule {
-	private usernameList: string[] = [];
+	private indexTable: number[] = [];
 
 	private statusText: HTMLElement | null = null;
 	private cards: HTMLElement | null = null;
@@ -53,28 +54,28 @@ class MonitoringModule {
 		await listen<number[]>("monitoring:chat", (e) => {
 			try {
 				const buf = new Buffer(new Uint8Array(e.payload));
-				const receiver = buf.readString();
+				const index = buf.readU8();
 				const message = buf.readString();
 
-				if (!this.chatHistoryFilters[receiver]) this.chatHistoryFilters[receiver] = "all";
-				if (!this.filterMessage(this.chatHistoryFilters[receiver], message)) return;
+				if (!this.chatHistoryFilters[index]) this.chatHistoryFilters[index] = "all";
+				if (!this.filterMessage(this.chatHistoryFilters[index], message)) return;
 
-				const chat = document.getElementById(`monitoring-chat-content-${receiver}`);
+				const chat = document.getElementById(`monitoring-chat-content-${index}`);
 				if (!chat) return;
 
 				const line = document.createElement("div");
 				line.className = "line";
-				line.setAttribute("monitoring-message", receiver);
+				line.setAttribute("cmi", index.toString());
 				line.innerHTML = message;
 
 				chat.appendChild(line);
 
-				if (!this.chatMessageCounter[receiver]) {
-					this.chatMessageCounter[receiver] = 1;
+				if (!this.chatMessageCounter[index]) {
+					this.chatMessageCounter[index] = 1;
 				} else {
-					this.chatMessageCounter[receiver]++;
-					if (this.chatMessageCounter[receiver] > this.maxChatHistoryLength) {
-						this.chatMessageCounter[receiver]--;
+					this.chatMessageCounter[index]++;
+					if (this.chatMessageCounter[index] > this.maxChatHistoryLength) {
+						this.chatMessageCounter[index]--;
 						chat.firstChild?.remove();
 					}
 				}
@@ -86,7 +87,11 @@ class MonitoringModule {
 		await listen<number[]>("monitoring:update-profile", (e) => {
 			try {
 				const buf = new Buffer(new Uint8Array(e.payload));
-				const username = buf.readString();
+				const index = buf.readU8();
+
+				const username = indexSystem.usernameByIndex(index);
+				if (!username) return;
+
 				const statusCode = buf.readU8();
 				let status = BotStatus.Waiting;
 
@@ -117,7 +122,7 @@ class MonitoringModule {
 					group: buf.readString(),
 				};
 
-				this.usernameList.includes(username) ? this.updateBotCard(username, profile) : this.createBotCard(username, profile);
+				this.indexTable.includes(index) ? this.updateBotCard(index, profile) : this.createBotCard(index, username, profile);
 			} catch (error) {
 				logger.log(`Ошибка обработки события "monitoring:update-profile": ${error}`, "error");
 			}
@@ -142,18 +147,18 @@ class MonitoringModule {
 
 		this.chatMessageCounter = {};
 		this.chatHistoryFilters = {};
-		this.usernameList = [];
+		this.indexTable = [];
 
 		this.statusText!.style.display = "flex";
 	}
 
 	/** Метод создания карточки бота */
-	private createBotCard(username: string, profile: BotProfile): void {
+	private createBotCard(index: number, username: string, profile: BotProfile): void {
 		const steveIconPath = document.getElementById("steve-img") as HTMLImageElement;
 
 		const card = document.createElement("div");
 		card.className = "profile";
-		card.id = `profile-${username}`;
+		card.id = `profile-${index}`;
 		card.setAttribute("wrapper", "bot-card");
 
 		card.innerHTML = `
@@ -162,45 +167,45 @@ class MonitoringModule {
           <img src="${steveIconPath.src}" class="image" draggable="false">
           <div class="text">
             <div class="username">${username}</div>
-            <div class="status" id="monitoring-status-${username}">Waiting</div>
+            <div class="status" id="monitoring-status-${index}">Waiting</div>
           </div>
         </div>
 
         <div class="bottom">
-          <input type="text" class="bot-group" id="bot-group-${username}" placeholder="bot group">
+          <input type="text" class="bot-group" id="bot-group-${index}" placeholder="bot group">
         </div>
       </div>
 
       <div class="info">
-        <p class="line">Пинг: <span id="monitoring-ping-${username}">${profile.ping}</span>ms</p>
-        <p class="line">Здоровье: <span id="monitoring-health-${username}">${profile.health}</span> / 20</p>
-        <p class="line">Прокси: <span id="monitoring-proxy-${username}">${profile.proxy.ipAddress ?? "?"}</span></p>
+        <p class="line">Пинг: <span id="monitoring-ping-${index}">${profile.ping}</span>ms</p>
+        <p class="line">Здоровье: <span id="monitoring-health-${index}">${profile.health}</span> / 20</p>
+        <p class="line">Прокси: <span id="monitoring-proxy-${index}">${profile.proxy.ipAddress ?? "?"}</span></p>
         <p class="line">Пароль: <span>${profile.password ?? "No password"}</span></p>
       </div>
 
       <div class="buttons">
-        <button class="min" id="open-chat-${username}">Открыть чат</button>
-        <button class="min" id="reset-${username}">Сбросить</button>
-        <button class="min" id="disconnect-${username}">Отключить</button>
+        <button class="min" id="open-chat-${index}">Открыть чат</button>
+        <button class="min" id="reset-${index}">Сбросить</button>
+        <button class="min" id="disconnect-${index}">Отключить</button>
       </div>
     `;
 
 		this.cards?.appendChild(card);
-		this.initializeBotCard(username);
+		this.initializeBotCard(index, username);
 	}
 
 	/** Метод создания обёркти чата у бота */
-	private createChatWrapper(username: string): HTMLDivElement {
+	private createChatWrapper(index: number, username: string): HTMLDivElement {
 		const wrapper = document.createElement("div");
 		wrapper.className = "cover";
-		wrapper.id = `chat-${username}`;
+		wrapper.id = `chat-${index}`;
 		wrapper.setAttribute("wrapper", "bot-chat");
 
 		wrapper.innerHTML = `
       <div class="panel">
         <div class="left">
           <div class="custom-select">
-            <select id="select-chat-filter-${username}">
+            <select id="select-chat-filter-${index}">
               <option value="all">Все сообщения</option>
               <option value="bans">Блокировки</option>
               <option value="mentions">Упоминания</option>
@@ -209,7 +214,7 @@ class MonitoringModule {
             </select>
           </div>
 
-          <button class="min" id="filter-chat-${username}">
+          <button class="min" id="filter-chat-${index}">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-filter">
               <path stroke="none" d="M0 0h24v24H0z" fill="none" />
               <path d="M4 4h16v2.172a2 2 0 0 1 -.586 1.414l-4.414 4.414v7l-6 2v-8.5l-4.48 -4.928a2 2 0 0 1 -.52 -1.345v-2.227" />
@@ -218,7 +223,7 @@ class MonitoringModule {
         </div>
 
         <div class="right">
-          <button class="min" id="clear-chat-${username}">
+          <button class="min" id="clear-chat-${index}">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-trash">
               <path stroke="none" d="M0 0h24v24H0z" fill="none" />
               <path d="M4 7l16 0" />
@@ -229,7 +234,7 @@ class MonitoringModule {
             </svg>
           </button>
 
-          <button class="min" id="close-chat-${username}">
+          <button class="min" id="close-chat-${index}">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-x">
               <path stroke="none" d="M0 0h24v24H0z" fill="none" />
               <path d="M18 6l-12 12" />
@@ -239,11 +244,11 @@ class MonitoringModule {
         </div>
       </div>
 
-      <div class="chat-content" id="monitoring-chat-content-${username}"></div>
+      <div class="chat-content" id="monitoring-chat-content-${index}"></div>
 
       <div class="pretty-input-wrapper">
         <p class="signature">${username}</p>
-        <input type="text" id="chat-message-${username}" placeholder="Введите и отправьте сообщение, нажав «Enter»">
+        <input type="text" id="chat-message-${index}" placeholder="Введите и отправьте сообщение, нажав «Enter»">
       </div>
     `;
 
@@ -253,24 +258,24 @@ class MonitoringModule {
 	}
 
 	/** Метод обновления карточки бота */
-	private updateBotCard(username: string, profile: BotProfile): void {
-		const status = document.getElementById(`monitoring-status-${username}`) as HTMLSpanElement | undefined;
+	private updateBotCard(index: number, profile: BotProfile): void {
+		const status = document.getElementById(`monitoring-status-${index}`) as HTMLSpanElement | undefined;
 		if (!status) return;
 
-		const proxy = document.getElementById(`monitoring-proxy-${username}`) as HTMLSpanElement | undefined;
+		const proxy = document.getElementById(`monitoring-proxy-${index}`) as HTMLSpanElement | undefined;
 		if (!proxy) return;
 
-		const ping = document.getElementById(`monitoring-ping-${username}`) as HTMLSpanElement | undefined;
+		const ping = document.getElementById(`monitoring-ping-${index}`) as HTMLSpanElement | undefined;
 		if (!ping) return;
 
-		const health = document.getElementById(`monitoring-health-${username}`) as HTMLSpanElement | undefined;
+		const health = document.getElementById(`monitoring-health-${index}`) as HTMLSpanElement | undefined;
 		if (!health) return;
 
-		const group = document.getElementById(`bot-group-${username}`) as HTMLInputElement | undefined;
+		const group = document.getElementById(`bot-group-${index}`) as HTMLInputElement | undefined;
 		if (!group) return;
 
 		if (health.innerText.split("/")[0].replace(" ", "") != profile.health.toString()) {
-			const card = document.getElementById(`profile-${username}`);
+			const card = document.getElementById(`profile-${index}`);
 			card?.classList.add("glow");
 			setTimeout(() => card?.classList.remove("glow"), 300);
 		}
@@ -302,23 +307,23 @@ class MonitoringModule {
 	}
 
 	/** Метод инициализации карточки бота */
-	private initializeBotCard(username: string): void {
-		this.chatHistoryFilters[username] = "all";
-		this.usernameList.push(username);
+	private initializeBotCard(index: number, username: string): void {
+		this.chatHistoryFilters[index] = "all";
+		this.indexTable.push(index);
 
-		const chatWrapper = this.createChatWrapper(username);
+		const chatWrapper = this.createChatWrapper(index, username);
 
-		document.getElementById(`open-chat-${username}`)?.addEventListener("click", () => chatWrapper.style.display = "flex");
-		document.getElementById(`close-chat-${username}`)?.addEventListener("click", () => chatWrapper.style.display = "none");
+		document.getElementById(`open-chat-${index}`)?.addEventListener("click", () => chatWrapper.style.display = "flex");
+		document.getElementById(`close-chat-${index}`)?.addEventListener("click", () => chatWrapper.style.display = "none");
 
-		document.getElementById(`chat-${username}`)?.addEventListener("keydown", async (e) => {
+		document.getElementById(`chat-${index}`)?.addEventListener("keydown", async (e) => {
 			if ((e as KeyboardEvent).key === "Enter") {
-				const message = document.getElementById(`chat-message-${username}`) as HTMLInputElement;
+				const message = document.getElementById(`chat-message-${index}`) as HTMLInputElement;
 
 				const buf = new Buffer();
 				buf.writeU8(0x05);
 				buf.writeU8(0x00);
-				buf.writeString(username);
+				buf.writeU8(index);
 				buf.writeString(message.value);
 
 				const result = await invoke<CommandResult<null>>("send_command", {
@@ -334,12 +339,12 @@ class MonitoringModule {
 			}
 		});
 
-		document.getElementById(`reset-${username}`)?.addEventListener("click", async () => {
+		document.getElementById(`reset-${index}`)?.addEventListener("click", async () => {
 			try {
 				const buf = new Buffer();
 				buf.writeU8(0x05);
 				buf.writeU8(0x01);
-				buf.writeString(username);
+				buf.writeU8(index);
 
 				const result = await invoke<CommandResult<null>>("send_command", {
 					data: buf.toUint8Array(),
@@ -351,12 +356,12 @@ class MonitoringModule {
 			}
 		});
 
-		document.getElementById(`disconnect-${username}`)?.addEventListener("click", async () => {
+		document.getElementById(`disconnect-${index}`)?.addEventListener("click", async () => {
 			try {
 				const buf = new Buffer();
 				buf.writeU8(0x05);
 				buf.writeU8(0x02);
-				buf.writeString(username);
+				buf.writeU8(index);
 
 				const result = await invoke<CommandResult<null>>("send_command", {
 					data: buf.toUint8Array(),
@@ -368,13 +373,13 @@ class MonitoringModule {
 			}
 		});
 
-		document.getElementById(`bot-group-${username}`)?.addEventListener("input", async () => {
+		document.getElementById(`bot-group-${index}`)?.addEventListener("input", async () => {
 			try {
-				const group = (document.getElementById(`bot-group-${username}`) as HTMLInputElement).value.replace(" ", "") || "global";
+				const group = (document.getElementById(`bot-group-${index}`) as HTMLInputElement).value.replace(" ", "") || "global";
 
 				const buf = new Buffer();
 				buf.writeU8(0x06);
-				buf.writeString(username);
+				buf.writeU8(index);
 				buf.writeString(group);
 
 				const result = await invoke<CommandResult<null>>("send_command", {
@@ -387,25 +392,25 @@ class MonitoringModule {
 			}
 		});
 
-		document.getElementById(`filter-chat-${username}`)?.addEventListener("click", () => {
+		document.getElementById(`filter-chat-${index}`)?.addEventListener("click", () => {
 			try {
-				const content = document.getElementById(`monitoring-chat-content-${username}`);
-				const type = document.getElementById(`select-chat-filter-${username}`) as HTMLSelectElement;
-				const history = [...document.querySelectorAll(`[monitoring-message="${username}"]`).values()];
+				const content = document.getElementById(`monitoring-chat-content-${index}`);
+				const type = document.getElementById(`select-chat-filter-${index}`) as HTMLSelectElement;
+				const history = [...document.querySelectorAll(`[cmi="${index}"]`).values()];
 
 				content!.innerHTML = "";
-				this.chatHistoryFilters[username] = type.value;
+				this.chatHistoryFilters[index] = type.value;
 
 				history.forEach(m => this.filterMessage(type.value, m.textContent || "") ? content?.appendChild(m) : null);
 			} catch (error) {
-				logger.log(`Ошибка фильтровки чата: ${error}`, "error");
+				logger.log(`Ошибка фильтровки чата у бота ${username}: ${error}`, "error");
 			}
 		});
 
-		document.getElementById(`clear-chat-${username}`)?.addEventListener("click", () => {
-			const messages = document.querySelectorAll(`[monitoring-message="${username}"]`);
+		document.getElementById(`clear-chat-${index}`)?.addEventListener("click", () => {
+			const messages = document.querySelectorAll(`[monitoring-message="${index}"]`);
 			messages.forEach(msg => msg.remove());
-			this.chatMessageCounter[username] = 0;
+			this.chatMessageCounter[index] = 0;
 		});
 	}
 

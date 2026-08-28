@@ -173,7 +173,7 @@ async fn process_chat_message(bot: Client, packet: ChatPacket) {
   };
 
   TRANSFER.emit(TransferEvent::BotChat(BotChatPayload {
-    receiver: username.clone(),
+    index,
     message: packet.message().to_html(),
   }));
 
@@ -202,8 +202,8 @@ async fn process_chat_message(bot: Client, packet: ChatPacket) {
         emit_log(format!("Бот {} получил ссылку на капчу", username), "info");
 
         TRANSFER.emit(TransferEvent::AntiWebCaptcha(AntiWebCaptchaPayload {
+          index,
           captcha_url: url,
-          username: username.clone(),
         }));
       }
     }

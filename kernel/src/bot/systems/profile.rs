@@ -6,7 +6,6 @@ use salarixi_extensions::buffer::BufferExt;
 use tokio::sync::RwLock;
 use tokio::task::JoinHandle;
 
-use crate::bot::systems::index::INDEX_SYSTEM;
 use crate::server::transfer::{emit_log, TransferEvent, UpdateBotProfilePayload, TRANSFER};
 use crate::sleep;
 
@@ -138,14 +137,10 @@ impl ProfileSystem {
 
             // println!("[debug :: monitoring] {} updated (status: {:?}, hash: {:?})", username, profile.status, hash);
 
-            let Some(username) = INDEX_SYSTEM.username_by_index(index).await else {
-              continue;
-            };
-
             last_hashes.insert(*index, (profile.status.clone(), hash));
 
             TRANSFER.emit(TransferEvent::UpdateBotProfile(UpdateBotProfilePayload {
-              username,
+              index: *index,
               profile: profile.clone(),
             }));
           }
@@ -157,12 +152,8 @@ impl ProfileSystem {
       tokio::spawn(async move {
         loop {
           for (index, profile) in PROFILE_SYSTEM.map.read().await.iter() {
-            let Some(username) = INDEX_SYSTEM.username_by_index(index).await else {
-              continue;
-            };
-
             TRANSFER.emit(TransferEvent::UpdateBotProfile(UpdateBotProfilePayload {
-              username,
+              index: *index,
               profile: profile.clone(),
             }));
           }

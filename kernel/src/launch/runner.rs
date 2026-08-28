@@ -161,6 +161,55 @@ pub async fn launch_bots_on_server(options: LaunchOptions) -> u8 {
     );
   }
 
+  let mut accounts = Vec::new();
+
+  if options.basic.use_accounts {
+    for (username, opts) in &options.accounts {
+      let index = INDEX_SYSTEM.register(username).await;
+
+      accounts.push(CustomAccount {
+        object: Account::offline(username),
+        options: opts.clone(),
+        index,
+      });
+
+      PROFILE_SYSTEM
+        .register(index, opts.password.clone(), opts.email.clone())
+        .await;
+    }
+  } else {
+    for _ in 0..options.basic.bots_count {
+      let Some(username) =
+        generate_unique_username(&options.basic.nickname_type, &options.basic.nickname_template).await
+      else {
+        continue;
+      };
+
+      let index = INDEX_SYSTEM.register(&username).await;
+
+      let password = generate_username_or_password(
+        "password",
+        options.basic.password_type.to_str(),
+        &options.basic.password_template,
+      );
+
+      let email = generate_email(&options.basic.email_type);
+
+      accounts.push(CustomAccount {
+        object: Account::offline(&username),
+        options: AccountOptions {
+          initial_group: None,
+          password: None,
+          email: None,
+          proxy: None,
+        },
+        index,
+      });
+
+      PROFILE_SYSTEM.register(index, password, email).await;
+    }
+  }
+
   thread::spawn(move || {
     let rt = match tokio::runtime::Runtime::new() {
       Ok(rt) => rt,
@@ -203,55 +252,6 @@ pub async fn launch_bots_on_server(options: LaunchOptions) -> u8 {
           .join_delay(Duration::from_millis(options.basic.join_delay.into()))
           .set_swarm_handler(swarm_handler)
           .set_handler(single_handler);
-
-        let mut accounts = Vec::new();
-
-        if options.basic.use_accounts {
-          for (username, opts) in &options.accounts {
-            let index = INDEX_SYSTEM.register(username).await;
-
-            accounts.push(CustomAccount {
-              object: Account::offline(username),
-              options: opts.clone(),
-              index,
-            });
-
-            PROFILE_SYSTEM
-              .register(index, opts.password.clone(), opts.email.clone())
-              .await;
-          }
-        } else {
-          for _ in 0..options.basic.bots_count {
-            let Some(username) =
-              generate_unique_username(&options.basic.nickname_type, &options.basic.nickname_template).await
-            else {
-              continue;
-            };
-
-            let index = INDEX_SYSTEM.register(&username).await;
-
-            let password = generate_username_or_password(
-              "password",
-              options.basic.password_type.to_str(),
-              &options.basic.password_template,
-            );
-
-            let email = generate_email(&options.basic.email_type);
-
-            accounts.push(CustomAccount {
-              object: Account::offline(&username),
-              options: AccountOptions {
-                initial_group: None,
-                password: None,
-                email: None,
-                proxy: None,
-              },
-              index,
-            });
-
-            PROFILE_SYSTEM.register(index, password, email).await;
-          }
-        }
 
         if options.basic.use_proxy || options.basic.use_accounts {
           let mut accounts_with_opts = Vec::new();

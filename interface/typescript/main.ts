@@ -28,9 +28,11 @@ import { infoModule } from "./modules/info";
 import { updaterModule } from "./modules/updater";
 import { stylekitModule } from "./modules/stylekit";
 import { scannerModule } from "./modules/scanner";
+import { sessionModule } from "./modules/session";
+
+import { indexSystem } from "./systems/index";
 
 import { CLIENT_VERSION } from "./version";
-import { sessionModule } from "./modules/session";
 
 Chart.register(...registerables);
 
@@ -578,6 +580,7 @@ async function listenSystemEvents(): Promise<void> {
 				monitoringModule.disable();
 				captchaModule.disable();
 				radarModule.disable();
+				indexSystem.clear();
 
 				processActivity = false;
 
@@ -631,10 +634,12 @@ async function listenSystemEvents(): Promise<void> {
 				monitoringModule.enable();
 				if (antiCaptchaEnabled) captchaModule.enable(captchaType, captchaSolveMode);
 				radarModule.enable();
+				indexSystem.synchronize(buf);
 			} else {
 				monitoringModule.disable();
 				captchaModule.disable();
 				radarModule.disable();
+				indexSystem.clear();
 			}
 
 			updateProcessStatus(statusId, connectedBots, totalBots);

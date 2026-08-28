@@ -71,7 +71,7 @@ impl ProcessStatusPayload {
 
 #[derive(Clone)]
 pub struct BotChatPayload {
-  pub receiver: String,
+  pub index: u8,
   pub message: String,
 }
 
@@ -79,7 +79,7 @@ impl BotChatPayload {
   pub fn to_bytes(&self) -> Bytes {
     let mut buf = BytesMut::new();
     buf.put_u8(0x04);
-    self.receiver.write(&mut buf);
+    self.index.write(&mut buf);
     self.message.write(&mut buf);
     buf.freeze()
   }
@@ -87,7 +87,7 @@ impl BotChatPayload {
 
 #[derive(Clone)]
 pub struct AntiWebCaptchaPayload {
-  pub username: String,
+  pub index: u8,
   pub captcha_url: String,
 }
 
@@ -95,7 +95,7 @@ impl AntiWebCaptchaPayload {
   pub fn to_bytes(&self) -> Bytes {
     let mut buf = BytesMut::new();
     buf.put_u8(0x05);
-    self.username.write(&mut buf);
+    self.index.write(&mut buf);
     self.captcha_url.write(&mut buf);
     buf.freeze()
   }
@@ -103,7 +103,7 @@ impl AntiWebCaptchaPayload {
 
 #[derive(Clone)]
 pub struct AntiMapCaptchaPayload {
-  pub username: String,
+  pub index: u8,
   pub b64: String,
 }
 
@@ -111,7 +111,7 @@ impl AntiMapCaptchaPayload {
   pub fn to_bytes(&self) -> Bytes {
     let mut buf = BytesMut::new();
     buf.put_u8(0x06);
-    self.username.write(&mut buf);
+    self.index.write(&mut buf);
 
     if self.b64.len() < u16::MAX as usize {
       buf.put_u8(0x01);
@@ -135,21 +135,21 @@ impl AntiMapCaptchaPayload {
 
 #[derive(Clone)]
 pub struct RemoveCaptchaPayload {
-  pub username: String,
+  pub index: u8,
 }
 
 impl RemoveCaptchaPayload {
   pub fn to_bytes(&self) -> Bytes {
     let mut buf = BytesMut::new();
     buf.put_u8(0x07);
-    self.username.write(&mut buf);
+    self.index.write(&mut buf);
     buf.freeze()
   }
 }
 
 #[derive(Clone)]
 pub struct UpdateBotProfilePayload {
-  pub username: String,
+  pub index: u8,
   pub profile: Profile,
 }
 
@@ -157,7 +157,7 @@ impl UpdateBotProfilePayload {
   pub fn to_bytes(&self) -> Bytes {
     let mut buf = BytesMut::new();
     buf.put_u8(0x08);
-    self.username.write(&mut buf);
+    self.index.write(&mut buf);
     self.profile.write(&mut buf);
     buf.freeze()
   }

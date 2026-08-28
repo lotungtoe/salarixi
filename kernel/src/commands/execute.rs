@@ -50,6 +50,15 @@ async fn create_sync_buf() -> Option<Bytes> {
     CaptchaSolveMode::Auto => 0x01,
   });
 
+  if PROCESS_ACTIVITY.load(Ordering::SeqCst) {
+    let map = INDEX_SYSTEM.map.read().await;
+    buf.put_u8(map.len() as u8);
+
+    for username in map.iter() {
+      username.write(&mut buf);
+    }
+  }
+
   Some(buf.freeze())
 }
 
@@ -128,18 +137,18 @@ async fn quick_action(data: &mut Bytes) -> std::io::Result<()> {
     return Ok(());
   };
 
-  let username = String::read(data).ok_or(Error::new(ErrorKind::InvalidData, "options parsing error"))?;
+  let index = u8::read(data).ok_or(Error::new(ErrorKind::InvalidData, "options parsing error"))?;
 
   match action {
     QuickAction::SendMessage => {
       let message = String::read(data).ok_or(Error::new(ErrorKind::InvalidData, "options parsing error"))?;
-      send_message_from_bot(username, message).await;
+      send_message_from_bot(&index, message).await;
     }
     QuickAction::Reset => {
-      reset_bot(username).await;
+      reset_bot(&index).await;
     }
     QuickAction::Disconnect => {
-      disconnect_bot(username).await;
+      disconnect_bot(&index).await;
     }
   }
 
@@ -147,14 +156,12 @@ async fn quick_action(data: &mut Bytes) -> std::io::Result<()> {
 }
 
 async fn set_group(data: &mut Bytes) -> std::io::Result<()> {
-  let username = String::read(data).ok_or(Error::new(ErrorKind::InvalidData, "options parsing error"))?;
+  let index = u8::read(data).ok_or(Error::new(ErrorKind::InvalidData, "options parsing error"))?;
   let group = String::read(data).ok_or(Error::new(ErrorKind::InvalidData, "options parsing error"))?;
 
-  if let Some(index) = INDEX_SYSTEM.index_by_username(&username).await {
-    take_profile!(&index, async |profile| {
-      profile.group = group;
-    });
-  }
+  take_profile!(&index, async |profile| {
+    profile.group = group;
+  });
 
   Ok(())
 }

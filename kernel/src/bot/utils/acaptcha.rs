@@ -619,10 +619,7 @@ impl MapCaptchaBypass {
             .solve_captcha(index, username.clone(), b64, options.captcha_bypass)
             .await;
         } else {
-          TRANSFER.emit(TransferEvent::AntiMapCaptcha(AntiMapCaptchaPayload {
-            b64,
-            username: username.to_string(),
-          }));
+          TRANSFER.emit(TransferEvent::AntiMapCaptcha(AntiMapCaptchaPayload { index, b64 }));
         }
 
         self.frame_collector.clear(&index).await;
@@ -643,10 +640,7 @@ impl MapCaptchaBypass {
       if options.captcha_bypass.solve_mode == CaptchaSolveMode::Auto {
         self.solve_captcha(index, username, b64, options.captcha_bypass).await;
       } else {
-        TRANSFER.emit(TransferEvent::AntiMapCaptcha(AntiMapCaptchaPayload {
-          b64,
-          username: username.to_string(),
-        }));
+        TRANSFER.emit(TransferEvent::AntiMapCaptcha(AntiMapCaptchaPayload { index, b64 }));
       }
     }
   }

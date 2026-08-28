@@ -3,6 +3,7 @@ import { listen } from "@tauri-apps/api/event";
 
 import { logger } from "../utils/logger";
 import { Buffer } from "../utils/buffer";
+import { indexSystem } from "../systems/index";
 
 /** Структура данных капчи */
 interface Captcha {
@@ -28,10 +29,14 @@ class CaptchaModule {
 		await listen<number[]>("captcha:new-web", (e) => {
 			try {
 				const buf = new Buffer(new Uint8Array(e.payload));
-				const username = buf.readString();
+				const index = buf.readU8();
+
+				const username = indexSystem.usernameByIndex(index);
+				if (!username) return;
+
 				const captcha_url = buf.readString();
 
-				this.createCaptchaCard(username, {
+				this.createCaptchaCard(index, username, {
 					type: "web",
 					data: {
 						url: captcha_url,
@@ -46,7 +51,11 @@ class CaptchaModule {
 		await listen<number[]>("captcha:new-map", (e) => {
 			try {
 				const buf = new Buffer(new Uint8Array(e.payload));
-				const username = buf.readString();
+				const index = buf.readU8();
+
+				const username = indexSystem.usernameByIndex(index);
+				if (!username) return;
+
 				const parts = buf.readU8();
 
 				let base64 = "";
@@ -55,7 +64,7 @@ class CaptchaModule {
 					base64 += buf.readString();
 				}
 
-				this.createCaptchaCard(username, {
+				this.createCaptchaCard(index, username, {
 					type: "map",
 					data: {
 						url: null,
@@ -70,10 +79,10 @@ class CaptchaModule {
 		await listen<number[]>("captcha:remove", (e) => {
 			try {
 				const buf = new Buffer(new Uint8Array(e.payload));
-				const username = buf.readString();
+				const index = buf.readU8();
 
-				document.getElementById(`bot-captcha-${username}`)?.remove();
-				document.getElementById(`captcha-wrapper-${username}`)?.remove();
+				document.getElementById(`bot-captcha-${index}`)?.remove();
+				document.getElementById(`captcha-wrapper-${index}`)?.remove();
 			} catch (error) {
 				logger.log(`Ошибка обработки события "captcha:remove": ${error}`, "error");
 			}
@@ -104,17 +113,17 @@ class CaptchaModule {
 	}
 
 	/** Метод создания карточки капчи */
-	private createCaptchaCard(username: string, captcha: Captcha): void {
-		const oldCard = document.getElementById(`bot-captcha-${username}`);
+	private createCaptchaCard(index: number, username: string, captcha: Captcha): void {
+		const oldCard = document.getElementById(`bot-captcha-${index}`);
 
 		if (oldCard) {
 			oldCard.remove();
-			document.getElementById(`captcha-wrapper-${username}`)?.remove();
+			document.getElementById(`captcha-wrapper-${index}`)?.remove();
 		}
 
 		const card = document.createElement("div");
 		card.className = "bot-captcha";
-		card.id = `bot-captcha-${username}`;
+		card.id = `bot-captcha-${index}`;
 		card.setAttribute("wrapper", "captcha-card");
 
 		card.innerHTML = `
@@ -123,27 +132,27 @@ class CaptchaModule {
       </div>
 
       <div class="buttons">
-        <button class="min" id="solve-captcha-${username}">Решить</button>
-        <button class="min" id="remove-captcha-${username}">Удалить</button>
+        <button class="min" id="solve-captcha-${index}">Решить</button>
+        <button class="min" id="remove-captcha-${index}">Удалить</button>
       </div>
     `;
 
 		this.cards?.appendChild(card);
 
-		this.initializeCaptchaCard(username, captcha);
+		this.initializeCaptchaCard(index, username, captcha);
 	}
 
 	/** Метод инициализации карточки капчи */
-	private initializeCaptchaCard(username: string, captcha: Captcha): void {
+	private initializeCaptchaCard(index: number, username: string, captcha: Captcha): void {
 		if (captcha.type === "web") {
-			document.getElementById(`solve-captcha-${username}`)?.addEventListener("click", async () => {
+			document.getElementById(`solve-captcha-${index}`)?.addEventListener("click", async () => {
 				const url = captcha.data.url;
 				if (url && url !== "") await invoke("open_url", { url: url });
 			});
 		} else {
 			const wrapper = document.createElement("div");
 			wrapper.className = "cover";
-			wrapper.id = `captcha-wrapper-${username}`;
+			wrapper.id = `captcha-wrapper-${index}`;
 			wrapper.setAttribute("wrapper", "captcha-img");
 
 			wrapper.innerHTML = `
@@ -153,7 +162,7 @@ class CaptchaModule {
           </div>
 
           <div class="right">
-            <button class="min" id="close-captcha-wrapper-${username}">
+            <button class="min" id="close-captcha-wrapper-${index}">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-x">
                 <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                 <path d="M18 6l-12 12" />
@@ -164,30 +173,30 @@ class CaptchaModule {
         </div>
 
         <div class="bot-captcha-wrapper">
-          <img class="captcha-img" id="captcha-img-${username}" src="data:image/png;base64,${captcha.data.base64}" draggable="false">
+          <img class="captcha-img" id="captcha-img-${index}" src="data:image/png;base64,${captcha.data.base64}" draggable="false">
         </div>
 
         <div class="pretty-input-wrapper" style="margin-top: 20px;">
           <p class="signature">${username}</p>
-          <input type="text" id="captcha-code-${username}" placeholder="Введите и отправьте код с капчи, нажав «Enter»">
+          <input type="text" id="captcha-code-${index}" placeholder="Введите и отправьте код с капчи, нажав «Enter»">
         </div>
       `;
 
 			this.wrappers?.appendChild(wrapper);
 
-			const img = document.getElementById(`captcha-img-${username}`) as HTMLImageElement;
+			const img = document.getElementById(`captcha-img-${index}`) as HTMLImageElement;
 			img.onload = () => {
 				const scale = Math.min(2, 800 / img.naturalWidth);
 				img.style.width = (img.naturalWidth * scale) + "px";
 				img.style.height = (img.naturalHeight * scale) + "px";
 			};
 
-			document.getElementById(`solve-captcha-${username}`)?.addEventListener("click", () => wrapper.style.display = "flex");
-			document.getElementById(`close-captcha-wrapper-${username}`)?.addEventListener("click", () => wrapper.style.display = "none");
+			document.getElementById(`solve-captcha-${index}`)?.addEventListener("click", () => wrapper.style.display = "flex");
+			document.getElementById(`close-captcha-wrapper-${index}`)?.addEventListener("click", () => wrapper.style.display = "none");
 
-			document.getElementById(`captcha-wrapper-${username}`)?.addEventListener("keydown", async (e: Event) => {
+			document.getElementById(`captcha-wrapper-${index}`)?.addEventListener("keydown", async (e: Event) => {
 				if ((e as KeyboardEvent).key === "Enter") {
-					const message = document.getElementById(`captcha-code-${username}`) as HTMLInputElement;
+					const message = document.getElementById(`captcha-code-${index}`) as HTMLInputElement;
 
 					const buf = new Buffer();
 					buf.writeU8(0x05);
@@ -209,10 +218,10 @@ class CaptchaModule {
 			});
 		}
 
-		document.getElementById(`remove-captcha-${username}`)?.addEventListener("click", async () => {
+		document.getElementById(`remove-captcha-${index}`)?.addEventListener("click", async () => {
 			const buf = new Buffer();
 			buf.writeU8(0x04);
-			buf.writeString(username);
+			buf.writeU8(index);
 
 			const result = await invoke<CommandResult<null>>("send_command", {
 				data: buf.toUint8Array(),

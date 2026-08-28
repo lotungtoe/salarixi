@@ -133,7 +133,7 @@ impl Server {
             }
             TransferEvent::ProcessStatus(payload) => {
               bytes = payload.to_bytes();
-              name = "process-chat";
+              name = "process-status";
             }
             TransferEvent::BotChat(payload) => {
               bytes = payload.to_bytes();

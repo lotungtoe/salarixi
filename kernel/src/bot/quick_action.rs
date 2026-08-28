@@ -18,32 +18,28 @@ pub enum QuickAction {
 }
 
 /// Вспомогательная функция отправки сообщения в чат от бота
-pub async fn send_message_from_bot(username: String, message: String) {
-  let Some(index) = INDEX_SYSTEM.index_by_username(&username).await else {
-    return;
-  };
-
+pub async fn send_message_from_bot(index: &u8, message: String) {
   take_bot!(&index, async |bot| bot.chat(message));
 }
 
 /// Вспомогательная функция, позволяющая сбросить все задачи и состояния бота
-pub async fn reset_bot(username: String) {
-  let Some(index) = INDEX_SYSTEM.index_by_username(&username).await else {
+pub async fn reset_bot(index: &u8) {
+  let Some(username) = INDEX_SYSTEM.username_by_index(index).await else {
     return;
   };
 
-  TASK_SYSTEM.kill_all_tasks_for(&index).await;
+  TASK_SYSTEM.kill_all_tasks_for(index).await;
 
   sleep!(1000);
 
-  take_bot!(&index, async |bot| {
-    bot.stop_move(&index).await;
+  take_bot!(index, async |bot| {
+    bot.stop_move(index).await;
     bot.stop_crouching();
     bot.stop_jumping();
     bot.stop_pathfinding();
   });
 
-  STATE_SYSTEM.reset(&index).await;
+  STATE_SYSTEM.reset(index).await;
 
   emit_log(format!("Все задачи и состояния бота {} сброшены", username), "info");
 
@@ -54,24 +50,24 @@ pub async fn reset_bot(username: String) {
 }
 
 /// Вспомогательная функция отключения бота
-pub async fn disconnect_bot(username: String) {
-  let Some(index) = INDEX_SYSTEM.index_by_username(&username).await else {
+pub async fn disconnect_bot(index: &u8) {
+  let Some(username) = INDEX_SYSTEM.username_by_index(index).await else {
     return;
   };
 
-  PLUGINS.kill_all_tasks_for(&index).await;
-  TASK_SYSTEM.kill_all_tasks_for(&index).await;
+  PLUGINS.kill_all_tasks_for(index).await;
+  TASK_SYSTEM.kill_all_tasks_for(index).await;
 
   sleep!(2000);
 
-  take_bot!(&index, async |bot| {
+  take_bot!(index, async |bot| {
     bot.disconnect();
   });
 
-  STATE_SYSTEM.remove(&index).await;
-  TASK_SYSTEM.remove(&index).await;
+  STATE_SYSTEM.remove(index).await;
+  TASK_SYSTEM.remove(index).await;
 
-  take_profile!(&index, async |profile| {
+  take_profile!(index, async |profile| {
     profile.captcha_caught = false;
     profile.status = BotStatus::Disconnected;
   });
