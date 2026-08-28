@@ -1,11 +1,11 @@
 pub mod auth;
 pub mod common;
+pub mod common_actions;
 pub mod extensions;
 pub mod handlers;
 pub mod modules;
 pub mod plugins;
 pub mod quick;
-pub mod quick_action;
 pub mod script;
 pub mod systems;
 pub mod traits;

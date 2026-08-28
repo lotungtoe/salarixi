@@ -443,6 +443,8 @@ function initGlobalElements(): void {
 			taskId = 0x0C;
 		} else if (pressedKeys.shift && pressedKeys.z) {
 			taskId = 0x0D;
+		} else if (pressedKeys.shift && pressedKeys.r) {
+			taskId = 0x11;
 		}
 
 		if (taskId !== undefined) {

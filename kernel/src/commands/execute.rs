@@ -5,12 +5,11 @@ use std::sync::Arc;
 use aes_gcm::Aes256Gcm;
 use bytes::{BufMut, Bytes, BytesMut};
 use salarixi_extensions::buffer::BufferExt;
-use salarixi_extensions::index::IndexExt;
 use tokio::net::tcp::OwnedWriteHalf;
 use tokio::sync::RwLock;
 
-use crate::bot::quick::QUICK_TASKS;
-use crate::bot::quick_action::{disconnect_bot, reset_bot, send_message_from_bot, QuickAction};
+use crate::bot::common_actions::{disconnect_bot, reset_bot};
+use crate::bot::quick::run_quick_task;
 use crate::bot::script::SCRIPT_EXECUTOR;
 use crate::bot::systems::index::INDEX_SYSTEM;
 use crate::bot::systems::profile::PROFILE_SYSTEM;
@@ -21,7 +20,7 @@ use crate::launch::options::{CaptchaSolveMode, CaptchaType, LaunchOptions};
 use crate::launch::process::{current_options, process_is_active, process_status_payload, PROCESS_ACTIVITY};
 use crate::launch::runner::{launch_bots_on_server, stop_bots_and_destroy_data};
 use crate::server::{write_to_socket, write_to_sockets, Sockets};
-use crate::take_profile;
+use crate::{take_bot, take_profile};
 
 async fn create_sync_buf() -> Option<Bytes> {
   let process = process_status_payload().await;
@@ -131,25 +130,22 @@ async fn stop_bots(sockets: &Sockets) {
   synchronize_all(sockets).await;
 }
 
-async fn quick_action(data: &mut Bytes) -> std::io::Result<()> {
-  let action_index = u8::read(data).ok_or(Error::new(ErrorKind::InvalidData, "options parsing error"))?;
-  let Some(action) = QuickAction::from_index(action_index) else {
-    return Ok(());
-  };
-
+async fn common_action(data: &mut Bytes) -> std::io::Result<()> {
+  let action = u8::read(data).ok_or(Error::new(ErrorKind::InvalidData, "options parsing error"))?;
   let index = u8::read(data).ok_or(Error::new(ErrorKind::InvalidData, "options parsing error"))?;
 
   match action {
-    QuickAction::SendMessage => {
+    0x00 => {
       let message = String::read(data).ok_or(Error::new(ErrorKind::InvalidData, "options parsing error"))?;
-      send_message_from_bot(&index, message).await;
+      take_bot!(&index, async |bot| bot.chat(message));
     }
-    QuickAction::Reset => {
-      reset_bot(&index).await;
+    0x01 => {
+      reset_bot(&index, false).await;
     }
-    QuickAction::Disconnect => {
-      disconnect_bot(&index).await;
+    0x02 => {
+      disconnect_bot(&index, false).await;
     }
+    _ => {}
   }
 
   Ok(())
@@ -222,7 +218,7 @@ async fn follow_radar_target(data: &mut Bytes) -> std::io::Result<()> {
 async fn quick_task(data: &mut Bytes) -> std::io::Result<()> {
   let id = u8::read(data).ok_or(Error::new(ErrorKind::InvalidData, "options parsing error"))?;
 
-  QUICK_TASKS.execute(id).await;
+  run_quick_task(id).await;
 
   Ok(())
 }
@@ -279,7 +275,7 @@ pub async fn execute_client_command(
     ClientCommand::RemoveCaptcha => remove_captcha(&data, sockets).await,
     ClientCommand::LaunchBots => launch_bots(&mut data, sockets).await,
     ClientCommand::StopBots => stop_bots(sockets).await,
-    ClientCommand::QuickAction => quick_action(&mut data).await?,
+    ClientCommand::QuickAction => common_action(&mut data).await?,
     ClientCommand::SetGroup => set_group(&mut data).await?,
     ClientCommand::ChangeModuleState => change_module_state(data).await,
     ClientCommand::FindRadarTarget => find_radar_target(&mut data, addr, writer, cipher).await?,

@@ -8,7 +8,6 @@ pub static STATE_SYSTEM: Lazy<StateSystem> = Lazy::new(|| StateSystem::new());
 
 const DEFAULT_STATES: [u8; 14] = [1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0];
 
-/// Состояние бота
 pub enum State {
   CanWalking,
   CanSprinting,
@@ -26,7 +25,6 @@ pub enum State {
   IsInteracting,
 }
 
-/// Имя состояния бота
 pub enum StateName {
   Walking,
   Sprinting,
@@ -38,7 +36,6 @@ pub enum StateName {
 }
 
 impl State {
-  /// Метод конвертации строки в состояние
   pub fn from_str<'a>(str: impl Into<&'a str>) -> Option<Self> {
     match str.into() {
       "can_walking" => Some(Self::CanWalking),
@@ -59,7 +56,6 @@ impl State {
     }
   }
 
-  /// Метод получени индекса состояния
   pub fn index(&self) -> usize {
     match self {
       Self::CanWalking => 0,
@@ -80,11 +76,10 @@ impl State {
   }
 }
 
-/// Структура состояний бота
+#[derive(Clone)]
 pub struct States([u8; 14]);
 
 impl States {
-  /// Метод создания состояний по умолчанию
   pub fn new() -> Self {
     Self(DEFAULT_STATES)
   }
@@ -104,13 +99,11 @@ impl States {
   }
 }
 
-/// Система управления состояниями ботов
 pub struct StateSystem {
   pub map: RwLock<HashMap<u8, States>>,
 }
 
 impl StateSystem {
-  /// Метод создания системы состояний
   pub fn new() -> Self {
     Self {
       map: RwLock::new(HashMap::new()),

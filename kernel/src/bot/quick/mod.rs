@@ -1,3 +1,4 @@
+mod enumeration;
 mod quick;
 
-pub use quick::QUICK_TASKS;
+pub use quick::run_quick_task;
