@@ -1,9 +1,10 @@
-use once_cell::sync::Lazy;
+use std::sync::LazyLock;
+
 use tokio::sync::RwLock;
 
 use crate::server::transfer::emit_log;
 
-pub static INDEX_SYSTEM: Lazy<IndexSystem> = Lazy::new(|| IndexSystem::new());
+pub static INDEX_SYSTEM: LazyLock<IndexSystem> = LazyLock::new(|| IndexSystem::new());
 
 /// Система индексации ботов
 pub struct IndexSystem {

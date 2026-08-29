@@ -1,10 +1,9 @@
 use std::io::{Error, ErrorKind};
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::Arc;
+use std::sync::{Arc, LazyLock};
 
 use aes_gcm::Aes256Gcm;
 use bytes::{Buf, BufMut, Bytes, BytesMut};
-use once_cell::sync::Lazy;
 use salarixi_extensions::encryption::{decrypt_data, encrypt_data};
 use salarixi_kernel::launch::runner::stop_bots_and_destroy_data;
 use salarixi_kernel::server::Server;
@@ -22,7 +21,7 @@ use crate::session::client_process;
 use crate::session::transform::transform_id;
 use crate::{failed, success};
 
-pub static SESSION: Lazy<Session> = Lazy::new(|| Session::new());
+pub static SESSION: LazyLock<Session> = LazyLock::new(|| Session::new());
 
 pub struct Session {
   local_server: RwLock<Option<Server>>,

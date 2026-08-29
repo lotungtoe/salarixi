@@ -1,10 +1,11 @@
+use std::sync::LazyLock;
+
 use hashbrown::HashMap;
-use once_cell::sync::Lazy;
 use tokio::sync::RwLock;
 
 use crate::server::transfer::emit_log;
 
-pub static STATE_SYSTEM: Lazy<StateSystem> = Lazy::new(|| StateSystem::new());
+pub static STATE_SYSTEM: LazyLock<StateSystem> = LazyLock::new(|| StateSystem::new());
 
 const DEFAULT_STATES: [u8; 14] = [1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0];
 

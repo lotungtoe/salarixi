@@ -1,4 +1,5 @@
-use once_cell::sync::Lazy;
+use std::sync::LazyLock;
+
 use tokio::sync::broadcast;
 
 use crate::server::transfer::{
@@ -6,7 +7,7 @@ use crate::server::transfer::{
   SessionChatPayload, UpdateBotProfilePayload,
 };
 
-pub static TRANSFER: Lazy<TransferManager> = Lazy::new(|| TransferManager::new());
+pub static TRANSFER: LazyLock<TransferManager> = LazyLock::new(|| TransferManager::new());
 
 #[derive(Clone)]
 pub enum TransferEvent {

@@ -1,5 +1,6 @@
 use std::cmp::Ordering;
 use std::f64::consts::PI;
+use std::sync::LazyLock;
 use std::time::{Duration, Instant};
 
 use azalea::entity::LookDirection;
@@ -10,7 +11,6 @@ use base64::prelude::BASE64_STANDARD;
 use base64::Engine;
 use hashbrown::HashMap;
 use image::{ImageBuffer, ImageFormat, Rgb};
-use once_cell::sync::Lazy;
 use regex::Regex;
 use serde_json::{json, Value};
 use tokio::sync::RwLock;
@@ -26,8 +26,8 @@ use crate::server::transfer::{emit_log, AntiMapCaptchaPayload, TransferEvent, TR
 use crate::webhook::send_webhook;
 use crate::{sleep, take_bot, take_profile};
 
-pub static WEB_CAPTCHA_BYPASS: Lazy<WebCaptchaBypass> = Lazy::new(|| WebCaptchaBypass::new());
-pub static MAP_CAPTCHA_BYPASS: Lazy<MapCaptchaBypass> = Lazy::new(|| MapCaptchaBypass::new());
+pub static WEB_CAPTCHA_BYPASS: LazyLock<WebCaptchaBypass> = LazyLock::new(|| WebCaptchaBypass::new());
+pub static MAP_CAPTCHA_BYPASS: LazyLock<MapCaptchaBypass> = LazyLock::new(|| MapCaptchaBypass::new());
 
 pub struct WebCaptchaBypass;
 

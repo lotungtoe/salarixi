@@ -1,3 +1,4 @@
+use std::sync::atomic::{AtomicU8, Ordering};
 use std::sync::Arc;
 
 use azalea::chat::ChatPacket;
@@ -27,7 +28,8 @@ use crate::tools::*;
 use crate::webhook::*;
 use crate::{sleep, take_profile};
 
-/// Обработчик для одного бота
+static TICK_COUNTER: AtomicU8 = AtomicU8::new(0);
+
 pub async fn single_handler(bot: Client, event: Event, _state: NoState) {
   match event {
     Event::Init => process_init(bot).await,
@@ -40,7 +42,6 @@ pub async fn single_handler(bot: Client, event: Event, _state: NoState) {
   }
 }
 
-/// Функция обработки инициализации
 async fn process_init(bot: Client) {
   let Some(opts) = current_options().await else {
     return;
@@ -67,7 +68,6 @@ async fn process_init(bot: Client) {
   });
 }
 
-/// Функция обработки спавна
 async fn process_spawn(bot: Client) {
   let username = bot.username();
   let Some(index) = INDEX_SYSTEM.index_by_username(&username).await else {
@@ -123,7 +123,6 @@ async fn process_spawn(bot: Client) {
   }
 }
 
-/// Функция обработки отключения
 async fn process_disconnect(bot: Client, text: Option<FormattedText>) {
   let username = bot.username();
   let Some(index) = INDEX_SYSTEM.index_by_username(&username).await else {
@@ -161,7 +160,6 @@ async fn process_disconnect(bot: Client, text: Option<FormattedText>) {
   }
 }
 
-/// Функция обработки сообщения из чата
 async fn process_chat_message(bot: Client, packet: ChatPacket) {
   let username = bot.username();
   let Some(index) = INDEX_SYSTEM.index_by_username(&username).await else {
@@ -212,8 +210,16 @@ async fn process_chat_message(bot: Client, packet: ChatPacket) {
   trigger_authorize(&index, packet.message().to_string()).await;
 }
 
-/// Функция обработки тика
 async fn process_tick(bot: Client) {
+  // Как по мне бессмысленно каждые 50мс обновлять профиль
+  // бота, всё равно в мониторинг это придёт не сразу же
+  if TICK_COUNTER.load(Ordering::SeqCst) <= 100 {
+    TICK_COUNTER.fetch_add(1, Ordering::SeqCst);
+    return;
+  }
+
+  TICK_COUNTER.store(0, Ordering::SeqCst);
+
   let username = bot.username();
   let Some(index) = INDEX_SYSTEM.index_by_username(&username).await else {
     return;
@@ -233,7 +239,6 @@ async fn process_tick(bot: Client) {
   });
 }
 
-/// Функция обработки пакета
 async fn process_packet(bot: Client, packet: Arc<ClientboundGamePacket>) {
   let username = bot.username();
   let Some(index) = INDEX_SYSTEM.index_by_username(&username).await else {

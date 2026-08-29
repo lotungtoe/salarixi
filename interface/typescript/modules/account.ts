@@ -2,7 +2,6 @@ import { open } from "@tauri-apps/plugin-dialog";
 
 import { date } from "../utils/date";
 import { logger } from "../utils/logger";
-import { readFile, writeFile } from "@tauri-apps/plugin-fs";
 import { join } from "@tauri-apps/api/path";
 import { messages } from "../utils/message";
 import { invoke } from "@tauri-apps/api/core";
@@ -143,13 +142,13 @@ class AccountModule {
 				};
 			}
 
-			const string = JSON.stringify(cleanAccounts, null, 2);
-			const encoder = new TextEncoder();
-			const encoded = encoder.encode(string);
+			const str = JSON.stringify(cleanAccounts, null, 2);
+			const enc = new TextEncoder();
+			const ecd = enc.encode(str);
 
-			const result = await invoke<CommandResult<null>>("save_file", {
+			const result = await invoke<CommandResult<null>>("s_save_file", {
 				path: "accounts.json",
-				content: encoded,
+				data: ecd,
 			});
 
 			if (result.error) {
@@ -209,8 +208,12 @@ class AccountModule {
 
 		this.accounts.clear();
 
-		const result = await invoke<CommandResult<null>>("remove_file", { path: "accounts.json" });
-		if (result.error) logger.log(`Ошибка удаления файла "accounts.json": ${result.error}`, "error");
+		const result = await invoke<CommandResult<null>>("s_remove_file", { path: "accounts.json" });
+
+		if (result.error) {
+			logger.log(`Ошибка удаления файла "accounts.json": ${result.error}`, "error");
+			return;
+		}
 
 		this.noSelected = true;
 		this.changeSelectorsState();
@@ -221,7 +224,7 @@ class AccountModule {
 	/** Метод загрузки сохранённых аккаунтов из локального хранилища */
 	private async loadSavedAccounts(): Promise<void> {
 		try {
-			const result = await invoke<CommandResult<number[]>>("read_file", { path: "accounts.json" });
+			const result = await invoke<CommandResult<number[]>>("s_read_file", { path: "accounts.json" });
 
 			if (result.error) {
 				logger.log(`Ошибка загрузки контента из файла "accounts.json": ${result.error}`, "error");
@@ -230,10 +233,10 @@ class AccountModule {
 
 			if (!result.data || result.data.length < 1) return;
 
-			const uint8arr = new Uint8Array(result.data);
-			const decoder = new TextDecoder("utf-8");
-			const decoded = decoder.decode(uint8arr);
-			const accounts = Object.entries<Account>(JSON.parse(decoded));
+			const u8a = new Uint8Array(result.data);
+			const dec = new TextDecoder("utf-8");
+			const dcd = dec.decode(u8a);
+			const accounts = Object.entries<Account>(JSON.parse(dcd));
 
 			if (accounts.length < 1) return;
 
@@ -331,10 +334,13 @@ class AccountModule {
 
 			this.clearAccounts();
 
-			const buffer = await readFile(path);
+			const buf = await invoke<number[]>("read_file", { path: path });
+			if (buf.length < 1) return;
 
-			const decoder = new TextDecoder();
-			const accounts = JSON.parse(decoder.decode(buffer));
+			const dec = new TextDecoder();
+			const u8a = Uint8Array.from(buf);
+			const dcd = dec.decode(u8a);
+			const accounts = JSON.parse(dcd);
 
 			for (const username in accounts) {
 				const account = accounts[username];
@@ -380,10 +386,19 @@ class AccountModule {
 			}
 
 			const path = await join(directory, "accounts.json");
-			let encoder = new TextEncoder();
-			let buffer = encoder.encode(JSON.stringify(accounts, null, 2));
+			const enc = new TextEncoder();
+			const str = JSON.stringify(accounts, null, 2);
+			const buf = enc.encode(str);
 
-			await writeFile(path, buffer);
+			const result = await invoke<CommandResult<null>>("write_file", {
+				path: path,
+				data: buf,
+			});
+
+			if (result.error) {
+				logger.log(`Ошибка экспорта аккаунтов: ${result.error}`, "error");
+				return;
+			}
 
 			messages.message("Экспорт аккаунтов", `Аккаунты успешно экспортированы`);
 		} catch (error) {

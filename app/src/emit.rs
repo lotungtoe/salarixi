@@ -1,8 +1,9 @@
-use once_cell::sync::Lazy;
+use std::sync::LazyLock;
+
 use tauri::{AppHandle, Emitter};
 use tokio::sync::broadcast;
 
-pub static EMIT_MANAGER: Lazy<EmitManager> = Lazy::new(|| EmitManager::new());
+pub static EMIT_MANAGER: LazyLock<EmitManager> = LazyLock::new(|| EmitManager::new());
 
 pub struct EmitManager {
   tx: broadcast::Sender<(&'static str, Vec<u8>)>,

@@ -1,8 +1,7 @@
-use std::sync::Arc;
+use std::sync::{Arc, LazyLock};
 
 use bytes::Bytes;
 use hashbrown::HashMap;
-use once_cell::sync::Lazy;
 use salarixi_extensions::buffer::BufferExt;
 use salarixi_extensions::index::IndexExt;
 use salarixi_macros::Index;
@@ -14,7 +13,7 @@ use crate::launch::process::current_options;
 use crate::server::transfer::{emit_log, emit_msg};
 use crate::webhook::send_webhook;
 
-pub static MODULES: Lazy<ModuleManager> = Lazy::new(|| ModuleManager::new());
+pub static MODULES: LazyLock<ModuleManager> = LazyLock::new(|| ModuleManager::new());
 
 #[derive(Debug, Index)]
 enum ModuleName {

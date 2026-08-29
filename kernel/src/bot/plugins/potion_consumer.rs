@@ -2,8 +2,7 @@ use azalea::entity::Physics;
 use azalea::inventory::components::PotionContents;
 use azalea::inventory::ItemStack;
 use azalea::protocol::packets::game::s_interact::InteractionHand;
-use azalea::registry::builtin::ItemKind;
-use azalea::registry::builtin::Potion as PotionKind;
+use azalea::registry::builtin::{ItemKind, Potion as PotionKind};
 
 use crate::bot::extensions::BotInteractExt;
 use crate::bot::extensions::{BotDefaultExt, BotInventoryExt, BotMovementExt, BotPhysicsExt};
@@ -11,9 +10,8 @@ use crate::bot::plugin_manager::PluginName;
 use crate::bot::systems::states::{getst, setmst, setst, State, StateName};
 use crate::bot::traits::SalarixiPlugin;
 use crate::bot::PLUGINS;
-use crate::sleep;
-use crate::take_bot;
 use crate::tools::*;
+use crate::{sleep, take_bot};
 
 /// Структура информации и зелье
 #[derive(Clone)]

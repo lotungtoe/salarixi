@@ -4,26 +4,22 @@ import { getStringSize } from "./size";
 import { date } from "./date";
 import { CLIENT_VERSION } from "../version";
 
-/** Тип времени */
 export enum TimeType {
 	Day,
 	Hours,
 }
 
-/** Структура данных результата функции `getCacheOrNew` */
 interface CacheOrNewResult<T> {
 	data: T | null;
 	size: string;
 }
 
-/** Структура данных результата функции загрузки кэша */
 export interface LcfResult {
 	data: any;
 	expired: boolean;
 	incompatible: boolean;
 }
 
-/** Структура данных результата функции загрузки актуальной информации */
 export interface LnfResult {
 	data: any;
 	error: string | null;

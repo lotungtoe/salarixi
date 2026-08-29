@@ -1,13 +1,13 @@
+use std::sync::LazyLock;
+
 use hashbrown::HashMap;
-use once_cell::sync::Lazy;
 use tokio::sync::RwLock;
 use tokio::task::JoinHandle;
 
 use crate::server::transfer::emit_log;
 
-pub static TASK_SYSTEM: Lazy<TaskSystem> = Lazy::new(|| TaskSystem::new());
+pub static TASK_SYSTEM: LazyLock<TaskSystem> = LazyLock::new(|| TaskSystem::new());
 
-/// Название задачи бота
 #[derive(Clone, PartialEq, Eq, Hash)]
 pub enum TaskName {
   Spamming,
@@ -27,7 +27,6 @@ pub enum TaskName {
   Farmer,
 }
 
-/// Структура задач бота
 pub struct Tasks {
   pub root: HashMap<TaskName, JoinHandle<()>>,
   pub extra: HashMap<TaskName, Vec<JoinHandle<()>>>,

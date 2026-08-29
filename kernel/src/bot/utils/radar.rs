@@ -1,15 +1,15 @@
 use std::fs::OpenOptions;
 use std::io::Write;
+use std::sync::LazyLock;
 
 use azalea::player::GameProfileComponent;
-use chrono::prelude::*;
-use once_cell::sync::Lazy;
+use chrono::prelude::Local;
 
 use crate::bot::extensions::{go_to, BotDefaultExt};
 use crate::bot::systems::profile::PROFILE_SYSTEM;
 use crate::take_bot;
 
-pub static RADAR: Lazy<Radar> = Lazy::new(|| Radar::new());
+pub static RADAR: LazyLock<Radar> = LazyLock::new(|| Radar::new());
 
 pub struct RadarInfo {
   pub uuid: String,

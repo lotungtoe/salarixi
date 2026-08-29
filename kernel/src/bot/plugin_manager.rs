@@ -1,5 +1,6 @@
+use std::sync::LazyLock;
+
 use hashbrown::HashMap;
-use once_cell::sync::Lazy;
 use tokio::sync::RwLock;
 use tokio::task::JoinHandle;
 
@@ -9,9 +10,8 @@ use crate::bot::traits::SalarixiPlugin;
 use crate::launch::options::PluginOptions;
 use crate::server::transfer::emit_log;
 
-pub static PLUGINS: Lazy<PluginManager> = Lazy::new(|| PluginManager::new());
+pub static PLUGINS: LazyLock<PluginManager> = LazyLock::new(|| PluginManager::new());
 
-/// Имя плагина
 #[derive(Eq, Hash, PartialEq)]
 pub enum PluginName {
   InstantArmorEquip,
@@ -24,9 +24,6 @@ pub enum PluginName {
   PearlLeave,
 }
 
-/// Менеджер плагинов.
-/// Изначально он хранит в себе объекты всех существующих плагинов и список их задач.
-/// Данный менеджер выполняет роль загрузчика плагинов для бота.
 pub struct PluginManager {
   tasks: RwLock<HashMap<u8, HashMap<PluginName, Option<JoinHandle<()>>>>>,
   plugins: PluginList,
@@ -44,7 +41,6 @@ struct PluginList {
 }
 
 impl PluginManager {
-  /// Метод создания менеджера плагинов
   pub fn new() -> Self {
     Self {
       tasks: RwLock::new(HashMap::new()),
@@ -61,7 +57,6 @@ impl PluginManager {
     }
   }
 
-  /// Метод активации плагинов для указанного бота
   pub async fn activate_for(&'static self, index: u8, plugins: PluginOptions) {
     self.tasks.write().await.insert(index, HashMap::new());
 
@@ -98,7 +93,6 @@ impl PluginManager {
     }
   }
 
-  /// Метод добавления задачи плагина указанному боту
   pub fn push_task(&self, index: &u8, plugin_name: PluginName, task: JoinHandle<()>) {
     if let Ok(mut guard) = self.tasks.try_write() {
       if let Some(tasks) = guard.get_mut(index) {
@@ -113,7 +107,6 @@ impl PluginManager {
     }
   }
 
-  /// Метод уничтожения всех задач плагинов указанного бота
   pub async fn kill_all_tasks_for(&self, index: &u8) {
     let mut map = self.tasks.write().await;
 
@@ -126,7 +119,6 @@ impl PluginManager {
     }
   }
 
-  /// Метод очистки всех задач
   pub async fn clear(&self) {
     for index in PROFILE_SYSTEM.get_all().await.keys() {
       self.kill_all_tasks_for(index).await;

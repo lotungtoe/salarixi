@@ -129,7 +129,6 @@ const LEGIT_PASSWORDS: &[&str] = &[
   "possible",
 ];
 
-/// Функция генерации юзернейма или пароля
 pub fn generate_username_or_password(item: &str, ty: &str, template: &str) -> Option<String> {
   match ty {
     "legit" => {
@@ -201,7 +200,6 @@ pub fn generate_username_or_password(item: &str, ty: &str, template: &str) -> Op
   }
 }
 
-/// Функция генерации электронной почты
 pub fn generate_email(ty: &EmailType) -> Option<String> {
   match ty {
     EmailType::Random => {
@@ -234,7 +232,6 @@ pub fn generate_email(ty: &EmailType) -> Option<String> {
   }
 }
 
-/// Функция генерации уникального юзернейма
 pub async fn generate_unique_username(ty: &NicknameType, template: &str) -> Option<String> {
   let usernames = INDEX_SYSTEM.get_all_usernames().await;
 

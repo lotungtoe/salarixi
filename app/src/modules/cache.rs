@@ -1,4 +1,5 @@
 use salarixi_kernel::version::KERNEL_VERSION_STR;
+use std::env::home_dir;
 use std::fs;
 use std::path::PathBuf;
 
@@ -7,7 +8,7 @@ use crate::{failed, success};
 
 /// Вспомогательная функция получения директории кэша
 fn cache_dir() -> Option<PathBuf> {
-  let home_dir = dirs::home_dir()?;
+  let home_dir = home_dir()?;
   let cache_dir = home_dir.join(".salarixi").join("cache");
   if !cache_dir.exists() {
     fs::create_dir_all(&cache_dir).ok()?;

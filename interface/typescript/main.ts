@@ -1,7 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { Chart, registerables } from "chart.js";
 
 import { plugins } from "./common/structs";
 import { logger } from "./utils/logger";
@@ -33,12 +32,6 @@ import { sessionModule } from "./modules/session";
 import { indexSystem } from "./systems/index";
 
 import { CLIENT_VERSION } from "./version";
-
-Chart.register(...registerables);
-
-Chart.defaults.font.family = "'Inter', sans-serif";
-Chart.defaults.font.size = 13;
-Chart.defaults.font.weight = "normal";
 
 export let processActivity: boolean = false;
 export let quickTasksAllowed: boolean = true;

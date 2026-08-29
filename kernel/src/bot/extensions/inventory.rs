@@ -16,7 +16,6 @@ use crate::bot::systems::states::{getst, setmst, setst, State, StateName};
 use crate::sleep;
 use crate::tools::randnum;
 
-/// Структура метаданных предмета
 pub struct ItemMeta {
   pub kind: String,
   pub count: i32,
@@ -73,7 +72,6 @@ pub trait BotInventoryExt {
   ) -> impl std::future::Future<Output = ()> + Send + Sync;
 }
 
-/// Режим клика в инвентаре
 pub enum ClickMode {
   Left,
   Right,

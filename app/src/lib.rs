@@ -13,14 +13,13 @@ use modules::discord_rpc::set_discord_rpc;
 use modules::ping::get_server_info;
 use modules::proxy::{check_proxies, collect_proxies};
 use modules::scanner::{start_network_scanning, stop_network_scanning};
-use modules::storage::{open_directory, read_file, remove_file, save_file};
+use modules::storage::{s_open_directory, s_read_file, s_remove_file, s_save_file};
 
 use crate::emit::emit_event_loop;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
   tauri::Builder::default()
-    .plugin(tauri_plugin_fs::init())
     .plugin(tauri_plugin_dialog::init())
     .setup(|app| {
       let handle = app.handle().clone();
@@ -44,7 +43,8 @@ pub fn run() {
       open_url,
       download_json,
       download_text,
-      read_text_file,
+      read_file,
+      write_file,
       set_discord_rpc,
       collect_proxies,
       check_proxies,
@@ -55,10 +55,10 @@ pub fn run() {
       load_configs,
       export_config,
       archive_config,
-      read_file,
-      save_file,
-      remove_file,
-      open_directory,
+      s_read_file,
+      s_save_file,
+      s_remove_file,
+      s_open_directory,
       start_network_scanning,
       stop_network_scanning,
     ])

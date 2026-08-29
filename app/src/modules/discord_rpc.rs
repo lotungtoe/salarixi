@@ -1,11 +1,12 @@
-use once_cell::sync::Lazy;
+use std::sync::LazyLock;
+
 use salarixi_kernel::version::KERNEL_VERSION_STR;
 use tokio::sync::RwLock;
 
 use crate::result::CommandResult;
 use crate::{failed, success};
 
-static DISCORD_RPC: Lazy<DiscordRpc> = Lazy::new(|| DiscordRpc::new());
+static DISCORD_RPC: LazyLock<DiscordRpc> = LazyLock::new(|| DiscordRpc::new());
 
 pub struct DiscordRpc {
   client: RwLock<Option<discord_presence::Client>>,

@@ -1,5 +1,6 @@
 use std::str::FromStr;
 use std::sync::atomic::{AtomicBool, AtomicU8, Ordering};
+use std::sync::LazyLock;
 
 use azalea::bot::BotClientExt;
 use azalea::prelude::PathfinderClientExt;
@@ -7,7 +8,6 @@ use azalea::protocol::packets::game::s_interact::InteractionHand;
 use azalea::registry::builtin::BlockKind;
 use azalea::registry::Registry;
 use azalea::{BlockPos, SprintDirection, Vec3, WalkDirection};
-use once_cell::sync::Lazy;
 use rhai::{Dynamic, Engine, EvalAltResult, Map};
 
 use crate::bot::common::convert_hotbar_slot_to_inventory_slot;
@@ -23,10 +23,10 @@ use crate::launch::process::{current_options, process_is_active};
 use crate::server::transfer::{emit_log, emit_msg};
 use crate::webhook::*;
 
-pub static SCRIPT_EXECUTOR: Lazy<ScriptExecutor> = Lazy::new(|| ScriptExecutor::new());
+pub static SCRIPT_EXECUTOR: LazyLock<ScriptExecutor> = LazyLock::new(|| ScriptExecutor::new());
 
-static PARALLEL_EXECUTORS_COUNT: Lazy<AtomicU8> = Lazy::new(|| AtomicU8::new(0));
-static EXECUTOR_GLOBAL_STATE: Lazy<AtomicBool> = Lazy::new(|| AtomicBool::new(false));
+static PARALLEL_EXECUTORS_COUNT: LazyLock<AtomicU8> = LazyLock::new(|| AtomicU8::new(0));
+static EXECUTOR_GLOBAL_STATE: LazyLock<AtomicBool> = LazyLock::new(|| AtomicBool::new(false));
 
 /// Функция генерации кода
 fn generate_code<'a>(su: &'a str, mu: &'a str) -> i16 {

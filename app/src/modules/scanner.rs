@@ -1,10 +1,9 @@
 use std::net::Ipv4Addr;
 use std::sync::atomic::{AtomicBool, AtomicU16, Ordering};
-use std::sync::Arc;
+use std::sync::{Arc, LazyLock};
 use std::time::Duration;
 
 use bytes::BytesMut;
-use once_cell::sync::Lazy;
 use salarixi_extensions::buffer::BufferExt;
 use tokio::sync::RwLock;
 use tokio::task::JoinHandle;
@@ -13,8 +12,8 @@ use crate::emit::EMIT_MANAGER;
 use crate::result::CommandResult;
 use crate::{failed, success};
 
-static SCANNER_ROOT_TASK: Lazy<RwLock<Option<JoinHandle<()>>>> = Lazy::new(|| RwLock::new(None));
-static SCANNER_EXTRA_TASKS: Lazy<RwLock<Vec<JoinHandle<()>>>> = Lazy::new(|| RwLock::new(Vec::new()));
+static SCANNER_ROOT_TASK: LazyLock<RwLock<Option<JoinHandle<()>>>> = LazyLock::new(|| RwLock::new(None));
+static SCANNER_EXTRA_TASKS: LazyLock<RwLock<Vec<JoinHandle<()>>>> = LazyLock::new(|| RwLock::new(Vec::new()));
 
 /// Функция парсинга диапазона IP-адресов
 fn parse_ip_range(range: &str) -> CommandResult<Vec<String>> {

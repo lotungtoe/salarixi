@@ -3,8 +3,8 @@ use crate::bot::systems::profile::PROFILE_SYSTEM;
 use crate::launch::options::AuthMode;
 use crate::launch::process::current_options;
 use crate::server::transfer::emit_log;
-use crate::{sleep, take_bot};
-use crate::{take_profile, tools::*};
+use crate::tools::*;
+use crate::{sleep, take_bot, take_profile};
 
 const DEFAULT_AUTH_TEMPLATE: &str = "$cmd $pass";
 

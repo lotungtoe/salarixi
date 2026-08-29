@@ -1,3 +1,4 @@
+use std::env::home_dir;
 use std::fs;
 use std::path::PathBuf;
 
@@ -10,7 +11,7 @@ use crate::{failed, success};
 /// Команда инициализации директории пользовательских конфигов
 #[tauri::command]
 pub fn initialize_configs_dir() -> CommandResult<()> {
-  let Some(home_dir) = dirs::home_dir() else {
+  let Some(home_dir) = home_dir() else {
     failed!("failed to get home directory");
   };
 
@@ -34,7 +35,7 @@ pub fn initialize_configs_dir() -> CommandResult<()> {
 /// Команда загрузки всех пользовательских конфигов
 #[tauri::command]
 pub fn load_configs() -> CommandResult<HashMap<String, Vec<u8>>> {
-  let Some(home_dir) = dirs::home_dir() else {
+  let Some(home_dir) = home_dir() else {
     failed!("failed to get home directory");
   };
 
@@ -138,7 +139,7 @@ pub fn export_config(directory: String, content: Vec<u8>) -> CommandResult<Strin
 /// Команда архивации конфига
 #[tauri::command]
 pub fn archive_config(content: Vec<u8>) -> CommandResult<String> {
-  let Some(home_dir) = dirs::home_dir() else {
+  let Some(home_dir) = home_dir() else {
     failed!("failed to get home directory");
   };
 

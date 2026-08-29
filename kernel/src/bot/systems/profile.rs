@@ -1,7 +1,9 @@
+use std::sync::LazyLock;
+
 use bytes::{BufMut, BytesMut};
 use hashbrown::HashMap;
-use md5::{digest::Update, Digest, Md5};
-use once_cell::sync::Lazy;
+use md5::digest::Update;
+use md5::{Digest, Md5};
 use salarixi_extensions::buffer::BufferExt;
 use tokio::sync::RwLock;
 use tokio::task::JoinHandle;
@@ -9,7 +11,7 @@ use tokio::task::JoinHandle;
 use crate::server::transfer::{emit_log, TransferEvent, UpdateBotProfilePayload, TRANSFER};
 use crate::sleep;
 
-pub static PROFILE_SYSTEM: Lazy<ProfileSystem> = Lazy::new(|| ProfileSystem::new());
+pub static PROFILE_SYSTEM: LazyLock<ProfileSystem> = LazyLock::new(|| ProfileSystem::new());
 
 #[derive(Clone)]
 pub struct Profile {

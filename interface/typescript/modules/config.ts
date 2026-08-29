@@ -1,5 +1,3 @@
-import { readFile } from "@tauri-apps/plugin-fs";
-
 import { logger } from "../utils/logger";
 import { messages } from "../utils/message";
 import { open } from "@tauri-apps/plugin-dialog";
@@ -79,11 +77,11 @@ class ConfigModule {
 			const result = await invoke<CommandResult<number[]>>("read_file", { path: `configs/${selectedConfigFilename}` });
 
 			if (result.data && result.data.length > 0) {
-				const decoder = new TextDecoder("utf-8");
-				const uint8arr = new Uint8Array(result.data);
-				const decoded = decoder.decode(uint8arr);
+				const dec = new TextDecoder("utf-8");
+				const u8a = new Uint8Array(result.data);
+				const dcd = dec.decode(u8a);
 
-				if (JSON.stringify(config) !== JSON.stringify(decoded)) {
+				if (JSON.stringify(config) !== JSON.stringify(dcd)) {
 					localStorage.setItem("selected-config-changed", "true");
 				} else {
 					// Эта ветка по факту сильно ни на что не влияет, но по логике
@@ -98,13 +96,13 @@ class ConfigModule {
 			}
 		}
 
-		const encoder = new TextEncoder();
-		const encoded = encoder.encode(config);
-		const content = Array.from(encoded);
+		const enc = new TextEncoder();
+		const ecd = enc.encode(config);
+		const arr = Array.from(ecd);
 
-		const result = await invoke<CommandResult<null>>("save_file", {
+		const result = await invoke<CommandResult<null>>("s_save_file", {
 			path: "current_config.json",
-			content: content,
+			data: arr,
 		});
 
 		if (result.error) logger.log(`Ошибка сохранения конфига: ${result.error}`, "error");
@@ -164,13 +162,13 @@ class ConfigModule {
 				const data = result.data[filename];
 				if (!data) continue;
 
-				const uint8arr = new Uint8Array(data);
-				const decoded = decoder.decode(uint8arr);
-				const config = JSON.parse(decoded);
-				if (!config) continue;
+				const u8a = new Uint8Array(data);
+				const dcd = decoder.decode(u8a);
+				const cfg = JSON.parse(dcd);
+				if (!cfg) continue;
 
 				if (selectedConfigFilename === filename && !selectedConfigChanged) {
-					currentConfig = config;
+					currentConfig = cfg;
 					currentConfigFilename = filename;
 				}
 
@@ -202,7 +200,7 @@ class ConfigModule {
 	/** Метод загрузки текущего конфига */
 	private async loadCurrentConfig(): Promise<void> {
 		try {
-			const result = await invoke<CommandResult<number[]>>("read_file", { path: "current_config.json" });
+			const result = await invoke<CommandResult<number[]>>("s_read_file", { path: "current_config.json" });
 
 			if (result.error) {
 				logger.log(`Ошибка загрузки текущего конфига: ${result.error}`, "error");
@@ -213,13 +211,13 @@ class ConfigModule {
 
 			logger.log("Загрузка текущего конфига...", "system");
 
-			const decoder = new TextDecoder("utf-8");
-			const uint8arr = new Uint8Array(result.data);
-			const decoded = decoder.decode(uint8arr);
-			const parsed = JSON.parse(decoded);
+			const dec = new TextDecoder("utf-8");
+			const u8a = new Uint8Array(result.data);
+			const dcd = dec.decode(u8a);
+			const cfg = JSON.parse(dcd);
 
-			if (parsed) {
-				for (const [id, value] of Object.entries<ConfigValue>(parsed)) this.setValue(id, value);
+			if (cfg) {
+				for (const [id, value] of Object.entries<ConfigValue>(cfg)) this.setValue(id, value);
 				triggerRegistry.triggerAll();
 				logger.log("Текущий конфиг успешно загружен и применён", "system");
 			} else {
@@ -246,7 +244,7 @@ class ConfigModule {
 		configCard.addEventListener("click", async () => {
 			if (localStorage.getItem("selected-config-filename") === filename) return;
 
-			const result = await invoke<CommandResult<number[]>>("read_file", { path: `configs/${filename}` });
+			const result = await invoke<CommandResult<number[]>>("s_read_file", { path: `configs/${filename}` });
 
 			if (result.error) {
 				logger.log(`Ошибка применения конфига "${filename}": ${result.error}`, "error");
@@ -302,12 +300,12 @@ class ConfigModule {
 				const filename = path.split(/[\\/]/).pop();
 				if (!filename) continue;
 
-				const buf = await readFile(path);
-				if (!buf) return;
+				const buf = await invoke<number[]>("read_file", { path: path });
+				if (buf.length < 1) return;
 
-				const result = await invoke<CommandResult<null>>("save_file", {
+				const result = await invoke<CommandResult<null>>("s_save_file", {
 					path: `configs/${filename}`,
-					content: buf,
+					data: Uint8Array.from(buf),
 				});
 
 				if (result.error) {
@@ -335,14 +333,14 @@ class ConfigModule {
 
 			if (!directory) return;
 
-			const config = this.collectCurrentConfig(true);
-			const encoder = new TextEncoder();
-			const encoded = encoder.encode(config);
-			const content = Array.from(encoded);
+			const cfg = this.collectCurrentConfig(true);
+			const enc = new TextEncoder();
+			const ecd = enc.encode(cfg);
+			const arr = Array.from(ecd);
 
 			const result = await invoke<CommandResult<string>>("export_config", {
 				directory: directory,
-				content: content,
+				content: arr,
 			});
 
 			if (result.error) {
@@ -363,12 +361,12 @@ class ConfigModule {
 	/** Метод архивации текущего пользовательского конфига */
 	public async archiveCurrentConfig(): Promise<void> {
 		try {
-			const config = this.collectCurrentConfig(false);
-			const encoder = new TextEncoder();
-			const encoded = encoder.encode(config);
-			const content = Array.from(encoded);
+			const cfg = this.collectCurrentConfig(false);
+			const enc = new TextEncoder();
+			const ecd = enc.encode(cfg);
+			const arr = Array.from(ecd);
 
-			const result = await invoke<CommandResult<string>>("archive_config", { content: content });
+			const result = await invoke<CommandResult<string>>("archive_config", { content: arr });
 
 			if (result.error) {
 				logger.log(`Ошибка архивации текущего конфига: ${result.error}`, "error");

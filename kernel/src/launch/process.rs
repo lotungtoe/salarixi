@@ -1,6 +1,6 @@
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::LazyLock;
 
-use once_cell::sync::Lazy;
 use tokio::sync::RwLock;
 
 use crate::bot::systems::index::INDEX_SYSTEM;
@@ -12,7 +12,7 @@ use super::options::LaunchOptions;
 pub static PROCESS_ACTIVITY: AtomicBool = AtomicBool::new(false);
 pub static BOTS_WERE_FULLY_CONNECTED: AtomicBool = AtomicBool::new(false);
 pub static STOPPING: AtomicBool = AtomicBool::new(false);
-pub static CURRENT_OPTIONS: Lazy<RwLock<Option<LaunchOptions>>> = Lazy::new(|| RwLock::new(None));
+pub static CURRENT_OPTIONS: LazyLock<RwLock<Option<LaunchOptions>>> = LazyLock::new(|| RwLock::new(None));
 
 /// Функция установки опций
 pub async fn set_options(options: LaunchOptions) {

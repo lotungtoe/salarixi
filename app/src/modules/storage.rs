@@ -1,3 +1,4 @@
+use std::env::home_dir;
 use std::fs;
 use std::process::Command;
 
@@ -6,8 +7,8 @@ use crate::{failed, success};
 
 /// Команда удаления указанного файла из хранилища
 #[tauri::command]
-pub fn remove_file(path: String) -> CommandResult<()> {
-  let Some(home_dir) = dirs::home_dir() else {
+pub fn s_remove_file(path: String) -> CommandResult<()> {
+  let Some(home_dir) = home_dir() else {
     failed!("failed to get home directory");
   };
 
@@ -33,8 +34,8 @@ pub fn remove_file(path: String) -> CommandResult<()> {
 
 /// Команда чтения указанного файла из хранилища
 #[tauri::command]
-pub fn read_file(path: String) -> CommandResult<Vec<u8>> {
-  let Some(home_dir) = dirs::home_dir() else {
+pub fn s_read_file(path: String) -> CommandResult<Vec<u8>> {
+  let Some(home_dir) = home_dir() else {
     failed!("failed to get home directory");
   };
 
@@ -50,18 +51,18 @@ pub fn read_file(path: String) -> CommandResult<Vec<u8>> {
     success!(Vec::new());
   }
 
-  let content = match fs::read(target_path) {
+  let data = match fs::read(target_path) {
     Ok(b) => b,
     Err(e) => failed!("file read error: {}", e),
   };
 
-  success!(content);
+  success!(data);
 }
 
 /// Команда сохранения указанного файла в хранилище
 #[tauri::command]
-pub fn save_file(path: String, content: Vec<u8>) -> CommandResult<()> {
-  let Some(home_dir) = dirs::home_dir() else {
+pub fn s_save_file(path: String, data: Vec<u8>) -> CommandResult<()> {
+  let Some(home_dir) = home_dir() else {
     failed!("failed to get home directory");
   };
 
@@ -73,7 +74,7 @@ pub fn save_file(path: String, content: Vec<u8>) -> CommandResult<()> {
   }
 
   let target_path = salarixi_dir.join(path);
-  match fs::write(target_path, &content) {
+  match fs::write(target_path, &data) {
     Ok(_) => {}
     Err(e) => failed!("file write error: {}", e),
   };
@@ -83,8 +84,8 @@ pub fn save_file(path: String, content: Vec<u8>) -> CommandResult<()> {
 
 /// Команда открытия указанной директории хранилища
 #[tauri::command]
-pub fn open_directory(dir: String) -> CommandResult<()> {
-  let Some(home_dir) = dirs::home_dir() else {
+pub fn s_open_directory(dir: String) -> CommandResult<()> {
+  let Some(home_dir) = home_dir() else {
     failed!("failed to get home directory");
   };
 

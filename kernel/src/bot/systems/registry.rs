@@ -1,16 +1,14 @@
-use std::sync::Arc;
+use std::sync::{Arc, LazyLock};
 
 use azalea::prelude::*;
 use azalea::swarm::Swarm;
 use dashmap::DashMap;
-use once_cell::sync::Lazy;
 use tokio::sync::RwLock;
 
 use crate::server::transfer::emit_log;
 
-pub static REGISTRY_SYSTEM: Lazy<RegistrySystem> = Lazy::new(|| RegistrySystem::new());
+pub static REGISTRY_SYSTEM: LazyLock<RegistrySystem> = LazyLock::new(|| RegistrySystem::new());
 
-/// Система реестра роя и ботов
 pub struct RegistrySystem {
   pub swarm: Arc<RwLock<Option<Swarm>>>,
   pub bots: DashMap<u8, Arc<Client>>,

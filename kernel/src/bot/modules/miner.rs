@@ -1,8 +1,7 @@
 use azalea::auto_tool::best_tool_in_hotbar_for_block;
 use azalea::core::position::BlockPos;
 use azalea::prelude::*;
-use azalea::Vec3;
-use azalea::WalkDirection;
+use azalea::{Vec3, WalkDirection};
 use salarixi_extensions::buffer::BufferExt;
 use salarixi_extensions::index::IndexExt;
 use salarixi_macros::Index;
@@ -13,9 +12,8 @@ use crate::bot::systems::states::{setmst, StateName};
 use crate::bot::systems::tasks::{gettskact, killtsk, pushrtsk, TaskName};
 use crate::bot::traits::ModuleOptions;
 use crate::bot::traits::SalarixiModule;
-use crate::sleep;
-use crate::take_bot;
 use crate::tools::*;
+use crate::{sleep, take_bot};
 
 #[derive(Index)]
 enum Mode {

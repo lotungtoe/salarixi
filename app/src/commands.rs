@@ -6,6 +6,7 @@ use systemstat::Platform;
 
 use crate::result::CommandResult;
 use crate::session::SESSION;
+use crate::{failed, success};
 
 #[tauri::command]
 pub async fn setup_default_session() -> CommandResult<(String, String)> {
@@ -84,10 +85,18 @@ pub async fn download_text(url: String) -> Option<String> {
 }
 
 #[tauri::command]
-pub fn read_text_file(path: String) -> Vec<u8> {
+pub fn read_file(path: String) -> Vec<u8> {
   match fs::read(&path) {
     Ok(b) => b,
     Err(_) => Vec::new(),
+  }
+}
+
+#[tauri::command]
+pub fn write_file(path: String, data: Vec<u8>) -> CommandResult<()> {
+  match fs::write(&path, data) {
+    Ok(_) => success!(()),
+    Err(e) => failed!("{}", e),
   }
 }
 
