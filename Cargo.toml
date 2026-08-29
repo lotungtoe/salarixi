@@ -14,9 +14,9 @@ authors = ["nullclyze"]
 edition = "2021"
 
 [profile.release]
-opt-level = 3
+opt-level = "z"
 strip = true
-lto = "thin"
+lto = "fat"
 
 [workspace.dependencies]
 salarixi-kernel = { path = "kernel" }
