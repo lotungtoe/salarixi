@@ -559,6 +559,9 @@ async function listenSystemEvents(): Promise<void> {
 					case 0x03:
 						logger.log("Ошибка запуска ботов: number of launching bots must be in range 1-255", "error");
 						break;
+					case 0x04:
+						logger.log("Ошибка запуска ботов: incorrect server address", "error");
+						break;
 				}
 			}
 		} catch (error) {

@@ -1,4 +1,5 @@
 use std::net::SocketAddr;
+use std::str::FromStr;
 use std::sync::atomic::Ordering;
 use std::thread;
 use std::time::Duration;
@@ -6,7 +7,9 @@ use std::time::Duration;
 use azalea::app::PluginGroup;
 use azalea::auto_reconnect::AutoReconnectDelay;
 use azalea::prelude::*;
+use azalea::protocol::address::ServerAddr;
 use azalea::protocol::connect::Proxy;
+use azalea::protocol::resolve::resolve_address;
 use azalea::swarm::*;
 use azalea::JoinOpts;
 use socks5_impl::protocol::UserKey;
@@ -123,10 +126,48 @@ async fn processs_proxy(index: &u8, proxy: &str, join_opts: JoinOpts) -> JoinOpt
   join_opts
 }
 
+/// Функция парсинга адреса
+async fn parse_addr(source: &str) -> Option<SocketAddr> {
+  let splitted_addr = source.split(':').collect::<Vec<&str>>();
+  let parts = splitted_addr.len();
+  let host = splitted_addr[0];
+
+  match host {
+    "127.0.0.1" => {
+      if parts == 2 {
+        SocketAddr::from_str(source).ok()
+      } else {
+        let addr = format!("{}:25565", host);
+        SocketAddr::from_str(&addr).ok()
+      }
+    }
+    "localhost" => {
+      if parts == 2 {
+        let addr = format!("127.0.0.1:{}", splitted_addr[1]);
+        SocketAddr::from_str(&addr).ok()
+      } else {
+        SocketAddr::from_str("127.0.0.1:25565").ok()
+      }
+    }
+    _ => {
+      let server_addr = ServerAddr {
+        host: host.to_string(),
+        port: if parts == 2 {
+          splitted_addr[1].parse().unwrap_or(25565)
+        } else {
+          25565
+        },
+      };
+
+      resolve_address(&server_addr).await.ok()
+    }
+  }
+}
+
 /// Функция запуска ботов на сервер
 pub async fn launch_bots_on_server(options: LaunchOptions) -> u8 {
   emit_msg("Система", "Запуск ботов...");
-  emit_log(format!("Запуск ботов на сервер {}...", options.basic.address), "info");
+  emit_log(format!("Запуск ботов на {}...", options.basic.address), "info");
 
   // При ошибке логи и сообщения выше придут на фронт позже, чем
   // само сообщение об ошибке, пока пусть будет такая задержка
@@ -147,6 +188,10 @@ pub async fn launch_bots_on_server(options: LaunchOptions) -> u8 {
   if total_bots < 1 {
     return 0x03;
   }
+
+  let Some(addr) = parse_addr(&options.basic.address).await else {
+    return 0x04;
+  };
 
   emit_log("Подготовка к запуску...", "system");
 
@@ -307,7 +352,8 @@ pub async fn launch_bots_on_server(options: LaunchOptions) -> u8 {
 
         emit_log("Подготовка окончена", "system");
 
-        let _ = swarm.start(options.basic.address).await;
+        let swarm_opts = JoinOpts::new().custom_socket_addr(addr);
+        let _ = swarm.start_with_opts(options.basic.address, swarm_opts).await;
       });
 
       local_set.await;
