@@ -175,8 +175,10 @@ class AccountModule {
 
 		if (count < 1) {
 			this.selectedAccountCounter.innerText = "";
+			this.noSelected = true;
 		} else {
 			this.selectedAccountCounter.innerText = `(${count})`;
+			this.noSelected = false;
 		}
 	}
 
@@ -247,7 +249,7 @@ class AccountModule {
 			logger.log(`Сохранённые аккаунты загружены (${accounts.length > 255 ? 255 : accounts.length} штук)`, "system");
 		} catch (err) {
 			logger.log(`Ошибка загрузки сохранённых аккаунтов: ${err}`, "error");
-			await invoke<CommandResult<null>>("remove_file", { path: "accounts.json" });
+			await invoke<CommandResult<null>>("s_remove_file", { path: "accounts.json" });
 		}
 	}
 
@@ -272,13 +274,13 @@ class AccountModule {
 				logger.log(`Создан новый аккаунт "${username}"`, "system");
 				break;
 			case 1:
-				logger.log(`Не удалось создать аккаунт "${username}": Accounts with empty usernames are prohibited`, "warning");
+				logger.log(`Не удалось создать аккаунт "${username}": accounts with empty usernames are prohibited`, "warning");
 				break;
 			case 2:
-				logger.log(`Не удалось создать аккаунт "${username}": Account with this username already exists`, "warning");
+				logger.log(`Не удалось создать аккаунт "${username}": account with this username already exists`, "warning");
 				break;
 			case 3:
-				logger.log(`Не удалось создать аккаунт "${username}": Number of generated accounts is out of limits (minimum 1, maximum 200)`, "warning");
+				logger.log(`Не удалось создать аккаунт "${username}": number of created accounts is outside the range of 1-255`, "warning");
 				break;
 		}
 
@@ -309,10 +311,9 @@ class AccountModule {
 			removedCount++;
 		}
 
-		this.noSelected = true;
-		this.changeSelectorsState();
 		this.updateAccountCounter();
 		this.updateSelectedAccountCounter();
+		this.changeSelectorsState();
 
 		messages.message("Аккаунты", `Удалено ${removedCount} аккаунтов`);
 		logger.log(`Удалено ${removedCount} аккаунтов`, "system");
@@ -415,7 +416,7 @@ class AccountModule {
 
 		if (count > 255 || count < 1) {
 			messages.message("Аккаунты", "Не удалось сгенерировать аккаунты");
-			logger.log(`Не удалось сгенерировать аккаунты: Number of generated accounts is out of limits (minimum 1, maximum 255)`, "warning");
+			logger.log(`Не удалось сгенерировать аккаунты: number of generated accounts is out of range 1-255`, "warning");
 			return;
 		}
 
@@ -563,6 +564,8 @@ class AccountModule {
 			editorWrapper.remove();
 			this.accounts.delete(username);
 			this.updateAccountCounter();
+			this.updateSelectedAccountCounter();
+			this.changeSelectorsState();
 		});
 
 		removeAccountBtn.innerHTML = `
