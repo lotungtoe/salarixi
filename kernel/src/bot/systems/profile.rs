@@ -38,7 +38,7 @@ impl Profile {
     self.registered.write(buf);
     self.logined.write(buf);
     self.captcha_caught.write(buf);
-    self.group.write(buf);
+    // self.group.write(buf);
   }
 }
 
@@ -93,7 +93,7 @@ impl Profile {
       registered: false,
       logined: false,
       captcha_caught: false,
-      group: "global".to_string(),
+      group: String::new(),
     }
   }
 }

@@ -265,7 +265,7 @@ async function updateModuleState(index: number, state: number): Promise<void> {
 		buf.writeU8(index);
 
 		const group = (document.getElementById("control-group") as HTMLInputElement).value.replace(" ", "");
-		buf.writeString(group !== "" ? group : "global");
+		buf.writeString(group);
 
 		const elements = document.querySelectorAll(`[module-index="${index}"]`);
 		let filteredElements: Map<number, HTMLSelectElement | HTMLInputElement> = new Map();

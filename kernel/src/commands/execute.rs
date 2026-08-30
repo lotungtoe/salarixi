@@ -151,13 +151,20 @@ async fn common_action(data: &mut Bytes) -> std::io::Result<()> {
   Ok(())
 }
 
-async fn set_group(data: &mut Bytes) -> std::io::Result<()> {
+async fn set_group(data: &mut Bytes, sockets: &Sockets) -> std::io::Result<()> {
   let index = u8::read(data).ok_or(Error::new(ErrorKind::InvalidData, "options parsing error"))?;
   let group = String::read(data).ok_or(Error::new(ErrorKind::InvalidData, "options parsing error"))?;
 
   take_profile!(&index, async |profile| {
-    profile.group = group;
+    profile.group = group.clone();
   });
+
+  let mut buf = BytesMut::new();
+  buf.put_u8(0x0E);
+  index.write(&mut buf);
+  group.write(&mut buf);
+
+  write_to_sockets(sockets, &buf).await;
 
   Ok(())
 }
@@ -276,7 +283,7 @@ pub async fn execute_client_command(
     ClientCommand::LaunchBots => launch_bots(&mut data, sockets).await,
     ClientCommand::StopBots => stop_bots(sockets).await,
     ClientCommand::QuickAction => common_action(&mut data).await?,
-    ClientCommand::SetGroup => set_group(&mut data).await?,
+    ClientCommand::SetGroup => set_group(&mut data, sockets).await?,
     ClientCommand::ChangeModuleState => change_module_state(data).await,
     ClientCommand::FindRadarTarget => find_radar_target(&mut data, addr, writer, cipher).await?,
     ClientCommand::SaveRadarData => save_radar_data(&mut data).await?,

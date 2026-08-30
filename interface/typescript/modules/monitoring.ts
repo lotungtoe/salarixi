@@ -21,7 +21,7 @@ interface BotProfile {
 	registered: boolean;
 	logined: boolean;
 	captchaCaught: boolean;
-	group: string;
+	// group: string;
 }
 
 enum BotStatus {
@@ -119,12 +119,26 @@ class MonitoringModule {
 					registered: buf.readBoolean(),
 					logined: buf.readBoolean(),
 					captchaCaught: buf.readBoolean(),
-					group: buf.readString(),
 				};
 
 				this.indexTable.includes(index) ? this.updateBotCard(index, profile) : this.createBotCard(index, username, profile);
 			} catch (error) {
 				logger.log(`Ошибка обработки события "monitoring:update-profile": ${error}`, "error");
+			}
+		});
+
+		await listen<number[]>("monitoring:set-group", (e) => {
+			try {
+				const buf = new Buffer(new Uint8Array(e.payload));
+				const index = buf.readU8();
+				const group = buf.readString();
+
+				const groupInput = document.getElementById(`bot-group-${index}`) as HTMLInputElement | undefined;
+				if (!groupInput) return;
+
+				groupInput.value = group;
+			} catch (error) {
+				logger.log(`Ошибка обработки события "monitoring:set-group": ${error}`, "error");
 			}
 		});
 	}
@@ -271,9 +285,6 @@ class MonitoringModule {
 		const health = document.getElementById(`monitoring-health-${index}`) as HTMLSpanElement | undefined;
 		if (!health) return;
 
-		const group = document.getElementById(`bot-group-${index}`) as HTMLInputElement | undefined;
-		if (!group) return;
-
 		if (health.innerText.split("/")[0].replace(" ", "") != profile.health.toString()) {
 			const card = document.getElementById(`profile-${index}`);
 			card?.classList.add("glow");
@@ -301,9 +312,6 @@ class MonitoringModule {
 		proxy.innerText = profile.proxy.ipAddress ?? "No proxy";
 		ping.innerText = profile.ping.toString();
 		health.innerText = profile.health.toString();
-
-		// Если группа по умолчанию её можно и не отображать, это ни на что не повлияет
-		group.value = profile.group == "global" ? "" : profile.group;
 	}
 
 	/** Метод инициализации карточки бота */
@@ -373,20 +381,22 @@ class MonitoringModule {
 			}
 		});
 
-		document.getElementById(`bot-group-${index}`)?.addEventListener("input", async () => {
+		const groupInput = document.getElementById(`bot-group-${index}`) as HTMLInputElement;
+		groupInput.addEventListener("input", async () => {
 			try {
-				const group = (document.getElementById(`bot-group-${index}`) as HTMLInputElement).value.replace(" ", "") || "global";
-
 				const buf = new Buffer();
 				buf.writeU8(0x06);
 				buf.writeU8(index);
-				buf.writeString(group);
+				buf.writeString(groupInput.value.replace(" ", ""));
 
 				const result = await invoke<CommandResult<null>>("send_command", {
 					data: buf.toUint8Array(),
 				});
 
-				if (result.error) logger.log(`Ошибка изменения группы бота ${username}: ${result.error}`, "error");
+				if (result.error) {
+					groupInput.value = "";
+					logger.log(`Ошибка изменения группы бота ${username}: ${result.error}`, "error");
+				}
 			} catch (error) {
 				logger.log(`Ошибка изменения группы бота ${username}: ${error}`, "error");
 			}
