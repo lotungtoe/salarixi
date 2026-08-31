@@ -12,7 +12,8 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "tauri": "tauri",
-    "fmt": "tsfmt -r"
+    "release-linux": "bash ./scripts/build_linux.sh",
+    "fmt": "bash ./scripts/fmt.sh"
   },
   "dependencies": {
     "@tauri-apps/api": "^2",

@@ -11,6 +11,9 @@ echo "[local] package-lock.json: $version"
 version="$(sed -n 11p Cargo.toml | cut -c 12-16)"
 echo "[local] Cargo.toml: $version"
 
+version="$(jq -r '.version' salarixi.control.json)"
+echo "[local] salarixi.control.json: $version"
+
 version="$(jq -r '.version' ./app/tauri.conf.json)"
 echo "[local] app/tauri.conf.json: $version"
 
