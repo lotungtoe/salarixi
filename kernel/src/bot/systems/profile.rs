@@ -174,7 +174,11 @@ impl ProfileSystem {
       task.abort();
     }
 
-    self.map.write().await.clear();
+    let mut guard = self.map.write().await;
+    guard.clear();
+    guard.shrink_to_fit();
+    drop(guard);
+
     emit_log("Профили ботов очищены", "system");
   }
 

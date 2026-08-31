@@ -85,7 +85,6 @@ impl Tasks {
   }
 }
 
-/// Система управления задачами
 pub struct TaskSystem {
   pub map: RwLock<HashMap<u8, Tasks>>,
 }
@@ -125,6 +124,8 @@ impl TaskSystem {
     let mut guard = self.map.write().await;
     guard.iter_mut().for_each(|(_, t)| t.kill_all_tasks());
     guard.clear();
+    guard.shrink_to_fit();
+    drop(guard);
 
     emit_log("Активные задачи ботов остановлены", "system");
   }

@@ -28,13 +28,6 @@ impl RegistrySystem {
     *guard = Some(swarm);
   }
 
-  /// Метод уничтожения роя
-  pub async fn destroy_swarm(&self) {
-    if let Some(swarm) = self.swarm.write().await.take() {
-      swarm.ecs_lock.lock().write_message(AppExit::Success);
-    }
-  }
-
   /// Метод регистрации бота
   pub fn register_bot(&self, index: u8, bot: Client) {
     self.bots.insert(index, Arc::new(bot));
@@ -60,7 +53,11 @@ impl RegistrySystem {
   /// Метод полной очистки реестра
   pub async fn clear(&self) {
     self.bots.clear();
-    *self.swarm.write().await = None;
+    self.bots.shrink_to_fit();
+
+    if let Some(swarm) = self.swarm.write().await.take() {
+      swarm.ecs_lock.lock().write_message(AppExit::Success);
+    }
 
     emit_log("Реестр ботов очищен", "system");
   }

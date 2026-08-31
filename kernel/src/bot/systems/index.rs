@@ -6,13 +6,11 @@ use crate::server::transfer::emit_log;
 
 pub static INDEX_SYSTEM: LazyLock<IndexSystem> = LazyLock::new(|| IndexSystem::new());
 
-/// Система индексации ботов
 pub struct IndexSystem {
   pub map: RwLock<Vec<String>>,
 }
 
 impl IndexSystem {
-  /// Метод создания менеджера состояний
   pub fn new() -> Self {
     Self {
       map: RwLock::new(Vec::with_capacity(255)),
@@ -64,7 +62,11 @@ impl IndexSystem {
 
   /// Метод очистки хранилища состояний
   pub async fn clear(&self) {
-    self.map.write().await.clear();
+    let mut guard = self.map.write().await;
+    guard.clear();
+    guard.shrink_to_fit();
+    drop(guard);
+
     emit_log("Реестр индексов ботов очищен", "system");
   }
 }

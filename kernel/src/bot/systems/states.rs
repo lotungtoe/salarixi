@@ -118,7 +118,11 @@ impl StateSystem {
 
   /// Метод очистки хранилища состояний
   pub async fn clear(&self) {
-    self.map.write().await.clear();
+    let mut guard = self.map.write().await;
+    guard.clear();
+    guard.shrink_to_fit();
+    drop(guard);
+
     emit_log("Состояния ботов очищены", "system");
   }
 

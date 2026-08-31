@@ -390,7 +390,6 @@ pub async fn stop_bots_and_destroy_data(logging: bool) -> u8 {
 
   sleep!(1000);
 
-  REGISTRY_SYSTEM.destroy_swarm().await;
   STATE_SYSTEM.clear().await;
   PROFILE_SYSTEM.shutdown().await;
   MAP_CAPTCHA_BYPASS.shutdown().await;
