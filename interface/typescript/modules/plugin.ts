@@ -384,7 +384,7 @@ class PluginModule {
 				return;
 			}
 
-			this.extractPluginsInfo(pluginList);
+			await this.extractPluginsInfo(pluginList);
 
 			logger.log(`Информация о плагинах загружена (размер ${result.size})`, "system");
 		} catch (error) {
@@ -393,7 +393,9 @@ class PluginModule {
 	}
 
 	/** Метод извлечения информации плагинов */
-	private extractPluginsInfo(pluginList: any): void {
+	private async extractPluginsInfo(pluginList: any): Promise<void> {
+		const isDevMode = await invoke<boolean>("is_dev_mode");
+
 		for (const plugin of pluginList) {
 			const id = plugin["id"] ?? plugin["name"] ?? plugin["header"] ?? plugin["kind"];
 			const desc = plugin["description"] ?? plugin["purpose"];
@@ -401,7 +403,7 @@ class PluginModule {
 
 			if (!plugins[id]?.modified) continue;
 
-			if (updated !== plugins[id].modified) {
+			if (!isDevMode && updated !== plugins[id].modified) {
 				document.getElementById(`${id}-plugin`)?.classList.add("deprecated");
 
 				const tag = document.createElement("span");
