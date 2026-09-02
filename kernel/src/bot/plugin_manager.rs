@@ -5,7 +5,6 @@ use tokio::sync::RwLock;
 use tokio::task::JoinHandle;
 
 use crate::bot::plugins::*;
-use crate::bot::systems::profile::PROFILE_SYSTEM;
 use crate::bot::traits::SalarixiPlugin;
 use crate::launch::options::PluginOptions;
 use crate::server::transfer::emit_log;
@@ -60,36 +59,42 @@ impl PluginManager {
   pub async fn activate_for(&'static self, index: u8, plugins: PluginOptions) {
     self.tasks.write().await.insert(index, HashMap::new());
 
-    if plugins.instant_armor_equip {
-      self.plugins.instant_armor_equip.activate(index);
+    if plugins.instant_armor_equip.enabled {
+      self
+        .plugins
+        .instant_armor_equip
+        .activate(index, plugins.instant_armor_equip.clone());
     }
 
-    if plugins.auto_totem {
-      self.plugins.auto_totem.activate(index);
+    if plugins.auto_totem.enabled {
+      self.plugins.auto_totem.activate(index, plugins.auto_totem.clone());
     }
 
-    if plugins.auto_eat {
-      self.plugins.auto_eat.activate(index);
+    if plugins.auto_eat.enabled {
+      self.plugins.auto_eat.activate(index, plugins.auto_eat.clone());
     }
 
-    if plugins.potion_consumer {
-      self.plugins.potion_consumer.activate(index);
+    if plugins.potion_consumer.enabled {
+      self
+        .plugins
+        .potion_consumer
+        .activate(index, plugins.potion_consumer.clone());
     }
 
-    if plugins.auto_look {
-      self.plugins.auto_look.activate(index);
+    if plugins.auto_look.enabled {
+      self.plugins.auto_look.activate(index, plugins.auto_look.clone());
     }
 
-    if plugins.auto_shield {
-      self.plugins.auto_shield.activate(index);
+    if plugins.auto_shield.enabled {
+      self.plugins.auto_shield.activate(index, plugins.auto_shield.clone());
     }
 
-    if plugins.auto_mending {
-      self.plugins.auto_mending.activate(index);
+    if plugins.auto_mending.enabled {
+      self.plugins.auto_mending.activate(index, plugins.auto_mending.clone());
     }
 
-    if plugins.pearl_leave {
-      self.plugins.pearl_leave.activate(index);
+    if plugins.pearl_leave.enabled {
+      self.plugins.pearl_leave.activate(index, plugins.pearl_leave.clone());
     }
   }
 
@@ -120,9 +125,18 @@ impl PluginManager {
   }
 
   pub async fn clear(&self) {
-    for index in PROFILE_SYSTEM.get_all().await.keys() {
-      self.kill_all_tasks_for(index).await;
-    }
+    let mut tasks = self.tasks.write().await;
+    tasks.iter().for_each(|(_, m)| {
+      m.iter().for_each(|(_, t)| {
+        if let Some(h) = t {
+          h.abort();
+        }
+      })
+    });
+
+    tasks.clear();
+    tasks.shrink_to_fit();
+    drop(tasks);
 
     emit_log("Активные задачи плагинов остановлены", "system");
   }

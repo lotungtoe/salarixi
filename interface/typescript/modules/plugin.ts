@@ -1,137 +1,368 @@
 import { invoke } from "@tauri-apps/api/core";
 
 import { logger } from "../utils/logger";
-import { plugins } from "../common/structs";
+import { PluginOption, plugins, PluginValueType, pluginValueTypeToInputType } from "../common/structs";
 import { processActivity } from "../main";
 import { loadCacheOrNew, LcfResult, LnfResult, loadCache, saveCache, TimeType } from "../utils/cache";
 
 /** Модуль загрузки и управления плагинами */
 class PluginModule {
+	private enabledPlugins: Array<string> = [];
+
 	/** Метод инициализации функций, связанных с плагинами */
 	public async init(): Promise<void> {
-		this.createCards();
-		for (const id in plugins) this.updatePluginState(id, localStorage.getItem(`plugin-state:${id}`) === "true");
-		await this.initPluginsInfo();
-	}
+		const initres = await invoke<CommandResult<null>>("initialize_plugins_dir");
 
-	/** Метод обновления и сохранения состояния плагина (включен / выключен) */
-	private updatePluginState(id: string, state: boolean): void {
-		if (processActivity) {
-			logger.log(`Не удалось изменить состояние плагина ${id}: Plugin states can only be changed before startup`, "warning");
+		if (initres.error) {
+			logger.log(`Ошибка инициализации плагинов: ${initres.error}`, "error");
 			return;
 		}
 
-		plugins[id].enable = state;
+		await this.loadSavedPluginsSettings();
 
-		localStorage.setItem(`plugin-state:${id}`, String(state));
+		this.createAndInitPlugins();
 
-		const toggler = document.getElementById(`${id}-toggler`) as HTMLButtonElement;
+		await this.loadSavedPluginsStates();
+		await this.initPluginsInfo();
+	}
 
-		if (state) {
-			toggler.setAttribute("state", "false");
-			toggler.style.color = "#4ed618";
-			toggler.innerHTML = `
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-check">
-          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-          <path d="M5 12l5 5l10 -10" />
-        </svg>
-      `;
-		} else {
-			toggler.setAttribute("state", "true");
-			toggler.style.color = "#e61919";
-			toggler.innerHTML = `
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-x">
-          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-          <path d="M18 6l-12 12" />
-          <path d="M6 6l12 12" />
-        </svg>
-      `;
+	/** Метод обновления сохранения состояния плагина */
+	private async updatePluginState(id: string, enabled: boolean): Promise<void> {
+		if (processActivity) {
+			logger.log(`Не удалось изменить состояние плагина ${id}: plugin states can only be changed before startup`, "warning");
+			return;
+		}
+
+		try {
+			enabled ? this.enabledPlugins.push(id) : delete this.enabledPlugins[this.enabledPlugins.indexOf(id)];
+			plugins[id].enabled = enabled;
+
+			const toggler = document.getElementById(`${id}-toggler`) as HTMLButtonElement;
+
+			if (enabled) {
+				toggler.setAttribute("state", "false");
+				toggler.style.color = "#4ed618";
+				toggler.innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-check">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <path d="M5 12l5 5l10 -10" />
+          </svg>
+        `;
+			} else {
+				toggler.setAttribute("state", "true");
+				toggler.style.color = "#e61919";
+				toggler.innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-x">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <path d="M18 6l-12 12" />
+            <path d="M6 6l12 12" />
+          </svg>
+        `;
+			}
+
+			if (this.enabledPlugins.length < 1) {
+				await invoke<CommandResult<null>>("s_remove_file", { path: "plugins/enabled.json" });
+			} else {
+				const str = JSON.stringify(this.enabledPlugins, null, 2);
+				const enc = new TextEncoder();
+				const ecd = enc.encode(str);
+
+				const result = await invoke<CommandResult<null>>("s_save_file", {
+					path: "plugins/enabled.json",
+					data: ecd,
+				});
+
+				if (result.error) logger.log(`Ошибка сохранения состояния плагина ${id}: ${result.error}`, "error");
+			}
+		} catch (error) {
+			logger.log(`Ошибка сохранения состояния плагина ${id}: ${error}`, "error");
+		}
+	}
+
+	/** Метод загрузки сохранённых состояний плагинов */
+	private async loadSavedPluginsStates(): Promise<void> {
+		try {
+			const result = await invoke<CommandResult<number[]>>("s_read_file", { path: "plugins/enabled.json" });
+
+			if (result.error) {
+				logger.log(`Ошибка загрузки контента из файла "plugins/enabled.json": ${result.error}`, "error");
+				return;
+			}
+
+			if (!result.data || result.data.length < 1) return;
+
+			const u8a = new Uint8Array(result.data);
+			const dec = new TextDecoder("utf-8");
+			const dcd = dec.decode(u8a);
+			const parsed = JSON.parse(dcd);
+
+			for (const id of parsed) {
+				const plugin = plugins[id];
+				if (!plugin) continue;
+
+				const toggler = document.getElementById(`${id}-toggler`) as HTMLButtonElement;
+
+				toggler.setAttribute("state", "false");
+				toggler.style.color = "#4ed618";
+				toggler.innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-check">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <path d="M5 12l5 5l10 -10" />
+          </svg>
+        `;
+			}
+
+			logger.log("Состояния плагинов успешно загружены и применены", "system");
+		} catch (error) {
+			logger.log(`Ошибка загрузки сохранённых состояний плагинов: ${error}`, "error");
 		}
 	}
 
 	/** Метод создания и инициализации карточек плагинов */
-	private createCards(): void {
-		for (const id in plugins) {
-			try {
-				const plugin = plugins[id];
+	private createAndInitPlugins(): void {
+		for (const id in plugins) this.createPlugin(id);
 
-				const pluginCard = document.createElement("div");
-				pluginCard.className = "plugin-card";
-				pluginCard.id = `${id}-plugin`;
+		document.querySelectorAll<HTMLButtonElement>('[plugin-toggler="true"]').forEach(t => t.addEventListener("click", async () => {
+			const id = t.getAttribute("plugin-id");
+			if (!id) return;
+			const state = t.getAttribute("state") === "true";
+			await this.updatePluginState(id, state);
+		}));
 
-				pluginCard.innerHTML = `
-          <label class="name" id="${id}-name">${plugin.name}</label>
+		const chv = (b: HTMLButtonElement, v: string) => {
+			const path = b.getAttribute("path");
+			if (!path) return;
+			(document.getElementById(path) as HTMLElement).style.display = v;
+		};
 
-          <div class="controls">
-            <button plugin-open-description="true" path="${id}-plugin-description">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-align-justified">
-                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                <path d="M4 6l16 0" />
-                <path d="M4 12l16 0" />
-                <path d="M4 18l12 0" />
-              </svg>
-            </button>
+		document.querySelectorAll<HTMLButtonElement>('[plugin-od="true"]').forEach(b => b.addEventListener("click", () => chv(b, "flex")));
+		document.querySelectorAll<HTMLButtonElement>('[plugin-cd="true"]').forEach(b => b.addEventListener("click", () => chv(b, "none")));
+		document.querySelectorAll<HTMLButtonElement>('[plugin-os="true"]').forEach(b => b.addEventListener("click", () => chv(b, "flex")));
+		document.querySelectorAll<HTMLButtonElement>('[plugin-cs="true"]').forEach(b => b.addEventListener("click", () => chv(b, "none")));
+	}
 
-            <button plugin-toggler="true" plugin-id="${id}" state="true" id="${id}-toggler" style="color: #d61818;">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-x">
-                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                <path d="M18 6l-12 12" />
-                <path d="M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-        `;
+	/** Метод создания плагина */
+	private createPlugin(id: string): void {
+		try {
+			const obj = plugins[id];
+			this.createPluginCard(id, obj.name);
+			this.createPluginDescription(id, obj.name);
+			this.createPluginSettings(id, obj.name, obj.settings);
+		} catch (error) {
+			logger.log(`Ошибка инициализации плагина ${id}: ${error}`, "error");
+		}
+	}
 
-				document.getElementById("plugin-list")?.appendChild(pluginCard);
+	/** Метод создания карточки плагина в списке */
+	private createPluginCard(id: string, name: string): void {
+		const card = document.createElement("div");
+		card.className = "plugin-card";
+		card.id = `${id}-plugin`;
 
-				const pluginDescription = document.createElement("div");
-				pluginDescription.className = "cover";
-				pluginDescription.id = `${id}-plugin-description`;
+		card.innerHTML = `
+      <label class="name" id="${id}-name">${name}</label>
 
-				pluginDescription.innerHTML = `
-          <div class="panel with-header">
-            <div class="left">
-              <div class="header">Описание плагина "${plugin.name}"</div>
-            </div>
+      <div class="controls">
+        <button class="min" plugin-od="true" path="${id}-plugin-description">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-align-justified">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <path d="M4 6l16 0" />
+            <path d="M4 12l16 0" />
+            <path d="M4 18l12 0" />
+          </svg>
+        </button>
 
-            <div class="right">
-              <button class="min" plugin-close-description="true" path="${id}-plugin-description">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-x">
-                  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                  <path d="M18 6l-12 12" />
-                  <path d="M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-          </div>
+        <button class="min" plugin-os="true" path="${id}-plugin-settings">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-settings">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065" />
+            <path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" />
+          </svg>
+        </button>
 
-          <div class="plugin-description" id="${id}-description"></div>
-          <p class="plugin-latest-update">Последнее обновление плагина: <span id="${id}-latest-update">?</span></p>
-        `;
+        <button class="min" plugin-toggler="true" plugin-id="${id}" state="true" id="${id}-toggler" style="color: #d61818;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-x">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <path d="M18 6l-12 12" />
+            <path d="M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+    `;
 
-				document.getElementById("plugins-container")?.appendChild(pluginDescription);
-			} catch (error) {
-				logger.log(`Ошибка инициализации плагина ${id}: ${error}`, "error");
-			}
+		document.getElementById("plugin-list")?.appendChild(card);
+	}
+
+	/** Метод создания контейнера с описанием плагина */
+	private createPluginDescription(id: string, name: string): void {
+		const description = document.createElement("div");
+		description.className = "cover";
+		description.id = `${id}-plugin-description`;
+
+		description.innerHTML = `
+      <div class="panel with-header">
+        <div class="left">
+          <div class="header">Описание плагина "${name}"</div>
+        </div>
+
+        <div class="right">
+          <button class="min" plugin-cd="true" path="${id}-plugin-description">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-x">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+              <path d="M18 6l-12 12" />
+              <path d="M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="plugin-description" id="${id}-description"></div>
+      <p class="plugin-latest-update">Последнее обновление плагина: <span id="${id}-latest-update">?</span></p>
+    `;
+
+		document.getElementById("plugins-container")?.appendChild(description);
+	}
+
+	/** Метод создания контейнера с настройками плагина */
+	private createPluginSettings(id: string, name: string, options: Array<PluginOption>): void {
+		const container = document.createElement("div");
+		container.className = "cover";
+		container.id = `${id}-plugin-settings`;
+
+		container.innerHTML = `
+      <div class="panel with-header">
+        <div class="left">
+          <div class="header">Настройки плагина "${name}"</div>
+        </div>
+
+        <div class="right">
+          <button class="min" plugin-cs="true" path="${id}-plugin-settings">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-x">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+              <path d="M18 6l-12 12" />
+              <path d="M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    `;
+
+		const settings = document.createElement("div");
+		settings.className = "plugin-settings";
+
+		for (const option of options) {
+			const e = document.createElement("div");
+			e.className = "pretty-input-wrapper";
+
+			const signature = document.createElement("p");
+			signature.className = "signature fix";
+			signature.innerText = option["key"];
+
+			const input = document.createElement("input");
+			input.type = pluginValueTypeToInputType(option["vtype"]);
+			input.placeholder = option["placeholder"];
+
+			input.value = typeof option["value"] === "string" ? option["value"] : String(option["value"]);
+			input.addEventListener("input", async () => {
+				if (input.value === "") {
+					option["value"] = option["default"];
+					return;
+				}
+
+				switch (option["vtype"]) {
+					case PluginValueType.U32:
+					case PluginValueType.F32:
+					case PluginValueType.F64:
+						option["value"] = Number(input.value);
+						break;
+					case PluginValueType.Bool:
+						option["value"] = input.value === "true" || input.value === "false" ? input.value === "true" : option["default"];
+						break;
+					case PluginValueType.String:
+						option["value"] = input.value;
+						break;
+				}
+
+				await this.savePluginsSettings();
+			});
+
+			e.appendChild(signature);
+			e.appendChild(input);
+
+			settings.appendChild(e);
 		}
 
-		document.querySelectorAll('[plugin-toggler="true"]').forEach(t => t.addEventListener("click", () => {
-			const id = t.getAttribute("plugin-id") || "";
-			const state = t.getAttribute("state") === "true";
-			this.updatePluginState(id, state);
-		}));
+		container.appendChild(settings);
 
-		document.querySelectorAll('[plugin-open-description="true"]').forEach(e => e.addEventListener("click", () => {
-			const path = e.getAttribute("path");
-			if (!path) return;
-			(document.getElementById(path) as HTMLElement).style.display = "flex";
-		}));
+		document.getElementById("plugins-container")?.appendChild(container);
+	}
 
-		document.querySelectorAll('[plugin-close-description="true"]').forEach(e => e.addEventListener("click", () => {
-			const path = e.getAttribute("path");
-			if (!path) return;
-			(document.getElementById(path) as HTMLElement).style.display = "none";
-		}));
+	/** Метод загрузки сохранённых настроек плагинов */
+	private async loadSavedPluginsSettings(): Promise<void> {
+		try {
+			const result = await invoke<CommandResult<number[]>>("s_read_file", { path: "plugins/settings.json" });
+
+			if (result.error) {
+				logger.log(`Ошибка загрузки контента из файла "plugins/settings.json": ${result.error}`, "error");
+				return;
+			}
+
+			if (!result.data || result.data.length < 1) return;
+
+			const u8a = new Uint8Array(result.data);
+			const dec = new TextDecoder("utf-8");
+			const dcd = dec.decode(u8a);
+			const parsed = JSON.parse(dcd);
+
+			for (const id in parsed) {
+				const plugin = plugins[id];
+				if (!plugin) continue;
+
+				const opts = parsed[id];
+
+				for (const key in opts) {
+					const value = opts[key];
+					plugin.settings[key as any] = value;
+				}
+			}
+
+			logger.log("Настройки плагинов успешно загружены и применены", "system");
+		} catch (error) {
+			logger.log(`Ошибка сохранения настроек плагинов: ${error}`, "error");
+		}
+	}
+
+	/** Метод сохранения настроек плагинов в хранилище */
+	private async savePluginsSettings(): Promise<void> {
+		try {
+			let transformed_obj: Record<string, Record<string, any>> = {};
+
+			for (const id in plugins) {
+				const plugin = plugins[id];
+				const settings = plugin.settings;
+				const transformed_opts: Record<string, any> = {};
+
+				for (const st of settings) transformed_opts[st.key] = st.value;
+
+				transformed_obj[id] = transformed_opts;
+			}
+
+			const str = JSON.stringify(transformed_obj, null, 2);
+			const enc = new TextEncoder();
+			const ecd = enc.encode(str);
+
+			const result = await invoke<CommandResult<null>>("s_save_file", {
+				path: "plugins/settings.json",
+				data: ecd,
+			});
+
+			if (result.error) {
+				logger.log(`Ошибка сохранения настроек плагинов: ${result.error}`, "error");
+				return;
+			}
+		} catch (error) {
+			logger.log(`Ошибка сохранения настроек плагинов: ${error}`, "error");
+		}
 	}
 
 	/** Метод инициализации информации о плагинах */
@@ -168,28 +399,28 @@ class PluginModule {
 			const desc = plugin["description"] ?? plugin["purpose"];
 			const updated = plugin["latest_update"] ?? plugin["updated"] ?? plugin["modified"];
 
-			if (plugins[id]?.date) {
-				if (updated !== plugins[id].date) {
-					document.getElementById(`${id}-plugin`)?.classList.add("deprecated");
+			if (!plugins[id]?.modified) continue;
 
-					const tag = document.createElement("span");
-					tag.className = "tag";
-					tag.innerText = "deprecated";
+			if (updated !== plugins[id].modified) {
+				document.getElementById(`${id}-plugin`)?.classList.add("deprecated");
 
-					document.getElementById(`${id}-name`)?.appendChild(tag);
-				}
+				const tag = document.createElement("span");
+				tag.className = "tag";
+				tag.innerText = "deprecated";
 
-				const pluginDescriptionContainer = document.getElementById(`${id}-description`) as HTMLElement;
-				const pluginLatestUpdateContainer = document.getElementById(`${id}-latest-update`) as HTMLElement;
-
-				for (const p of desc) {
-					const el = document.createElement("p");
-					el.innerText = p;
-					pluginDescriptionContainer.appendChild(el);
-				}
-
-				pluginLatestUpdateContainer.innerText = updated;
+				document.getElementById(`${id}-name`)?.appendChild(tag);
 			}
+
+			const pluginDescriptionContainer = document.getElementById(`${id}-description`) as HTMLElement;
+			const pluginLatestUpdateContainer = document.getElementById(`${id}-latest-update`) as HTMLElement;
+
+			for (const p of desc) {
+				const el = document.createElement("p");
+				el.innerText = p;
+				pluginDescriptionContainer.appendChild(el);
+			}
+
+			pluginLatestUpdateContainer.innerText = updated;
 		}
 	}
 

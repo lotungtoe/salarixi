@@ -1,10 +1,14 @@
+use std::sync::Arc;
+
+use azalea::ecs::entity::Entity;
 use azalea::prelude::*;
 
-use crate::bot::extensions::{BotDefaultExt, BotRotationExt, EntityFilter};
+use crate::bot::extensions::{BotDefaultExt, BotRotationExt};
 use crate::bot::plugin_manager::PluginName;
 use crate::bot::systems::states::{getst, setmst, State, StateName};
 use crate::bot::traits::SalarixiPlugin;
 use crate::bot::PLUGINS;
+use crate::launch::options::AutoLookOptions;
 use crate::tools::randnum;
 use crate::{sleep, take_bot};
 
@@ -12,7 +16,7 @@ pub struct AutoLookPlugin;
 
 impl AutoLookPlugin {
   /// Метод обработки тика
-  async fn tick(&self, index: &u8) {
+  async fn tick(&self, index: &u8, options: &AutoLookOptions) {
     if !getst(index, State::CanLooking).await {
       return;
     }
@@ -24,8 +28,8 @@ impl AutoLookPlugin {
         return;
       }
 
-      if let Some(entity) = bot.find_nearest_entity(&EntityFilter::Any, 14.0) {
-        bot.look_at_entity(entity, true);
+      if let Some(entity) = self.find_nearest_entity(bot, options) {
+        bot.look_at_entity(entity, options.with_eye_height);
       }
     });
 
@@ -33,18 +37,29 @@ impl AutoLookPlugin {
 
     setmst(index, StateName::Looking, false).await;
   }
+
+  /// Метод поиска ближайшей сущности по указанному фильтру
+  fn find_nearest_entity(&self, bot: &Client, options: &AutoLookOptions) -> Option<Entity> {
+    for entity_filter in &options.include_entities {
+      if let Some(entity) = bot.find_nearest_entity(entity_filter, options.distance) {
+        return Some(entity);
+      }
+    }
+
+    None
+  }
 }
 
-impl SalarixiPlugin for AutoLookPlugin {
+impl SalarixiPlugin<AutoLookOptions> for AutoLookPlugin {
   fn new() -> Self {
     Self
   }
 
-  fn activate(&'static self, index: u8) {
+  fn activate(&'static self, index: u8, options: Arc<AutoLookOptions>) {
     let task = tokio::spawn(async move {
       loop {
-        self.tick(&index).await;
-        sleep!(100);
+        self.tick(&index, &options).await;
+        sleep!(options.tick_interval as u64);
       }
     });
 

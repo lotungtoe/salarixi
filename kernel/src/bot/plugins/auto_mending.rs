@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use azalea::inventory::components::{Damage, Enchantments, MaxDamage};
 use azalea::inventory::ItemStack;
 use azalea::prelude::*;
@@ -8,10 +10,10 @@ use crate::bot::plugin_manager::PluginName;
 use crate::bot::systems::states::{getst, setmst, State, StateName};
 use crate::bot::traits::SalarixiPlugin;
 use crate::bot::PLUGINS;
+use crate::launch::options::AutoMendingOptions;
 use crate::tools::*;
 use crate::{sleep, take_bot};
 
-/// Структура данных сломанного предмета
 struct BrokenItem {
   slot: usize,
   kind: ItemKind,
@@ -21,7 +23,7 @@ pub struct AutoMendingPlugin;
 
 impl AutoMendingPlugin {
   /// Метод обработки тика
-  async fn tick(&self, index: &u8) {
+  async fn tick(&self, index: &u8, _options: &AutoMendingOptions) {
     let broken_items = self.find_broken_items(index).await;
 
     for broken_item in broken_items {
@@ -181,16 +183,16 @@ impl AutoMendingPlugin {
   }
 }
 
-impl SalarixiPlugin for AutoMendingPlugin {
+impl SalarixiPlugin<AutoMendingOptions> for AutoMendingPlugin {
   fn new() -> Self {
     Self
   }
 
-  fn activate(&'static self, index: u8) {
+  fn activate(&'static self, index: u8, options: Arc<AutoMendingOptions>) {
     let task = tokio::spawn(async move {
       loop {
-        self.tick(&index).await;
-        sleep!(300);
+        self.tick(&index, &options).await;
+        sleep!(options.tick_interval as u64);
       }
     });
 

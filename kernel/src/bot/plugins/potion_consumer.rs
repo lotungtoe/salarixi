@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use azalea::entity::Physics;
 use azalea::inventory::components::PotionContents;
 use azalea::inventory::ItemStack;
@@ -10,35 +12,42 @@ use crate::bot::plugin_manager::PluginName;
 use crate::bot::systems::states::{getst, setmst, setst, State, StateName};
 use crate::bot::traits::SalarixiPlugin;
 use crate::bot::PLUGINS;
+use crate::launch::options::PotionConsumerOptions;
 use crate::tools::*;
 use crate::{sleep, take_bot};
 
-/// Структура информации и зелье
 #[derive(Clone)]
 struct Potion {
-  kind: String,
+  class: PotionClass,
   slot: usize,
   name: PotionKind,
+}
+
+#[derive(Clone, PartialEq)]
+enum PotionClass {
+  Drinking,
+  Splash,
 }
 
 pub struct PotionConsumerPlugin;
 
 impl PotionConsumerPlugin {
   /// Метод обработки тика
-  async fn tick(&self, index: &u8) {
+  async fn tick(&self, index: &u8, options: &PotionConsumerOptions) {
     let mut health = 20.0;
 
     take_bot!(index, async |bot| {
       health = bot.get_health();
     });
 
-    if health >= 20.0 {
+    if health >= options.minimum_health_threshold {
       return;
     }
 
-    let potions = self.find_potion_in_inventory(index).await;
+    let potions = self.find_potion_in_inventory(index, options).await;
 
     if potions.len() == 0 {
+      sleep!(options.delay_after_no_potion as u64);
       return;
     }
 
@@ -53,6 +62,7 @@ impl PotionConsumerPlugin {
     };
 
     let Some(best_potion) = self.get_best_potion(health, physics, potions) else {
+      sleep!(options.delay_after_no_potion as u64);
       return;
     };
 
@@ -87,8 +97,8 @@ impl PotionConsumerPlugin {
       bot.take_item(index, potion.slot, false).await;
     });
 
-    match potion.kind.as_str() {
-      "default" => {
+    match potion.class {
+      PotionClass::Drinking => {
         setmst(index, StateName::Drinking, true).await;
 
         take_bot!(index, async |bot| {
@@ -104,7 +114,7 @@ impl PotionConsumerPlugin {
 
         setmst(index, StateName::Drinking, false).await;
       }
-      "splash" => {
+      PotionClass::Splash => {
         let mut direction = (0.0, 0.0);
 
         take_bot!(index, async |bot| {
@@ -127,7 +137,6 @@ impl PotionConsumerPlugin {
           );
         });
       }
-      _ => {}
     }
   }
 
@@ -139,100 +148,94 @@ impl PotionConsumerPlugin {
     let on_ground = physics.on_ground();
     let velocity_y = physics.velocity.y;
 
-    let mut best_potion = None;
+    let mut best_potion: Option<Potion> = None;
 
     for p in potions {
-      if best_potion
-        .as_ref()
-        .unwrap_or(&Potion {
-          kind: "deafult".to_string(),
-          slot: 0,
-          name: PotionKind::Awkward,
-        })
-        .kind
-        .as_str()
-        != "splash"
-      {
-        if best_potion.is_none() && is_in_lava || is_burning {
-          match p.name {
-            PotionKind::FireResistance => {
-              best_potion = Some(p.clone());
-            }
-            PotionKind::LongFireResistance => {
-              best_potion = Some(p.clone());
-            }
-            _ => {}
-          }
+      if let Some(bp) = &best_potion {
+        if bp.class == PotionClass::Splash {
+          continue;
         }
+      }
 
-        if best_potion.is_none() && is_in_water {
-          match p.name {
-            PotionKind::WaterBreathing => {
-              best_potion = Some(p.clone());
-            }
-            PotionKind::LongWaterBreathing => {
-              best_potion = Some(p.clone());
-            }
-            _ => {}
+      if best_potion.is_none() && is_in_lava || is_burning {
+        match p.name {
+          PotionKind::FireResistance => {
+            best_potion = Some(p.clone());
           }
-        }
-
-        if best_potion.is_none() && !on_ground && velocity_y < -0.5 {
-          match p.name {
-            PotionKind::SlowFalling => {
-              best_potion = Some(p.clone());
-            }
-            PotionKind::LongSlowFalling => {
-              best_potion = Some(p.clone());
-            }
-            _ => {}
+          PotionKind::LongFireResistance => {
+            best_potion = Some(p.clone());
           }
+          _ => {}
         }
+      }
 
-        if best_potion.is_none() && health <= 8.0 {
-          match p.name {
-            PotionKind::TurtleMaster => {
-              best_potion = Some(p.clone());
-            }
-            PotionKind::LongTurtleMaster => {
-              best_potion = Some(p.clone());
-            }
-            PotionKind::StrongTurtleMaster => {
-              best_potion = Some(p.clone());
-            }
-            _ => {}
+      if best_potion.is_none() && is_in_water {
+        match p.name {
+          PotionKind::WaterBreathing => {
+            best_potion = Some(p.clone());
           }
-        }
-
-        if best_potion.is_none() && health <= 15.0 {
-          match p.name {
-            PotionKind::Regeneration => {
-              best_potion = Some(p);
-              break;
-            }
-            PotionKind::LongRegeneration => {
-              best_potion = Some(p);
-              break;
-            }
-            PotionKind::StrongRegeneration => {
-              best_potion = Some(p);
-              break;
-            }
-            PotionKind::Healing => {
-              best_potion = Some(p);
-              break;
-            }
-            PotionKind::StrongHealing => {
-              best_potion = Some(p);
-              break;
-            }
-            _ => {}
+          PotionKind::LongWaterBreathing => {
+            best_potion = Some(p.clone());
           }
+          _ => {}
         }
+      }
 
-        if p.kind.as_str() == "splash" {
-          break;
+      if best_potion.is_none() && !on_ground && velocity_y < -0.5 {
+        match p.name {
+          PotionKind::SlowFalling => {
+            best_potion = Some(p.clone());
+          }
+          PotionKind::LongSlowFalling => {
+            best_potion = Some(p.clone());
+          }
+          _ => {}
         }
+      }
+
+      if best_potion.is_none() && health <= 8.0 {
+        match p.name {
+          PotionKind::TurtleMaster => {
+            best_potion = Some(p.clone());
+          }
+          PotionKind::LongTurtleMaster => {
+            best_potion = Some(p.clone());
+          }
+          PotionKind::StrongTurtleMaster => {
+            best_potion = Some(p.clone());
+          }
+          _ => {}
+        }
+      }
+
+      if best_potion.is_none() && health <= 15.0 {
+        match p.name {
+          PotionKind::Regeneration => {
+            best_potion = Some(p);
+            break;
+          }
+          PotionKind::LongRegeneration => {
+            best_potion = Some(p);
+            break;
+          }
+          PotionKind::StrongRegeneration => {
+            best_potion = Some(p);
+            break;
+          }
+          PotionKind::Healing => {
+            best_potion = Some(p);
+            break;
+          }
+          PotionKind::StrongHealing => {
+            best_potion = Some(p);
+            break;
+          }
+          _ => {}
+        }
+      }
+
+      if p.class == PotionClass::Splash {
+        break;
       }
     }
 
@@ -240,7 +243,7 @@ impl PotionConsumerPlugin {
   }
 
   /// Метод поиска зелья в инвентаре
-  async fn find_potion_in_inventory(&self, index: &u8) -> Vec<Potion> {
+  async fn find_potion_in_inventory(&self, index: &u8, options: &PotionConsumerOptions) -> Vec<Potion> {
     let mut potion_list = vec![];
 
     take_bot!(index, async |bot| {
@@ -249,7 +252,7 @@ impl PotionConsumerPlugin {
       };
 
       menu.slots().iter().enumerate().for_each(|(slot, item)| {
-        if let Some(potion) = self.is_potion(slot, item) {
+        if let Some(potion) = self.is_potion(slot, item, options) {
           potion_list.push(potion);
         }
       });
@@ -259,47 +262,43 @@ impl PotionConsumerPlugin {
   }
 
   /// Метод проверки предмета, является ли тот зельем
-  fn is_potion(&self, slot: usize, item: &ItemStack) -> Option<Potion> {
-    match item.kind() {
-      ItemKind::Potion => {
-        if let Some(contents) = item.get_component::<PotionContents>() {
-          if let Some(potion) = contents.potion {
-            return Some(Potion {
-              kind: "default".to_string(),
-              slot: slot,
-              name: potion,
-            });
-          }
+  fn is_potion(&self, slot: usize, item: &ItemStack, options: &PotionConsumerOptions) -> Option<Potion> {
+    if options.include_drinking_potion && item.kind() == ItemKind::Potion {
+      if let Some(contents) = item.get_component::<PotionContents>() {
+        if let Some(potion) = contents.potion {
+          return Some(Potion {
+            class: PotionClass::Drinking,
+            slot: slot,
+            name: potion,
+          });
         }
       }
-      ItemKind::SplashPotion => {
-        if let Some(contents) = item.get_component::<PotionContents>() {
-          if let Some(potion) = contents.potion {
-            return Some(Potion {
-              kind: "splash".to_string(),
-              slot: slot,
-              name: potion,
-            });
-          }
+    } else if options.include_splash_potion && item.kind() == ItemKind::SplashPotion {
+      if let Some(contents) = item.get_component::<PotionContents>() {
+        if let Some(potion) = contents.potion {
+          return Some(Potion {
+            class: PotionClass::Splash,
+            slot: slot,
+            name: potion,
+          });
         }
       }
-      _ => {}
     }
 
     None
   }
 }
 
-impl SalarixiPlugin for PotionConsumerPlugin {
+impl SalarixiPlugin<PotionConsumerOptions> for PotionConsumerPlugin {
   fn new() -> Self {
     Self
   }
 
-  fn activate(&'static self, index: u8) {
+  fn activate(&'static self, index: u8, options: Arc<PotionConsumerOptions>) {
     let task = tokio::spawn(async move {
       loop {
-        self.tick(&index).await;
-        sleep!(200);
+        self.tick(&index, &options).await;
+        sleep!(options.tick_interval as u64);
       }
     });
 

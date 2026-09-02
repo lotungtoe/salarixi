@@ -11,6 +11,7 @@ use modules::cache::{extract_cache_meta, load_cache, save_cache};
 use modules::config::{archive_config, export_config, initialize_configs_dir, load_configs};
 use modules::discord_rpc::set_discord_rpc;
 use modules::ping::get_server_info;
+use modules::plugins::initialize_plugins_dir;
 use modules::proxy::{check_proxies, collect_proxies};
 use modules::scanner::{start_network_scanning, stop_network_scanning};
 use modules::storage::{s_open_directory, s_read_file, s_remove_file, s_save_file};
@@ -51,6 +52,7 @@ pub fn run() {
       extract_cache_meta,
       save_cache,
       load_cache,
+      initialize_plugins_dir,
       initialize_configs_dir,
       load_configs,
       export_config,

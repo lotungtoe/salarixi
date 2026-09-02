@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use azalea::entity::ActiveEffects;
 use azalea::inventory::ItemStack;
 use azalea::protocol::packets::game::s_interact::InteractionHand;
@@ -10,6 +12,7 @@ use crate::bot::systems::states::{getst, setmst, setst, State, StateName};
 use crate::bot::systems::tasks::{gettskact, TaskName};
 use crate::bot::traits::SalarixiPlugin;
 use crate::bot::PLUGINS;
+use crate::launch::options::AutoEatOptions;
 use crate::tools::randchance;
 use crate::{sleep, take_bot};
 
@@ -41,7 +44,7 @@ pub struct AutoEatPlugin;
 
 impl AutoEatPlugin {
   /// Метод обработки тика
-  async fn tick(&self, index: &u8) {
+  async fn tick(&self, index: &u8, options: &Arc<AutoEatOptions>) {
     let mut satiety = 20;
     let mut health = 20.0;
     let mut effects_data = EffectsData::default();
@@ -49,21 +52,23 @@ impl AutoEatPlugin {
     take_bot!(index, async |bot| {
       satiety = bot.get_satiety();
       health = bot.get_health();
-      effects_data = self.get_effects_data(bot);
+
+      if options.effects_check {
+        effects_data = self.get_effects_data(bot);
+      }
     });
 
-    if satiety >= 20 && health >= 12.0 {
+    if satiety >= options.minimum_satiety_threshold && health >= options.minimum_health_threshold {
       return;
     }
 
     let food_list = self.find_food_in_inventory(index).await;
     let Some(best_food) = self.get_best_food(satiety, health, effects_data, &food_list).await else {
-      sleep!(500);
+      sleep!(options.delay_after_no_eat as u64);
       return;
     };
 
     if !getst(index, State::CanEating).await {
-      sleep!(200);
       return;
     }
 
@@ -75,8 +80,6 @@ impl AutoEatPlugin {
 
     if should_eat {
       self.start_eating(index, best_food.slot).await;
-    } else {
-      sleep!(1800);
     }
   }
 
@@ -390,16 +393,16 @@ impl AutoEatPlugin {
   }
 }
 
-impl SalarixiPlugin for AutoEatPlugin {
+impl SalarixiPlugin<AutoEatOptions> for AutoEatPlugin {
   fn new() -> Self {
     Self
   }
 
-  fn activate(&'static self, index: u8) {
+  fn activate(&'static self, index: u8, options: Arc<AutoEatOptions>) {
     let task = tokio::spawn(async move {
       loop {
-        self.tick(&index).await;
-        sleep!(100);
+        self.tick(&index, &options).await;
+        sleep!(options.tick_interval as u64);
       }
     });
 

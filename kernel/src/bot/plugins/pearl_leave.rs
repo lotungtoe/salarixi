@@ -1,3 +1,4 @@
+use std::sync::Arc;
 use std::time::Duration;
 
 use azalea::prelude::*;
@@ -9,6 +10,7 @@ use crate::bot::plugin_manager::PluginName;
 use crate::bot::systems::states::{getst, setmst, State, StateName};
 use crate::bot::traits::SalarixiPlugin;
 use crate::bot::PLUGINS;
+use crate::launch::options::PearlLeaveOptions;
 use crate::tools::randnum;
 use crate::{sleep, take_bot};
 
@@ -16,20 +18,27 @@ pub struct PearlLeavePlugin;
 
 impl PearlLeavePlugin {
   /// Метод обработки тика
-  async fn tick(&self, index: &u8) {
+  async fn tick(&self, index: &u8, options: &PearlLeaveOptions) {
+    let mut should_leave = false;
+
     take_bot!(index, async |bot| {
       let health = bot.get_health();
 
-      if health < 6.0 || health > 10.0 {
-        return;
+      if health >= options.minimum_health_threshold && health <= options.maximum_health_threshold {
+        should_leave = true;
       }
-
-      if !self.take_pearl(index).await {
-        return;
-      }
-
-      self.throw_pearl(index).await;
     });
+
+    if !should_leave {
+      return;
+    }
+
+    if !self.take_pearl(index).await {
+      sleep!(options.delay_after_no_pearl as u64);
+      return;
+    }
+
+    self.throw_pearl(index).await;
   }
 
   /// Метод взятия жемчуга в руку
@@ -96,16 +105,16 @@ impl PearlLeavePlugin {
   }
 }
 
-impl SalarixiPlugin for PearlLeavePlugin {
+impl SalarixiPlugin<PearlLeaveOptions> for PearlLeavePlugin {
   fn new() -> Self {
     Self
   }
 
-  fn activate(&'static self, index: u8) {
+  fn activate(&'static self, index: u8, options: Arc<PearlLeaveOptions>) {
     let task = tokio::spawn(async move {
       loop {
-        self.tick(&index).await;
-        sleep!(200);
+        self.tick(&index, &options).await;
+        sleep!(options.tick_interval as u64);
       }
     });
 

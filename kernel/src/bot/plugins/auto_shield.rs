@@ -1,50 +1,49 @@
+use std::sync::Arc;
+
 use azalea::ecs::entity::Entity;
 use azalea::prelude::*;
 use azalea::protocol::packets::game::s_interact::InteractionHand;
 use azalea::registry::builtin::ItemKind;
 
-use crate::bot::extensions::{BotDefaultExt, BotInteractExt, BotInventoryExt, BotRotationExt, EntityFilter};
+use crate::bot::extensions::{BotDefaultExt, BotInteractExt, BotInventoryExt, BotRotationExt};
 use crate::bot::plugin_manager::PluginName;
 use crate::bot::systems::states::{getst, setmst, setst, State, StateName};
 use crate::bot::traits::SalarixiPlugin;
 use crate::bot::PLUGINS;
+use crate::launch::options::AutoShieldOptions;
 use crate::{sleep, take_bot};
 
 pub struct AutoShieldPlugin;
 
 impl AutoShieldPlugin {
   /// Метод обработки тика
-  async fn tick(&self, index: &u8) {
+  async fn tick(&self, index: &u8, options: &AutoShieldOptions) {
     let mut danger_entity = None;
 
     take_bot!(index, async |bot| {
-      danger_entity = self.get_nearest_dangerous_entity(bot);
+      danger_entity = self.get_nearest_dangerous_entity(bot, options);
     });
 
     if danger_entity.is_none() {
       return;
     }
 
-    self.start_defending(index).await;
+    self.start_defending(index, options).await;
   }
 
   /// Метод получения ближайшей опасной сущности
-  fn get_nearest_dangerous_entity(&self, bot: &Client) -> Option<Entity> {
-    let mut nearest_entity = None;
-
-    if let Some(nearest_player) = bot.find_nearest_entity(&EntityFilter::Player, 8.0) {
-      nearest_entity = Some(nearest_player);
-    } else {
-      if let Some(nearest_monster) = bot.find_nearest_entity(&EntityFilter::Monster, 8.0) {
-        nearest_entity = Some(nearest_monster);
+  fn get_nearest_dangerous_entity(&self, bot: &Client, options: &AutoShieldOptions) -> Option<Entity> {
+    for entity_filter in &options.dangerous_entities {
+      if let Some(entity) = bot.find_nearest_entity(entity_filter, options.distance) {
+        return Some(entity);
       }
     }
 
-    nearest_entity
+    None
   }
 
   /// Метод экипировки щита
-  async fn equip_shield(&self, index: &u8) -> bool {
+  async fn equip_shield(&self, index: &u8, options: &AutoShieldOptions) -> bool {
     let mut shield_equipped = false;
 
     take_bot!(index, async |bot| {
@@ -56,7 +55,7 @@ impl AutoShieldPlugin {
         return;
       };
 
-      if !offhand_item.is_empty() && offhand_item.kind() != ItemKind::Shield {
+      if !options.ignore_item_in_offhand && !offhand_item.is_empty() && offhand_item.kind() != ItemKind::Shield {
         return;
       }
 
@@ -80,12 +79,13 @@ impl AutoShieldPlugin {
   }
 
   /// Метод прикрытия щитом
-  async fn start_defending(&self, index: &u8) {
+  async fn start_defending(&self, index: &u8, options: &AutoShieldOptions) {
     if !getst(index, State::CanLooking).await || !getst(index, State::CanInteracting).await {
       return;
     }
 
-    if !self.equip_shield(index).await {
+    if !self.equip_shield(index, options).await {
+      sleep!(options.delay_after_not_equipped as u64);
       return;
     }
 
@@ -102,12 +102,12 @@ impl AutoShieldPlugin {
     let mut danger_entity_exists = true;
 
     while danger_entity_exists {
-      if !self.equip_shield(index).await {
+      if !self.equip_shield(index, options).await {
         break;
       }
 
       take_bot!(index, async |bot| {
-        if let Some(e) = self.get_nearest_dangerous_entity(bot) {
+        if let Some(e) = self.get_nearest_dangerous_entity(bot, options) {
           bot.look_at_entity(e, true);
         } else {
           danger_entity_exists = false;
@@ -129,16 +129,16 @@ impl AutoShieldPlugin {
   }
 }
 
-impl SalarixiPlugin for AutoShieldPlugin {
+impl SalarixiPlugin<AutoShieldOptions> for AutoShieldPlugin {
   fn new() -> Self {
     Self
   }
 
-  fn activate(&'static self, index: u8) {
+  fn activate(&'static self, index: u8, options: Arc<AutoShieldOptions>) {
     let task = tokio::spawn(async move {
       loop {
-        self.tick(&index).await;
-        sleep!(100);
+        self.tick(&index, &options).await;
+        sleep!(options.tick_interval as u64);
       }
     });
 

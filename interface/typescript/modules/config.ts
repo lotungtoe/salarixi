@@ -14,13 +14,14 @@ class ConfigModule {
 
 	/** Метод инициализации конфигуратора */
 	public async init(): Promise<void> {
-		this.configList = document.getElementById("config-list") as HTMLDivElement | null;
+		const initres = await invoke<CommandResult<null>>("initialize_configs_dir");
 
-		const initializeResult = await invoke<CommandResult<null>>("initialize_configs_dir");
-		if (initializeResult.error) {
-			logger.log(`Ошибка инициализации конфигуратора: ${initializeResult.error}`, "error");
+		if (initres.error) {
+			logger.log(`Ошибка инициализации конфигуратора: ${initres.error}`, "error");
 			return;
 		}
+
+		this.configList = document.getElementById("config-list") as HTMLDivElement | null;
 
 		const configSearchQuery = document.getElementById("config-search-query") as HTMLInputElement;
 		configSearchQuery.addEventListener("input", () => this.searchConfigs(configSearchQuery.value));

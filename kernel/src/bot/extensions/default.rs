@@ -44,6 +44,21 @@ impl EntityFilter {
       _ => None,
     }
   }
+
+  pub fn from_str(str: &str) -> Option<Self> {
+    if str.chars().nth(0) == Some('$') {
+      Some(EntityFilter::Custom((str[1..str.len()]).to_string()))
+    } else {
+      match str {
+        "player" => Some(EntityFilter::Player),
+        "monster" => Some(EntityFilter::Monster),
+        "animal" => Some(EntityFilter::Animal),
+        "vehicle" => Some(EntityFilter::Vehicle),
+        "any" => Some(EntityFilter::Any),
+        _ => None,
+      }
+    }
+  }
 }
 
 pub trait BotDefaultExt {

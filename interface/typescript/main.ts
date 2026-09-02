@@ -2,7 +2,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 
-import { plugins } from "./common/structs";
+import { writePluginsToBuf } from "./common/structs";
 import { logger } from "./utils/logger";
 import { messages } from "./utils/message";
 import { enableParticles } from "./effects/particles";
@@ -124,7 +124,7 @@ async function startBots(): Promise<void> {
 					const defaultValue = input.getAttribute("default");
 
 					if (input.type === "number") {
-						current[optionKey] = input.value ? parseInt(input.value) : defaultValue ? parseInt(defaultValue!) : null;
+						current[optionKey] = input.value ? parseInt(input.value) : defaultValue ? parseInt(defaultValue) : null;
 					} else {
 						current[optionKey] = input.value || defaultValue;
 					}
@@ -140,8 +140,6 @@ async function startBots(): Promise<void> {
 
 		options.accounts = accountModule.getSelectedAccounts();
 		options.basic["script"] = options.basic.use_auto_script ? (document.getElementById("user-script") as HTMLTextAreaElement).value : null;
-
-		for (const name in plugins) options.plugins[name.replaceAll("-", "_")] = plugins[name].enable;
 
 		const buf = new Buffer();
 		buf.writeU8(0x01);
@@ -195,14 +193,7 @@ async function startBots(): Promise<void> {
 			buf.writeOption(account["proxy"], (some) => buf.writeString(some));
 		}
 
-		buf.writeBoolean(options.plugins["instant_armor_equip"]);
-		buf.writeBoolean(options.plugins["auto_totem"]);
-		buf.writeBoolean(options.plugins["auto_eat"]);
-		buf.writeBoolean(options.plugins["potion_consumer"]);
-		buf.writeBoolean(options.plugins["auto_look"]);
-		buf.writeBoolean(options.plugins["auto_shield"]);
-		buf.writeBoolean(options.plugins["auto_mending"]);
-		buf.writeBoolean(options.plugins["pearl_leave"]);
+		writePluginsToBuf(buf);
 
 		buf.writeU8(options.captcha_bypass["captcha_type"]);
 		buf.writeU8(options.captcha_bypass["captcha_subtype"]);

@@ -1,7 +1,26 @@
+use std::sync::Arc;
+
 use hashbrown::HashMap;
 use salarixi_extensions::buffer::BufferExt;
 use salarixi_extensions::index::IndexExt;
 use salarixi_macros::Index;
+
+use crate::bot::extensions::EntityFilter;
+
+/// Вспомогательная функция парсинга строкового списка сущностей
+fn parse_entity_array(buf: &mut bytes::Bytes) -> Option<Vec<EntityFilter>> {
+  let full_string = String::read(buf)?;
+  let splitted = full_string.split(',').collect::<Vec<&str>>();
+  let mut entities = Vec::new();
+
+  for part in splitted {
+    if let Some(filter) = EntityFilter::from_str(part.trim()) {
+      entities.push(filter);
+    }
+  }
+
+  Some(entities)
+}
 
 #[derive(Clone)]
 pub struct LaunchOptions {
@@ -197,27 +216,207 @@ impl AccountOptions {
 
 #[derive(Clone)]
 pub struct PluginOptions {
-  pub instant_armor_equip: bool,
-  pub auto_totem: bool,
-  pub auto_eat: bool,
-  pub potion_consumer: bool,
-  pub auto_look: bool,
-  pub auto_shield: bool,
-  pub auto_mending: bool,
-  pub pearl_leave: bool,
+  pub instant_armor_equip: Arc<InstantArmorEquipOptions>,
+  pub auto_totem: Arc<AutoTotemOptions>,
+  pub auto_eat: Arc<AutoEatOptions>,
+  pub potion_consumer: Arc<PotionConsumerOptions>,
+  pub auto_look: Arc<AutoLookOptions>,
+  pub auto_shield: Arc<AutoShieldOptions>,
+  pub auto_mending: Arc<AutoMendingOptions>,
+  pub pearl_leave: Arc<PearlLeaveOptions>,
 }
 
 impl PluginOptions {
   pub fn read(buf: &mut bytes::Bytes) -> Option<Self> {
     Some(Self {
-      instant_armor_equip: bool::read(buf)?,
-      auto_totem: bool::read(buf)?,
-      auto_eat: bool::read(buf)?,
-      potion_consumer: bool::read(buf)?,
-      auto_look: bool::read(buf)?,
-      auto_shield: bool::read(buf)?,
-      auto_mending: bool::read(buf)?,
-      pearl_leave: bool::read(buf)?,
+      instant_armor_equip: Arc::new(InstantArmorEquipOptions::read(buf)?),
+      auto_totem: Arc::new(AutoTotemOptions::read(buf)?),
+      auto_eat: Arc::new(AutoEatOptions::read(buf)?),
+      potion_consumer: Arc::new(PotionConsumerOptions::read(buf)?),
+      auto_look: Arc::new(AutoLookOptions::read(buf)?),
+      auto_shield: Arc::new(AutoShieldOptions::read(buf)?),
+      auto_mending: Arc::new(AutoMendingOptions::read(buf)?),
+      pearl_leave: Arc::new(PearlLeaveOptions::read(buf)?),
+    })
+  }
+}
+
+#[derive(Clone)]
+pub struct InstantArmorEquipOptions {
+  pub enabled: bool,
+  pub tick_interval: u32,
+  pub delay_after_no_armor: u32,
+  pub include_helmet: bool,
+  pub include_chestplate: bool,
+  pub include_leggings: bool,
+  pub include_boots: bool,
+  pub compare_by_material: bool,
+  pub compare_by_enchantments: bool,
+  pub compare_by_durability: bool,
+  pub adaptation_by_dimension: bool,
+  pub adaptation_by_state: bool,
+}
+
+impl InstantArmorEquipOptions {
+  pub fn read(buf: &mut bytes::Bytes) -> Option<Self> {
+    Some(Self {
+      enabled: bool::read(buf)?,
+      tick_interval: u32::read(buf)?,
+      delay_after_no_armor: u32::read(buf)?,
+      include_helmet: bool::read(buf)?,
+      include_chestplate: bool::read(buf)?,
+      include_leggings: bool::read(buf)?,
+      include_boots: bool::read(buf)?,
+      compare_by_material: bool::read(buf)?,
+      compare_by_enchantments: bool::read(buf)?,
+      compare_by_durability: bool::read(buf)?,
+      adaptation_by_dimension: bool::read(buf)?,
+      adaptation_by_state: bool::read(buf)?,
+    })
+  }
+}
+
+#[derive(Clone)]
+pub struct AutoTotemOptions {
+  pub enabled: bool,
+  pub tick_interval: u32,
+  pub delay_after_taking: u32,
+  pub ignore_item_in_offhand: bool,
+}
+
+impl AutoTotemOptions {
+  pub fn read(buf: &mut bytes::Bytes) -> Option<Self> {
+    Some(Self {
+      enabled: bool::read(buf)?,
+      tick_interval: u32::read(buf)?,
+      delay_after_taking: u32::read(buf)?,
+      ignore_item_in_offhand: bool::read(buf)?,
+    })
+  }
+}
+
+#[derive(Clone)]
+pub struct AutoEatOptions {
+  pub enabled: bool,
+  pub tick_interval: u32,
+  pub minimum_satiety_threshold: u32,
+  pub minimum_health_threshold: f32,
+  pub delay_after_no_eat: u32,
+  pub effects_check: bool,
+}
+
+impl AutoEatOptions {
+  pub fn read(buf: &mut bytes::Bytes) -> Option<Self> {
+    Some(Self {
+      enabled: bool::read(buf)?,
+      tick_interval: u32::read(buf)?,
+      minimum_satiety_threshold: u32::read(buf)?,
+      minimum_health_threshold: f32::read(buf)?,
+      delay_after_no_eat: u32::read(buf)?,
+      effects_check: bool::read(buf)?,
+    })
+  }
+}
+
+#[derive(Clone)]
+pub struct PotionConsumerOptions {
+  pub enabled: bool,
+  pub tick_interval: u32,
+  pub minimum_health_threshold: f32,
+  pub include_drinking_potion: bool,
+  pub include_splash_potion: bool,
+  pub delay_after_no_potion: u32,
+}
+
+impl PotionConsumerOptions {
+  pub fn read(buf: &mut bytes::Bytes) -> Option<Self> {
+    Some(Self {
+      enabled: bool::read(buf)?,
+      tick_interval: u32::read(buf)?,
+      minimum_health_threshold: f32::read(buf)?,
+      include_drinking_potion: bool::read(buf)?,
+      include_splash_potion: bool::read(buf)?,
+      delay_after_no_potion: u32::read(buf)?,
+    })
+  }
+}
+
+#[derive(Clone)]
+pub struct AutoLookOptions {
+  pub enabled: bool,
+  pub tick_interval: u32,
+  pub include_entities: Vec<EntityFilter>,
+  pub distance: f64,
+  pub with_eye_height: bool,
+}
+
+impl AutoLookOptions {
+  pub fn read(buf: &mut bytes::Bytes) -> Option<Self> {
+    Some(Self {
+      enabled: bool::read(buf)?,
+      tick_interval: u32::read(buf)?,
+      include_entities: parse_entity_array(buf)?,
+      distance: f64::read(buf)?,
+      with_eye_height: bool::read(buf)?,
+    })
+  }
+}
+
+#[derive(Clone)]
+pub struct AutoShieldOptions {
+  pub enabled: bool,
+  pub tick_interval: u32,
+  pub delay_after_not_equipped: u32,
+  pub dangerous_entities: Vec<EntityFilter>,
+  pub distance: f64,
+  pub ignore_item_in_offhand: bool,
+}
+
+impl AutoShieldOptions {
+  pub fn read(buf: &mut bytes::Bytes) -> Option<Self> {
+    Some(Self {
+      enabled: bool::read(buf)?,
+      tick_interval: u32::read(buf)?,
+      delay_after_not_equipped: u32::read(buf)?,
+      dangerous_entities: parse_entity_array(buf)?,
+      distance: f64::read(buf)?,
+      ignore_item_in_offhand: bool::read(buf)?,
+    })
+  }
+}
+
+#[derive(Clone)]
+pub struct AutoMendingOptions {
+  pub enabled: bool,
+  pub tick_interval: u32,
+}
+
+impl AutoMendingOptions {
+  pub fn read(buf: &mut bytes::Bytes) -> Option<Self> {
+    Some(Self {
+      enabled: bool::read(buf)?,
+      tick_interval: u32::read(buf)?,
+    })
+  }
+}
+
+#[derive(Clone)]
+pub struct PearlLeaveOptions {
+  pub enabled: bool,
+  pub tick_interval: u32,
+  pub minimum_health_threshold: f32,
+  pub maximum_health_threshold: f32,
+  pub delay_after_no_pearl: u32,
+}
+
+impl PearlLeaveOptions {
+  pub fn read(buf: &mut bytes::Bytes) -> Option<Self> {
+    Some(Self {
+      enabled: bool::read(buf)?,
+      tick_interval: u32::read(buf)?,
+      minimum_health_threshold: f32::read(buf)?,
+      maximum_health_threshold: f32::read(buf)?,
+      delay_after_no_pearl: u32::read(buf)?,
     })
   }
 }

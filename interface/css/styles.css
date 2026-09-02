@@ -906,9 +906,10 @@ body {
   color: var(--muted-color);
 }
 
-.account-settings {
+.cover .account-settings {
   display: flex;
   flex-direction: column;
+  overflow-y: auto;
   gap: 10px;
 }
 
@@ -2698,7 +2699,7 @@ button svg {
   margin-left: 16px;
 }
 
-.plugin-description {
+.cover .plugin-description {
   display: flex;
   align-items: center;
   justify-content: start;
@@ -2714,20 +2715,51 @@ button svg {
   margin-top: 20px;
 }
 
-.plugin-description p {
+.cover .plugin-description p {
   color: var(--muted-color);
   font-family: var(--global-font-family);
   font-size: 15px;
   font-weight: 500;
 }
 
-.plugin-latest-update {
+.cover .plugin-latest-update {
   color: var(--dim-color);
   font-family: var(--global-font-family);
   font-size: 15px;
   font-weight: 500;
   text-align: center;
   margin-top: 20px;
+}
+
+.cover .plugin-settings {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  margin-top: 20px;
+}
+
+.cover .plugin-settings .pretty-input-wrapper {
+  width: 98%;
+}
+
+.cover .plugin-settings::-webkit-scrollbar { 
+  display: flex;
+  width: 10px;
+  background: var(--scrollbar-bg);
+}
+
+.cover .plugin-settings::-webkit-scrollbar-thumb { 
+  background: var(--scrollbar-thumb-bg);
+  width: 4px;
+  border-radius: 6px;
+}
+
+.cover .plugin-settings::-webkit-scrollbar-thumb:hover { 
+  background: var(--scrollbar-thumb-hover-bg);
 }
 
 .config-panel {
