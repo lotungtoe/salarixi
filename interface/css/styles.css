@@ -85,7 +85,7 @@
   --info-log-color: #cecfcf;
   --warning-log-color: #f38c2f;
   --error-log-color: #ff6b6b;
-  --non-critical-error-log-color: #e07e7e;
+  --nc-error-log-color: #e07e7e;
   --system-log-color: #707070;
   --extended-log-color: #919191;
 
@@ -1729,7 +1729,7 @@ button svg {
 .log-line-content.info { color: var(--info-log-color); }
 .log-line-content.warning { color: var(--warning-log-color); }
 .log-line-content.error { color: var(--error-log-color); }
-.log-line-content.non-critical-error { color: var(--non-critical-error-log-color); }
+.log-line-content.nc-error { color: var(--nc-error-log-color); }
 .log-line-content.system { color: var(--system-log-color); } 
 .log-line-content.extended { color: var(--extended-log-color); }
 
@@ -2736,7 +2736,7 @@ button svg {
   flex-direction: column;
   overflow-y: auto;
   justify-content: flex-start;
-  align-items: center;
+  align-items: start;
   gap: 10px;
   width: 100%;
   margin-top: 20px;

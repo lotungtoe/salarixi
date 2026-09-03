@@ -370,7 +370,7 @@ class PluginModule {
 		try {
 			logger.log("Загрузка информации о плагинах...", "system");
 
-			const onerr = (err: string) => logger.log(`Ошибка загрузки информации о плагинах (не критично): ${err}`, "non-critical-error");
+			const onerr = (err: string) => logger.log(`Ошибка загрузки информации о плагинах (не критично): ${err}`, "nc-error");
 			const result = await loadCacheOrNew<any>(this.lcf, this.lnf, this.scf, onerr);
 			if (!result.data) return;
 
@@ -380,7 +380,7 @@ class PluginModule {
 			// Может быть такое что названия полей изменились, или вовсе вся структура
 			// данных обновлена, поэтому здесь стоит делать ещё одну проверку
 			if (!pluginList) {
-				logger.log("Ошибка загрузки информации о плагинах (не критично): information is corrupted or missing", "non-critical-error");
+				logger.log("Ошибка загрузки информации о плагинах (не критично): information is corrupted or missing", "nc-error");
 				return;
 			}
 
@@ -388,7 +388,7 @@ class PluginModule {
 
 			logger.log(`Информация о плагинах загружена (размер ${result.size})`, "system");
 		} catch (error) {
-			logger.log(`Ошибка загрузки информации о плагинах (не критично): ${error}`, "non-critical-error");
+			logger.log(`Ошибка загрузки информации о плагинах (не критично): ${error}`, "nc-error");
 		}
 	}
 
@@ -456,7 +456,7 @@ class PluginModule {
 		const result = await saveCache(JSON.stringify(info, null, 2), "plugins-info.json");
 
 		if (!result.data && result.error) {
-			logger.log(`Ошибка кэширования информации о плагинах (не критично): ${result.error}`, "non-critical-error");
+			logger.log(`Ошибка кэширования информации о плагинах (не критично): ${result.error}`, "nc-error");
 		}
 	}
 }

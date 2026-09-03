@@ -511,7 +511,32 @@ async function listenSystemEvents(): Promise<void> {
 		try {
 			const buf = new Buffer(new Uint8Array(e.payload));
 			const text = buf.readString();
-			const type = buf.readString();
+
+			let type = null;
+
+			switch (buf.readU8()) {
+				case 0x00:
+					type = "info";
+					break;
+				case 0x01:
+					type = "warning";
+					break;
+				case 0x02:
+					type = "system";
+					break;
+				case 0x03:
+					type = "extended";
+					break;
+				case 0x04:
+					type = "error";
+					break;
+				case 0x05:
+					type = "nc-error";
+					break;
+			}
+
+			if (!type) return;
+
 			logger.log(text, type);
 		} catch (error) {
 			logger.log(`Ошибка обработки события "system:log": ${error}`, "error");

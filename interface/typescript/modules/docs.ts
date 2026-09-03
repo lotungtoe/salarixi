@@ -30,7 +30,7 @@ class DocsModule {
 			const docsText = document.querySelector(".documentation-wrapper .text") as HTMLDivElement;
 			const docsNavigation = document.querySelector(".documentation-wrapper .navigation") as HTMLDivElement;
 
-			const onerr = (err: string) => logger.log(`Ошибка загрузки документации (не критично): ${err}`, "non-critical-error");
+			const onerr = (err: string) => logger.log(`Ошибка загрузки документации (не критично): ${err}`, "nc-error");
 			const result = await loadCacheOrNew<string>(this.lcf, this.lnf, this.scf, onerr);
 			if (!result.data) return;
 
@@ -87,7 +87,7 @@ class DocsModule {
 
 			logger.log(`Документация загружена (размер ${result.size})`, "system");
 		} catch (error) {
-			logger.log(`Ошибка загрузки документации (не критично): ${error}`, "non-critical-error");
+			logger.log(`Ошибка загрузки документации (не критично): ${error}`, "nc-error");
 		}
 	}
 
@@ -121,7 +121,7 @@ class DocsModule {
 		const result = await saveCache(docs, "user-docs.md");
 
 		if (!result.data && result.error) {
-			logger.log(`Ошибка кэширования документации (не критично): ${result.error}`, "non-critical-error");
+			logger.log(`Ошибка кэширования документации (не критично): ${result.error}`, "nc-error");
 		}
 	}
 }

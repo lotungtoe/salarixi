@@ -20,7 +20,7 @@ use crate::bot::systems::profile::PROFILE_SYSTEM;
 use crate::bot::systems::registry::REGISTRY_SYSTEM;
 use crate::bot::systems::states::{try_getst, try_setst, State};
 use crate::launch::process::{current_options, process_is_active};
-use crate::server::transfer::{emit_log, emit_msg};
+use crate::server::transfer::{emit_log, emit_msg, LogClass};
 use crate::webhook::*;
 
 pub static SCRIPT_EXECUTOR: LazyLock<ScriptExecutor> = LazyLock::new(|| ScriptExecutor::new());
@@ -683,7 +683,10 @@ impl ScriptExecutor {
     if su.is_empty() {
       if PARALLEL_EXECUTORS_COUNT.load(Ordering::SeqCst) > 0 || EXECUTOR_GLOBAL_STATE.load(Ordering::SeqCst) {
         emit_msg("Сценарий", "Не удалось выполнить сценарий");
-        emit_log("Не выполнить запустить сценарий: Script is already running", "warning");
+        emit_log(
+          "Не выполнить запустить сценарий: Script is already running",
+          LogClass::Warning,
+        );
         return;
       }
     }
@@ -720,10 +723,12 @@ impl ScriptExecutor {
         println!("[ salarixi / script ]: {}", str);
       })
       .register_fn("log", |text: &str, class: &str| {
-        emit_log(text.to_string(), class);
+        if let Some(c) = LogClass::from_str(class) {
+          emit_log(text, c);
+        }
       })
       .register_fn("message", |name: &str, content: &str| {
-        emit_msg(name, content.to_string());
+        emit_msg(name, content);
       })
       .register_fn("webhook", |content: &str| {
         let content_string = content.to_string();
@@ -1074,22 +1079,25 @@ impl ScriptExecutor {
     match engine.eval::<()>(&script) {
       Ok(_) => {
         if !su.is_empty() {
-          emit_log(format!("Сценарий автоматически выполнен для {}", su), "info");
+          emit_log(format!("Сценарий автоматически выполнен для {}", su), LogClass::Info);
         } else {
-          emit_log("Сценарий выполнен", "info");
+          emit_log("Сценарий выполнен", LogClass::Info);
           emit_msg("Сценарий", "Сценарий выполнен");
         }
       }
       Err(err) => match err.as_ref() {
         &EvalAltResult::ErrorTerminated(_, _) => {
-          emit_log("Сценарий принудительно остановлен", "info");
+          emit_log("Сценарий принудительно остановлен", LogClass::Info);
           emit_msg("Сценарий", "Сценарий принудительно остановлен");
         }
         _ => {
           if !su.is_empty() {
-            emit_log(format!("Ошибка выполнения сценария для {}: {}", su, err), "info");
+            emit_log(
+              format!("Ошибка выполнения сценария для {}: {}", su, err),
+              LogClass::Info,
+            );
           } else {
-            emit_log(format!("Ошибка выполнения сценария: {}", err), "error");
+            emit_log(format!("Ошибка выполнения сценария: {}", err), LogClass::Error);
             emit_msg("Сценарий", "Не удалось выполнить сценарий");
           }
         }

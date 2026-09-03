@@ -20,13 +20,13 @@ pub fn send_webhook(webhook_url: Option<String>, content: String) {
         Ok(r) => {
           if !r.status().is_success() {
             emit_log(
-              format!("Не удалось отправить webhook: Status code {}", r.status()),
-              "error",
+              format!("Не удалось отправить webhook: status code {}", r.status()),
+              LogClass::Error,
             );
           }
         }
         Err(err) => {
-          emit_log(format!("Не удалось отправить webhook: {}", err), "error");
+          emit_log(format!("Не удалось отправить webhook: {}", err), LogClass::Error);
         }
       }
     }

@@ -6,7 +6,7 @@ use crate::bot::systems::profile::Profile;
 #[derive(Clone)]
 pub struct LogPayload {
   pub text: String,
-  pub class: String,
+  pub class: u8,
 }
 
 impl LogPayload {

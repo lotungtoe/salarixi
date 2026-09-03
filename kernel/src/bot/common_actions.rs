@@ -28,7 +28,10 @@ pub async fn reset_bot(index: &u8, silent: bool) {
       return;
     };
 
-    emit_log(format!("Все задачи и состояния бота {} сброшены", username), "info");
+    emit_log(
+      format!("Все задачи и состояния бота {} сброшены", username),
+      LogClass::Info,
+    );
 
     emit_msg(
       "Управление",
@@ -60,7 +63,7 @@ pub async fn disconnect_bot(index: &u8, silent: bool) {
       return;
     };
 
-    emit_log(format!("Бот {} отключился", username), "info");
+    emit_log(format!("Бот {} отключился", username), LogClass::Info);
     emit_msg("Управление", format!("Бот {} отключился", username));
   }
 }

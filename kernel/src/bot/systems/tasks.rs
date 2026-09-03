@@ -4,7 +4,7 @@ use hashbrown::HashMap;
 use tokio::sync::RwLock;
 use tokio::task::JoinHandle;
 
-use crate::server::transfer::emit_log;
+use crate::server::transfer::{emit_log, LogClass};
 
 pub static TASK_SYSTEM: LazyLock<TaskSystem> = LazyLock::new(|| TaskSystem::new());
 
@@ -127,7 +127,7 @@ impl TaskSystem {
     guard.shrink_to_fit();
     drop(guard);
 
-    emit_log("Активные задачи ботов остановлены", "system");
+    emit_log("Активные задачи ботов остановлены", LogClass::System);
   }
 }
 

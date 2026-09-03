@@ -17,7 +17,7 @@ use crate::bot::systems::profile::PROFILE_SYSTEM;
 use crate::bot::systems::registry::REGISTRY_SYSTEM;
 use crate::bot::systems::states::{getst, setmst, State, StateName};
 use crate::launch::process::current_options;
-use crate::server::transfer::{emit_log, emit_msg};
+use crate::server::transfer::{emit_log, emit_msg, LogClass};
 use crate::tools::*;
 use crate::webhook::send_webhook;
 use crate::{sleep, take_bot};
@@ -79,7 +79,7 @@ pub async fn run_quick_task(id: u8) {
       "Быструю задачу \"{}\" выполнили {} из {} ботов",
       str_task_name, success_count, connected_bots
     ),
-    "info",
+    LogClass::Info,
   );
 }
 

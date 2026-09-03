@@ -7,7 +7,7 @@ use tokio::task::JoinHandle;
 use crate::bot::plugins::*;
 use crate::bot::traits::SalarixiPlugin;
 use crate::launch::options::PluginOptions;
-use crate::server::transfer::emit_log;
+use crate::server::transfer::{emit_log, LogClass};
 
 pub static PLUGINS: LazyLock<PluginManager> = LazyLock::new(|| PluginManager::new());
 
@@ -138,6 +138,6 @@ impl PluginManager {
     tasks.shrink_to_fit();
     drop(tasks);
 
-    emit_log("Активные задачи плагинов остановлены", "system");
+    emit_log("Активные задачи плагинов остановлены", LogClass::System);
   }
 }

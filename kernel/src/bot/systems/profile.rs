@@ -8,7 +8,7 @@ use salarixi_extensions::buffer::BufferExt;
 use tokio::sync::RwLock;
 use tokio::task::JoinHandle;
 
-use crate::server::transfer::{emit_log, TransferEvent, UpdateBotProfilePayload, TRANSFER};
+use crate::server::transfer::{emit_log, LogClass, TransferEvent, UpdateBotProfilePayload, TRANSFER};
 use crate::sleep;
 
 pub static PROFILE_SYSTEM: LazyLock<ProfileSystem> = LazyLock::new(|| ProfileSystem::new());
@@ -179,7 +179,7 @@ impl ProfileSystem {
     guard.shrink_to_fit();
     drop(guard);
 
-    emit_log("Профили ботов очищены", "system");
+    emit_log("Профили ботов очищены", LogClass::System);
   }
 
   /// Метод регистрации бота

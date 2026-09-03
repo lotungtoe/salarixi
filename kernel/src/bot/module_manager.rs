@@ -10,7 +10,7 @@ use crate::bot::modules::*;
 use crate::bot::systems::profile::{Profile, PROFILE_SYSTEM};
 use crate::bot::traits::{ModuleOptions, SalarixiModule};
 use crate::launch::process::current_options;
-use crate::server::transfer::{emit_log, emit_msg};
+use crate::server::transfer::{emit_log, emit_msg, LogClass};
 use crate::webhook::send_webhook;
 
 pub static MODULES: LazyLock<ModuleManager> = LazyLock::new(|| ModuleManager::new());
@@ -155,7 +155,7 @@ impl ModuleManager {
         "Группа ботов \"{}\" получила команду \"{}\". Выполнили {} из {} ботов",
         message.group, module_name, success_count, total_count,
       ),
-      "extended",
+      LogClass::Info,
     );
 
     emit_msg(

@@ -3,7 +3,7 @@ use std::sync::LazyLock;
 use hashbrown::HashMap;
 use tokio::sync::RwLock;
 
-use crate::server::transfer::emit_log;
+use crate::server::transfer::{emit_log, LogClass};
 
 pub static STATE_SYSTEM: LazyLock<StateSystem> = LazyLock::new(|| StateSystem::new());
 
@@ -123,7 +123,7 @@ impl StateSystem {
     guard.shrink_to_fit();
     drop(guard);
 
-    emit_log("Состояния ботов очищены", "system");
+    emit_log("Состояния ботов очищены", LogClass::System);
   }
 
   /// Метод сброса состояний указанного бота

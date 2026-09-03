@@ -2,7 +2,7 @@ use std::sync::LazyLock;
 
 use tokio::sync::RwLock;
 
-use crate::server::transfer::emit_log;
+use crate::server::transfer::{emit_log, LogClass};
 
 pub static INDEX_SYSTEM: LazyLock<IndexSystem> = LazyLock::new(|| IndexSystem::new());
 
@@ -67,6 +67,6 @@ impl IndexSystem {
     guard.shrink_to_fit();
     drop(guard);
 
-    emit_log("Реестр индексов ботов очищен", "system");
+    emit_log("Реестр индексов ботов очищен", LogClass::System);
   }
 }

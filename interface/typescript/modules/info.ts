@@ -32,7 +32,7 @@ class InfoModule {
 			const onerr = (err: string) => {
 				["telegram", "discord", "youtube"].forEach(id => document.getElementById(id)?.remove());
 				document.getElementById("support-notice")?.remove();
-				logger.log(`Ошибка загрузки информации о клиенте (не критично): ${err}`, "non-critical-error");
+				logger.log(`Ошибка загрузки информации о клиенте (не критично): ${err}`, "nc-error");
 			};
 
 			const result = await loadCacheOrNew<ClientInfo>(this.lcf, this.lnf, this.scf, onerr);
@@ -58,7 +58,7 @@ class InfoModule {
 
 			logger.log(`Информация о клиенте загружена (размер ${result.size})`, "system");
 		} catch (error) {
-			logger.log(`Ошибка инициализации информации о клиенте (не критично): ${error}`, "non-critical-error");
+			logger.log(`Ошибка инициализации информации о клиенте (не критично): ${error}`, "nc-error");
 		}
 	}
 
@@ -110,7 +110,7 @@ class InfoModule {
 		const result = await saveCache(JSON.stringify(info, null, 2), "client-info.json");
 
 		if (!result.data && result.error) {
-			logger.log(`Ошибка кэширования информации о клиенте (не критично): ${result.error}`, "non-critical-error");
+			logger.log(`Ошибка кэширования информации о клиенте (не критично): ${result.error}`, "nc-error");
 		}
 	}
 }

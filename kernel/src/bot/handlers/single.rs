@@ -99,7 +99,7 @@ async fn process_spawn(bot: Client) {
     send_webhook(opts.webhook.url, format!("Бот {} заспавнился", username));
   }
 
-  emit_log(format!("Бот {} заспавнился", username), "info");
+  emit_log(format!("Бот {} заспавнился", username), LogClass::Info);
   emit_msg("Система", format!("Бот {} заспавнился", username));
 
   // Я без понятия что ставить в приоретет - сценарий пользователя или авторизацию.
@@ -155,7 +155,10 @@ async fn process_disconnect(bot: Client, text: Option<FormattedText>) {
       }
     }
 
-    emit_log(format!("Бот {} отключился: {}", username, t.to_string()), "info");
+    emit_log(
+      format!("Бот {} отключился: {}", username, t.to_string()),
+      LogClass::Info,
+    );
     emit_msg("Система", format!("Бот {} отключился: {}", username, t.to_string()));
   }
 }
@@ -197,7 +200,7 @@ async fn process_chat_message(bot: Client, packet: ChatPacket) {
           );
         }
 
-        emit_log(format!("Бот {} получил ссылку на капчу", username), "info");
+        emit_log(format!("Бот {} получил ссылку на капчу", username), LogClass::Info);
 
         TRANSFER.emit(TransferEvent::AntiWebCaptcha(AntiWebCaptchaPayload {
           index,

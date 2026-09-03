@@ -5,7 +5,7 @@ use azalea::swarm::Swarm;
 use dashmap::DashMap;
 use tokio::sync::RwLock;
 
-use crate::server::transfer::emit_log;
+use crate::server::transfer::{emit_log, LogClass};
 
 pub static REGISTRY_SYSTEM: LazyLock<RegistrySystem> = LazyLock::new(|| RegistrySystem::new());
 
@@ -59,7 +59,7 @@ impl RegistrySystem {
       swarm.ecs_lock.lock().write_message(AppExit::Success);
     }
 
-    emit_log("Реестр ботов очищен", "system");
+    emit_log("Реестр ботов очищен", LogClass::System);
   }
 }
 

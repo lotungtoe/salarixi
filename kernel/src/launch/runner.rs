@@ -26,6 +26,7 @@ use crate::bot::PLUGINS;
 use crate::launch::process::update_process_status;
 use crate::launch::process::BOTS_WERE_FULLY_CONNECTED;
 use crate::launch::process::STOPPING;
+use crate::server::transfer::LogClass;
 use crate::server::transfer::{emit_log, emit_msg};
 use crate::sleep;
 use crate::take_profile;
@@ -167,7 +168,7 @@ async fn parse_addr(source: &str) -> Option<SocketAddr> {
 /// Функция запуска ботов на сервер
 pub async fn launch_bots_on_server(options: LaunchOptions) -> u8 {
   emit_msg("Система", "Запуск ботов...");
-  emit_log(format!("Запуск ботов на {}...", options.basic.address), "info");
+  emit_log(format!("Запуск ботов на {}...", options.basic.address), LogClass::Info);
 
   // При ошибке логи и сообщения выше придут на фронт позже, чем
   // само сообщение об ошибке, пока пусть будет такая задержка
@@ -193,7 +194,7 @@ pub async fn launch_bots_on_server(options: LaunchOptions) -> u8 {
     return 0x04;
   };
 
-  emit_log("Подготовка к запуску...", "system");
+  emit_log("Подготовка к запуску...", LogClass::System);
 
   set_options(options.clone()).await;
   set_process_activity(true);
@@ -259,7 +260,7 @@ pub async fn launch_bots_on_server(options: LaunchOptions) -> u8 {
     let rt = match tokio::runtime::Runtime::new() {
       Ok(rt) => rt,
       Err(e) => {
-        emit_log(format!("Ошибка запуска ботов: {}", e), "error");
+        emit_log(format!("Ошибка запуска ботов: {}", e), LogClass::Error);
         return;
       }
     };
@@ -350,7 +351,7 @@ pub async fn launch_bots_on_server(options: LaunchOptions) -> u8 {
           )
           .await;
 
-        emit_log("Подготовка окончена", "system");
+        emit_log("Подготовка окончена", LogClass::System);
 
         let swarm_opts = JoinOpts::new().custom_socket_addr(addr);
         let _ = swarm.start_with_opts(options.basic.address, swarm_opts).await;
@@ -369,7 +370,7 @@ pub async fn stop_bots_and_destroy_data(logging: bool) -> u8 {
 
   if logging {
     emit_msg("Система", "Остановка ботов...");
-    emit_log(format!("Остановка {} ботов...", total_bots), "info");
+    emit_log(format!("Остановка {} ботов...", total_bots), LogClass::Info);
   }
 
   sleep!(500);

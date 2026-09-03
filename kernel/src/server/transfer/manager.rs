@@ -39,11 +39,45 @@ impl TransferManager {
   }
 }
 
+pub enum LogClass {
+  Info,
+  Warning,
+  System,
+  Extended,
+  Error,
+  NcError,
+}
+
+impl LogClass {
+  pub fn from_str(s: &str) -> Option<Self> {
+    match s {
+      "info" => Some(Self::Info),
+      "warning" => Some(Self::Warning),
+      "system" => Some(Self::System),
+      "extended" => Some(Self::Extended),
+      "error" => Some(Self::Error),
+      "nc-error" => Some(Self::NcError),
+      _ => None,
+    }
+  }
+
+  fn to_index(&self) -> u8 {
+    match self {
+      Self::Info => 0x00,
+      Self::Warning => 0x01,
+      Self::System => 0x02,
+      Self::Extended => 0x03,
+      Self::Error => 0x04,
+      Self::NcError => 0x05,
+    }
+  }
+}
+
 /// Вспомогательная функция отправки лога
-pub fn emit_log(text: impl Into<String>, class: impl Into<String>) {
+pub fn emit_log(text: impl Into<String>, class: LogClass) {
   TRANSFER.emit(TransferEvent::Log(LogPayload {
     text: text.into(),
-    class: class.into(),
+    class: class.to_index(),
   }));
 }
 

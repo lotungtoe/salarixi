@@ -3,7 +3,6 @@ import { logger } from "../utils/logger";
 import { messages } from "../utils/message";
 import { invoke } from "@tauri-apps/api/core";
 
-/** Структура результата применения набора стилей */
 interface ApplyResult {
 	total: number;
 	coincidences: number;
@@ -75,7 +74,7 @@ class StylekitModule {
 		"info-log-color": "#cecfcf",
 		"warning-log-color": "#f38c2f",
 		"error-log-color": "#ff6b6b",
-		"non-critical-error-log-color": "#e07e7e",
+		"nc-error-log-color": "#e07e7e",
 		"system-log-color": "#707070",
 		"extended-log-color": "#919191",
 		"message-progress-color": "#7946f0",

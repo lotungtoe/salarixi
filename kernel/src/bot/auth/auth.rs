@@ -2,7 +2,7 @@ use crate::bot::systems::index::INDEX_SYSTEM;
 use crate::bot::systems::profile::PROFILE_SYSTEM;
 use crate::launch::options::AuthMode;
 use crate::launch::process::current_options;
-use crate::server::transfer::emit_log;
+use crate::server::transfer::{emit_log, LogClass};
 use crate::tools::*;
 use crate::{sleep, take_bot, take_profile};
 
@@ -86,7 +86,7 @@ pub async fn default_authorize(index: &u8) {
   }
 
   if let Some(username) = INDEX_SYSTEM.username_by_index(index).await {
-    emit_log(format!("Бот {} {}: {}", &username, action, &msg), "info");
+    emit_log(format!("Бот {} {}: {}", &username, action, &msg), LogClass::Info);
   }
 }
 
@@ -167,6 +167,6 @@ pub async fn trigger_authorize(index: &u8, message: String) {
   }
 
   if let Some(username) = INDEX_SYSTEM.username_by_index(index).await {
-    emit_log(format!("Бот {} {}: {}", &username, action, &msg), "info");
+    emit_log(format!("Бот {} {}: {}", &username, action, &msg), LogClass::Info);
   }
 }
