@@ -156,8 +156,10 @@ impl Server {
           let payload_len = bytes.len();
           write_to_sockets(&sockets, &bytes).await;
           println!(
-            "[info] event \"{}\" sent to all active sockets | length={}",
-            name, payload_len
+            "[info] event \"{}\" sent to all active sockets | length={}, sock_count={}",
+            name,
+            payload_len,
+            sockets.read().await.len(),
           );
         }
       }
@@ -194,9 +196,9 @@ impl Server {
     loop {
       let mut reader_guard = reader.write().await;
       let Some((id, data)) = Self::read_packet(&mut reader_guard, &cipher).await else {
-        println!("[error :: {}] client sent an invalid packet, read loop finished", addr);
         let _ = writer.write().await.shutdown().await;
         sockets.write().await.remove(&addr);
+        println!("[error :: {}] client sent an invalid packet, read loop finished", addr);
         break;
       };
 
