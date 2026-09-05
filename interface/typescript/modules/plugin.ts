@@ -34,7 +34,14 @@ class PluginModule {
 		}
 
 		try {
-			enabled ? this.enabledPlugins.push(id) : delete this.enabledPlugins[this.enabledPlugins.indexOf(id)];
+			if (enabled) {
+				this.enabledPlugins.push(id);
+			} else {
+				let enabledPlugins: string[] = [];
+				this.enabledPlugins.forEach(pluginId => id !== pluginId ? enabledPlugins.push(pluginId) : null);
+				this.enabledPlugins = enabledPlugins;
+			}
+
 			plugins[id].enabled = enabled;
 
 			const toggler = document.getElementById(`${id}-toggler`) as HTMLButtonElement;
@@ -99,6 +106,9 @@ class PluginModule {
 			for (const id of parsed) {
 				const plugin = plugins[id];
 				if (!plugin) continue;
+
+				this.enabledPlugins.push(id);
+				plugin.enabled = true;
 
 				const toggler = document.getElementById(`${id}-toggler`) as HTMLButtonElement;
 
@@ -224,7 +234,7 @@ class PluginModule {
 	}
 
 	/** Метод создания контейнера с настройками плагина */
-	private createPluginSettings(id: string, name: string, options: Array<PluginOption>): void {
+	private createPluginSettings(id: string, name: string, settings: Array<PluginOption>): void {
 		const container = document.createElement("div");
 		container.className = "cover";
 		container.id = `${id}-plugin-settings`;
@@ -247,39 +257,52 @@ class PluginModule {
       </div>
     `;
 
-		const settings = document.createElement("div");
-		settings.className = "plugin-settings";
+		const settingsContainer = document.createElement("div");
+		settingsContainer.className = "plugin-settings";
 
-		for (const option of options) {
+		for (const opt of settings) {
 			const e = document.createElement("div");
 			e.className = "pretty-input-wrapper";
 
 			const signature = document.createElement("p");
 			signature.className = "signature fix";
-			signature.innerText = option["key"];
+			signature.innerText = opt["key"];
 
 			const input = document.createElement("input");
-			input.type = pluginValueTypeToInputType(option["vtype"]);
-			input.placeholder = option["placeholder"];
+			input.type = pluginValueTypeToInputType(opt["vtype"]);
+			input.placeholder = opt["placeholder"];
 
-			input.value = typeof option["value"] === "string" ? option["value"] : String(option["value"]);
+			switch (opt["vtype"]) {
+				case PluginValueType.U32:
+				case PluginValueType.F32:
+				case PluginValueType.F64:
+					input.valueAsNumber = opt["value"];
+					break;
+				case PluginValueType.Bool:
+					input.value = String(opt["value"]);
+					break;
+				case PluginValueType.String:
+					input.value = opt["value"];
+					break;
+			}
+
 			input.addEventListener("input", async () => {
 				if (input.value === "") {
-					option["value"] = option["default"];
+					opt["value"] = opt["default"];
 					return;
 				}
 
-				switch (option["vtype"]) {
+				switch (opt["vtype"]) {
 					case PluginValueType.U32:
 					case PluginValueType.F32:
 					case PluginValueType.F64:
-						option["value"] = Number(input.value);
+						opt["value"] = Number(input.value);
 						break;
 					case PluginValueType.Bool:
-						option["value"] = input.value === "true" || input.value === "false" ? input.value === "true" : option["default"];
+						opt["value"] = input.value === "true" || input.value === "false" ? input.value === "true" : opt["default"];
 						break;
 					case PluginValueType.String:
-						option["value"] = input.value;
+						opt["value"] = input.value;
 						break;
 				}
 
@@ -289,10 +312,10 @@ class PluginModule {
 			e.appendChild(signature);
 			e.appendChild(input);
 
-			settings.appendChild(e);
+			settingsContainer.appendChild(e);
 		}
 
-		container.appendChild(settings);
+		container.appendChild(settingsContainer);
 
 		document.getElementById("plugins-container")?.appendChild(container);
 	}
@@ -317,13 +340,8 @@ class PluginModule {
 			for (const id in parsed) {
 				const plugin = plugins[id];
 				if (!plugin) continue;
-
-				const opts = parsed[id];
-
-				for (const key in opts) {
-					const value = opts[key];
-					plugin.settings[key as any] = value;
-				}
+				const settings = parsed[id];
+				for (const key in settings) for (const opt of plugin["settings"]) if (opt["key"] === key) opt.value = settings[key];
 			}
 
 			logger.log("Настройки плагинов успешно загружены и применены", "system");
@@ -339,10 +357,12 @@ class PluginModule {
 
 			for (const id in plugins) {
 				const plugin = plugins[id];
-				const settings = plugin.settings;
+				const settings = plugin["settings"];
 				const transformed_opts: Record<string, any> = {};
 
-				for (const st of settings) transformed_opts[st.key] = st.value;
+				for (const opt of settings) {
+					transformed_opts[opt["key"]] = opt["value"];
+				}
 
 				transformed_obj[id] = transformed_opts;
 			}

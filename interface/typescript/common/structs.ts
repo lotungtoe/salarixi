@@ -307,7 +307,7 @@ export const plugins: Record<string, PluginData> = {
 				default: 8.0,
 			},
 			{
-				key: "ignore_item_in_offhand",
+				key: "ignore-item-in-offhand",
 				placeholder: "true | false",
 				vtype: PluginValueType.Bool,
 				value: false,
@@ -386,22 +386,22 @@ export function writePluginsToBuf(buf: Buffer) {
 
 		buf.writeBoolean(enabled);
 
-		for (const option of settings) {
-			switch (option["vtype"]) {
+		for (const opt of settings) {
+			switch (opt["vtype"]) {
 				case PluginValueType.U32:
-					buf.writeU32(option["value"]);
+					buf.writeU32(opt["value"]);
 					break;
 				case PluginValueType.F32:
-					buf.writeF32(option["value"]);
+					buf.writeF32(opt["value"]);
 					break;
 				case PluginValueType.F64:
-					buf.writeF64(option["value"]);
+					buf.writeF64(opt["value"]);
 					break;
 				case PluginValueType.Bool:
-					buf.writeBoolean(option["value"]);
+					buf.writeBoolean(opt["value"]);
 					break;
 				case PluginValueType.String:
-					buf.writeString(option["value"]);
+					buf.writeString(opt["value"]);
 					break;
 			}
 		}
