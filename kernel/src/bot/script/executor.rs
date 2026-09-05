@@ -3,14 +3,13 @@ use std::sync::atomic::{AtomicBool, AtomicU8, Ordering};
 use std::sync::LazyLock;
 
 use azalea::bot::BotClientExt;
+use azalea::container::ContainerClientExt;
 use azalea::prelude::PathfinderClientExt;
 use azalea::protocol::packets::game::s_interact::InteractionHand;
-use azalea::registry::builtin::BlockKind;
-use azalea::registry::Registry;
 use azalea::{BlockPos, SprintDirection, Vec3, WalkDirection};
 use rhai::{Dynamic, Engine, EvalAltResult, Map};
 
-use crate::bot::common::convert_hotbar_slot_to_inventory_slot;
+use crate::bot::common::{convert_hotbar_slot_to_inventory_slot, get_block_state};
 use crate::bot::extensions::{
   go_to, BotDefaultExt, BotInteractExt, BotInventoryExt, BotMovementExt, BotPhysicsExt, BotRotationExt, ClickMode,
   EntityFilter, ItemMeta,
@@ -21,7 +20,7 @@ use crate::bot::systems::registry::REGISTRY_SYSTEM;
 use crate::bot::systems::states::{try_getst, try_setst, State};
 use crate::launch::process::{current_options, process_is_active};
 use crate::server::transfer::{emit_log, emit_msg, LogClass};
-use crate::webhook::*;
+use crate::{take_bot, webhook::*};
 
 pub static SCRIPT_EXECUTOR: LazyLock<ScriptExecutor> = LazyLock::new(|| ScriptExecutor::new());
 
@@ -63,6 +62,14 @@ fn create_dynamic_vec(x: f64, y: f64, z: f64) -> Dynamic {
   map.insert("x".into(), Dynamic::from_float(x));
   map.insert("y".into(), Dynamic::from_float(y));
   map.insert("z".into(), Dynamic::from_float(z));
+  Dynamic::from_map(map)
+}
+
+/// Функция создания динамеского направления
+fn create_dynamic_direction(y_rot: f32, x_rot: f32) -> Dynamic {
+  let mut map = Map::new();
+  map.insert("y".into(), Dynamic::from_float(y_rot as f64));
+  map.insert("x".into(), Dynamic::from_float(x_rot as f64));
   Dynamic::from_map(map)
 }
 
@@ -413,6 +420,31 @@ impl ScriptExecutor {
     }
   }
 
+  fn get_direction(code: i16) -> Dynamic {
+    if code != -1 {
+      if let Some(bot) = REGISTRY_SYSTEM.get_bot(&(code as u8)) {
+        let (y_rot, x_rot) = bot.direction();
+        return create_dynamic_direction(y_rot, x_rot);
+      }
+    }
+
+    Dynamic::ZERO
+  }
+
+  fn set_direction(code: i16, y_rot: f32, x_rot: f32) {
+    if code == -1 {
+      PROFILE_SYSTEM.try_get_all_connected().keys().for_each(|index| {
+        if let Some(bot) = REGISTRY_SYSTEM.get_bot(index) {
+          bot.set_direction(y_rot, x_rot);
+        }
+      });
+    } else {
+      if let Some(bot) = REGISTRY_SYSTEM.get_bot(&(code as u8)) {
+        bot.set_direction(y_rot, x_rot);
+      }
+    }
+  }
+
   fn place_block(code: i16, x: i32, y: i32, z: i32) {
     if code == -1 {
       PROFILE_SYSTEM.try_get_all_connected().keys().for_each(|index| {
@@ -427,13 +459,51 @@ impl ScriptExecutor {
     }
   }
 
+  fn open_container(code: i16, x: i32, y: i32, z: i32) {
+    tokio::spawn(async move {
+      if code == -1 {
+        for index in PROFILE_SYSTEM.get_all_connected().await.keys() {
+          take_bot!(index, async |bot| {
+            bot.open_container_at(BlockPos::new(x, y, z)).await;
+          });
+        }
+      } else {
+        take_bot!(&(code as u8), async |bot| {
+          bot.open_container_at(BlockPos::new(x, y, z)).await;
+        });
+      }
+    });
+  }
+
+  fn close_container(code: i16) {
+    tokio::spawn(async move {
+      if code == -1 {
+        for index in PROFILE_SYSTEM.get_all_connected().await.keys() {
+          take_bot!(index, async |bot| {
+            let Some(inv) = bot.get_current_inventory() else {
+              return;
+            };
+
+            inv.close();
+          });
+        }
+      } else {
+        take_bot!(&(code as u8), async |bot| {
+          let Some(inv) = bot.get_current_inventory() else {
+            return;
+          };
+
+          inv.close();
+        });
+      }
+    });
+  }
+
   fn get_block_id(code: i16, x: i32, y: i32, z: i32) -> Dynamic {
     if code != -1 {
       if let Some(bot) = REGISTRY_SYSTEM.get_bot(&(code as u8)) {
-        if let Some(state) = bot.world().read().get_block_state(BlockPos::new(x, y, z)) {
-          if let Some(kind) = BlockKind::from_u32(state.id() as u32) {
-            return Dynamic::from_str(&kind.to_string()).unwrap();
-          }
+        if let Some(state) = get_block_state(&bot, BlockPos::new(x, y, z)) {
+          return Dynamic::from(state.id());
         }
       }
     }
@@ -720,7 +790,7 @@ impl ScriptExecutor {
 
     engine
       .register_fn("println", |str: &str| {
-        println!("[ salarixi / script ]: {}", str);
+        println!("{}", str);
       })
       .register_fn("log", |text: &str, class: &str| {
         if let Some(c) = LogClass::from_str(class) {
@@ -742,7 +812,7 @@ impl ScriptExecutor {
     engine.register_fn("active_bots_count", || PROFILE_SYSTEM.try_get_connected_count() as i64);
 
     engine
-      .register_fn("get_bot_id", {
+      .register_fn("get_id", {
         let su = su.clone();
         move |mu: &str| {
           if mu == "*" {
@@ -755,7 +825,7 @@ impl ScriptExecutor {
             .unwrap_or(0)
         }
       })
-      .register_fn("get_bot_ping", {
+      .register_fn("get_ping", {
         let su = su.clone();
         move |mu: &str| {
           if mu == "*" {
@@ -768,7 +838,7 @@ impl ScriptExecutor {
             .unwrap_or(0)
         }
       })
-      .register_fn("get_bot_feet_pos", {
+      .register_fn("get_foot_pos", {
         let su = su.clone();
         move |mu: &str| {
           if mu == "*" {
@@ -786,7 +856,7 @@ impl ScriptExecutor {
           create_dynamic_vec(foot_pos.x, foot_pos.y, foot_pos.z)
         }
       })
-      .register_fn("get_bot_eye_pos", {
+      .register_fn("get_eye_pos", {
         let su = su.clone();
         move |mu: &str| {
           if mu == "*" {
@@ -804,7 +874,7 @@ impl ScriptExecutor {
           create_dynamic_vec(eye_pos.x, eye_pos.y, eye_pos.z)
         }
       })
-      .register_fn("get_bot_health", {
+      .register_fn("get_health", {
         let su = su.clone();
         move |mu: &str| {
           if mu == "*" {
@@ -817,7 +887,7 @@ impl ScriptExecutor {
             .unwrap_or(0.0)
         }
       })
-      .register_fn("get_bot_satiety", {
+      .register_fn("get_satiety", {
         let su = su.clone();
         move |mu: &str| {
           if mu == "*" {
@@ -830,7 +900,7 @@ impl ScriptExecutor {
             .unwrap_or(0)
         }
       })
-      .register_fn("bot_is_workable", {
+      .register_fn("is_workable", {
         let su = su.clone();
         move |mu: &str| {
           if mu == "*" {
@@ -843,7 +913,7 @@ impl ScriptExecutor {
             .unwrap_or(false)
         }
       })
-      .register_fn("get_bot_profile", {
+      .register_fn("get_profile", {
         let su = su.clone();
         move |mu: &str| {
           if mu == "*" {
@@ -856,20 +926,20 @@ impl ScriptExecutor {
 
     if !su.is_empty() {
       engine
-        .register_fn("current_bot_username", move || {
+        .register_fn("current_username", move || {
           if let Some(username) = INDEX_SYSTEM.get_username_by_index(&si) {
             Dynamic::from_str(&username).unwrap()
           } else {
             Dynamic::ZERO
           }
         })
-        .register_fn("current_bot_id", move || {
+        .register_fn("current_id", move || {
           REGISTRY_SYSTEM.get_bot(&si).map(|b| b.id().0 as i64).unwrap_or(0)
         })
-        .register_fn("current_bot_ping", move || {
+        .register_fn("current_ping", move || {
           REGISTRY_SYSTEM.get_bot(&si).map(|b| b.ping() as i64).unwrap_or(0)
         })
-        .register_fn("current_bot_feet_pos", move || {
+        .register_fn("current_foot_pos", move || {
           let Some(bot) = REGISTRY_SYSTEM.get_bot(&si) else {
             return Dynamic::ZERO;
           };
@@ -880,7 +950,7 @@ impl ScriptExecutor {
 
           create_dynamic_vec(foot_pos.x, foot_pos.y, foot_pos.z)
         })
-        .register_fn("current_bot_eye_pos", move || {
+        .register_fn("current_eye_pos", move || {
           let Some(bot) = REGISTRY_SYSTEM.get_bot(&si) else {
             return Dynamic::ZERO;
           };
@@ -891,19 +961,19 @@ impl ScriptExecutor {
 
           create_dynamic_vec(eye_pos.x, eye_pos.y, eye_pos.z)
         })
-        .register_fn("current_bot_health", move || {
+        .register_fn("current_health", move || {
           REGISTRY_SYSTEM
             .get_bot(&si)
             .map(|b| b.get_health() as f64)
             .unwrap_or(0.0)
         })
-        .register_fn("current_bot_satiety", move || {
+        .register_fn("current_satiety", move || {
           REGISTRY_SYSTEM
             .get_bot(&si)
             .map(|b| b.get_satiety() as i64)
             .unwrap_or(0)
         })
-        .register_fn("current_bot_profile", move || create_dynamic_profile(&si));
+        .register_fn("current_profile", move || create_dynamic_profile(&si));
     }
 
     engine
@@ -994,6 +1064,24 @@ impl ScriptExecutor {
         move |mu: &str, x: i64, y: i64, z: i64| {
           Self::look_at_block(generate_code(&su, mu), x as i32, y as i32, z as i32)
         }
+      })
+      .register_fn("get_direction", {
+        let su = su.clone();
+        move |mu: &str| Self::get_direction(generate_code(&su, mu))
+      })
+      .register_fn("set_direction", {
+        let su = su.clone();
+        move |mu: &str, y_rot: f64, x_rot: f64| Self::set_direction(generate_code(&su, mu), y_rot as f32, x_rot as f32)
+      })
+      .register_fn("open_container", {
+        let su = su.clone();
+        move |mu: &str, x: i64, y: i64, z: i64| {
+          Self::open_container(generate_code(&su, mu), x as i32, y as i32, z as i32)
+        }
+      })
+      .register_fn("close_container", {
+        let su = su.clone();
+        move |mu: &str| Self::close_container(generate_code(&su, mu))
       });
 
     engine
