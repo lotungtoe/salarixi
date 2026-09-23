@@ -1,3 +1,5 @@
+use azalea::ecs::entity::Entity;
+use azalea::entity::metadata::Invisible;
 use azalea::registry::builtin::ItemKind;
 use azalea::{prelude::*, WalkDirection};
 use azalea::{BlockPos, SprintDirection, Vec3};
@@ -52,6 +54,7 @@ pub struct KillauraOptions {
   use_chase: bool,
   use_critical: bool,
   ignore_blocks: bool,
+  only_visible: bool,
   state: u8,
 }
 
@@ -72,6 +75,7 @@ impl ModuleOptions for KillauraOptions {
       use_chase: bool::read(buf)?,
       use_critical: bool::read(buf)?,
       ignore_blocks: bool::read(buf)?,
+      only_visible: bool::read(buf)?,
       state: u8::read(buf)?,
     })
   }
@@ -335,7 +339,7 @@ impl KillauraModule {
   }
 
   /// Метод включения автоматической наводки
-  async fn start_aiming(index: u8, entity_filter: EntityFilter, distance: f64) {
+  async fn start_aiming(index: u8, only_visible: bool, entity_filter: EntityFilter, distance: f64) {
     let extra_task = tokio::spawn(async move {
       loop {
         if !getst(&index, State::CanLooking).await {
@@ -347,6 +351,10 @@ impl KillauraModule {
 
         take_bot!(&index, async |bot| {
           if let Some(entity) = bot.find_nearest_entity(&entity_filter, distance) {
+            if only_visible && !Self::entity_is_visible(bot, entity) {
+              return;
+            }
+
             target_entity_exist = true;
 
             setmst(&index, StateName::Looking, true).await;
@@ -488,6 +496,17 @@ impl KillauraModule {
     true
   }
 
+  /// Метод проверки видимости сущности
+  fn entity_is_visible(bot: &Client, entity: Entity) -> bool {
+    if let Some(invisible) = bot.get_entity_component::<Invisible>(entity) {
+      if invisible.0 {
+        return false;
+      }
+    }
+
+    true
+  }
+
   /// Метод атаки указанной сущности
   async fn attack(bot: &Client, index: &u8, options: &KillauraOptions, config: &KillauraConfig) {
     if !getst(index, State::CanAttacking).await {
@@ -498,10 +517,9 @@ impl KillauraModule {
       return;
     };
 
-    setst(index, State::CanDrinking, false).await;
-    setst(index, State::CanInteracting, false).await;
-    setst(index, State::CanEating, false).await;
-    setmst(index, StateName::Attacking, true).await;
+    if options.only_visible && !Self::entity_is_visible(bot, entity) {
+      return;
+    }
 
     if !options.ignore_blocks {
       if let Some(client_pos) = bot.eye_pos() {
@@ -510,14 +528,15 @@ impl KillauraModule {
         entity_pos.y += eye_height;
 
         if !Self::check_impact_path(bot, client_pos, entity_pos) {
-          setmst(index, StateName::Attacking, false).await;
-          setst(index, State::CanDrinking, true).await;
-          setst(index, State::CanInteracting, true).await;
-          setst(index, State::CanEating, true).await;
           return;
         }
       }
     }
+
+    setst(index, State::CanDrinking, false).await;
+    setst(index, State::CanInteracting, false).await;
+    setst(index, State::CanEating, false).await;
+    setmst(index, StateName::Attacking, true).await;
 
     if options.use_auto_weapon {
       Self::take_weapon(bot, index, &options.weapon).await;
@@ -563,7 +582,13 @@ impl KillauraModule {
   async fn moderate_killaura(bot: &Client, index: u8, options: &KillauraOptions) {
     let config = Self::create_config(options);
 
-    Self::start_aiming(index, options.entity_filter.clone(), config.attack_distance).await;
+    Self::start_aiming(
+      index,
+      options.only_visible,
+      options.entity_filter.clone(),
+      config.attack_distance,
+    )
+    .await;
 
     if options.use_chase {
       Self::start_chase(

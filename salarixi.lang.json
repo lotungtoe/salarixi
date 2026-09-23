@@ -3442,6 +3442,17 @@
         "ja": "ブロックを無視する",
         "zh": "忽略塊"
       }
+    },
+    {
+      "versions": "1.2.0",
+      "tag": "only-visible",
+      "lang": {
+        "ru": "Только видимое",
+        "en": "Only visible",
+        "tr": "Sadece görünen",
+        "ja": "目に見えるものだけ",
+        "zh": "只有可見的"
+      }
     }
   ]
 }
