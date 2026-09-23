@@ -54,8 +54,8 @@ class TranslatorModule {
 	private async translate(targetLanguage: string, selectedIndex: number): Promise<void> {
 		try {
 			// Здесь лучше принудительно читать файл с кэшем перевода, ведь если у пользователя не будет
-			// интернета и при этом кэш будет устаревшим - он не сможет воспользоваться переводом.
-			const result = await invoke<CommandResult<number[]>>("read_file", { path: "cache/translation.json" });
+			// интернета и при этом кэш будет устаревшим, он не сможет воспользоваться переводом
+			const result = await invoke<CommandResult<number[]>>("s_read_file", { path: "cache/translation.json" });
 
 			if (result.error || !result.data) {
 				logger.log(`Ошибка перевода: ${result.error}`, "error");
