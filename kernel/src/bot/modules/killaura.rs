@@ -286,13 +286,23 @@ impl KillauraModule {
   }
 
   /// Метод включения преследования
-  async fn start_chase(index: u8, entity_filter: EntityFilter, distance: f64, min_distance_to_target: f64) {
+  async fn start_chase(
+    index: u8,
+    only_visible: bool,
+    entity_filter: EntityFilter,
+    distance: f64,
+    min_distance_to_target: f64,
+  ) {
     let extra_task = tokio::spawn(async move {
       loop {
         let mut target_entity_exist = false;
 
         take_bot!(&index, async |bot| {
           if let Some(entity) = bot.find_nearest_entity(&entity_filter, distance) {
+            if only_visible && !Self::entity_is_visible(bot, entity) {
+              return;
+            }
+
             let Some(eye_pos) = bot.eye_pos() else {
               return;
             };
@@ -593,6 +603,7 @@ impl KillauraModule {
     if options.use_chase {
       Self::start_chase(
         index,
+        options.only_visible,
         options.entity_filter.clone(),
         config.chase_distance,
         config.min_distance_to_target,
@@ -613,6 +624,7 @@ impl KillauraModule {
     if options.use_chase {
       Self::start_chase(
         index,
+        options.only_visible,
         options.entity_filter.clone(),
         config.chase_distance,
         config.min_distance_to_target,
