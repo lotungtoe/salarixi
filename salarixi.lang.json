@@ -3431,6 +3431,17 @@
         "ja": "サポート",
         "zh": "支援"
       }
+    },
+    {
+      "versions": "1.2.0",
+      "tag": "ignore-blocks",
+      "lang": {
+        "ru": "Игнорировать блоки",
+        "en": "Ignore blocks",
+        "tr": "Blokları görmezden gel",
+        "ja": "ブロックを無視する",
+        "zh": "忽略塊"
+      }
     }
   ]
 }

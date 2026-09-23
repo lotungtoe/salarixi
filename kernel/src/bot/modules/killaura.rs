@@ -1,10 +1,11 @@
 use azalea::registry::builtin::ItemKind;
-use azalea::SprintDirection;
 use azalea::{prelude::*, WalkDirection};
+use azalea::{BlockPos, SprintDirection, Vec3};
 use salarixi_extensions::buffer::BufferExt;
 use salarixi_extensions::index::IndexExt;
 use salarixi_macros::Index;
 
+use crate::bot::common::get_block_state;
 use crate::bot::extensions::{BotDefaultExt, BotInventoryExt, BotMovementExt, BotRotationExt, EntityFilter};
 use crate::bot::systems::states::{getst, setmst, setst, State, StateName};
 use crate::bot::systems::tasks::{gettskact, killtsk, pushetsk, pushrtsk, TaskName};
@@ -50,6 +51,7 @@ pub struct KillauraOptions {
   use_dodging: bool,
   use_chase: bool,
   use_critical: bool,
+  ignore_blocks: bool,
   state: u8,
 }
 
@@ -69,6 +71,7 @@ impl ModuleOptions for KillauraOptions {
       use_dodging: bool::read(buf)?,
       use_chase: bool::read(buf)?,
       use_critical: bool::read(buf)?,
+      ignore_blocks: bool::read(buf)?,
       state: u8::read(buf)?,
     })
   }
@@ -376,7 +379,7 @@ impl KillauraModule {
         ]);
 
         bot.start_walking(index, *direction).await;
-        sleep!(randnum(200, 300));
+        sleep!(randnum(300, 400));
         bot.stop_move(index).await;
       }
       1 => {
@@ -388,11 +391,101 @@ impl KillauraModule {
         let direction = randelem(&[WalkDirection::ForwardLeft, WalkDirection::ForwardRight]);
 
         bot.start_walking(index, *direction).await;
-        sleep!(randnum(300, 500));
+
+        if randchance(0.4) {
+          bot.jump();
+        }
+
+        sleep!(randnum(400, 500));
         bot.stop_move(index).await;
       }
       _ => {}
     }
+  }
+
+  /// Метод проверки, нету ли на пути удара блоков
+  fn check_impact_path(bot: &Client, client_pos: Vec3, entity_pos: Vec3) -> bool {
+    let mut included_xz = Vec::new();
+
+    let init_x = client_pos.x.floor() as i32;
+    let mut pos_x = client_pos.x.floor() as i32;
+    let init_z = client_pos.z.floor() as i32;
+    let mut pos_z = client_pos.z.floor() as i32;
+
+    if init_x != entity_pos.x.floor() as i32 {
+      loop {
+        if pos_x.abs_diff(init_x) >= 1 {
+          if client_pos.x < entity_pos.x {
+            pos_z += 1;
+          } else if client_pos.x > entity_pos.x {
+            pos_z -= 1;
+          }
+        }
+
+        if (client_pos.x < entity_pos.x && pos_x >= entity_pos.x.floor() as i32)
+          || (client_pos.x > entity_pos.x && pos_x <= entity_pos.x.floor() as i32)
+          || (client_pos.z < entity_pos.z && pos_z >= entity_pos.z.floor() as i32)
+          || (client_pos.z > entity_pos.z && pos_z <= entity_pos.z.floor() as i32)
+        {
+          pos_x = init_x;
+          pos_z = init_z;
+          break;
+        }
+
+        if client_pos.x < entity_pos.x {
+          pos_x += 1;
+        } else if client_pos.x > entity_pos.x {
+          pos_x -= 1;
+        }
+
+        included_xz.push((pos_x, pos_z));
+      }
+    }
+
+    if init_z != entity_pos.z.floor() as i32 {
+      loop {
+        if pos_z.abs_diff(init_z) >= 1 {
+          if client_pos.z < entity_pos.z {
+            pos_x += 1;
+          } else if client_pos.z > entity_pos.z {
+            pos_x -= 1;
+          }
+        }
+
+        if (client_pos.x < entity_pos.x && pos_x >= entity_pos.x.floor() as i32)
+          || (client_pos.x > entity_pos.x && pos_x <= entity_pos.x.floor() as i32)
+          || (client_pos.z < entity_pos.z && pos_z >= entity_pos.z.floor() as i32)
+          || (client_pos.z > entity_pos.z && pos_z <= entity_pos.z.floor() as i32)
+        {
+          break;
+        }
+
+        if client_pos.z < entity_pos.z {
+          pos_z += 1;
+        } else if client_pos.z > entity_pos.z {
+          pos_z -= 1;
+        }
+
+        included_xz.push((pos_x, pos_z));
+      }
+    }
+
+    let client_y = client_pos.y.floor() as i32;
+
+    for (x, z) in included_xz {
+      for y in (client_y - 2)..client_y {
+        let block_pos = BlockPos::new(x, y, z);
+        let Some(block_state) = get_block_state(bot, block_pos) else {
+          continue;
+        };
+
+        if !block_state.is_air() {
+          return false;
+        }
+      }
+    }
+
+    true
   }
 
   /// Метод атаки указанной сущности
@@ -409,6 +502,22 @@ impl KillauraModule {
     setst(index, State::CanInteracting, false).await;
     setst(index, State::CanEating, false).await;
     setmst(index, StateName::Attacking, true).await;
+
+    if !options.ignore_blocks {
+      if let Some(client_pos) = bot.eye_pos() {
+        let eye_height = bot.get_entity_eye_height(entity);
+        let mut entity_pos = bot.get_entity_position(entity);
+        entity_pos.y += eye_height;
+
+        if !Self::check_impact_path(bot, client_pos, entity_pos) {
+          setmst(index, StateName::Attacking, false).await;
+          setst(index, State::CanDrinking, true).await;
+          setst(index, State::CanInteracting, true).await;
+          setst(index, State::CanEating, true).await;
+          return;
+        }
+      }
+    }
 
     if options.use_auto_weapon {
       Self::take_weapon(bot, index, &options.weapon).await;
