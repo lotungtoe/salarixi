@@ -141,6 +141,26 @@ class MonitoringModule {
 				logger.log(`Ошибка обработки события "monitoring:set-group": ${error}`, "error");
 			}
 		});
+
+		await listen<number[]>("monitoring:set-slot", (e) => {
+			try {
+				const buf = new Buffer(new Uint8Array(e.payload));
+				const index = buf.readU8();
+				const slot = buf.readU8();
+				const count = buf.readU8();
+				const name = buf.readOption(() => buf.readString());
+
+				const countEl = document.getElementById(`inv-slot-count-${index}-${slot}`);
+				if (!countEl) return;
+				countEl.innerText = count < 1 ? "-" : count == 65 ? ">64" : count.toString();
+
+				const varEl = document.getElementById(`inv-var-${index}-${slot}`);
+				if (!varEl) return;
+				varEl.innerText = name ? name : "empty";
+			} catch (error) {
+				logger.log(`Ошибка обработки события "monitoring:set-slot": ${error}`, "error");
+			}
+		});
 	}
 
 	/** Метод включения модуля */
@@ -186,7 +206,7 @@ class MonitoringModule {
         </div>
 
         <div class="bottom">
-          <input type="text" class="bot-group" id="bot-group-${index}" placeholder="bot group">
+          <input type="text" class="bot-group" id="bot-group-${index}" placeholder="Группа">
         </div>
       </div>
 
@@ -198,9 +218,48 @@ class MonitoringModule {
       </div>
 
       <div class="buttons">
-        <button class="min" id="open-chat-${index}">Открыть чат</button>
-        <button class="min" id="reset-${index}">Сбросить</button>
-        <button class="min" id="disconnect-${index}">Отключить</button>
+        <div class="btn-group-flex">
+          <button class="min" id="open-chat-${index}">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-message-plus">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+              <path d="M8 9h8" />
+              <path d="M8 13h6" />
+              <path d="M12.01 18.594l-4.01 2.406v-3h-2a3 3 0 0 1 -3 -3v-8a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v5.5" />
+              <path d="M16 19h6" />
+              <path d="M19 16v6" />
+            </svg>
+          </button>
+
+          <button class="min" id="open-inv-${index}">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-stack-2">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+              <path d="M12 4l-8 4l8 4l8 -4l-8 -4" />
+              <path d="M4 12l8 4l8 -4" />
+              <path d="M4 16l8 4l8 -4" />
+            </svg>
+          </button>
+        </div>
+
+        <div class="btn-group-flex">
+          <button class="min" id="reset-${index}">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-repeat">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+              <path d="M4 12v-3a3 3 0 0 1 3 -3h13m-3 -3l3 3l-3 3" />
+              <path d="M20 12v3a3 3 0 0 1 -3 3h-13m3 3l-3 -3l3 -3" />
+            </svg>
+          </button>
+
+          <button class="min" id="disconnect-${index}">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-mobiledata-off">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+              <path d="M16 12v-8" />
+              <path d="M8 20v-8" />
+              <path d="M13 7l3 -3l3 3" />
+              <path d="M5 17l3 3l3 -3" />
+              <path d="M3 3l18 18" />
+            </svg>
+          </button>
+        </div>
       </div>
     `;
 
@@ -208,7 +267,7 @@ class MonitoringModule {
 		this.initializeBotCard(index, username);
 	}
 
-	/** Метод создания обёркти чата у бота */
+	/** Метод создания обёркти чата бота */
 	private createChatWrapper(index: number, username: string): HTMLDivElement {
 		const wrapper = document.createElement("div");
 		wrapper.className = "cover";
@@ -262,11 +321,121 @@ class MonitoringModule {
 
       <div class="pretty-input-wrapper">
         <p class="signature">${username}</p>
-        <input type="text" id="chat-message-${index}" placeholder="Введите и отправьте сообщение, нажав «Enter»">
+        <input type="text" id="chat-message-${index}" placeholder="Введи и отправь сообщение, нажав 'Enter'">
       </div>
     `;
 
 		this.wrappers?.appendChild(wrapper);
+
+		return wrapper;
+	}
+
+	/** Метод создания обёркти инвентаря бота */
+	private createInventoryWrapper(index: number, username: string): HTMLDivElement {
+		const wrapper = document.createElement("div");
+		wrapper.className = "cover";
+		wrapper.id = `inv-${index}`;
+		wrapper.setAttribute("wrapper", "bot-inv");
+
+		const generateSlotRow = (count: number, start: number): string => {
+			let slots = "";
+
+			for (let i = start; i - start < count; i++) {
+				const slot = `
+          <div inv-slot-${index}="${i}">
+            <label class="tag">${i.toString().padStart(2, "0")}</label>
+            <label class="count" id="inv-slot-count-${index}-${i}">-</label>
+          </div>
+        `;
+
+				slots += slot;
+			}
+
+			const result = `<div class="row">${slots}</div>`;
+
+			return result;
+		};
+
+		const generateVars = (): string => {
+			let vars = "";
+
+			for (let i = 5; i < 46; i++) {
+				const variable = `
+          <label inv-var-${index}="${i}">${i.toString().padStart(2, "0")}: <span id="inv-var-${index}-${i}">empty</span></label>
+        `;
+
+				vars += variable;
+			}
+
+			return vars;
+		};
+
+		const generateLinks = (): void => {
+			const slots = document.querySelectorAll<HTMLDivElement>(`#inv-slots-${index} div`);
+			const vars = document.querySelectorAll<HTMLLabelElement>(`#inv-vars-${index} label`);
+
+			for (let i = 0; i < 47; i++) {
+				if (slots.length <= i) break;
+
+				const slot = slots[i];
+				const si = parseInt(slot.getAttribute(`inv-slot-${index}`) || "0");
+
+				slot.addEventListener("mouseenter", () => {
+					for (const variable of vars) {
+						const vi = parseInt(variable.getAttribute(`inv-var-${index}`) || "0");
+
+						if (si === vi) {
+							variable.classList.add("highlight");
+							variable.scrollIntoView({ behavior: "smooth", block: "start" });
+						}
+					}
+				});
+
+				slot.addEventListener("mouseleave", () => {
+					for (const variable of vars) {
+						const vi = parseInt(variable.getAttribute(`inv-var-${index}`) || "0");
+						if (si === vi) variable.classList.remove("highlight");
+					}
+				});
+			}
+		};
+
+		wrapper.innerHTML = `
+      <div class="panel with-header">
+        <div class="left">
+          <div class="header">Инвентарь бота ${username}</div>
+        </div>
+
+        <div class="right">
+          <button class="min" id="close-inv-${index}">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-x">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+              <path d="M18 6l-12 12" />
+              <path d="M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="inv-content">
+        <div class="slots" id="inv-slots-${index}">
+          ${generateSlotRow(4, 5)}
+          ${generateSlotRow(1, 45)}
+          ${generateSlotRow(9, 9)}
+          ${generateSlotRow(9, 18)}
+          ${generateSlotRow(9, 27)}
+          ${generateSlotRow(9, 36)}
+        </div>
+
+        <div class="vars" id="inv-vars-${index}">
+          ${generateVars()}
+        </div>
+      </div>
+    `;
+
+		this.wrappers?.appendChild(wrapper);
+
+		generateLinks();
 
 		return wrapper;
 	}
@@ -320,6 +489,7 @@ class MonitoringModule {
 		this.indexTable.push(index);
 
 		const chatWrapper = this.createChatWrapper(index, username);
+		const inventoryWrapper = this.createInventoryWrapper(index, username);
 
 		document.getElementById(`open-chat-${index}`)?.addEventListener("click", () => chatWrapper.style.display = "flex");
 		document.getElementById(`close-chat-${index}`)?.addEventListener("click", () => chatWrapper.style.display = "none");
@@ -346,6 +516,9 @@ class MonitoringModule {
 				message.value = "";
 			}
 		});
+
+		document.getElementById(`open-inv-${index}`)?.addEventListener("click", () => inventoryWrapper.style.display = "flex");
+		document.getElementById(`close-inv-${index}`)?.addEventListener("click", () => inventoryWrapper.style.display = "none");
 
 		document.getElementById(`reset-${index}`)?.addEventListener("click", async () => {
 			try {

@@ -131,10 +131,6 @@ impl Server {
               bytes = payload.to_bytes();
               name = "session-chat";
             }
-            TransferEvent::ProcessStatus(payload) => {
-              bytes = payload.to_bytes();
-              name = "process-status";
-            }
             TransferEvent::BotChat(payload) => {
               bytes = payload.to_bytes();
               name = "bot-chat";
@@ -150,6 +146,14 @@ impl Server {
             TransferEvent::UpdateBotProfile(payload) => {
               bytes = payload.to_bytes();
               name = "update-bot-profile";
+            }
+            TransferEvent::ProcessStatus(payload) => {
+              bytes = payload.to_bytes();
+              name = "process-status";
+            }
+            TransferEvent::SetSlot(payload) => {
+              bytes = payload.to_bytes();
+              name = "set-slot";
             }
           }
 

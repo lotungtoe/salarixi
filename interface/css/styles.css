@@ -2023,15 +2023,13 @@ button svg {
   justify-content: center;
   align-items: center;
   border-left: 1px solid var(--secondary-border);
-  padding: 0 6px;
+  padding: 0 12px;
   height: 100%;
   gap: 6px;
 }
 
-.monitoring-wrapper .profile .buttons button {
-  width: 150px;
-  padding: 5px 0;
-  border-radius: 4px;
+.monitoring-wrapper .profile .buttons .btn-group-flex {
+  margin: 0;
 }
 
 .pretty-input-wrapper {
@@ -2108,6 +2106,104 @@ button svg {
 
 .chat-content .line:hover {
   background: var(--hover-bg);
+}
+
+.inv-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  max-height: 400px;
+  height: 100%;
+  margin-top: 20px;
+  padding: 0;
+}
+
+.inv-content .slots {
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+  align-items: start;
+  width: 450px;
+  height: 100%;
+  gap: 6px;
+}
+
+.inv-content .slots .row {
+  display: flex;
+  justify-content: start;
+  align-items: start;
+  width: 100%;
+  gap: 6px;
+}
+
+.inv-content .slots .row div {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 35px;
+  height: 45px;
+  background: var(--bright-bg);
+  border: 1px solid transparent;
+  border-radius: 12px;
+  font-family: var(--script-font-family);
+  padding: 0;
+}
+
+.inv-content .slots .row div:hover .tag {
+  color: var(--highlight-color);
+}
+
+.inv-content .slots .row div .tag {
+  color: var(--default-color);
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.inv-content .slots .row div .count {
+  color: var(--dim-color);
+  font-weight: 500;
+  font-size: 13px;
+}
+
+.inv-content .vars {
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+  align-items: start;
+  height: 100%;
+  width: 100%;
+  border-left: 1px solid var(--secondary-border);
+  overflow-y: auto;
+  margin-left: 20px;
+  padding-left: 20px;
+  gap: 5px;
+}
+
+.inv-content .vars::-webkit-scrollbar { 
+  display: flex;
+  width: 10px;
+  background: var(--scrollbar-bg);
+}
+
+.inv-content .vars::-webkit-scrollbar-thumb { 
+  background: var(--scrollbar-thumb-bg);
+  width: 4px;
+  border-radius: 6px;
+}
+
+.inv-content .vars::-webkit-scrollbar-thumb:hover { 
+  background: var(--scrollbar-thumb-hover-bg);
+}
+
+.inv-content .vars label {
+  font-family: var(--script-font-family);
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.inv-content .vars label.highlight {
+  color: var(--highlight-color);
 }
 
 .notice-wrapper {

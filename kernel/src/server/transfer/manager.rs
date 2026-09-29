@@ -4,7 +4,7 @@ use tokio::sync::broadcast;
 
 use crate::server::transfer::{
   AntiMapCaptchaPayload, AntiWebCaptchaPayload, BotChatPayload, LogPayload, MessagePayload, ProcessStatusPayload,
-  SessionChatPayload, UpdateBotProfilePayload,
+  SessionChatPayload, SetSlotPayload, UpdateBotProfilePayload,
 };
 
 pub static TRANSFER: LazyLock<TransferManager> = LazyLock::new(|| TransferManager::new());
@@ -19,6 +19,7 @@ pub enum TransferEvent {
   AntiMapCaptcha(AntiMapCaptchaPayload),
   UpdateBotProfile(UpdateBotProfilePayload),
   ProcessStatus(ProcessStatusPayload),
+  SetSlot(SetSlotPayload),
 }
 
 pub struct TransferManager {

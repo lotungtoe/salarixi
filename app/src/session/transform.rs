@@ -15,6 +15,7 @@ pub fn transform_id(id: u8) -> &'static str {
     0x0C => "process:synchronize",
     0x0D => "system:synchronize-index",
     0x0E => "monitoring:set-group",
+    0x0F => "monitoring:set-slot",
     _ => "unknown",
   }
 }

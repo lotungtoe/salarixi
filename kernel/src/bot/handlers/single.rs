@@ -10,7 +10,7 @@ use azalea::FormattedText;
 use azalea::{ClientInformation, NoState};
 
 use crate::bot::auth::{default_authorize, trigger_authorize};
-use crate::bot::extensions::BotDefaultExt;
+use crate::bot::extensions::{BotDefaultExt, BotInventoryExt};
 use crate::bot::script::SCRIPT_EXECUTOR;
 use crate::bot::systems::index::INDEX_SYSTEM;
 use crate::bot::systems::profile::BotStatus;
@@ -24,9 +24,9 @@ use crate::launch::options::CaptchaType;
 use crate::launch::process::current_options;
 use crate::launch::process::update_process_status;
 use crate::server::transfer::*;
-use crate::tools::*;
 use crate::webhook::*;
 use crate::{sleep, take_profile};
+use crate::{take_bot, tools::*};
 
 static TICK_COUNTER: AtomicU8 = AtomicU8::new(0);
 
@@ -101,6 +101,29 @@ async fn process_spawn(bot: Client) {
 
   emit_log(format!("Бот {} заспавнился", username), LogClass::Info);
   emit_msg("Система", format!("Бот {} заспавнился", username));
+
+  take_bot!(&index, async |bot| {
+    if let Some(menu) = bot.get_inventory_menu() {
+      for (slot, item) in menu.slots().iter().enumerate() {
+        if item.is_empty() || slot > 45 {
+          continue;
+        }
+
+        let event = TransferEvent::SetSlot(SetSlotPayload {
+          index: index,
+          slot: slot as u8,
+          count: if item.count() > 64 { 65 } else { item.count() as u8 },
+          name: if item.is_empty() {
+            None
+          } else {
+            Some(item.kind().to_string()[10..].into())
+          },
+        });
+
+        TRANSFER.emit(event);
+      }
+    }
+  });
 
   // Я без понятия что ставить в приоретет - сценарий пользователя или авторизацию.
   // Если я оберну авторизацию и сценарий в отдельные асинхронные задачи, то в таком
@@ -254,6 +277,32 @@ async fn process_packet(bot: Client, packet: Arc<ClientboundGamePacket>) {
     }
     ClientboundGamePacket::MapItemData(p) => {
       MAP_CAPTCHA_BYPASS.process_map_data(&bot, username, index, p).await;
+    }
+    ClientboundGamePacket::ContainerSetSlot(p) => {
+      let Some(menu) = bot.get_inventory_menu() else {
+        return;
+      };
+
+      if menu.len() != 46 || p.slot > 45 {
+        return;
+      }
+
+      let event = TransferEvent::SetSlot(SetSlotPayload {
+        index: index,
+        slot: p.slot as u8,
+        count: if p.item_stack.count() > 64 {
+          65
+        } else {
+          p.item_stack.count() as u8
+        },
+        name: if p.item_stack.is_empty() {
+          None
+        } else {
+          Some(p.item_stack.kind().to_string()[10..].into())
+        },
+      });
+
+      TRANSFER.emit(event);
     }
     _ => {}
   }

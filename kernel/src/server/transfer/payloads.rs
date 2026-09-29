@@ -162,3 +162,23 @@ impl UpdateBotProfilePayload {
     buf.freeze()
   }
 }
+
+#[derive(Clone)]
+pub struct SetSlotPayload {
+  pub index: u8,
+  pub slot: u8,
+  pub count: u8,
+  pub name: Option<String>,
+}
+
+impl SetSlotPayload {
+  pub fn to_bytes(&self) -> Bytes {
+    let mut buf = BytesMut::new();
+    buf.put_u8(0x0F);
+    self.index.write(&mut buf);
+    self.slot.write(&mut buf);
+    self.count.write(&mut buf);
+    self.name.write(&mut buf);
+    buf.freeze()
+  }
+}
