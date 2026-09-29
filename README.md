@@ -2,7 +2,7 @@
 
 ## About
 
-**salarixi** - a feature-rich, multi-task, and lightweight tool for botting in Minecraft. It has a lot of settings that can be quickly adjusted to your goals. This tool also offers a lot of features for managing bots, there are many separate management modules, scripting, and it is also unique for its optimized and fast monitoring capabilities (graphs, bot profiles, chats with bots), they allow you to filter data on the fly, manage specific bots.
+**Salarixi** - a feature-rich, multi-task, and lightweight tool for botting in Minecraft. It has a lot of settings that can be quickly adjusted to your goals. This tool also offers a lot of features for managing bots, there are many separate management modules, scripting, and it is also unique for its fast monitoring capabilities (bot status, health, ping, chats), they allow you to filter data on the fly, manage specific bots.
 
 ---
 
@@ -60,9 +60,9 @@ You can read usage documentation on our [website](https://salarixi.freedev.app/p
 - **Language support:** English, Turkish, Japanese, and Chinese are partially supported. Russian is 100% supported.
 - **Absolutely free:** All functionality is free.
 - **Open-source:** Tool is completely open-source.
-- **Lightweight:** This is the lightest tool among all similar alternatives. Installation file is ~14MB, and total size on disk after installation is ~60MB.
+- **Lightweight:** This is the lightest tool among all similar alternatives. Installation file is ~14MiB, and total size on disk after installation is ~60MiB.
 - **Beautiful design:** Tool has a clear and beautiful dark design.
-- **RAM friendly:** At launch, app requires only ~5MB of RAM for the main process. There's also a webview for rendering the interface, which requires an average of ~118 MB of RAM. Total RAM usage is ~125MB. When running 50 bots, the main application process consumes ~72MB of RAM.
+- **RAM friendly:** At launch, app requires only ~5MiB of RAM for the main process. There's also a webview for rendering the interface, which requires an average of ~118MiB of RAM. Total RAM usage is ~125MiB. When running 50 bots, the main application process consumes ~72MiB of RAM.
 - **Customization:** You can customize any interface color using a style kit.
 - **Event logging:** Tool has a log in which any information is logged.
 - **Feature-rich:** Tool has many features for working with bots.

@@ -4,10 +4,11 @@ This is a section that contains kernel logic - computational functions, modules,
 
 # Map
 
-|       Relative Path         |                   Description                            |
+|       Relative Path         |                       Description                        |
 |-----------------------------|----------------------------------------------------------|
 | `./src/bot`                 | All bot functionality                                    |
-| `./src/launch`              | Process control logic, start and stop bots               |
+| `./src/launch`              | Main process control logic, start and stop bots          |
 | `./src/server`              | Salarixi server implementation                           |
+| `./src/commands`            | Client command processors                                |
 | `./src/tools`               | Helper tools                                             |
 | `./src/webhook`             | Webhook logic                                            |
