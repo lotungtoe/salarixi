@@ -181,6 +181,8 @@ async function startBots(): Promise<void> {
 		buf.writeBoolean(options.basic["use_anti_captcha"]);
 		buf.writeBoolean(options.basic["use_webhook"]);
 		buf.writeBoolean(options.basic["monitoring_optimization"]);
+		buf.writeBoolean(options.basic["chat_monitoring"]);
+		buf.writeBoolean(options.basic["inventory_monitoring"]);
 		buf.writeOption<string>(options.basic["proxy_list"], (some) => buf.writeString(some));
 		buf.writeOption<string>(options.basic["script"], (some) => buf.writeString(some));
 
@@ -222,7 +224,7 @@ async function startBots(): Promise<void> {
 		processActivity = true;
 
 		monitoringModule.maxChatHistoryLength = parseInt((document.getElementById("monitoring_option_chat-history-length") as HTMLInputElement).value || "50");
-		monitoringModule.enable();
+		monitoringModule.enable(options.basic["chat_monitoring"], options.basic["inventory_monitoring"]);
 
 		if (options.basic["use_anti_captcha"]) captchaModule.enable(options.captcha_bypass["captcha_type"], options.captcha_bypass["solve_mode"]);
 
@@ -640,12 +642,14 @@ async function listenSystemEvents(): Promise<void> {
 			const antiCaptchaEnabled = buf.readU8() === 0x01;
 			const captchaType = buf.readU8();
 			const captchaSolveMode = buf.readU8();
+			const chatMonitoring = buf.readBoolean();
+			const inventoryMonitoring = buf.readBoolean();
 
 			processActivity = activity;
 
 			if (processActivity) {
 				monitoringModule.maxChatHistoryLength = parseInt((document.getElementById("monitoring_option_chat-history-length") as HTMLInputElement).value || "50");
-				monitoringModule.enable();
+				monitoringModule.enable(chatMonitoring, inventoryMonitoring);
 				if (antiCaptchaEnabled) captchaModule.enable(captchaType, captchaSolveMode);
 				radarModule.enable();
 				indexSystem.synchronize(buf);

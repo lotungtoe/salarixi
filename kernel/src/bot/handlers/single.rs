@@ -10,6 +10,7 @@ use azalea::FormattedText;
 use azalea::{ClientInformation, NoState};
 
 use crate::bot::auth::{default_authorize, trigger_authorize};
+use crate::bot::common::update_inventory;
 use crate::bot::extensions::{BotDefaultExt, BotInventoryExt};
 use crate::bot::script::SCRIPT_EXECUTOR;
 use crate::bot::systems::index::INDEX_SYSTEM;
@@ -24,9 +25,9 @@ use crate::launch::options::CaptchaType;
 use crate::launch::process::current_options;
 use crate::launch::process::update_process_status;
 use crate::server::transfer::*;
+use crate::tools::*;
 use crate::webhook::*;
 use crate::{sleep, take_profile};
-use crate::{take_bot, tools::*};
 
 static TICK_COUNTER: AtomicU8 = AtomicU8::new(0);
 
@@ -102,28 +103,7 @@ async fn process_spawn(bot: Client) {
   emit_log(format!("Бот {} заспавнился", username), LogClass::Info);
   emit_msg("Система", format!("Бот {} заспавнился", username));
 
-  take_bot!(&index, async |bot| {
-    if let Some(menu) = bot.get_inventory_menu() {
-      for (slot, item) in menu.slots().iter().enumerate() {
-        if item.is_empty() || slot > 45 {
-          continue;
-        }
-
-        let event = TransferEvent::SetSlot(SetSlotPayload {
-          index: index,
-          slot: slot as u8,
-          count: if item.count() > 64 { 65 } else { item.count() as u8 },
-          name: if item.is_empty() {
-            None
-          } else {
-            Some(item.kind().to_string()[10..].into())
-          },
-        });
-
-        TRANSFER.emit(event);
-      }
-    }
-  });
+  update_inventory(&index).await;
 
   // Я без понятия что ставить в приоретет - сценарий пользователя или авторизацию.
   // Если я оберну авторизацию и сценарий в отдельные асинхронные задачи, то в таком
@@ -187,12 +167,16 @@ async fn process_disconnect(bot: Client, text: Option<FormattedText>) {
 }
 
 async fn process_chat_message(bot: Client, packet: ChatPacket) {
-  let username = bot.username();
-  let Some(index) = INDEX_SYSTEM.index_by_username(&username).await else {
+  let Some(opts) = current_options().await else {
     return;
   };
 
-  let Some(options) = current_options().await else {
+  if !opts.basic.chat_monitoring {
+    return;
+  }
+
+  let username = bot.username();
+  let Some(index) = INDEX_SYSTEM.index_by_username(&username).await else {
     return;
   };
 
@@ -201,11 +185,11 @@ async fn process_chat_message(bot: Client, packet: ChatPacket) {
     message: packet.message().to_html(),
   }));
 
-  if options.basic.use_anti_captcha && options.captcha_bypass.captcha_type == CaptchaType::Web {
+  if opts.basic.use_anti_captcha && opts.captcha_bypass.captcha_type == CaptchaType::Web {
     if let Some(url) = WEB_CAPTCHA_BYPASS.catch_url_from_message(
       packet.message().to_string(),
-      options.captcha_bypass.regex.as_str(),
-      options.captcha_bypass.required_url_part,
+      opts.captcha_bypass.regex.as_str(),
+      opts.captcha_bypass.required_url_part,
     ) {
       let Some(profile) = PROFILE_SYSTEM.get(&index).await else {
         return;
@@ -216,9 +200,9 @@ async fn process_chat_message(bot: Client, packet: ChatPacket) {
           profile.captcha_caught = true;
         });
 
-        if options.basic.use_webhook && options.webhook.send_information {
+        if opts.basic.use_webhook && opts.webhook.send_information {
           send_webhook(
-            options.webhook.url,
+            opts.webhook.url,
             format!("Бот {} получил ссылку на капчу: {}", username, url),
           );
         }
@@ -279,6 +263,14 @@ async fn process_packet(bot: Client, packet: Arc<ClientboundGamePacket>) {
       MAP_CAPTCHA_BYPASS.process_map_data(&bot, username, index, p).await;
     }
     ClientboundGamePacket::ContainerSetSlot(p) => {
+      let Some(opts) = current_options().await else {
+        return;
+      };
+
+      if !opts.basic.inventory_monitoring {
+        return;
+      }
+
       let Some(menu) = bot.get_inventory_menu() else {
         return;
       };

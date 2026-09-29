@@ -3453,6 +3453,28 @@
         "ja": "目に見えるものだけ",
         "zh": "只有可見的"
       }
+    },
+    {
+      "versions": "1.2.0",
+      "tag": "chat-monitoring",
+      "lang": {
+        "ru": "Мониторинг чата",
+        "en": "Chat monitoring",
+        "tr": "Sohbet izleme",
+        "ja": "チャット監視",
+        "zh": "聊天監控"
+      }
+    },
+    {
+      "versions": "1.2.0",
+      "tag": "inventory-monitoring",
+      "lang": {
+        "ru": "Мониторинг инвентаря",
+        "en": "Inventory monitoring",
+        "tr": "Envanter izleme",
+        "ja": "在庫監視",
+        "zh": "庫存監控"
+      }
     }
   ]
 }

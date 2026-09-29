@@ -213,8 +213,14 @@ impl Server {
         continue;
       };
 
-      if let Err(e) = execute_client_command(addr.clone(), &writer, &cipher, &command, data, &sockets).await {
-        println!("[error :: {}] command \"{:?}\" execution error: {}", addr, command, e);
+      if execute_client_command(addr.clone(), &writer, &cipher, &command, data, &sockets)
+        .await
+        .is_none()
+      {
+        println!(
+          "[error :: {}] command \"{:?}\" execution error: incorrect or corrupted data",
+          addr, command
+        );
       }
     }
   }

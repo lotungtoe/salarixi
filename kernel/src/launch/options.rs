@@ -97,6 +97,8 @@ pub struct BasicOptions {
   pub use_anti_captcha: bool,
   pub use_webhook: bool,
   pub monitoring_optimization: bool,
+  pub chat_monitoring: bool,
+  pub inventory_monitoring: bool,
   pub proxy_list: Option<String>,
   pub script: Option<String>,
 }
@@ -141,6 +143,8 @@ impl BasicOptions {
       use_anti_captcha: bool::read(buf)?,
       use_webhook: bool::read(buf)?,
       monitoring_optimization: bool::read(buf)?,
+      chat_monitoring: bool::read(buf)?,
+      inventory_monitoring: bool::read(buf)?,
       proxy_list: Option::read(buf)?,
       script: Option::read(buf)?,
     })

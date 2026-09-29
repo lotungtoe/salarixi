@@ -1,4 +1,3 @@
-use std::io::{Error, ErrorKind};
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
 
@@ -8,7 +7,9 @@ use salarixi_extensions::buffer::BufferExt;
 use tokio::net::tcp::OwnedWriteHalf;
 use tokio::sync::RwLock;
 
+use crate::bot::common::convert_inventory_slot_to_hotbar_slot;
 use crate::bot::common_actions::{disconnect_bot, reset_bot};
+use crate::bot::extensions::{BotInventoryExt, ClickMode};
 use crate::bot::quick::run_quick_task;
 use crate::bot::script::SCRIPT_EXECUTOR;
 use crate::bot::systems::index::INDEX_SYSTEM;
@@ -36,9 +37,9 @@ async fn create_sync_buf() -> Option<Bytes> {
   } else {
     0x02
   });
-  buf.put_u8(process.status_id);
-  buf.put_u8(process.connected_bots);
-  buf.put_u8(process.total_bots);
+  process.status_id.write(&mut buf);
+  process.connected_bots.write(&mut buf);
+  process.total_bots.write(&mut buf);
   buf.put_u8(if opts.basic.use_anti_captcha { 0x01 } else { 0x00 });
   buf.put_u8(match opts.captcha_bypass.captcha_type {
     CaptchaType::Web => 0x00,
@@ -48,6 +49,8 @@ async fn create_sync_buf() -> Option<Bytes> {
     CaptchaSolveMode::Manual => 0x00,
     CaptchaSolveMode::Auto => 0x01,
   });
+  opts.basic.chat_monitoring.write(&mut buf);
+  opts.basic.inventory_monitoring.write(&mut buf);
 
   if PROCESS_ACTIVITY.load(Ordering::SeqCst) {
     let map = INDEX_SYSTEM.map.read().await;
@@ -130,13 +133,13 @@ async fn stop_bots(sockets: &Sockets) {
   synchronize_all(sockets).await;
 }
 
-async fn common_action(data: &mut Bytes) -> std::io::Result<()> {
-  let action = u8::read(data).ok_or(Error::new(ErrorKind::InvalidData, "options parsing error"))?;
-  let index = u8::read(data).ok_or(Error::new(ErrorKind::InvalidData, "options parsing error"))?;
+async fn common_action(data: &mut Bytes) -> Option<()> {
+  let action = u8::read(data)?;
+  let index = u8::read(data)?;
 
   match action {
     0x00 => {
-      let message = String::read(data).ok_or(Error::new(ErrorKind::InvalidData, "options parsing error"))?;
+      let message = String::read(data)?;
       take_bot!(&index, async |bot| bot.chat(message));
     }
     0x01 => {
@@ -148,12 +151,12 @@ async fn common_action(data: &mut Bytes) -> std::io::Result<()> {
     _ => {}
   }
 
-  Ok(())
+  Some(())
 }
 
-async fn set_group(data: &mut Bytes, sockets: &Sockets) -> std::io::Result<()> {
-  let index = u8::read(data).ok_or(Error::new(ErrorKind::InvalidData, "options parsing error"))?;
-  let group = String::read(data).ok_or(Error::new(ErrorKind::InvalidData, "options parsing error"))?;
+async fn set_group(data: &mut Bytes, sockets: &Sockets) -> Option<()> {
+  let index = u8::read(data)?;
+  let group = String::read(data)?;
 
   take_profile!(&index, async |profile| {
     profile.group = group.clone();
@@ -166,7 +169,7 @@ async fn set_group(data: &mut Bytes, sockets: &Sockets) -> std::io::Result<()> {
 
   write_to_sockets(sockets, &buf).await;
 
-  Ok(())
+  Some(())
 }
 
 async fn change_module_state(data: Bytes) {
@@ -180,8 +183,8 @@ async fn find_radar_target(
   addr: String,
   writer: &Arc<RwLock<OwnedWriteHalf>>,
   cipher: &Arc<Aes256Gcm>,
-) -> std::io::Result<()> {
-  let target = String::read(data).ok_or(Error::new(ErrorKind::InvalidData, "options parsing error"))?;
+) -> Option<()> {
+  let target = String::read(data)?;
 
   if let Some(info) = RADAR.find_target(target.clone()).await {
     let mut buf = BytesMut::new();
@@ -197,45 +200,45 @@ async fn find_radar_target(
     write_to_socket(&addr, writer, cipher, &buf).await;
   }
 
-  Ok(())
+  Some(())
 }
 
-async fn save_radar_data(data: &mut Bytes) -> std::io::Result<()> {
-  let target = String::read(data).ok_or(Error::new(ErrorKind::InvalidData, "options parsing error"))?;
-  let path = String::read(data).ok_or(Error::new(ErrorKind::InvalidData, "options parsing error"))?;
-  let filename = String::read(data).ok_or(Error::new(ErrorKind::InvalidData, "options parsing error"))?;
-  let x = f64::read(data).ok_or(Error::new(ErrorKind::InvalidData, "options parsing error"))?;
-  let y = f64::read(data).ok_or(Error::new(ErrorKind::InvalidData, "options parsing error"))?;
-  let z = f64::read(data).ok_or(Error::new(ErrorKind::InvalidData, "options parsing error"))?;
+async fn save_radar_data(data: &mut Bytes) -> Option<()> {
+  let target = String::read(data)?;
+  let path = String::read(data)?;
+  let filename = String::read(data)?;
+  let x = f64::read(data)?;
+  let y = f64::read(data)?;
+  let z = f64::read(data)?;
 
   RADAR.save_data(target, path, filename, x, y, z);
 
-  Ok(())
+  Some(())
 }
 
-async fn follow_radar_target(data: &mut Bytes) -> std::io::Result<()> {
-  let x = i32::read(data).ok_or(Error::new(ErrorKind::InvalidData, "options parsing error"))?;
-  let z = i32::read(data).ok_or(Error::new(ErrorKind::InvalidData, "options parsing error"))?;
+async fn follow_radar_target(data: &mut Bytes) -> Option<()> {
+  let x = i32::read(data)?;
+  let z = i32::read(data)?;
 
   RADAR.follow(x, z).await;
 
-  Ok(())
+  Some(())
 }
 
-async fn quick_task(data: &mut Bytes) -> std::io::Result<()> {
-  let id = u8::read(data).ok_or(Error::new(ErrorKind::InvalidData, "options parsing error"))?;
+async fn quick_task(data: &mut Bytes) -> Option<()> {
+  let id = u8::read(data)?;
 
   run_quick_task(id).await;
 
-  Ok(())
+  Some(())
 }
 
-async fn execute_script(data: &mut Bytes) -> std::io::Result<()> {
-  let script = String::read(data).ok_or(Error::new(ErrorKind::InvalidData, "options parsing error"))?;
-  let separately = bool::read(data).ok_or(Error::new(ErrorKind::InvalidData, "options parsing error"))?;
+async fn execute_script(data: &mut Bytes) -> Option<()> {
+  let script = String::read(data)?;
+  let separately = bool::read(data)?;
 
   if !process_is_active() {
-    return Ok(());
+    return Some(());
   }
 
   if separately {
@@ -254,11 +257,45 @@ async fn execute_script(data: &mut Bytes) -> std::io::Result<()> {
     SCRIPT_EXECUTOR.execute(String::new(), 0, script);
   }
 
-  Ok(())
+  Some(())
 }
 
 async fn stop_script() {
   SCRIPT_EXECUTOR.stop();
+}
+
+async fn inventory_action(data: &mut Bytes) -> Option<()> {
+  let index = u8::read(data)?;
+  let slot = u8::read(data)?;
+  let action = u8::read(data)?;
+
+  let mut result = Some(());
+
+  take_bot!(&index, async |bot| {
+    match action {
+      0x00 => {
+        let Some(hotbar_slot) = convert_inventory_slot_to_hotbar_slot(slot as usize) else {
+          return;
+        };
+
+        bot.set_selected_hotbar_slot(hotbar_slot);
+      }
+      0x01 => {
+        bot.inventory_click(&index, slot as usize, ClickMode::Drop, true).await;
+      }
+      0x02 => {
+        bot
+          .inventory_click(&index, slot as usize, ClickMode::DropAll, true)
+          .await;
+      }
+      0x03 => {
+        bot.inventory_click(&index, slot as usize, ClickMode::Shift, true).await;
+      }
+      _ => result = None,
+    }
+  });
+
+  result
 }
 
 /// Функция выполнения команды клиента
@@ -269,7 +306,7 @@ pub async fn execute_client_command(
   command: &ClientCommand,
   mut data: Bytes,
   sockets: &Sockets,
-) -> std::io::Result<()> {
+) -> Option<()> {
   println!(
     "[info :: {}] command \"{:?}\" received | length={}",
     addr,
@@ -292,7 +329,8 @@ pub async fn execute_client_command(
     ClientCommand::ExecuteScript => execute_script(&mut data).await?,
     ClientCommand::StopScript => stop_script().await,
     ClientCommand::Synchronize => synchronize(&addr, writer, cipher).await,
+    ClientCommand::InventoryAction => inventory_action(&mut data).await?,
   }
 
-  Ok(())
+  Some(())
 }

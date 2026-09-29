@@ -16,4 +16,5 @@ pub enum ClientCommand {
   QuickTask = 0x0B,
   ExecuteScript = 0x0C,
   StopScript = 0x0D,
+  InventoryAction = 0x0E,
 }

@@ -69,7 +69,7 @@ impl AutoMendingPlugin {
         take_bot!(index, async |bot| {
           bot.take_item(index, broken_item.slot, false).await;
           sleep!(50);
-          bot.move_item_to_offhand(broken_item.kind).await;
+          bot.move_item_to_offhand(index, broken_item.kind).await;
         });
       }
 

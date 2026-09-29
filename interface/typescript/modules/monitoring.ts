@@ -41,6 +41,9 @@ class MonitoringModule {
 	private chatMessageCounter: Record<string, number> = {};
 	private chatHistoryFilters: Record<string, string> = {};
 
+	private chatMonitoring: boolean = false;
+	private inventoryMonitoring: boolean = false;
+
 	public maxChatHistoryLength: number = 0;
 
 	/** Метод инициализации функций, связанных с мониторингом */
@@ -52,6 +55,8 @@ class MonitoringModule {
 		this.statusText!.style.display = "flex";
 
 		await listen<number[]>("monitoring:chat", (e) => {
+			if (!this.chatMonitoring) return;
+
 			try {
 				const buf = new Buffer(new Uint8Array(e.payload));
 				const index = buf.readU8();
@@ -143,6 +148,8 @@ class MonitoringModule {
 		});
 
 		await listen<number[]>("monitoring:set-slot", (e) => {
+			if (!this.inventoryMonitoring) return;
+
 			try {
 				const buf = new Buffer(new Uint8Array(e.payload));
 				const index = buf.readU8();
@@ -164,7 +171,9 @@ class MonitoringModule {
 	}
 
 	/** Метод включения модуля */
-	public enable(): void {
+	public enable(chatMonitoring: boolean, inventoryMonitoring: boolean): void {
+		this.chatMonitoring = chatMonitoring;
+		this.inventoryMonitoring = inventoryMonitoring;
 		this.statusText!.style.display = "none";
 		this.cards!.innerHTML = "";
 		this.cards!.style.display = "flex";
@@ -182,6 +191,9 @@ class MonitoringModule {
 		this.chatMessageCounter = {};
 		this.chatHistoryFilters = {};
 		this.indexTable = [];
+
+		this.chatMonitoring = false;
+		this.inventoryMonitoring = false;
 
 		this.statusText!.style.display = "flex";
 	}
@@ -268,7 +280,9 @@ class MonitoringModule {
 	}
 
 	/** Метод создания обёркти чата бота */
-	private createChatWrapper(index: number, username: string): HTMLDivElement {
+	private createChatWrapper(index: number, username: string): HTMLDivElement | null {
+		if (!this.chatMonitoring) return null;
+
 		const wrapper = document.createElement("div");
 		wrapper.className = "cover";
 		wrapper.id = `chat-${index}`;
@@ -331,7 +345,9 @@ class MonitoringModule {
 	}
 
 	/** Метод создания обёркти инвентаря бота */
-	private createInventoryWrapper(index: number, username: string): HTMLDivElement {
+	private createInventoryWrapper(index: number, username: string): HTMLDivElement | null {
+		if (!this.inventoryMonitoring) return null;
+
 		const wrapper = document.createElement("div");
 		wrapper.className = "cover";
 		wrapper.id = `inv-${index}`;
@@ -370,36 +386,6 @@ class MonitoringModule {
 			return vars;
 		};
 
-		const generateLinks = (): void => {
-			const slots = document.querySelectorAll<HTMLDivElement>(`#inv-slots-${index} div`);
-			const vars = document.querySelectorAll<HTMLLabelElement>(`#inv-vars-${index} label`);
-
-			for (let i = 0; i < 47; i++) {
-				if (slots.length <= i) break;
-
-				const slot = slots[i];
-				const si = parseInt(slot.getAttribute(`inv-slot-${index}`) || "0");
-
-				slot.addEventListener("mouseenter", () => {
-					for (const variable of vars) {
-						const vi = parseInt(variable.getAttribute(`inv-var-${index}`) || "0");
-
-						if (si === vi) {
-							variable.classList.add("highlight");
-							variable.scrollIntoView({ behavior: "smooth", block: "start" });
-						}
-					}
-				});
-
-				slot.addEventListener("mouseleave", () => {
-					for (const variable of vars) {
-						const vi = parseInt(variable.getAttribute(`inv-var-${index}`) || "0");
-						if (si === vi) variable.classList.remove("highlight");
-					}
-				});
-			}
-		};
-
 		wrapper.innerHTML = `
       <div class="panel with-header">
         <div class="left">
@@ -434,10 +420,78 @@ class MonitoringModule {
     `;
 
 		this.wrappers?.appendChild(wrapper);
-
-		generateLinks();
+		this.createInventoryBindings(username, index);
 
 		return wrapper;
+	}
+
+	/** Метод создания привязок инвенторя бота */
+	private createInventoryBindings(username: string, index: number): void {
+		const slots = document.querySelectorAll<HTMLDivElement>(`#inv-slots-${index} div`);
+		const vars = document.querySelectorAll<HTMLLabelElement>(`#inv-vars-${index} label`);
+
+		for (let i = 0; i < 47; i++) {
+			if (slots.length <= i) break;
+
+			const slot = slots[i];
+			const si = parseInt(slot.getAttribute(`inv-slot-${index}`) || "0");
+
+			slot.addEventListener("mouseenter", () => {
+				for (const variable of vars) {
+					const vi = parseInt(variable.getAttribute(`inv-var-${index}`) || "0");
+
+					if (si === vi) {
+						variable.classList.add("highlight");
+						variable.scrollIntoView({ behavior: "smooth", block: "start" });
+					}
+				}
+			});
+
+			slot.addEventListener("mouseleave", () => {
+				for (const variable of vars) {
+					const vi = parseInt(variable.getAttribute(`inv-var-${index}`) || "0");
+					if (si === vi) variable.classList.remove("highlight");
+				}
+			});
+
+			slot.addEventListener("mouseup", async (e) => {
+				try {
+					const buf = new Buffer();
+					buf.writeU8(0x0E);
+					buf.writeU8(index);
+					buf.writeU8(si);
+
+					let operation = null;
+					let isCommand = true;
+
+					if (e.ctrlKey && e.button === 0) {
+						buf.writeU8(0x01);
+						operation = "drop";
+					} else if (e.ctrlKey && e.button === 2) {
+						buf.writeU8(0x02);
+						operation = "drop-all";
+					} else if (e.button === 0 && si > 35 && si < 45) {
+						buf.writeU8(0x00);
+						operation = "set-selected-slot";
+					} else if (e.button === 2) {
+						buf.writeU8(0x03);
+						operation = "shift-click";
+					} else {
+						isCommand = false;
+					}
+
+					if (!isCommand || !operation) return;
+
+					const error = (await invoke<CommandResult<null>>("send_command", {
+						data: buf.toUint8Array(),
+					})).error;
+
+					if (error) logger.log(`Ошибка выполнения операции "${operation}" с инвентарём бота ${username}: ${error}`, "error");
+				} catch (error) {
+					logger.log(`Ошибка взаимодействия с инвентарём ${username}: ${error}`, "error");
+				}
+			});
+		}
 	}
 
 	/** Метод обновления карточки бота */
@@ -485,40 +539,52 @@ class MonitoringModule {
 
 	/** Метод инициализации карточки бота */
 	private initializeBotCard(index: number, username: string): void {
-		this.chatHistoryFilters[index] = "all";
 		this.indexTable.push(index);
 
 		const chatWrapper = this.createChatWrapper(index, username);
+
+		if (chatWrapper) {
+			this.chatHistoryFilters[index] = "all";
+
+			document.getElementById(`open-chat-${index}`)?.addEventListener("click", () => chatWrapper.style.display = "flex");
+			document.getElementById(`close-chat-${index}`)?.addEventListener("click", () => chatWrapper.style.display = "none");
+
+			document.getElementById(`chat-${index}`)?.addEventListener("keydown", async (e) => {
+				if ((e as KeyboardEvent).key === "Enter") {
+					const message = document.getElementById(`chat-message-${index}`) as HTMLInputElement;
+
+					const buf = new Buffer();
+					buf.writeU8(0x05);
+					buf.writeU8(0x00);
+					buf.writeU8(index);
+					buf.writeString(message.value);
+
+					const result = await invoke<CommandResult<null>>("send_command", {
+						data: buf.toUint8Array(),
+					});
+
+					if (result.error) {
+						logger.log(`Ошибка отправки сообщения от бота ${username}: ${result.error}`, "error");
+						return;
+					}
+
+					message.value = "";
+				}
+			});
+		} else {
+			const btn = document.getElementById(`open-chat-${index}`) as HTMLButtonElement | null;
+			if (btn) btn.disabled = true;
+		}
+
 		const inventoryWrapper = this.createInventoryWrapper(index, username);
 
-		document.getElementById(`open-chat-${index}`)?.addEventListener("click", () => chatWrapper.style.display = "flex");
-		document.getElementById(`close-chat-${index}`)?.addEventListener("click", () => chatWrapper.style.display = "none");
-
-		document.getElementById(`chat-${index}`)?.addEventListener("keydown", async (e) => {
-			if ((e as KeyboardEvent).key === "Enter") {
-				const message = document.getElementById(`chat-message-${index}`) as HTMLInputElement;
-
-				const buf = new Buffer();
-				buf.writeU8(0x05);
-				buf.writeU8(0x00);
-				buf.writeU8(index);
-				buf.writeString(message.value);
-
-				const result = await invoke<CommandResult<null>>("send_command", {
-					data: buf.toUint8Array(),
-				});
-
-				if (result.error) {
-					logger.log(`Ошибка отправки сообщения от бота ${username}: ${result.error}`, "error");
-					return;
-				}
-
-				message.value = "";
-			}
-		});
-
-		document.getElementById(`open-inv-${index}`)?.addEventListener("click", () => inventoryWrapper.style.display = "flex");
-		document.getElementById(`close-inv-${index}`)?.addEventListener("click", () => inventoryWrapper.style.display = "none");
+		if (inventoryWrapper) {
+			document.getElementById(`open-inv-${index}`)?.addEventListener("click", () => inventoryWrapper.style.display = "flex");
+			document.getElementById(`close-inv-${index}`)?.addEventListener("click", () => inventoryWrapper.style.display = "none");
+		} else {
+			const btn = document.getElementById(`open-inv-${index}`) as HTMLButtonElement | null;
+			if (btn) btn.disabled = true;
+		}
 
 		document.getElementById(`reset-${index}`)?.addEventListener("click", async () => {
 			try {

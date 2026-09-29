@@ -10,7 +10,7 @@ use azalea::protocol::packets::game::s_player_action::Action;
 use azalea::protocol::packets::game::ServerboundPlayerAction;
 use azalea::registry::builtin::ItemKind;
 
-use crate::bot::common::convert_inventory_slot_to_hotbar_slot;
+use crate::bot::common::{convert_inventory_slot_to_hotbar_slot, update_inventory};
 use crate::bot::extensions::BotMovementExt;
 use crate::bot::systems::states::{getst, setmst, setst, State, StateName};
 use crate::sleep;
@@ -34,7 +34,7 @@ pub trait BotInventoryExt {
   fn extract_item_meta(&self, item: &ItemStack) -> Option<ItemMeta>;
   fn start_interacting_with_inventory(&self, index: &u8) -> impl std::future::Future<Output = ()> + Send + Sync;
   fn stop_interacting_with_inventory(&self, index: &u8) -> impl std::future::Future<Output = ()> + Send + Sync;
-  fn move_item_to_offhand(&self, kind: ItemKind) -> impl std::future::Future<Output = ()> + Send + Sync;
+  fn move_item_to_offhand(&self, index: &u8, kind: ItemKind) -> impl std::future::Future<Output = ()> + Send + Sync;
   fn inventory_click(
     &self,
     index: &u8,
@@ -253,10 +253,12 @@ impl BotInventoryExt for Client {
       if lock {
         self.stop_interacting_with_inventory(index).await;
       }
+
+      update_inventory(index).await;
     }
   }
 
-  async fn move_item_to_offhand(&self, kind: ItemKind) {
+  async fn move_item_to_offhand(&self, index: &u8, kind: ItemKind) {
     if let Some(menu) = self.get_inventory_menu() {
       if let Some(item) = menu.slot(45) {
         if item.kind() == kind {
@@ -271,6 +273,8 @@ impl BotInventoryExt for Client {
       direction: Direction::Down,
       seq: 0,
     });
+
+    update_inventory(index).await;
   }
 
   async fn inventory_swap_click(&self, index: &u8, source_slot: usize, target_slot: usize, lock: bool) {
@@ -313,6 +317,8 @@ impl BotInventoryExt for Client {
       self.stop_interacting_with_inventory(index).await;
       sleep!(50);
     }
+
+    update_inventory(&index).await;
   }
 
   async fn inventory_click(&self, index: &u8, slot: usize, mode: ClickMode, lock: bool) {
@@ -349,6 +355,8 @@ impl BotInventoryExt for Client {
         sleep!(50);
       }
     }
+
+    update_inventory(&index).await;
   }
 
   async fn inventory_click_on(&self, index: &u8, name: &str, mode: ClickMode, lock: bool) {
