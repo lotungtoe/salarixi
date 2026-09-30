@@ -17,4 +17,6 @@ pub enum ClientCommand {
   ExecuteScript = 0x0C,
   StopScript = 0x0D,
   InventoryAction = 0x0E,
+  UpdateInventory = 0x0F,
+  ClearInventory = 0x10,
 }

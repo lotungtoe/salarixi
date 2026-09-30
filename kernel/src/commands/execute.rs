@@ -299,6 +299,67 @@ async fn inventory_action(data: &mut Bytes) -> Option<()> {
   result
 }
 
+async fn update_inventory(
+  addr: &str,
+  writer: &Arc<RwLock<OwnedWriteHalf>>,
+  cipher: &Arc<Aes256Gcm>,
+  data: &mut Bytes,
+) -> Option<()> {
+  let Some(opts) = current_options().await else {
+    return Some(());
+  };
+
+  if !opts.basic.enable_monitoring || !opts.basic.inventory_monitoring {
+    return Some(());
+  }
+
+  let index = u8::read(data)?;
+
+  take_bot!(&index, async |bot| {
+    let Some(menu) = bot.get_inventory_menu() else {
+      return;
+    };
+
+    if menu.len() != 46 {
+      return;
+    }
+
+    let mut buf = BytesMut::new();
+    buf.put_u8(0x0F);
+    index.write(&mut buf);
+    (menu.slots().len() as u8).write(&mut buf);
+
+    for (slot, item) in menu.slots().iter().enumerate() {
+      (slot as u8).write(&mut buf);
+      (if item.count() > 64 { 65 } else { item.count() as u8 }).write(&mut buf);
+
+      if item.is_empty() {
+        None::<String>.write(&mut buf);
+      } else {
+        Some(item.kind().to_string()[10..].to_string()).write(&mut buf);
+      }
+    }
+
+    write_to_socket(addr, writer, cipher, &buf).await;
+  });
+
+  Some(())
+}
+
+async fn clear_inventory(data: &mut Bytes) -> Option<()> {
+  let index = u8::read(data)?;
+
+  take_bot!(&index, async |bot| {
+    if let Some(menu) = bot.get_inventory_menu() {
+      for (slot, _) in menu.slots().iter().enumerate() {
+        bot.inventory_click(&index, slot, ClickMode::DropAll, false).await;
+      }
+    }
+  });
+
+  Some(())
+}
+
 /// Функция выполнения команды клиента
 pub async fn execute_client_command(
   addr: String,
@@ -331,6 +392,8 @@ pub async fn execute_client_command(
     ClientCommand::StopScript => stop_script().await,
     ClientCommand::Synchronize => synchronize(&addr, writer, cipher).await,
     ClientCommand::InventoryAction => inventory_action(&mut data).await?,
+    ClientCommand::UpdateInventory => update_inventory(&addr, writer, cipher, &mut data).await?,
+    ClientCommand::ClearInventory => clear_inventory(&mut data).await?,
   }
 
   Some(())

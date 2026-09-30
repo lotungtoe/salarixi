@@ -151,10 +151,6 @@ impl Server {
               bytes = payload.to_bytes();
               name = "process-status";
             }
-            TransferEvent::SetSlot(payload) => {
-              bytes = payload.to_bytes();
-              name = "set-slot";
-            }
           }
 
           let payload_len = bytes.len();

@@ -644,8 +644,17 @@ async function listenSystemEvents(): Promise<void> {
 
 			if (processActivity) {
 				if (enableMonitoring) {
-					monitoringModule.maxChatHistoryLength = parseInt((document.getElementById("monitoring_option_chat-history-length") as HTMLInputElement).value || "50");
-					monitoringModule.enable(chatMonitoring, inventoryMonitoring);
+					const maxChatHistoryLength = parseInt((document.getElementById("monitoring_option_chat-history-length") as HTMLInputElement).value || "50");
+					const inventoryUpdateRate = parseInt((document.getElementById("monitoring-inventory-update-frequency-container") as HTMLInputElement).value || "800");
+					const itemCacheThreshold = parseInt((document.getElementById("monitoring-item-cache-threshold-container") as HTMLInputElement).value || "40");
+
+					monitoringModule.enable(
+						chatMonitoring,
+						inventoryMonitoring,
+						maxChatHistoryLength,
+						inventoryUpdateRate,
+						itemCacheThreshold,
+					);
 				}
 
 				if (antiCaptchaEnabled) captchaModule.enable(captchaType, captchaSolveMode);

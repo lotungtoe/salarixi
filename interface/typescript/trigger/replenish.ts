@@ -124,6 +124,19 @@ export function replenishTriggerRegistry(): void {
 		}
 	});
 
+	triggerRegistry.register("settings_chbx_inventory-monitoring", "checkbox", (current: HTMLInputElement) => {
+		const monitoringInventoryUpdateRateInputContainer = document.getElementById("monitoring-inventory-update-frequency-container") as HTMLDivElement;
+		const monitoringItemCacheThresholdInputContainer = document.getElementById("monitoring-item-cache-threshold-container") as HTMLDivElement;
+
+		if (current.checked) {
+			monitoringInventoryUpdateRateInputContainer.style.display = "flex";
+			monitoringItemCacheThresholdInputContainer.style.display = "flex";
+		} else {
+			monitoringInventoryUpdateRateInputContainer.style.display = "none";
+			monitoringItemCacheThresholdInputContainer.style.display = "none";
+		}
+	});
+
 	triggerRegistry.register("captcha-bypass_select_captcha-type", "select", (current: HTMLSelectElement) => {
 		const antiWebCaptchaOptionsContainer = document.getElementById("anti-web-captcha-options") as HTMLElement;
 		const antiMapCaptchaOptionsContainer = document.getElementById("anti-map-captcha-options") as HTMLElement;

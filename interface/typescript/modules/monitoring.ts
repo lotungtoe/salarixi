@@ -44,11 +44,16 @@ class MonitoringModule {
 	private chatMonitoring: boolean = false;
 	private inventoryMonitoring: boolean = false;
 
+	private maxChatHistoryLength: number = 0;
+	private itemCacheThreshold: number = 40;
+	private inventoryUpdateRate: number = 800;
+
 	private cachedTextures: Map<string, string> = new Map();
 	private textureFrequency: Map<string, number> = new Map();
 	private textureSpace: number = 0;
 
-	public maxChatHistoryLength: number = 0;
+	private currentInventoryWindow: number | undefined = undefined;
+	private inventoryUpdateInterval: any = null;
 
 	/** Метод инициализации функций, связанных с мониторингом */
 	public async init(): Promise<void> {
@@ -151,105 +156,135 @@ class MonitoringModule {
 			}
 		});
 
-		await listen<number[]>("monitoring:set-slot", async (e) => {
+		await listen<number[]>("monitoring:update-inventory", async (e) => {
 			if (!this.inventoryMonitoring) return;
 
 			try {
 				const buf = new Buffer(new Uint8Array(e.payload));
 				const index = buf.readU8();
-				const slot = buf.readU8();
-				const count = buf.readU8();
-				const name = buf.readOption(() => buf.readString());
+				const len = buf.readU8();
 
-				const update = (): void => {
-					const countEl = document.getElementById(`inv-slot-count-${index}-${slot}`);
-					if (!countEl) return;
-					countEl.innerText = count < 1 ? "-" : count == 65 ? ">64" : count.toString();
-
-					const varEl = document.getElementById(`inv-var-${index}-${slot}`);
-					if (!varEl) return;
-					varEl.innerText = name ? name : "empty";
-				};
-
-				const slotEl = document.querySelector<HTMLDivElement>(`[inv-slot-${index}="${slot}"]`);
-				if (!slotEl) return;
-
-				const slotIcon = slotEl.querySelector("img");
-				if (!slotIcon) return;
-
-				if (!name) {
-					slotIcon.src = "";
-					slotIcon.style.display = "none";
-					update();
-					return;
+				for (let i = 0; i < len; i++) {
+					const slot = buf.readU8();
+					const count = buf.readU8();
+					const name = buf.readOption(() => buf.readString());
+					this.updateInventorySlot(index, slot, count, name);
 				}
-
-				let texture = this.cachedTextures.get(name);
-
-				if (!texture) {
-					const iconBuf = await invoke<number[]>("extract_item_icon", { texture: name });
-
-					if (iconBuf.length < 1) {
-						slotIcon.src = "";
-						slotIcon.style.display = "none";
-						update();
-						return;
-					}
-
-					const dec = new TextDecoder();
-					const u8a = Uint8Array.from(iconBuf);
-					texture = dec.decode(u8a);
-				}
-
-				const cf = this.textureFrequency.get(name);
-
-				if (cf) {
-					this.textureFrequency.set(name, cf > 100 ? cf : cf + 1);
-				} else if (this.textureFrequency.size < 10) {
-					this.textureFrequency.set(name, 1);
-				}
-
-				// Одна текстура весит ~220 байт, думаю, 10 самых
-				// частых текстур в ОЗУ проблемой не будет
-				if (this.cachedTextures.size < 10) {
-					let mf = 0;
-					let mt: string | null = null;
-					this.textureFrequency.forEach((f, t) => f > mf ? mt = t : null);
-
-					if (mt && !this.cachedTextures.has(mt)) this.cachedTextures.set(mt, texture);
-				} else {
-					if (this.textureSpace > 2) {
-						let mf = 0;
-						let mt: string | null = null;
-						this.textureFrequency.forEach((f, t) => f < mf ? mt = t : !mt ? mt = t : null);
-
-						if (mt) {
-							this.textureFrequency.delete(mt);
-							this.cachedTextures.delete(mt);
-						}
-
-						this.textureSpace = 0;
-					} else {
-						this.textureSpace++;
-					}
-				}
-
-				slotIcon.style.display = "flex";
-				slotIcon.src = `data:image/png;base64,${texture}`;
-				update();
 			} catch (error) {
 				logger.log(`Ошибка обработки события "monitoring:set-slot": ${error}`, "error");
 			}
 		});
 	}
 
+	/** Метод обновления определённого слота инвентаря */
+	private async updateInventorySlot(
+		index: number,
+		slot: number,
+		count: number,
+		name: string | null,
+	): Promise<void> {
+		const update = (): void => {
+			const countEl = document.getElementById(`inv-slot-count-${index}-${slot}`);
+			if (!countEl) return;
+			countEl.innerText = count < 1 ? "-" : count == 65 ? ">64" : count.toString();
+
+			const varEl = document.getElementById(`inv-var-${index}-${slot}`);
+			if (!varEl) return;
+			varEl.innerText = name ? name : "empty";
+		};
+
+		const slotEl = document.querySelector<HTMLDivElement>(`[inv-slot-${index}="${slot}"]`);
+		if (!slotEl) return;
+
+		const slotIcon = slotEl.querySelector("img");
+		if (!slotIcon) return;
+
+		if (!name) {
+			slotIcon.src = "";
+			slotIcon.style.display = "none";
+			update();
+			return;
+		}
+
+		let texture = this.cachedTextures.get(name);
+
+		if (!texture) {
+			const iconBuf = await invoke<number[]>("extract_item_icon", { texture: name });
+
+			if (iconBuf.length < 1) {
+				slotIcon.src = "";
+				slotIcon.style.display = "none";
+				update();
+				return;
+			}
+
+			const dec = new TextDecoder();
+			const u8a = Uint8Array.from(iconBuf);
+			texture = dec.decode(u8a);
+		}
+
+		const cf = this.textureFrequency.get(name);
+
+		if (cf) {
+			this.textureFrequency.set(name, cf > 100 ? cf : cf + 1);
+		} else if (this.textureFrequency.size < this.itemCacheThreshold) {
+			this.textureFrequency.set(name, 1);
+		}
+
+		// Одна текстура весит ~220 байт, думаю, 10 самых
+		// частых текстур в ОЗУ проблемой не будет
+		if (this.cachedTextures.size < this.itemCacheThreshold) {
+			let mf = 0;
+			let mt: string | null = null;
+			this.textureFrequency.forEach((f, t) => f > mf ? mt = t : null);
+
+			if (mt && !this.cachedTextures.has(mt)) this.cachedTextures.set(mt, texture);
+		} else {
+			if (this.textureSpace > 2) {
+				let mf = 0;
+				let mt: string | null = null;
+				this.textureFrequency.forEach((f, t) => f < mf ? mt = t : !mt ? mt = t : null);
+
+				if (mt) {
+					this.textureFrequency.delete(mt);
+					this.cachedTextures.delete(mt);
+				}
+
+				this.textureSpace = 0;
+			} else {
+				this.textureSpace++;
+			}
+		}
+
+		slotIcon.style.display = "flex";
+		slotIcon.src = `data:image/png;base64,${texture}`;
+		update();
+	}
+
 	/** Метод включения модуля */
-	public enable(chatMonitoring: boolean, inventoryMonitoring: boolean): void {
+	public enable(
+		chatMonitoring: boolean,
+		inventoryMonitoring: boolean,
+		maxChatHistoryLength: number,
+		inventoryUpdateRate: number,
+		itemCacheThreshold: number,
+	): void {
 		this.chatMonitoring = chatMonitoring;
 		this.inventoryMonitoring = inventoryMonitoring;
+		this.maxChatHistoryLength = maxChatHistoryLength;
+		this.inventoryUpdateRate = inventoryUpdateRate;
+		this.itemCacheThreshold = itemCacheThreshold;
+
 		this.statusText!.style.display = "none";
 		this.cards!.innerHTML = "";
 		this.cards!.style.display = "flex";
+
+		this.inventoryUpdateInterval = setInterval(async () => {
+			if (this.currentInventoryWindow === undefined) return;
+			const username = indexSystem.usernameByIndex(this.currentInventoryWindow);
+			if (!username) return;
+			this.updateInventory(this.currentInventoryWindow, username);
+		}, this.inventoryUpdateRate);
 	}
 
 	/** Метод очистки и выключения мониторинга */
@@ -271,6 +306,10 @@ class MonitoringModule {
 
 		this.chatMonitoring = false;
 		this.inventoryMonitoring = false;
+
+		clearInterval(this.inventoryUpdateInterval);
+		this.inventoryUpdateInterval = null;
+		this.currentInventoryWindow = undefined;
 
 		this.statusText!.style.display = "flex";
 	}
@@ -470,6 +509,17 @@ class MonitoringModule {
         </div>
 
         <div class="right">
+					<button class="min" id="clear-inv-${index}">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-trash">
+							<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+							<path d="M4 7l16 0" />
+							<path d="M10 11l0 6" />
+							<path d="M14 11l0 6" />
+							<path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" />
+							<path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" />
+						</svg>
+          </button>
+
           <button class="min" id="close-inv-${index}">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-x">
               <path stroke="none" d="M0 0h24v24H0z" fill="none" />
@@ -617,6 +667,23 @@ class MonitoringModule {
 		health.innerText = profile.health.toString();
 	}
 
+	/** Метод отправки запроса на обновление инвентаря бота */
+	private async updateInventory(index: number, username: string): Promise<void> {
+		try {
+			const buf = new Buffer();
+			buf.writeU8(0x0F);
+			buf.writeU8(index);
+
+			const error = (await invoke<CommandResult<null>>("send_command", {
+				data: buf.toUint8Array(),
+			})).error;
+
+			if (error) logger.log(`Ошибка обновления инвентаря бота ${username}: ${error}`, "error");
+		} catch (error) {
+			logger.log(`Ошибка обновления инвентаря бота ${username}: ${error}`, "error");
+		}
+	}
+
 	/** Метод инициализации карточки бота */
 	private initializeBotCard(index: number, username: string): void {
 		this.indexTable.push(index);
@@ -659,8 +726,28 @@ class MonitoringModule {
 		const inventoryWrapper = this.createInventoryWrapper(index, username);
 
 		if (inventoryWrapper) {
-			document.getElementById(`open-inv-${index}`)?.addEventListener("click", () => inventoryWrapper.style.display = "flex");
-			document.getElementById(`close-inv-${index}`)?.addEventListener("click", () => inventoryWrapper.style.display = "none");
+			document.getElementById(`open-inv-${index}`)?.addEventListener("click", async () => {
+				inventoryWrapper.style.display = "flex";
+				this.currentInventoryWindow = index;
+				await this.updateInventory(index, username);
+			});
+
+			document.getElementById(`clear-inv-${index}`)?.addEventListener("click", async () => {
+				const buf = new Buffer();
+				buf.writeU8(0x10);
+				buf.writeU8(index);
+
+				const error = (await invoke<CommandResult<null>>("send_command", {
+					data: buf.toUint8Array(),
+				})).error;
+
+				if (error) logger.log(`Ошибка очистки инвентаря бота ${username}: ${error}`, "error");
+			});
+
+			document.getElementById(`close-inv-${index}`)?.addEventListener("click", () => {
+				inventoryWrapper.style.display = "none";
+				this.currentInventoryWindow = undefined;
+			});
 		} else {
 			const btn = document.getElementById(`open-inv-${index}`) as HTMLButtonElement | null;
 			if (btn) btn.disabled = true;

@@ -3486,6 +3486,28 @@
         "ja": "在庫監視",
         "zh": "庫存監控"
       }
+    },
+    {
+      "versions": "1.2.0",
+      "tag": "inventory-update-frequency",
+      "lang": {
+        "ru": "Частота обновлений инвентаря",
+        "en": "Inventory update frequency",
+        "tr": "Envanter güncelleme sıklığı",
+        "ja": "在庫更新頻度",
+        "zh": "庫存更新頻率"
+      }
+    },
+    {
+      "versions": "1.2.0",
+      "tag": "item-cache-threshold",
+      "lang": {
+        "ru": "Порог кэширования предметов",
+        "en": "Item cache threshold",
+        "tr": "Öğe önbellekleme eşiği",
+        "ja": "アイテムキャッシュのしきい値",
+        "zh": "項目緩存閾值"
+      }
     }
   ]
 }

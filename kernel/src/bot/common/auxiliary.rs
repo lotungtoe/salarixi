@@ -4,14 +4,8 @@ use azalea::prelude::*;
 use azalea::Vec3;
 
 use crate::bot::extensions::BotDefaultExt;
-use crate::bot::extensions::BotInventoryExt;
 use crate::bot::systems::profile::PROFILE_SYSTEM;
 use crate::bot::systems::registry::REGISTRY_SYSTEM;
-use crate::launch::process::current_options;
-use crate::server::transfer::SetSlotPayload;
-use crate::server::transfer::TransferEvent;
-use crate::server::transfer::TRANSFER;
-use crate::take_bot;
 
 /// Функция получения состояния блока
 pub fn get_block_state(bot: &Client, block_pos: BlockPos) -> Option<BlockState> {
@@ -114,40 +108,4 @@ pub fn convert_hotbar_slot_to_inventory_slot(slot: u8) -> usize {
     8 => 44,
     _ => 36,
   }
-}
-
-/// Вспомогательная функция отправки события об изменении инвентаря
-pub async fn update_inventory(index: &u8) {
-  let Some(opts) = current_options().await else {
-    return;
-  };
-
-  if !opts.basic.inventory_monitoring {
-    return;
-  }
-
-  take_bot!(index, async |bot| {
-    let Some(menu) = bot.get_inventory_menu() else {
-      return;
-    };
-
-    for (slot, item) in menu.slots().iter().enumerate() {
-      if slot > 45 {
-        continue;
-      }
-
-      let event = TransferEvent::SetSlot(SetSlotPayload {
-        index: *index,
-        slot: slot as u8,
-        count: if item.count() > 64 { 65 } else { item.count() as u8 },
-        name: if item.is_empty() {
-          None
-        } else {
-          Some(item.kind().to_string()[10..].into())
-        },
-      });
-
-      TRANSFER.emit(event);
-    }
-  });
 }
