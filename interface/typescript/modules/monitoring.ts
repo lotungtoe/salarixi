@@ -44,6 +44,10 @@ class MonitoringModule {
 	private chatMonitoring: boolean = false;
 	private inventoryMonitoring: boolean = false;
 
+	private cachedTextures: Map<string, string> = new Map();
+	private textureFrequency: Map<string, number> = new Map();
+	private textureSpace: number = 0;
+
 	public maxChatHistoryLength: number = 0;
 
 	/** Метод инициализации функций, связанных с мониторингом */
@@ -157,13 +161,15 @@ class MonitoringModule {
 				const count = buf.readU8();
 				const name = buf.readOption(() => buf.readString());
 
-				const countEl = document.getElementById(`inv-slot-count-${index}-${slot}`);
-				if (!countEl) return;
-				countEl.innerText = count < 1 ? "-" : count == 65 ? ">64" : count.toString();
+				const update = (): void => {
+					const countEl = document.getElementById(`inv-slot-count-${index}-${slot}`);
+					if (!countEl) return;
+					countEl.innerText = count < 1 ? "-" : count == 65 ? ">64" : count.toString();
 
-				const varEl = document.getElementById(`inv-var-${index}-${slot}`);
-				if (!varEl) return;
-				varEl.innerText = name ? name : "empty";
+					const varEl = document.getElementById(`inv-var-${index}-${slot}`);
+					if (!varEl) return;
+					varEl.innerText = name ? name : "empty";
+				};
 
 				const slotEl = document.querySelector<HTMLDivElement>(`[inv-slot-${index}="${slot}"]`);
 				if (!slotEl) return;
@@ -174,18 +180,63 @@ class MonitoringModule {
 				if (!name) {
 					slotIcon.src = "";
 					slotIcon.style.display = "none";
+					update();
 					return;
 				}
 
-				const iconBuf = await invoke<number[]>("extract_item_icon", { texture: name });
-				if (iconBuf.length < 1) return;
+				let texture = this.cachedTextures.get(name);
 
-				const dec = new TextDecoder();
-				const u8a = Uint8Array.from(iconBuf);
-				const dcd = dec.decode(u8a);
+				if (!texture) {
+					const iconBuf = await invoke<number[]>("extract_item_icon", { texture: name });
+
+					if (iconBuf.length < 1) {
+						slotIcon.src = "";
+						slotIcon.style.display = "none";
+						update();
+						return;
+					}
+
+					const dec = new TextDecoder();
+					const u8a = Uint8Array.from(iconBuf);
+					texture = dec.decode(u8a);
+				}
+
+				const cf = this.textureFrequency.get(name);
+
+				if (cf) {
+					this.textureFrequency.set(name, cf > 100 ? cf : cf + 1);
+				} else if (this.textureFrequency.size < 10) {
+					this.textureFrequency.set(name, 1);
+				}
+
+				// Одна текстура весит ~220 байт, думаю, 10 самых
+				// частых текстур в ОЗУ проблемой не будет
+				if (this.cachedTextures.size < 10) {
+					let mf = 0;
+					let mt: string | null = null;
+					this.textureFrequency.forEach((f, t) => f > mf ? mt = t : null);
+
+					if (mt && !this.cachedTextures.has(mt)) this.cachedTextures.set(mt, texture);
+				} else {
+					if (this.textureSpace > 2) {
+						let mf = 0;
+						let mt: string | null = null;
+						this.textureFrequency.forEach((f, t) => f < mf ? mt = t : !mt ? mt = t : null);
+
+						if (mt) {
+							this.textureFrequency.delete(mt);
+							this.cachedTextures.delete(mt);
+						}
+
+						this.textureSpace = 0;
+					} else {
+						this.textureSpace++;
+					}
+				}
 
 				slotIcon.style.display = "flex";
-				slotIcon.src = `data:image/png;base64,${dcd}`;
+				slotIcon.src = `data:image/png;base64,${texture}`;
+				update();
 			} catch (error) {
 				logger.log(`Ошибка обработки события "monitoring:set-slot": ${error}`, "error");
 			}
@@ -213,6 +264,10 @@ class MonitoringModule {
 		this.chatMessageCounter = {};
 		this.chatHistoryFilters = {};
 		this.indexTable = [];
+
+		this.cachedTextures.clear();
+		this.textureFrequency.clear();
+		this.textureSpace = 0;
 
 		this.chatMonitoring = false;
 		this.inventoryMonitoring = false;
@@ -428,13 +483,13 @@ class MonitoringModule {
       <div class="inv-content">
         <div class="slots" id="inv-slots-${index}">
           ${generateSlotRow(4, 5)}
-					<div class="splitter"></div>
+					<label class="splitter"></label>
           ${generateSlotRow(1, 45)}
-					<div class="splitter"></div>
+					<label class="splitter"></label>
           ${generateSlotRow(9, 9)}
           ${generateSlotRow(9, 18)}
           ${generateSlotRow(9, 27)}
-					<div class="splitter"></div>
+					<label class="splitter"></label>
           ${generateSlotRow(9, 36)}
         </div>
 

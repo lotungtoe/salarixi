@@ -108,7 +108,9 @@ pub async fn extract_item_icon(texture: String) -> Vec<u8> {
     return Vec::new();
   };
 
-  let Ok(mut jar) = ZipArchive::new(file.into_std().await) else {
+  let std_file = file.into_std().await;
+
+  let Ok(mut jar) = ZipArchive::new(std_file) else {
     return Vec::new();
   };
 
