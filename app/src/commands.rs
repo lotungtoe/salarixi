@@ -104,7 +104,7 @@ pub async fn extract_item_icon(texture: String) -> Vec<u8> {
     return Vec::new();
   }
 
-  let Ok(file) = File::open(version_jar).await else {
+  let Ok(file) = File::open(&version_jar).await else {
     return Vec::new();
   };
 
@@ -114,14 +114,32 @@ pub async fn extract_item_icon(texture: String) -> Vec<u8> {
     return Vec::new();
   };
 
-  let texture_path = format!("assets/minecraft/textures/item/{}.png", texture);
-  let Ok(mut texture_data) = jar.by_name(&texture_path) else {
-    return Vec::new();
-  };
-
   let mut buf = Vec::new();
-  if texture_data.read_to_end(&mut buf).is_err() {
-    return Vec::new();
+
+  if let Ok(mut tf) = jar.by_name(&format!("assets/minecraft/textures/item/{}.png", texture)) {
+    if tf.read_to_end(&mut buf).is_err() {
+      return Vec::new();
+    }
+  }
+
+  let parts = vec!["", "side", "top", "bottom"];
+
+  for part in parts {
+    if !buf.is_empty() {
+      break;
+    }
+
+    let path = if part.is_empty() {
+      format!("assets/minecraft/textures/block/{}.png", texture)
+    } else {
+      format!("assets/minecraft/textures/block/{}_{}.png", texture, part)
+    };
+
+    if let Ok(mut tf) = jar.by_name(&path) {
+      if tf.read_to_end(&mut buf).is_err() {
+        return Vec::new();
+      }
+    }
   }
 
   base64::engine::general_purpose::STANDARD.encode(&buf).into()
