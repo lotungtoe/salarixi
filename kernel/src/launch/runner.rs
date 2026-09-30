@@ -5,7 +5,6 @@ use std::thread;
 use std::time::Duration;
 
 use azalea::app::PluginGroup;
-use azalea::auto_reconnect::AutoReconnectDelay;
 use azalea::prelude::*;
 use azalea::protocol::address::ServerAddr;
 use azalea::protocol::connect::Proxy;
@@ -268,13 +267,9 @@ pub async fn launch_bots_on_server(options: LaunchOptions) -> u8 {
     rt.block_on(async move {
       let local_set = tokio::task::LocalSet::new();
 
-      let mut swarm_plugins = azalea::DefaultPlugins.build();
-
-      if !options.basic.use_auto_rejoin {
-        swarm_plugins = swarm_plugins.disable::<azalea::auto_reconnect::AutoReconnectPlugin>();
-      } else {
-        AutoReconnectDelay::new(Duration::from_millis(options.basic.rejoin_delay.into()));
-      }
+      let swarm_plugins = azalea::DefaultPlugins
+        .build()
+        .disable::<azalea::auto_reconnect::AutoReconnectPlugin>();
 
       let mut bot_plugins = azalea::bot::DefaultBotPlugins.build();
 
