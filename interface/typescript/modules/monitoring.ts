@@ -147,7 +147,7 @@ class MonitoringModule {
 			}
 		});
 
-		await listen<number[]>("monitoring:set-slot", (e) => {
+		await listen<number[]>("monitoring:set-slot", async (e) => {
 			if (!this.inventoryMonitoring) return;
 
 			try {
@@ -164,6 +164,28 @@ class MonitoringModule {
 				const varEl = document.getElementById(`inv-var-${index}-${slot}`);
 				if (!varEl) return;
 				varEl.innerText = name ? name : "empty";
+
+				const slotEl = document.querySelector<HTMLDivElement>(`[inv-slot-${index}="${slot}"]`);
+				if (!slotEl) return;
+
+				const slotIcon = slotEl.querySelector("img");
+				if (!slotIcon) return;
+
+				if (!name) {
+					slotIcon.src = "";
+					slotIcon.style.display = "none";
+					return;
+				}
+
+				const iconBuf = await invoke<number[]>("extract_item_icon", { texture: name });
+				if (iconBuf.length < 1) return;
+
+				const dec = new TextDecoder();
+				const u8a = Uint8Array.from(iconBuf);
+				const dcd = dec.decode(u8a);
+
+				slotIcon.style.display = "flex";
+				slotIcon.src = `data:image/png;base64,${dcd}`;
 			} catch (error) {
 				logger.log(`Ошибка обработки события "monitoring:set-slot": ${error}`, "error");
 			}
@@ -359,7 +381,7 @@ class MonitoringModule {
 			for (let i = start; i - start < count; i++) {
 				const slot = `
           <div inv-slot-${index}="${i}">
-            <label class="tag">${i.toString().padStart(2, "0")}</label>
+						<img style="display: none;" />
             <label class="count" id="inv-slot-count-${index}-${i}">-</label>
           </div>
         `;
@@ -406,10 +428,13 @@ class MonitoringModule {
       <div class="inv-content">
         <div class="slots" id="inv-slots-${index}">
           ${generateSlotRow(4, 5)}
+					<div class="splitter"></div>
           ${generateSlotRow(1, 45)}
+					<div class="splitter"></div>
           ${generateSlotRow(9, 9)}
           ${generateSlotRow(9, 18)}
           ${generateSlotRow(9, 27)}
+					<div class="splitter"></div>
           ${generateSlotRow(9, 36)}
         </div>
 

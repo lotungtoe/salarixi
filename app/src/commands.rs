@@ -1,8 +1,12 @@
-use std::fs;
+use std::env::home_dir;
+use std::io::Read;
 use std::time::Duration;
 
+use base64::Engine;
 use salarixi_kernel::sleep;
 use systemstat::Platform;
+use tokio::fs::File;
+use zip::ZipArchive;
 
 use crate::result::CommandResult;
 use crate::session::SESSION;
@@ -85,8 +89,45 @@ pub async fn download_text(url: String) -> Option<String> {
 }
 
 #[tauri::command]
+pub async fn extract_item_icon(texture: String) -> Vec<u8> {
+  let Some(home_dir) = home_dir() else {
+    return Vec::new();
+  };
+
+  let version_jar = home_dir
+    .join(".minecraft")
+    .join("versions")
+    .join("1.21.11")
+    .join("1.21.11.jar");
+
+  if !version_jar.exists() {
+    return Vec::new();
+  }
+
+  let Ok(file) = File::open(version_jar).await else {
+    return Vec::new();
+  };
+
+  let Ok(mut jar) = ZipArchive::new(file.into_std().await) else {
+    return Vec::new();
+  };
+
+  let texture_path = format!("assets/minecraft/textures/item/{}.png", texture);
+  let Ok(mut texture_data) = jar.by_name(&texture_path) else {
+    return Vec::new();
+  };
+
+  let mut buf = Vec::new();
+  if texture_data.read_to_end(&mut buf).is_err() {
+    return Vec::new();
+  }
+
+  base64::engine::general_purpose::STANDARD.encode(&buf).into()
+}
+
+#[tauri::command]
 pub fn read_file(path: String) -> Vec<u8> {
-  match fs::read(&path) {
+  match std::fs::read(&path) {
     Ok(b) => b,
     Err(_) => Vec::new(),
   }
@@ -94,7 +135,7 @@ pub fn read_file(path: String) -> Vec<u8> {
 
 #[tauri::command]
 pub fn write_file(path: String, data: Vec<u8>) -> CommandResult<()> {
-  match fs::write(&path, data) {
+  match std::fs::write(&path, data) {
     Ok(_) => success!(()),
     Err(e) => failed!("{}", e),
   }

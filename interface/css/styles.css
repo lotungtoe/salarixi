@@ -2125,7 +2125,12 @@ button svg {
   align-items: start;
   width: 450px;
   height: 100%;
-  gap: 6px;
+  gap: 14px;
+}
+
+.inv-content .slots .splitter {
+  border-bottom: 1px solid var(--bright-border);
+  width: 100%;
 }
 
 .inv-content .slots .row {
@@ -2142,7 +2147,7 @@ button svg {
   justify-content: center;
   align-items: center;
   width: 35px;
-  height: 45px;
+  height: 50px;
   background: var(--bright-bg);
   border: 1px solid transparent;
   border-radius: 12px;
@@ -2150,20 +2155,15 @@ button svg {
   padding: 0;
 }
 
-.inv-content .slots .row div:hover .tag {
-  color: var(--highlight-color);
-}
-
-.inv-content .slots .row div .tag {
-  color: var(--default-color);
-  font-weight: 600;
-  font-size: 14px;
+.inv-content .slots .row div img {
+  width: 24px;
+  height: 24px;
 }
 
 .inv-content .slots .row div .count {
   color: var(--dim-color);
   font-weight: 500;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .inv-content .vars {

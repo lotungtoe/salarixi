@@ -36,3 +36,5 @@ discord-presence.workspace = true
 hashbrown.workspace = true
 systemstat.workspace = true
 bytes.workspace = true
+base64.workspace = true
+zip.workspace = true

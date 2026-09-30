@@ -44,6 +44,7 @@ pub fn run() {
       open_url,
       download_json,
       download_text,
+      extract_item_icon,
       read_file,
       write_file,
       set_discord_rpc,
