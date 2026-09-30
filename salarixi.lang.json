@@ -3456,6 +3456,17 @@
     },
     {
       "versions": "1.2.0",
+      "tag": "enable-monitoring",
+      "lang": {
+        "ru": "Включить мониторинг",
+        "en": "Enable monitoring",
+        "tr": "İzlemeyi etkinleştirin",
+        "ja": "監視を有効にする",
+        "zh": "啟用監控"
+      }
+    },
+    {
+      "versions": "1.2.0",
       "tag": "chat-monitoring",
       "lang": {
         "ru": "Мониторинг чата",

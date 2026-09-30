@@ -603,20 +603,20 @@ body {
   flex-direction: column; 
   width: 100%; 
   align-items: center;
+  margin-bottom: 30px;
 }
 
-.settings-column.left .spliter {
+.settings-column.left .splitter {
   display: flex;
   position: relative;
   width: 90%;
-  margin-top: 30px;
   margin-bottom: 20px;
   border-bottom: 1px solid var(--bright-border);
   align-items: center;
   justify-content: center;
 }
 
-.settings-column.left .spliter .name {
+.settings-column.left .splitter .name {
   font-family: var(--global-font-family);
   font-weight: bold;
   white-space: nowrap;

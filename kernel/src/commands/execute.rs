@@ -49,6 +49,7 @@ async fn create_sync_buf() -> Option<Bytes> {
     CaptchaSolveMode::Manual => 0x00,
     CaptchaSolveMode::Auto => 0x01,
   });
+  opts.basic.enable_monitoring.write(&mut buf);
   opts.basic.chat_monitoring.write(&mut buf);
   opts.basic.inventory_monitoring.write(&mut buf);
 

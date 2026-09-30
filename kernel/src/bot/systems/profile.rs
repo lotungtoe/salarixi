@@ -112,7 +112,7 @@ impl ProfileSystem {
   }
 
   /// Метод активации системы
-  pub async fn activate(&self, update_rate: u64, optimized: bool) {
+  pub async fn monitor(&self, update_rate: u64, optimized: bool) {
     let updater_task = if optimized {
       tokio::spawn(async move {
         let mut last_hashes = HashMap::new();

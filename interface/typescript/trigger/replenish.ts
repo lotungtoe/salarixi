@@ -85,11 +85,7 @@ export function replenishTriggerRegistry(): void {
 
 		const useProxyChbx = document.getElementById("settings_chbx_use-proxy") as HTMLInputElement;
 		const botsCountInput = document.getElementById("settings-option-bots-count-container") as HTMLDivElement;
-		const selectNicknameType = document.getElementById("settings_select_nickname-type") as HTMLSelectElement;
-		const selectPasswordType = document.getElementById("settings_select_password-type") as HTMLSelectElement;
-		const selectEmailType = document.getElementById("settings_select_email-type") as HTMLSelectElement;
-		const nicknameTemplateInput = document.getElementById("settings_option_nickname-template") as HTMLInputElement;
-		const passwordTemplateInput = document.getElementById("settings_option_password-template") as HTMLInputElement;
+		const basicInputContainer = document.getElementById("basic-input-container") as HTMLDivElement;
 
 		if (current.checked) {
 			openProxySectionBtn.style.display = "none";
@@ -97,23 +93,34 @@ export function replenishTriggerRegistry(): void {
 
 			useProxyChbx.checked = false;
 			useProxyChbx.disabled = true;
-			selectNicknameType.disabled = true;
-			selectPasswordType.disabled = true;
-			selectEmailType.disabled = true;
-			nicknameTemplateInput.disabled = true;
-			passwordTemplateInput.disabled = true;
+			basicInputContainer.style.display = "none";
 			botsCountInput.style.display = "none";
 		} else {
 			openProxySectionBtn.style.display = "flex";
 			openAccountsSectionBtn.style.display = "none";
 
 			useProxyChbx.disabled = false;
-			selectNicknameType.disabled = false;
-			selectPasswordType.disabled = false;
-			selectEmailType.disabled = false;
-			nicknameTemplateInput.disabled = false;
-			passwordTemplateInput.disabled = false;
+			basicInputContainer.style.display = "flex";
 			botsCountInput.style.display = "flex";
+		}
+	});
+
+	triggerRegistry.register("settings_chbx_enable-monitoring", "checkbox", (current: HTMLInputElement) => {
+		const monitoringInputContainer = document.getElementById("monitoring-input-container") as HTMLDivElement;
+		const monitoringOptimizationChbx = document.getElementById("settings_chbx_monitoring-optimization") as HTMLInputElement;
+		const chatMonitoringChbx = document.getElementById("settings_chbx_chat-monitoring") as HTMLInputElement;
+		const inventoryMonitoringChbx = document.getElementById("settings_chbx_inventory-monitoring") as HTMLInputElement;
+
+		if (current.checked) {
+			monitoringInputContainer.style.display = "flex";
+			monitoringOptimizationChbx.disabled = false;
+			chatMonitoringChbx.disabled = false;
+			inventoryMonitoringChbx.disabled = false;
+		} else {
+			monitoringInputContainer.style.display = "none";
+			monitoringOptimizationChbx.disabled = true;
+			chatMonitoringChbx.disabled = true;
+			inventoryMonitoringChbx.disabled = true;
 		}
 	});
 

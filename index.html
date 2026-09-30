@@ -515,51 +515,53 @@
   <div class="main-wrapper centered" id="settings-container" style="display: none;" global="true">
     <div class="settings-layout">
       <div class="settings-column left">
-        <div class="spliter" style="margin: 0; margin-bottom: 25px;">
-          <span class="name" tt="basic-settings">Основные настройки</span>
-        </div>
-
-        <div class="column-wrap" style="gap: 10px; margin-bottom: 10px;">
-          <div class="custom-select between">
-            <label tt="nickname-type:">Никнейм:</label>
-            <select id="settings_select_nickname-type" key="nickname_type" keep trigger launch-option>
-              <option value="legit" selected tt="nickname-legit">Легитный</option>
-              <option value="random" tt="nickname-random">Случайный</option>
-              <option value="custom" tt="nickname-custom">Кастомный</option>
-            </select>
+        <div class="hidden" id="basic-input-container" style="display: flex;">
+          <div class="splitter" style="margin: 0; margin-bottom: 25px;">
+            <span class="name" tt="basic-settings">Основные настройки</span>
           </div>
 
-          <div class="custom-select between">
-            <label tt="password-type:">Пароль:</label>
-            <select id="settings_select_password-type" key="password_type" keep trigger launch-option>
-              <option value="without" tt="without-password">Без пароля</option>
-              <option value="legit" tt="password-legit" selected>Легитный</option>
-              <option value="random" selected tt="password-random">Случайный</option>
-              <option value="custom" tt="password-custom">Кастомный</option>
-            </select>
+          <div class="column-wrap" style="gap: 10px; margin-bottom: 10px;">
+            <div class="custom-select between">
+              <label tt="nickname-type:">Никнейм:</label>
+              <select id="settings_select_nickname-type" key="nickname_type" keep trigger launch-option>
+                <option value="legit" selected tt="nickname-legit">Легитный</option>
+                <option value="random" tt="nickname-random">Случайный</option>
+                <option value="custom" tt="nickname-custom">Кастомный</option>
+              </select>
+            </div>
+
+            <div class="custom-select between">
+              <label tt="password-type:">Пароль:</label>
+              <select id="settings_select_password-type" key="password_type" keep trigger launch-option>
+                <option value="without" tt="without-password">Без пароля</option>
+                <option value="legit" tt="password-legit" selected>Легитный</option>
+                <option value="random" selected tt="password-random">Случайный</option>
+                <option value="custom" tt="password-custom">Кастомный</option>
+              </select>
+            </div>
+
+            <div class="custom-select between">
+              <label tt="email-type:">Эл. почта:</label>
+              <select id="settings_select_email-type" key="email_type" keep trigger launch-option>
+                <option value="without" tt="without-email" selected>Без почты</option>
+                <option value="random" selected tt="email-random">Случайная</option>
+              </select>
+            </div>
           </div>
 
-          <div class="custom-select between">
-            <label tt="email-type:">Эл. почта:</label>
-            <select id="settings_select_email-type" key="email_type" keep trigger launch-option>
-              <option value="without" tt="without-email" selected>Без почты</option>
-              <option value="random" selected tt="email-random">Случайная</option>
-            </select>
+          <div class="form-input" id="custom-nickname-template-container" style="display: none;">
+            <label for="settings_option_nickname-template" class="text" tt="nickname-template">Шаблон никнейма</label>
+            <input type="text" id="settings_option_nickname-template" placeholder="player_#m#m" value="player_#m#m" keep key="nickname_template" default="player_#m#m" launch-option>
           </div>
-        </div>
 
-        <div class="form-input" id="custom-nickname-template-container" style="display: none;">
-          <label for="settings_option_nickname-template" class="text" tt="nickname-template">Шаблон никнейма</label>
-          <input type="text" id="settings_option_nickname-template" placeholder="player_#m#m" value="player_#m#m" keep key="nickname_template" default="player_#m#m" launch-option>
-        </div>
-
-        <div class="form-input" id="custom-password-template-container" style="display: none;">
-          <label for="settings_option_password-template" class="text" tt="password-template">Шаблон пароля</label>
-          <input type="text" id="settings_option_password-template" placeholder="#m#l#m#n" value="#m#l#m#n" keep key="password_template" default="#m#l#m#n" launch-option>
+          <div class="form-input" id="custom-password-template-container" style="display: none;">
+            <label for="settings_option_password-template" class="text" tt="password-template">Шаблон пароля</label>
+            <input type="text" id="settings_option_password-template" placeholder="#m#l#m#n" value="#m#l#m#n" keep key="password_template" default="#m#l#m#n" launch-option>
+          </div>
         </div>
     
         <div class="hidden" id="auto-register-input-container">
-          <div class="spliter">
+          <div class="splitter">
             <span class="name" tt="register-settings">Настройки регистрации</span>
           </div>
 
@@ -598,7 +600,7 @@
         </div>
 
         <div class="hidden" id="auto-login-input-container">
-          <div class="spliter">
+          <div class="splitter">
             <span class="name" tt="login-settings">Настройки логина</span>
           </div>
 
@@ -636,8 +638,8 @@
           </div>
         </div>
 
-        <div class="hidden" id="auto-rejoin-input-container">
-          <div class="spliter">
+        <div class="hidden" id="auto-rejoin-input-container" style="display: flex;">
+          <div class="splitter">
             <span class="name" tt="reconnection-settings">Настройки переподключения</span>
           </div>
 
@@ -647,21 +649,23 @@
           </div>
         </div>
 
-        <div class="spliter">
-          <span class="name" tt="monitoring-settings">Настройки мониторинга</span>
+        <div class="hidden" id="monitoring-input-container" style="display: flex;">
+          <div class="splitter">
+            <span class="name" tt="monitoring-settings">Настройки мониторинга</span>
+          </div>
+
+          <div class="form-input">
+            <label for="monitoring_option_update-frequency" class="text" tt="update-frequency">Частота обновлений</label>
+            <input type="number" id="monitoring_option_update-frequency" placeholder="1000" value="1000" key="monitoring_update_rate" default="1000" launch-option keep>
+          </div>
+
+          <div class="form-input">
+            <label for="monitoring_option_chat-history-length" class="text" tt="chat-history-length">Длина истории чата</label>
+            <input type="number" id="monitoring_option_chat-history-length" placeholder="50" value="50" keep>
+          </div>
         </div>
 
-        <div class="form-input">
-          <label for="monitoring_option_update-frequency" class="text" tt="update-frequency">Частота обновлений</label>
-          <input type="number" id="monitoring_option_update-frequency" placeholder="1000" value="1000" key="monitoring_update_rate" default="1000" launch-option keep>
-        </div>
-
-        <div class="form-input">
-          <label for="monitoring_option_chat-history-length" class="text" tt="chat-history-length">Длина истории чата</label>
-          <input type="number" id="monitoring_option_chat-history-length" placeholder="50" value="50" keep>
-        </div>
-
-        <div class="spliter">
+        <div class="splitter">
           <span class="name" tt="additional-settings">Дополнительные настройки</span>
         </div>
 
@@ -755,6 +759,12 @@
           </label>
 
           <div class="horizontal-spliter"></div>
+
+          <label class="checkbox-container">
+            <input type="checkbox" id="settings_chbx_enable-monitoring" keep key="enable_monitoring" trigger launch-option checked>
+            <span class="checkmark"></span>
+            <span tt="enable-monitoring">Включить мониторинг</span>
+          </label>
 
           <label class="checkbox-container">
             <input type="checkbox" id="settings_chbx_monitoring-optimization" keep key="monitoring_optimization" trigger launch-option>
