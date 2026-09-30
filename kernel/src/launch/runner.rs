@@ -221,6 +221,11 @@ pub async fn launch_bots_on_server(options: LaunchOptions) -> u8 {
       PROFILE_SYSTEM
         .register(index, opts.password.clone(), opts.email.clone())
         .await;
+
+      take_profile!(&index, async |profile| {
+        profile.registered = opts.registered;
+        profile.logined = opts.logined;
+      });
     }
   } else {
     for _ in 0..options.basic.bots_count {
@@ -247,6 +252,8 @@ pub async fn launch_bots_on_server(options: LaunchOptions) -> u8 {
           password: None,
           email: None,
           proxy: None,
+          registered: false,
+          logined: false,
         },
         index,
       });

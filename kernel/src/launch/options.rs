@@ -205,6 +205,8 @@ pub struct AccountOptions {
   pub password: Option<String>,
   pub email: Option<String>,
   pub proxy: Option<String>,
+  pub registered: bool,
+  pub logined: bool,
 }
 
 impl AccountOptions {
@@ -214,6 +216,8 @@ impl AccountOptions {
       password: Option::read(buf)?,
       email: Option::read(buf)?,
       proxy: Option::read(buf)?,
+      registered: bool::read(buf)?,
+      logined: bool::read(buf)?,
     })
   }
 }

@@ -13,6 +13,8 @@ interface Account {
 	password: string | null;
 	email: string | null;
 	proxy: string | null;
+	registered: boolean;
+	logined: boolean;
 	selected: boolean;
 }
 
@@ -43,6 +45,8 @@ class AccountModule {
 		const selectedAccountsPassword = document.getElementById("selected-accounts-password") as HTMLInputElement;
 		const selectedAccountsEmail = document.getElementById("selected-accounts-email") as HTMLInputElement;
 		const selectedAccountsProxy = document.getElementById("selected-accounts-proxy") as HTMLInputElement;
+		const selectedAccountsRegistered = document.getElementById("selected-accounts-registered") as HTMLInputElement;
+		const selectedAccountsLogined = document.getElementById("selected-accounts-logined") as HTMLInputElement;
 
 		const addAccountBtn = document.getElementById("add-account") as HTMLButtonElement;
 		const openSelectedAccountsEditorBtn = document.getElementById("edit-selected-accounts") as HTMLButtonElement;
@@ -93,6 +97,8 @@ class AccountModule {
 		selectedAccountsPassword.addEventListener("input", () => this.setValueForAllSelected("password", selectedAccountsPassword.value));
 		selectedAccountsEmail.addEventListener("input", () => this.setValueForAllSelected("email", selectedAccountsEmail.value));
 		selectedAccountsProxy.addEventListener("input", () => this.setValueForAllSelected("proxy", selectedAccountsProxy.value));
+		selectedAccountsRegistered.addEventListener("input", () => this.setValueForAllSelected("registered", selectedAccountsRegistered.value));
+		selectedAccountsLogined.addEventListener("input", () => this.setValueForAllSelected("logined", selectedAccountsLogined.value));
 
 		addAccountBtn.addEventListener("click", () => this.addAccount());
 		importAccounts.addEventListener("click", async () => await this.importAccounts());
@@ -114,6 +120,8 @@ class AccountModule {
 				password: account.password,
 				email: account.email,
 				proxy: account.proxy,
+				registered: account.registered,
+				logined: account.logined,
 			});
 		}
 
@@ -138,6 +146,8 @@ class AccountModule {
 					initial_group: account.initial_group,
 					password: account.password,
 					email: account.email,
+					registered: account.registered,
+					logined: account.logined,
 					proxy: account.proxy,
 				};
 			}
@@ -190,13 +200,17 @@ class AccountModule {
 
 	/** Метод измнения значения всех выбранных аккаунтов */
 	private setValueForAllSelected(
-		field: "initial_group" | "password" | "email" | "proxy",
+		field: "initial_group" | "password" | "email" | "proxy" | "registered" | "logined",
 		value: string,
 	): void {
 		for (const [username, account] of this.accounts) {
 			if (!account.selected) continue;
 
-			account[field] = value;
+			if (field === "registered" || field === "logined") {
+				account[field] = value === "true";
+			} else {
+				account[field] = value;
+			}
 
 			const input = document.getElementById(`account-${username}-${field}`) as HTMLInputElement | null;
 			if (input) input.value = value;
@@ -264,6 +278,8 @@ class AccountModule {
 			password: null,
 			email: null,
 			proxy: null,
+			registered: false,
+			logined: false,
 			selected: false,
 		});
 
@@ -353,6 +369,8 @@ class AccountModule {
 					password: account["password"],
 					email: account["email"],
 					proxy: account["proxy"],
+					registered: account["registered"],
+					logined: account["ogined"],
 					selected: false,
 				});
 			}
@@ -383,6 +401,8 @@ class AccountModule {
 					password: account.password,
 					email: account.email,
 					proxy: account.proxy,
+					registered: account.registered,
+					logined: account.logined,
 				};
 			}
 
@@ -438,6 +458,8 @@ class AccountModule {
 				password: null,
 				email: null,
 				proxy: null,
+				registered: false,
+				logined: false,
 				selected: false,
 			});
 
@@ -648,6 +670,16 @@ class AccountModule {
 				name: "Прокси SOCKS5",
 				tag: "proxy",
 				placeholder: "socks5://35.91.83.91:1111",
+			},
+			{
+				name: "Значение 'registered'",
+				tag: "registered",
+				placeholder: "true | false",
+			},
+			{
+				name: "Значение 'logined'",
+				tag: "logined",
+				placeholder: "true | false",
 			},
 		];
 

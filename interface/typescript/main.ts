@@ -193,6 +193,8 @@ async function startBots(): Promise<void> {
 			buf.writeOption(account["password"], (some) => buf.writeString(some));
 			buf.writeOption(account["email"], (some) => buf.writeString(some));
 			buf.writeOption(account["proxy"], (some) => buf.writeString(some));
+			buf.writeBoolean(account["registered"]);
+			buf.writeBoolean(account["logined"]);
 		}
 
 		writePluginsToBuf(buf);
