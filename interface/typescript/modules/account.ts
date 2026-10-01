@@ -149,6 +149,7 @@ class AccountModule {
 					registered: account.registered,
 					logined: account.logined,
 					proxy: account.proxy,
+					selected: account.selected,
 				};
 			}
 
@@ -370,7 +371,7 @@ class AccountModule {
 					email: account["email"],
 					proxy: account["proxy"],
 					registered: account["registered"],
-					logined: account["ogined"],
+					logined: account["logined"],
 					selected: false,
 				});
 			}
@@ -523,8 +524,9 @@ class AccountModule {
 		const accountSelectorFlag = document.createElement("input");
 		accountSelectorFlag.id = `account-${username}-selector-flag`;
 		accountSelectorFlag.type = "checkbox";
+		accountSelectorFlag.checked = account.selected;
 
-		accountSelectorFlag.addEventListener("change", () => {
+		const updateSelected = (): void => {
 			const account = this.accounts.get(username);
 			if (!account) return;
 
@@ -547,7 +549,9 @@ class AccountModule {
 
 			this.changeSelectorsState();
 			this.updateSelectedAccountCounter();
-		});
+		}
+
+		accountSelectorFlag.addEventListener("change", () => updateSelected());
 
 		const accountSelectorMark = document.createElement("span");
 		accountSelectorMark.className = "checkmark";
@@ -609,6 +613,7 @@ class AccountModule {
 		row.appendChild(actionsCell);
 
 		this.accountList?.appendChild(row);
+		updateSelected();
 
 		return 0;
 	}
