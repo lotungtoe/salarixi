@@ -1,4 +1,3 @@
-use std::sync::atomic::{AtomicU8, Ordering};
 use std::sync::Arc;
 
 use azalea::chat::ChatPacket;
@@ -27,8 +26,6 @@ use crate::server::transfer::*;
 use crate::tools::*;
 use crate::webhook::*;
 use crate::{sleep, take_profile};
-
-static TICK_COUNTER: AtomicU8 = AtomicU8::new(0);
 
 pub async fn single_handler(bot: Client, event: Event, _state: NoState) {
   match event {
@@ -218,15 +215,6 @@ async fn process_chat_message(bot: Client, packet: ChatPacket) {
 }
 
 async fn process_tick(bot: Client) {
-  // Как по мне бессмысленно каждые 50мс обновлять профиль
-  // бота, всё равно в мониторинг это придёт не сразу же
-  if TICK_COUNTER.load(Ordering::SeqCst) <= 100 {
-    TICK_COUNTER.fetch_add(1, Ordering::SeqCst);
-    return;
-  }
-
-  TICK_COUNTER.store(0, Ordering::SeqCst);
-
   let username = bot.username();
   let Some(index) = INDEX_SYSTEM.index_by_username(&username).await else {
     return;
