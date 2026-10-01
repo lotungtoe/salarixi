@@ -31,6 +31,7 @@ pub trait BotInventoryExt {
   fn get_item_by_slot(&self, slot: usize) -> Option<ItemStack>;
   fn get_item_by_name(&self, name: String) -> Option<(usize, ItemStack)>;
   fn find_empty_slot_in_invenotry(&self) -> Option<usize>;
+  fn find_empty_slot_in_hotbar(&self) -> Option<usize>;
   fn extract_item_meta(&self, item: &ItemStack) -> Option<ItemMeta>;
   fn start_interacting_with_inventory(&self, index: &u8) -> impl std::future::Future<Output = ()> + Send + Sync;
   fn stop_interacting_with_inventory(&self, index: &u8) -> impl std::future::Future<Output = ()> + Send + Sync;
@@ -149,10 +150,24 @@ impl BotInventoryExt for Client {
     };
 
     for (slot, item) in menu.slots().iter().enumerate() {
-      if slot > 9 {
+      if slot > 9 && slot < 36 && item.is_empty() {
         if item.is_empty() {
           return Some(slot);
         }
+      }
+    }
+
+    None
+  }
+
+  fn find_empty_slot_in_hotbar(&self) -> Option<usize> {
+    let Some(menu) = self.get_inventory_menu() else {
+      return None;
+    };
+
+    for (slot, item) in menu.slots().iter().enumerate() {
+      if slot > 35 && slot < 45 && item.is_empty() {
+        return Some(slot);
       }
     }
 
@@ -214,45 +229,44 @@ impl BotInventoryExt for Client {
       if self.get_selected_slot() != hotbar_slot {
         self.set_selected_hotbar_slot(hotbar_slot);
       }
-    } else {
-      if lock {
-        if !getst(index, State::CanInteracting).await {
-          return;
-        }
 
-        self.start_interacting_with_inventory(index).await;
+      return;
+    }
+
+    if lock {
+      if !getst(index, State::CanInteracting).await {
+        return;
       }
 
-      if let Some(empty_slot) = self.find_empty_slot_in_invenotry() {
-        self
-          .inventory_swap_click(index, source_slot, empty_slot as usize, false)
-          .await;
+      self.start_interacting_with_inventory(index).await;
+    }
 
-        if let Some(slot) = convert_inventory_slot_to_hotbar_slot(empty_slot as usize) {
-          if self.get_selected_slot() != slot {
-            sleep!(50);
-            self.set_selected_hotbar_slot(slot);
-          }
-        }
-      } else {
-        let random_slot = randnum(36, 44) as usize;
+    if let Some(empty_slot) = self.find_empty_slot_in_hotbar() {
+      self.inventory_swap_click(index, source_slot, empty_slot, false).await;
 
-        self.inventory_click(index, random_slot, ClickMode::Shift, false).await;
-        sleep!(50);
-        self.inventory_swap_click(index, source_slot, random_slot, false).await;
-
-        sleep!(50);
-
-        let hotbar_slot = convert_inventory_slot_to_hotbar_slot(random_slot).unwrap_or(0);
-
+      if let Some(hotbar_slot) = convert_inventory_slot_to_hotbar_slot(empty_slot) {
         if self.get_selected_slot() != hotbar_slot {
           self.set_selected_hotbar_slot(hotbar_slot);
         }
       }
+    } else {
+      if self.find_empty_slot_in_invenotry().is_some() {
+        let random_slot = randnum(36, 44) as usize;
 
-      if lock {
-        self.stop_interacting_with_inventory(index).await;
+        self.inventory_click(index, random_slot, ClickMode::Shift, false).await;
+        sleep!(50);
+        self.inventory_click(index, source_slot, ClickMode::Shift, false).await;
+
+        if let Some(hotbar_slot) = convert_inventory_slot_to_hotbar_slot(random_slot) {
+          if self.get_selected_slot() != hotbar_slot {
+            self.set_selected_hotbar_slot(hotbar_slot);
+          }
+        }
       }
+    }
+
+    if lock {
+      self.stop_interacting_with_inventory(index).await;
     }
   }
 
