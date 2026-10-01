@@ -21,11 +21,7 @@ fn create_menu_hash(menu: &Menu) -> Option<[u8; 16]> {
   let mut buf = BytesMut::new();
 
   for item in menu.slots() {
-    if item.is_empty() {
-      0x00.write(&mut buf);
-    } else {
-      0x01.write(&mut buf);
-    }
+    (item.kind() as u16).write(&mut buf);
 
     let count = item.count();
 
