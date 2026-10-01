@@ -123,6 +123,7 @@ impl AutoEatPlugin {
     take_bot!(index, async |bot| {
       bot.freeze_move(index).await;
       bot.take_item(index, slot, false).await;
+      sleep!(100);
       bot.start_use_item_by(InteractionHand::MainHand);
     });
 

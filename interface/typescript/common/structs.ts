@@ -157,7 +157,7 @@ export const plugins: Record<string, PluginData> = {
 	"auto-eat": {
 		name: "Auto Eat",
 		enabled: false,
-		modified: "02.09.2026",
+		modified: "01.10.2026",
 		settings: [
 			{
 				key: "tick-interval",
