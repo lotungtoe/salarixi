@@ -46,10 +46,11 @@ class MonitoringModule {
 
 	private maxChatHistoryLength: number = 0;
 	private itemCacheThreshold: number = 40;
-	private inventoryUpdateRate: number = 800;
+	private inventoryUpdateRate: number = 600;
 
 	private cachedTextures: Map<string, string> = new Map();
 	private textureFrequency: Map<string, number> = new Map();
+	private unfoundTextures: Array<string> = [];
 	private textureSpace: number = 0;
 
 	private currentInventoryWindow: number | undefined = undefined;
@@ -199,7 +200,7 @@ class MonitoringModule {
 		const slotIcon = slotEl.querySelector("img");
 		if (!slotIcon) return;
 
-		if (!name) {
+		if (!name || this.unfoundTextures.includes(name)) {
 			slotIcon.src = "";
 			slotIcon.style.display = "none";
 			update();
@@ -212,6 +213,8 @@ class MonitoringModule {
 			const iconBuf = await invoke<number[]>("extract_item_icon", { texture: name });
 
 			if (iconBuf.length < 1) {
+				if (this.unfoundTextures.length < 10) this.unfoundTextures.push(name);
+
 				slotIcon.src = "";
 				slotIcon.style.display = "none";
 				update();
@@ -231,8 +234,8 @@ class MonitoringModule {
 			this.textureFrequency.set(name, 1);
 		}
 
-		// Одна текстура весит ~220 байт, думаю, 10 самых
-		// частых текстур в ОЗУ проблемой не будет
+		// Одна текстура весит ~220 байт, думаю, кэширование 30-40 самых частых текстур
+		// почти никак не скажется на ОЗУ, и при этом заметно снизит нагрузку на ЦП
 		if (this.cachedTextures.size < this.itemCacheThreshold) {
 			let mf = 0;
 			let mt: string | null = null;
@@ -300,16 +303,17 @@ class MonitoringModule {
 		this.chatHistoryFilters = {};
 		this.indexTable = [];
 
-		this.cachedTextures.clear();
-		this.textureFrequency.clear();
-		this.textureSpace = 0;
-
 		this.chatMonitoring = false;
 		this.inventoryMonitoring = false;
 
 		clearInterval(this.inventoryUpdateInterval);
 		this.inventoryUpdateInterval = null;
 		this.currentInventoryWindow = undefined;
+
+		this.cachedTextures.clear();
+		this.textureFrequency.clear();
+		this.unfoundTextures = [];
+		this.textureSpace = 0;
 
 		this.statusText!.style.display = "flex";
 	}
@@ -729,7 +733,6 @@ class MonitoringModule {
 			document.getElementById(`open-inv-${index}`)?.addEventListener("click", async () => {
 				inventoryWrapper.style.display = "flex";
 				this.currentInventoryWindow = index;
-				await this.updateInventory(index, username);
 			});
 
 			document.getElementById(`clear-inv-${index}`)?.addEventListener("click", async () => {

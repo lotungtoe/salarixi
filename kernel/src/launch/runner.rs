@@ -22,6 +22,7 @@ use crate::bot::systems::states::STATE_SYSTEM;
 use crate::bot::systems::tasks::TASK_SYSTEM;
 use crate::bot::utils::acaptcha::MAP_CAPTCHA_BYPASS;
 use crate::bot::PLUGINS;
+use crate::commands::INV_HASH_TABLE;
 use crate::launch::process::update_process_status;
 use crate::launch::process::BOTS_WERE_FULLY_CONNECTED;
 use crate::launch::process::STOPPING;
@@ -400,6 +401,7 @@ pub async fn stop_bots_and_destroy_data(logging: bool) -> u8 {
   MAP_CAPTCHA_BYPASS.shutdown().await;
   REGISTRY_SYSTEM.clear().await;
   INDEX_SYSTEM.clear().await;
+  INV_HASH_TABLE.write().await.clear();
 
   set_process_activity(false);
 
