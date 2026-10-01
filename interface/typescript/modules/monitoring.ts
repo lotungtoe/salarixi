@@ -46,12 +46,13 @@ class MonitoringModule {
 
 	private maxChatHistoryLength: number = 0;
 	private itemCacheThreshold: number = 40;
-	private inventoryUpdateRate: number = 600;
+	private inventoryUpdateRate: number = 400;
 
 	private cachedTextures: Map<string, string> = new Map();
 	private textureFrequency: Map<string, number> = new Map();
 	private unfoundTextures: Array<string> = [];
 	private textureSpace: number = 0;
+	private inventoryUpdating: boolean = false;
 
 	private currentInventoryWindow: number | undefined = undefined;
 	private inventoryUpdateInterval: any = null;
@@ -158,21 +159,35 @@ class MonitoringModule {
 		});
 
 		await listen<number[]>("monitoring:update-inventory", async (e) => {
-			if (!this.inventoryMonitoring) return;
+			if (!this.inventoryMonitoring || this.inventoryUpdating) return;
+
+			this.inventoryUpdating = true;
 
 			try {
 				const buf = new Buffer(new Uint8Array(e.payload));
 				const index = buf.readU8();
 				const len = buf.readU8();
 
+				let promises: Array<Promise<void>> = [];
+
 				for (let i = 0; i < len; i++) {
 					const slot = buf.readU8();
 					const count = buf.readU8();
 					const name = buf.readOption(() => buf.readString());
-					this.updateInventorySlot(index, slot, count, name);
+
+					if (i % 2 === 0) {
+						promises.push(this.updateInventorySlot(index, slot, count, name));
+					} else {
+						await this.updateInventorySlot(index, slot, count, name);
+					}
 				}
+
+				promises.forEach(async p => await p);
+				promises = [];
 			} catch (error) {
-				logger.log(`Ошибка обработки события "monitoring:set-slot": ${error}`, "error");
+				logger.log(`Ошибка обработки события "monitoring:update-inventory": ${error}`, "error");
+			} finally {
+				this.inventoryUpdating = false;
 			}
 		});
 	}
@@ -282,11 +297,11 @@ class MonitoringModule {
 		this.cards!.innerHTML = "";
 		this.cards!.style.display = "flex";
 
-		this.inventoryUpdateInterval = setInterval(async () => {
-			if (this.currentInventoryWindow === undefined) return;
+		if (inventoryMonitoring) this.inventoryUpdateInterval = setInterval(async () => {
+			if (this.currentInventoryWindow === undefined || this.inventoryUpdating) return;
 			const username = indexSystem.usernameByIndex(this.currentInventoryWindow);
 			if (!username) return;
-			this.updateInventory(this.currentInventoryWindow, username);
+			await this.updateInventory(this.currentInventoryWindow, username);
 		}, this.inventoryUpdateRate);
 	}
 
@@ -314,6 +329,7 @@ class MonitoringModule {
 		this.textureFrequency.clear();
 		this.unfoundTextures = [];
 		this.textureSpace = 0;
+		this.inventoryUpdating = false;
 
 		this.statusText!.style.display = "flex";
 	}
@@ -576,7 +592,7 @@ class MonitoringModule {
 
 					if (si === vi) {
 						variable.classList.add("highlight");
-						variable.scrollIntoView({ behavior: "smooth", block: "start" });
+						variable.scrollIntoView({ behavior: "instant", block: "start" });
 					}
 				}
 			});
@@ -598,15 +614,15 @@ class MonitoringModule {
 					let operation = null;
 					let isCommand = true;
 
-					if (e.ctrlKey && e.button === 0) {
-						buf.writeU8(0x01);
-						operation = "drop";
-					} else if (e.ctrlKey && e.button === 2) {
-						buf.writeU8(0x02);
-						operation = "drop-all";
-					} else if (e.button === 0 && si > 35 && si < 45) {
+					if (e.button === 0 && si > 35 && si < 45) {
 						buf.writeU8(0x00);
 						operation = "set-selected-slot";
+					} else if (e.shiftKey && e.button === 0) {
+						buf.writeU8(0x01);
+						operation = "drop";
+					} else if (e.shiftKey && e.button === 2) {
+						buf.writeU8(0x02);
+						operation = "drop-all";
 					} else if (e.button === 2) {
 						buf.writeU8(0x03);
 						operation = "shift-click";

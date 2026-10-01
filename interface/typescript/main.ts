@@ -645,7 +645,7 @@ async function listenSystemEvents(): Promise<void> {
 			if (processActivity) {
 				if (enableMonitoring) {
 					const maxChatHistoryLength = parseInt((document.getElementById("monitoring_option_chat-history-length") as HTMLInputElement).value || "50");
-					const inventoryUpdateRate = parseInt((document.getElementById("monitoring-inventory-update-frequency-container") as HTMLInputElement).value || "600");
+					const inventoryUpdateRate = parseInt((document.getElementById("monitoring-inventory-update-frequency-container") as HTMLInputElement).value || "400");
 					const itemCacheThreshold = parseInt((document.getElementById("monitoring-item-cache-threshold-container") as HTMLInputElement).value || "40");
 
 					monitoringModule.enable(

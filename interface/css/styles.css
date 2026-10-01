@@ -2064,6 +2064,10 @@ button svg {
   border-left: 1px solid var(--input-border);
 }
 
+.cover[wrapper="bot-chat"] .panel .left .custom-select select {
+  min-height: 42px;
+}
+
 .chat-content {
   margin-top: 20px;
   background: var(--secondary-bg);
