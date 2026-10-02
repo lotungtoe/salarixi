@@ -62,6 +62,10 @@ pub async fn update_inventory(
       return;
     };
 
+    if menu.len() != 46 {
+      return;
+    }
+
     if opts.basic.monitoring_optimization {
       let mut hash_table = INV_HASH_TABLE.write().await;
 
@@ -78,10 +82,6 @@ pub async fn update_inventory(
           hash_table.insert(index, c_hash);
         }
       }
-    }
-
-    if menu.len() != 46 {
-      return;
     }
 
     let mut buf = BytesMut::new();
