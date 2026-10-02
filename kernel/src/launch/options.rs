@@ -406,6 +406,8 @@ pub struct AutoMendingOptions {
   pub enabled: bool,
   pub tick_interval: u32,
   pub percent_of_unbroken_item_durability: f32,
+  pub delay_after_no_broken_items: u32,
+  pub delay_after_no_experience_bottles: u32,
 }
 
 impl AutoMendingOptions {
@@ -414,6 +416,8 @@ impl AutoMendingOptions {
       enabled: bool::read(buf)?,
       tick_interval: u32::read(buf)?,
       percent_of_unbroken_item_durability: f32::read(buf)?,
+      delay_after_no_broken_items: u32::read(buf)?,
+      delay_after_no_experience_bottles: u32::read(buf)?,
     })
   }
 }

@@ -355,6 +355,20 @@ export const plugins: Record<string, PluginData> = {
 				value: 50.0,
 				default: 50.0,
 			},
+			{
+				key: "delay-after-no-broken-items",
+				placeholder: "1000",
+				vtype: PluginValueType.U32,
+				value: 1000,
+				default: 1000,
+			},
+			{
+				key: "delay-after-no-experience-bottles",
+				placeholder: "400",
+				vtype: PluginValueType.U32,
+				value: 400,
+				default: 400,
+			},
 		],
 	},
 	"pearl-leave": {
