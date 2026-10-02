@@ -34,19 +34,17 @@ impl AutoTotemPlugin {
     }
 
     for (slot, item) in menu.slots().iter().enumerate() {
-      if slot == 45 {
+      if slot == 45 || item.kind() != ItemKind::TotemOfUndying {
         continue;
       }
 
-      if item.kind() == ItemKind::TotemOfUndying {
-        take_bot!(index, async |bot| {
-          bot
-            .inventory_move_item(index, ItemKind::TotemOfUndying, slot, 45, true)
-            .await;
-        });
+      take_bot!(index, async |bot| {
+        bot
+          .inventory_move_item(index, ItemKind::TotemOfUndying, slot, 45, !options.ignore_states)
+          .await;
+      });
 
-        sleep!(options.delay_after_taking as u64);
-      }
+      sleep!(options.delay_after_taking as u64);
     }
   }
 }

@@ -10,6 +10,7 @@ use crate::bot::extensions::BotInteractExt;
 use crate::bot::extensions::{BotDefaultExt, BotInventoryExt, BotMovementExt, BotPhysicsExt};
 use crate::bot::plugin_manager::PluginName;
 use crate::bot::systems::states::{getst, setmst, setst, State, StateName};
+use crate::bot::systems::tasks::{gettskact, TaskName};
 use crate::bot::traits::SalarixiPlugin;
 use crate::bot::PLUGINS;
 use crate::launch::options::PotionConsumerOptions;
@@ -72,7 +73,11 @@ impl PotionConsumerPlugin {
 
     let mut should_drink = true;
 
-    if getst(index, State::IsAttacking).await {
+    if options.reduce_drink_chance_on_combat
+      && (getst(index, State::IsAttacking).await
+        || gettskact(index, TaskName::Killaura).await
+        || gettskact(index, TaskName::BowAim).await)
+    {
       should_drink = !randchance(health as f64 / 20.0);
     }
 

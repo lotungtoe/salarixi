@@ -264,7 +264,7 @@ pub struct InstantArmorEquipOptions {
   pub compare_by_enchantments: bool,
   pub compare_by_durability: bool,
   pub adaptation_by_dimension: bool,
-  pub adaptation_by_state: bool,
+  pub adaptation_by_physical_state: bool,
 }
 
 impl InstantArmorEquipOptions {
@@ -281,7 +281,7 @@ impl InstantArmorEquipOptions {
       compare_by_enchantments: bool::read(buf)?,
       compare_by_durability: bool::read(buf)?,
       adaptation_by_dimension: bool::read(buf)?,
-      adaptation_by_state: bool::read(buf)?,
+      adaptation_by_physical_state: bool::read(buf)?,
     })
   }
 }
@@ -292,6 +292,7 @@ pub struct AutoTotemOptions {
   pub tick_interval: u32,
   pub delay_after_taking: u32,
   pub ignore_item_in_offhand: bool,
+  pub ignore_states: bool,
 }
 
 impl AutoTotemOptions {
@@ -301,6 +302,7 @@ impl AutoTotemOptions {
       tick_interval: u32::read(buf)?,
       delay_after_taking: u32::read(buf)?,
       ignore_item_in_offhand: bool::read(buf)?,
+      ignore_states: bool::read(buf)?,
     })
   }
 }
@@ -313,6 +315,7 @@ pub struct AutoEatOptions {
   pub minimum_health_threshold: f32,
   pub delay_after_no_eat: u32,
   pub effects_check: bool,
+  pub reduce_eat_chance_on_combat: bool,
 }
 
 impl AutoEatOptions {
@@ -324,6 +327,7 @@ impl AutoEatOptions {
       minimum_health_threshold: f32::read(buf)?,
       delay_after_no_eat: u32::read(buf)?,
       effects_check: bool::read(buf)?,
+      reduce_eat_chance_on_combat: bool::read(buf)?,
     })
   }
 }
@@ -336,6 +340,7 @@ pub struct PotionConsumerOptions {
   pub include_drinking_potion: bool,
   pub include_splash_potion: bool,
   pub delay_after_no_potion: u32,
+  pub reduce_drink_chance_on_combat: bool,
 }
 
 impl PotionConsumerOptions {
@@ -347,6 +352,7 @@ impl PotionConsumerOptions {
       include_drinking_potion: bool::read(buf)?,
       include_splash_potion: bool::read(buf)?,
       delay_after_no_potion: u32::read(buf)?,
+      reduce_drink_chance_on_combat: bool::read(buf)?,
     })
   }
 }
@@ -399,6 +405,7 @@ impl AutoShieldOptions {
 pub struct AutoMendingOptions {
   pub enabled: bool,
   pub tick_interval: u32,
+  pub percent_of_unbroken_item_durability: f32,
 }
 
 impl AutoMendingOptions {
@@ -406,6 +413,7 @@ impl AutoMendingOptions {
     Some(Self {
       enabled: bool::read(buf)?,
       tick_interval: u32::read(buf)?,
+      percent_of_unbroken_item_durability: f32::read(buf)?,
     })
   }
 }

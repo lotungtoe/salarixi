@@ -589,7 +589,7 @@ impl InstantArmorEquipPlugin {
     let (choice_by_enchantments, enchantment_difference) =
       self.compare_armors_by_enchantments(bot, armor_one, armor_two, options);
 
-    if options.adaptation_by_state && enchantment_difference <= 8 {
+    if options.adaptation_by_physical_state && enchantment_difference <= 8 {
       if let Some(physics) = bot.get_physics() {
         let enchantments_one = &armor_one.priority.enchantments;
         let enchantments_two = &armor_two.priority.enchantments;

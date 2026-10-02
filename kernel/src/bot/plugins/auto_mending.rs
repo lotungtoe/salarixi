@@ -23,12 +23,12 @@ pub struct AutoMendingPlugin;
 
 impl AutoMendingPlugin {
   /// Метод обработки тика
-  async fn tick(&self, index: &u8, _options: &AutoMendingOptions) {
-    let broken_items = self.find_broken_items(index).await;
+  async fn tick(&self, index: &u8, options: &AutoMendingOptions) {
+    let broken_items = self.find_broken_items(index, options).await;
 
     for broken_item in broken_items {
       if !getst(index, State::IsEating).await && !getst(index, State::IsDrinking).await {
-        self.repair_item(index, broken_item).await;
+        self.repair_item(index, options, broken_item).await;
       }
     }
   }
@@ -43,6 +43,7 @@ impl AutoMendingPlugin {
           if item.kind() == ItemKind::ExperienceBottle {
             bot.take_item(index, slot, true).await;
             count = Some(item.count());
+            break;
           }
         }
       }
@@ -52,12 +53,12 @@ impl AutoMendingPlugin {
   }
 
   /// Метод починки сломанного предмета
-  async fn repair_item(&self, index: &u8, broken_item: BrokenItem) {
+  async fn repair_item(&self, index: &u8, options: &AutoMendingOptions, broken_item: BrokenItem) {
     let Some(count) = self.take_experience_bottles(index).await else {
       return;
     };
 
-    for _ in 0..=count {
+    for _ in 0..count {
       if !getst(index, State::CanInteracting).await || !getst(index, State::CanLooking).await {
         continue;
       }
@@ -67,9 +68,9 @@ impl AutoMendingPlugin {
 
       if broken_item.slot != 45 && broken_item.slot > 8 {
         take_bot!(index, async |bot| {
-          bot.take_item(index, broken_item.slot, false).await;
-          sleep!(50);
-          bot.move_item_to_offhand(broken_item.kind).await;
+          bot
+            .inventory_move_item(index, broken_item.kind, broken_item.slot, 45, false)
+            .await;
         });
       }
 
@@ -92,8 +93,10 @@ impl AutoMendingPlugin {
       if let Some(item) = menu.slot(slot) {
         let current_damage = self.get_current_item_damage(item);
         let max_durability = self.get_max_item_durability(item);
+        let current_durability = (max_durability - current_damage) as f32;
+        let unbroken_item_durability = (max_durability as f32 / 100.0) * options.percent_of_unbroken_item_durability;
 
-        if current_damage != 0 && max_durability - current_damage < max_durability / 2 {
+        if current_damage != 0 && current_durability < unbroken_item_durability {
           take_bot!(index, async |bot| {
             let direction = bot.direction();
 
@@ -152,7 +155,7 @@ impl AutoMendingPlugin {
   }
 
   /// Метод поиска сломанных предметов в инвентаре
-  async fn find_broken_items(&self, index: &u8) -> Vec<BrokenItem> {
+  async fn find_broken_items(&self, index: &u8, options: &AutoMendingOptions) -> Vec<BrokenItem> {
     let mut broken_items = vec![];
 
     take_bot!(index, async |bot| {
@@ -167,8 +170,10 @@ impl AutoMendingPlugin {
 
         let current_damage = self.get_current_item_damage(item);
         let max_durability = self.get_max_item_durability(item);
+        let current_durability = (max_durability - current_damage) as f32;
+        let unbroken_item_durability = (max_durability as f32 / 100.0) * options.percent_of_unbroken_item_durability;
 
-        if current_damage != 0 && max_durability - current_damage < max_durability / 2 {
+        if current_damage != 0 && current_durability < unbroken_item_durability {
           if self.item_has_mending(bot, item) {
             broken_items.push(BrokenItem {
               slot: slot,

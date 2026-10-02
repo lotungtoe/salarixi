@@ -2847,6 +2847,10 @@ button svg {
   width: 98%;
 }
 
+.cover .plugin-settings .pretty-input-wrapper .signature.fix {
+  width: 100%;
+}
+
 .cover .plugin-settings::-webkit-scrollbar { 
   display: flex;
   width: 10px;

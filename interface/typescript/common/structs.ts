@@ -118,7 +118,7 @@ export const plugins: Record<string, PluginData> = {
 				default: true,
 			},
 			{
-				key: "adaptation-by-state",
+				key: "adaptation-by-physical-state",
 				placeholder: "true | false",
 				vtype: PluginValueType.Bool,
 				value: false,
@@ -129,7 +129,7 @@ export const plugins: Record<string, PluginData> = {
 	"auto-totem": {
 		name: "Auto Totem",
 		enabled: false,
-		modified: "02.09.2026",
+		modified: "02.10.2026",
 		settings: [
 			{
 				key: "tick-interval",
@@ -152,12 +152,19 @@ export const plugins: Record<string, PluginData> = {
 				value: true,
 				default: true,
 			},
+			{
+				key: "ignore-states",
+				placeholder: "true | false",
+				vtype: PluginValueType.Bool,
+				value: false,
+				default: false,
+			},
 		],
 	},
 	"auto-eat": {
 		name: "Auto Eat",
 		enabled: false,
-		modified: "01.10.2026",
+		modified: "02.10.2026",
 		settings: [
 			{
 				key: "tick-interval",
@@ -194,12 +201,19 @@ export const plugins: Record<string, PluginData> = {
 				value: true,
 				default: true,
 			},
+			{
+				key: "reduce-eat-chance-on-combat",
+				placeholder: "true | false",
+				vtype: PluginValueType.Bool,
+				value: true,
+				default: true,
+			},
 		],
 	},
 	"potion-consumer": {
 		name: "Potion Consumer",
 		enabled: false,
-		modified: "02.09.2026",
+		modified: "02.10.2026",
 		settings: [
 			{
 				key: "tick-interval",
@@ -235,6 +249,13 @@ export const plugins: Record<string, PluginData> = {
 				vtype: PluginValueType.U32,
 				value: 1000,
 				default: 1000,
+			},
+			{
+				key: "reduce-drink-chance-on-combat",
+				placeholder: "true | false",
+				vtype: PluginValueType.Bool,
+				value: true,
+				default: true,
 			},
 		],
 	},
@@ -318,7 +339,7 @@ export const plugins: Record<string, PluginData> = {
 	"auto-mending": {
 		name: "Auto Mending",
 		enabled: false,
-		modified: "02.09.2026",
+		modified: "02.10.2026",
 		settings: [
 			{
 				key: "tick-interval",
@@ -326,6 +347,13 @@ export const plugins: Record<string, PluginData> = {
 				vtype: PluginValueType.U32,
 				value: 900,
 				default: 900,
+			},
+			{
+				key: "percent-of-unbroken-item-durability",
+				placeholder: "50.0",
+				vtype: PluginValueType.F32,
+				value: 50.0,
+				default: 50.0,
 			},
 		],
 	},

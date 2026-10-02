@@ -74,7 +74,11 @@ impl AutoEatPlugin {
 
     let mut should_eat = true;
 
-    if gettskact(index, TaskName::Killaura).await || gettskact(index, TaskName::BowAim).await {
+    if options.reduce_eat_chance_on_combat
+      && (getst(index, State::IsAttacking).await
+        || gettskact(index, TaskName::Killaura).await
+        || gettskact(index, TaskName::BowAim).await)
+    {
       should_eat = !(randchance(satiety as f64 / 20.0) && randchance(health as f64 / 20.0));
     }
 
