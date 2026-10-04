@@ -7,7 +7,7 @@ use azalea::protocol::packets::game::s_interact::InteractionHand;
 use azalea::{BlockPos, SprintDirection, Vec3, WalkDirection};
 use rhai::{Dynamic, Engine, EvalAltResult, Map};
 
-use crate::bot::common::{convert_hotbar_slot_to_inventory_slot, get_block_state};
+use crate::bot::common::{convert_hotbar_slot_to_inventory_slot, get_block_state, stringify_enchantment};
 use crate::bot::extensions::{
   go_to, BotDefaultExt, BotInteractExt, BotInventoryExt, BotMovementExt, BotPhysicsExt, BotRotationExt, ClickMode,
   EntityFilter, ItemMeta,
@@ -111,8 +111,9 @@ fn create_dynamic_item_meta(meta: Option<ItemMeta>, slot: Option<i64>) -> Dynami
     map.insert("max_durability".into(), Dynamic::from_int(m.max_durability as i64));
 
     let mut dynamic_enchantments = Vec::new();
-    for enchantment in m.enchantments {
-      dynamic_enchantments.push(Dynamic::from(enchantment));
+    for (key, level) in m.enchantments {
+      let name = stringify_enchantment(key);
+      dynamic_enchantments.push(Dynamic::from((name, level)));
     }
 
     map.insert("enchantments".into(), Dynamic::from_array(dynamic_enchantments));
