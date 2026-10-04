@@ -62,6 +62,8 @@ export let globalWrappers: Array<{ id: string; el: HTMLElement }> = [];
 export let controlWrappers: Array<{ id: string; el: HTMLElement }> = [];
 export let latestControlWrapper: HTMLElement | null = null;
 
+let initSuccess = true;
+
 /** Функция обновления отображаемого статуса процесса */
 function updateProcessStatus(statusId: number, connectedBots: number, totalBots: number): void {
 	const processStatus = document.getElementById("process-status");
@@ -95,6 +97,12 @@ export function setQuickTasksAllowed(value: boolean): void {
 /** Функция запуска ботов */
 async function startBots(): Promise<void> {
 	try {
+		if (!initSuccess) {
+			logger.log("Не удалось запустить ботов: initialization failed, please restart the client", "warning");
+			messages.message("Система", "Упс... Кажется, что-то сломалось!");
+			return;
+		}
+
 		const options: {
 			basic: any;
 			accounts: Map<string, any>;
@@ -715,6 +723,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		pingModule.init();
 		stylekitModule.init();
 	} catch (error) {
+		initSuccess = false;
 		logger.log(`Ошибка инициализации (sync): ${error}`, "error");
 	}
 });
@@ -743,6 +752,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 		updaterModule.init();
 	} catch (error) {
+		initSuccess = false;
 		logger.log(`Ошибка инициализации (async): ${error}`, "error");
 	}
 });
