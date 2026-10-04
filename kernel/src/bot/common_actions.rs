@@ -15,6 +15,10 @@ pub async fn reset_bot(index: &u8, silent: bool) {
   sleep!(600);
 
   take_bot!(index, async |bot| {
+    if !bot.workable() {
+      return;
+    }
+
     bot.stop_move(index).await;
     bot.stop_crouching();
     bot.stop_jumping();

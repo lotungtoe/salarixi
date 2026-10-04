@@ -11,7 +11,7 @@ pub static REGISTRY_SYSTEM: LazyLock<RegistrySystem> = LazyLock::new(|| Registry
 
 pub struct RegistrySystem {
   pub swarm: Arc<RwLock<Option<Swarm>>>,
-  pub bots: DashMap<u8, Arc<Client>>,
+  pub bots: DashMap<u8, Client>,
 }
 
 impl RegistrySystem {
@@ -30,11 +30,16 @@ impl RegistrySystem {
 
   /// Метод регистрации бота
   pub fn register_bot(&self, index: u8, bot: Client) {
-    self.bots.insert(index, Arc::new(bot));
+    self.bots.insert(index, bot);
+  }
+
+  /// Метод удаления бота
+  pub fn remove_bot(&self, index: &u8) {
+    _ = self.bots.remove(index);
   }
 
   /// Метод получения бота по юзернейму
-  pub fn get_bot(&self, index: &u8) -> Option<Arc<Client>> {
+  pub fn get_bot(&self, index: &u8) -> Option<Client> {
     self.bots.get(index).map(|cell| cell.clone())
   }
 
@@ -44,7 +49,7 @@ impl RegistrySystem {
     F: AsyncFnOnce(&Client) -> T,
   {
     if let Some(reference) = self.bots.get(index) {
-      return Some(f(reference.as_ref()).await);
+      return Some(f(&reference).await);
     }
 
     None

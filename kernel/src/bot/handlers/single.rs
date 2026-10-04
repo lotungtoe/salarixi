@@ -142,6 +142,8 @@ async fn process_disconnect(bot: Client, text: Option<FormattedText>) {
     profile.status = BotStatus::Disconnected;
   });
 
+  REGISTRY_SYSTEM.remove_bot(&index);
+
   update_process_status().await;
 
   if let Some(t) = text {

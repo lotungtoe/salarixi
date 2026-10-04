@@ -297,6 +297,7 @@ pub async fn launch_bots_on_server(options: LaunchOptions) -> u8 {
           .add_plugins(bot_plugins)
           .add_plugins(azalea::swarm::DefaultSwarmPlugins)
           .join_delay(Duration::from_millis(options.basic.join_delay.into()))
+          .reconnect_after(None)
           .set_swarm_handler(swarm_handler)
           .set_handler(single_handler);
 
