@@ -3,7 +3,8 @@ use std::sync::Arc;
 use azalea::inventory::ItemStack;
 use azalea::prelude::*;
 use azalea::registry::builtin::ItemKind;
-use azalea::world::InstanceName;
+use azalea::registry::data::EnchantmentKey;
+use azalea::world::WorldName;
 
 use crate::bot::extensions::{BotInventoryExt, BotPhysicsExt, ClickMode};
 use crate::bot::plugin_manager::PluginName;
@@ -432,36 +433,32 @@ impl InstantArmorEquipPlugin {
     armor.priority.max_durability = meta.max_durability;
     armor.priority.current_durability = meta.current_durability;
 
-    for (id, lvl) in &meta.enchantments {
-      let name = &id[10..];
-
-      // println!("Armor enchantment name ({}): {}", bot.username(), name);
-
-      let current_level = match name {
-        "protection" => Some(&mut armor.priority.enchantments.protection),
-        "blast_protection" => Some(&mut armor.priority.enchantments.blast_protection),
-        "fire_protection" => Some(&mut armor.priority.enchantments.fire_protection),
-        "projectile_protection" => Some(&mut armor.priority.enchantments.projectile_protection),
-        "feather_falling" => Some(&mut armor.priority.enchantments.feather_falling),
-        "aqua_affinity" => Some(&mut armor.priority.enchantments.aqua_affinity),
-        "depth_strider" => Some(&mut armor.priority.enchantments.depth_strider),
-        "respiration" => Some(&mut armor.priority.enchantments.respiration),
-        "soul_speed" => Some(&mut armor.priority.enchantments.soul_speed),
-        "swift_sneak" => Some(&mut armor.priority.enchantments.swift_sneak),
-        "thorns" => Some(&mut armor.priority.enchantments.thorns),
-        "unbreaking" => Some(&mut armor.priority.enchantments.unbreaking),
+    for (key, lvl) in meta.enchantments {
+      let current_level = match key {
+        EnchantmentKey::Protection => Some(&mut armor.priority.enchantments.protection),
+        EnchantmentKey::BlastProtection => Some(&mut armor.priority.enchantments.blast_protection),
+        EnchantmentKey::FireProtection => Some(&mut armor.priority.enchantments.fire_protection),
+        EnchantmentKey::ProjectileProtection => Some(&mut armor.priority.enchantments.projectile_protection),
+        EnchantmentKey::FeatherFalling => Some(&mut armor.priority.enchantments.feather_falling),
+        EnchantmentKey::AquaAffinity => Some(&mut armor.priority.enchantments.aqua_affinity),
+        EnchantmentKey::DepthStrider => Some(&mut armor.priority.enchantments.depth_strider),
+        EnchantmentKey::Respiration => Some(&mut armor.priority.enchantments.respiration),
+        EnchantmentKey::SoulSpeed => Some(&mut armor.priority.enchantments.soul_speed),
+        EnchantmentKey::SwiftSneak => Some(&mut armor.priority.enchantments.swift_sneak),
+        EnchantmentKey::Thorns => Some(&mut armor.priority.enchantments.thorns),
+        EnchantmentKey::Unbreaking => Some(&mut armor.priority.enchantments.unbreaking),
         _ => None,
       };
 
       if let Some(level) = current_level {
-        *level = *lvl;
+        *level = lvl;
       }
 
-      if name == "mending" {
+      if key == EnchantmentKey::Mending {
         armor.priority.has_mending = true;
       }
 
-      if name == "binding_curse" {
+      if key == EnchantmentKey::BindingCurse {
         armor.priority.has_binding_curse = true;
       }
     }
@@ -726,7 +723,7 @@ impl InstantArmorEquipPlugin {
     }
 
     if options.adaptation_by_dimension {
-      let dimension = if let Some(instance) = bot.get_component::<InstanceName>() {
+      let dimension = if let Some(instance) = bot.get_component::<WorldName>() {
         Some(instance.0.to_string())
       } else {
         None

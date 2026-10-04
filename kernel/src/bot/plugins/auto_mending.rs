@@ -1,10 +1,12 @@
 use std::sync::Arc;
 
+use azalea::entity::LookDirection;
 use azalea::inventory::components::{Damage, Enchantments, MaxDamage};
 use azalea::inventory::ItemStack;
 use azalea::prelude::*;
 use azalea::protocol::packets::game::s_interact::InteractionHand;
 use azalea::registry::builtin::ItemKind;
+use azalea::registry::data::EnchantmentKey;
 
 use crate::bot::extensions::{BotInteractExt, BotInventoryExt};
 use crate::bot::plugin_manager::PluginName;
@@ -74,10 +76,10 @@ impl AutoMendingPlugin {
       return;
     };
 
-    let mut initial_direction = (0.0, 0.0);
+    let mut initial_direction = LookDirection::default();
 
     take_bot!(index, async |bot| {
-      initial_direction = bot.direction();
+      initial_direction.update(bot.direction());
     });
 
     if broken_item.slot != 45 && broken_item.slot > 8 {
@@ -115,8 +117,8 @@ impl AutoMendingPlugin {
           take_bot!(index, async |bot| {
             let current_direction = bot.direction();
 
-            if current_direction.1 < 84.0 {
-              bot.set_direction(current_direction.0, randnum(84.0, 90.0) as f32);
+            if current_direction.x_rot() < 84.0 {
+              bot.set_direction(current_direction.y_rot(), randnum(84.0, 90.0) as f32);
               sleep!(randnum(150, 200));
             }
 
@@ -131,7 +133,7 @@ impl AutoMendingPlugin {
     }
 
     take_bot!(index, async |bot| {
-      bot.set_direction(initial_direction.0, initial_direction.1);
+      bot.set_direction(initial_direction.y_rot(), initial_direction.x_rot());
     });
 
     setmst(index, StateName::Interacting, false).await;
@@ -152,8 +154,8 @@ impl AutoMendingPlugin {
   fn item_has_mending(&self, bot: &Client, item: &ItemStack) -> bool {
     if let Some(enchantments) = item.get_component::<Enchantments>() {
       for (enchantment, _) in &enchantments.levels {
-        if let Some(id) = bot.resolve_registry_name(enchantment) {
-          if id.to_string().contains("minecraft:mending") {
+        if let Some(key) = bot.resolve_registry_key(enchantment) {
+          if key == EnchantmentKey::Mending {
             return true;
           }
         }

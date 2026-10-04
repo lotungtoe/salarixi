@@ -1,8 +1,7 @@
-use azalea::ecs::entity::Entity;
-use azalea::prelude::*;
 use azalea::protocol::packets::game::s_interact::InteractionHand;
 use azalea::registry::builtin::ItemKind;
 use azalea::Vec3;
+use azalea::{prelude::*, EntityRef};
 use salarixi_extensions::buffer::BufferExt;
 
 use crate::bot::extensions::{BotDefaultExt, BotInteractExt, BotInventoryExt, BotMovementExt, EntityFilter};
@@ -73,19 +72,19 @@ impl BowAimModule {
     false
   }
 
-  async fn predict_entity_position(bot: &Client, entity: Entity) -> Vec3 {
-    let old_pos = bot.get_entity_position(entity);
+  async fn predict_entity_position(bot: &Client, entity: &EntityRef) -> Option<Vec3> {
+    let old_pos = bot.get_entity_position(entity)?;
 
     sleep!(50);
 
-    let mut predicted_pos = bot.get_entity_position(entity);
+    let mut predicted_pos = bot.get_entity_position(entity)?;
 
     let diff_x = predicted_pos.x - old_pos.x;
     let diff_y = predicted_pos.y - old_pos.y;
     let diff_z = predicted_pos.z - old_pos.z;
 
     let Some(eye_pos) = bot.eye_pos() else {
-      return predicted_pos;
+      return Some(predicted_pos);
     };
 
     let distance = eye_pos.distance_to(predicted_pos);
@@ -106,7 +105,7 @@ impl BowAimModule {
       predicted_pos.z += diff_z + distance * ((diff_z / 100.0) * 13.0);
     }
 
-    predicted_pos
+    Some(predicted_pos)
   }
 
   async fn start_aiming(index: u8, entity_filter: EntityFilter, distance: f64, use_prediction: bool) {
@@ -123,17 +122,19 @@ impl BowAimModule {
           if let Some(entity) = bot.find_nearest_entity(&entity_filter, distance) {
             target_entity_exist = true;
 
-            let dest_pos = if use_prediction {
-              Self::predict_entity_position(bot, entity).await
+            let Some(dest_pos) = (if use_prediction {
+              Self::predict_entity_position(bot, &entity).await
             } else {
-              bot.get_entity_position(entity)
+              bot.get_entity_position(&entity)
+            }) else {
+              return;
             };
 
-            bot.look_at(Vec3::new(
-              dest_pos.x,
-              dest_pos.y + bot.get_entity_eye_height(entity),
-              dest_pos.z,
-            ));
+            let Some(eye_height) = bot.get_entity_eye_height(&entity) else {
+              return;
+            };
+
+            bot.look_at(Vec3::new(dest_pos.x, dest_pos.y + eye_height, dest_pos.z));
           }
         });
 
@@ -168,10 +169,12 @@ impl BowAimModule {
     Self::start_use_bow(bot, index).await;
     sleep!(randnum(900, 1100));
 
-    let dest_pos = if use_prediction {
-      Self::predict_entity_position(bot, entity).await
+    let Some(dest_pos) = (if use_prediction {
+      Self::predict_entity_position(bot, &entity).await
     } else {
-      bot.get_entity_position(entity)
+      bot.get_entity_position(&entity)
+    }) else {
+      return;
     };
 
     let Some(eye_pos) = bot.eye_pos() else {
@@ -188,10 +191,12 @@ impl BowAimModule {
 
       sleep!(100);
 
-      let dest_pos = if use_prediction {
-        Self::predict_entity_position(bot, entity).await
+      let Some(dest_pos) = (if use_prediction {
+        Self::predict_entity_position(bot, &entity).await
       } else {
-        bot.get_entity_position(entity)
+        bot.get_entity_position(&entity)
+      }) else {
+        return;
       };
 
       let Some(eye_pos) = bot.eye_pos() else {

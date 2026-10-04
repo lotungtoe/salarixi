@@ -137,8 +137,8 @@ impl StealerModule {
 
       if getst(index, State::CanLooking).await {
         bot.set_direction(
-          direction.0 + randnum(-2.5, 2.5) as f32,
-          direction.1 + randnum(-2.5, 2.5) as f32,
+          direction.y_rot() + randnum(-2.5, 2.5) as f32,
+          direction.x_rot() + randnum(-2.5, 2.5) as f32,
         );
       }
 

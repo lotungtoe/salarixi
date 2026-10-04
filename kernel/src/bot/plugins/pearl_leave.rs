@@ -1,7 +1,6 @@
 use std::sync::Arc;
 use std::time::Duration;
 
-use azalea::prelude::*;
 use azalea::protocol::packets::game::s_interact::InteractionHand;
 use azalea::registry::builtin::ItemKind;
 

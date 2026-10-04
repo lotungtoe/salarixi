@@ -48,8 +48,11 @@ impl StalkerModule {
     let entity_filter = EntityFilter::Custom(options.target_username.clone());
 
     loop {
-      if let Some(target) = bot.find_nearest_entity(&entity_filter, options.max_distance.unwrap_or(100.0)) {
-        let target_pos = bot.get_entity_position(target);
+      if let Some(entity) = bot.find_nearest_entity(&entity_filter, options.max_distance.unwrap_or(100.0)) {
+        let Some(entity_pos) = bot.get_entity_position(&entity) else {
+          continue;
+        };
+
         let min_distance = options.min_distance.unwrap_or(6.0);
 
         let Some(foot_pos) = bot.foot_pos() else {
@@ -57,8 +60,8 @@ impl StalkerModule {
           continue;
         };
 
-        if foot_pos.distance_to(target_pos) > min_distance {
-          bot.look_at(target_pos);
+        if foot_pos.distance_to(entity_pos) > min_distance {
+          bot.look_at(entity_pos);
           bot.start_jumping();
           bot.start_sprinting(index, SprintDirection::Forward).await;
         } else {
@@ -84,8 +87,11 @@ impl StalkerModule {
     let entity_filter = EntityFilter::Custom(options.target_username.clone());
 
     loop {
-      if let Some(target) = bot.find_nearest_entity(&entity_filter, options.max_distance.unwrap_or(100.0)) {
-        let target_pos = bot.get_entity_position(target);
+      if let Some(entity) = bot.find_nearest_entity(&entity_filter, options.max_distance.unwrap_or(100.0)) {
+        let Some(entity_pos) = bot.get_entity_position(&entity) else {
+          continue;
+        };
+
         let min_distance = options.min_distance.unwrap_or(6.0);
 
         let Some(foot_pos) = bot.foot_pos() else {
@@ -93,12 +99,12 @@ impl StalkerModule {
           continue;
         };
 
-        if foot_pos.distance_to(target_pos) > min_distance {
+        if foot_pos.distance_to(entity_pos) > min_distance {
           if bot.is_goto_target_reached() {
             go_to(
               index,
-              (target_pos.x - min_distance) as i32,
-              (target_pos.z - min_distance) as i32,
+              (entity_pos.x - min_distance) as i32,
+              (entity_pos.z - min_distance) as i32,
             );
           }
         }

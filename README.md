@@ -4,19 +4,17 @@
 
 **Salarixi** - a feature-rich, multi-task, and lightweight tool for botting in Minecraft. It has a lot of settings that can be quickly adjusted to your goals. This tool also offers a lot of features for managing bots, there are many separate management modules, scripting, and it is also unique for its fast monitoring capabilities (bot status, health, ping, chats), they allow you to filter data on the fly, manage specific bots.
 
----
+> [!IMPORTANT]
+> This is just a fun project.
 
-Uses [azalea](https://github.com/azalea-rs/azalea) library as a base.
+Tool currently works with Minecraft version **26.1**.
+
+Uses [azalea v0.16.0+mc26.1](https://github.com/azalea-rs/azalea) library as a base.
 
 ---
 
 > [!WARNING]
 > This client does not promise stability and good support on all operating systems. If you encounter any problems, please report them to the [issues](https://codeberg.org/nullclyze/salarixi/issues). If the message concerns an error or bug, it should include the client version, operating system, clear description of the problem, screenshots.
-
----
-
-> [!IMPORTANT]
-> This is just a fun project.
 
 ## Donate
 

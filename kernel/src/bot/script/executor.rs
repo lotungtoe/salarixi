@@ -2,8 +2,6 @@ use std::str::FromStr;
 use std::sync::atomic::{AtomicBool, AtomicU8, Ordering};
 use std::sync::LazyLock;
 
-use azalea::bot::BotClientExt;
-use azalea::container::ContainerClientExt;
 use azalea::prelude::PathfinderClientExt;
 use azalea::protocol::packets::game::s_interact::InteractionHand;
 use azalea::{BlockPos, SprintDirection, Vec3, WalkDirection};
@@ -423,8 +421,8 @@ impl ScriptExecutor {
   fn get_direction(code: i16) -> Dynamic {
     if code != -1 {
       if let Some(bot) = REGISTRY_SYSTEM.get_bot(&(code as u8)) {
-        let (y_rot, x_rot) = bot.direction();
-        return create_dynamic_direction(y_rot, x_rot);
+        let direction = bot.direction();
+        return create_dynamic_direction(direction.y_rot(), direction.x_rot());
       }
     }
 
@@ -693,10 +691,10 @@ impl ScriptExecutor {
           if let Some(bot) = REGISTRY_SYSTEM.get_bot(index) {
             if let Some(entity) = bot.find_nearest_entity(&entity_filter, distance) {
               if look_at_target {
-                bot.look_at_entity(entity, false);
+                bot.look_at_entity(&entity, false);
               }
 
-              bot.attack(entity);
+              bot.attack(entity.id());
             }
           }
         }
@@ -704,10 +702,10 @@ impl ScriptExecutor {
         if let Some(bot) = REGISTRY_SYSTEM.get_bot(&(code as u8)) {
           if let Some(entity) = bot.find_nearest_entity(&entity_filter, distance) {
             if look_at_target {
-              bot.look_at_entity(entity, false);
+              bot.look_at_entity(&entity, false);
             }
 
-            bot.attack(entity);
+            bot.attack(entity.id());
           }
         }
       }
@@ -821,7 +819,8 @@ impl ScriptExecutor {
 
           REGISTRY_SYSTEM
             .get_bot(&(generate_code(&su, mu) as u8))
-            .map(|b| b.id().0 as i64)
+            .map(|b| b.id().map(|id| id.0 as i64))
+            .unwrap_or(None)
             .unwrap_or(0)
         }
       })
@@ -934,7 +933,11 @@ impl ScriptExecutor {
           }
         })
         .register_fn("current_id", move || {
-          REGISTRY_SYSTEM.get_bot(&si).map(|b| b.id().0 as i64).unwrap_or(0)
+          REGISTRY_SYSTEM
+            .get_bot(&si)
+            .map(|b| b.id().map(|id| id.0 as i64))
+            .unwrap_or(None)
+            .unwrap_or(0)
         })
         .register_fn("current_ping", move || {
           REGISTRY_SYSTEM.get_bot(&si).map(|b| b.ping() as i64).unwrap_or(0)

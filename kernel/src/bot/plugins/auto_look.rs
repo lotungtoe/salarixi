@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
-use azalea::ecs::entity::Entity;
 use azalea::prelude::*;
+use azalea::EntityRef;
 
 use crate::bot::extensions::{BotDefaultExt, BotRotationExt};
 use crate::bot::plugin_manager::PluginName;
@@ -29,7 +29,7 @@ impl AutoLookPlugin {
       }
 
       if let Some(entity) = self.find_nearest_entity(bot, options) {
-        bot.look_at_entity(entity, options.with_eye_height);
+        bot.look_at_entity(&entity, options.with_eye_height);
       }
     });
 
@@ -39,7 +39,7 @@ impl AutoLookPlugin {
   }
 
   /// Метод поиска ближайшей сущности по указанному фильтру
-  fn find_nearest_entity(&self, bot: &Client, options: &AutoLookOptions) -> Option<Entity> {
+  fn find_nearest_entity(&self, bot: &Client, options: &AutoLookOptions) -> Option<EntityRef> {
     for entity_filter in &options.include_entities {
       if let Some(entity) = bot.find_nearest_entity(entity_filter, options.distance) {
         return Some(entity);

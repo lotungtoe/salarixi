@@ -9,6 +9,7 @@ use azalea::prelude::*;
 use azalea::protocol::packets::game::s_player_action::Action;
 use azalea::protocol::packets::game::ServerboundPlayerAction;
 use azalea::registry::builtin::ItemKind;
+use azalea::registry::data::EnchantmentKey;
 
 use crate::bot::common::convert_inventory_slot_to_hotbar_slot;
 use crate::bot::extensions::BotMovementExt;
@@ -21,7 +22,7 @@ pub struct ItemMeta {
   pub count: i32,
   pub current_durability: i32,
   pub max_durability: i32,
-  pub enchantments: Vec<(String, i32)>,
+  pub enchantments: Vec<(EnchantmentKey, i32)>,
 }
 
 pub trait BotInventoryExt {
@@ -193,11 +194,11 @@ impl BotInventoryExt for Client {
 
     if let Some(enchantments) = item.get_component::<Enchantments>() {
       for (enchantment, level) in &enchantments.levels {
-        let Some(id) = self.resolve_registry_name(enchantment) else {
+        let Some(key) = self.resolve_registry_key(enchantment) else {
           continue;
         };
 
-        meta.enchantments.push((id.to_string(), *level));
+        meta.enchantments.push((key, *level));
       }
     }
 

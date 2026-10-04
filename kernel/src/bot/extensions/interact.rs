@@ -15,8 +15,8 @@ impl BotInteractExt for Client {
 
     self.write_packet(ServerboundUseItem {
       hand: hand,
-      y_rot: direction.0,
-      x_rot: direction.1,
+      y_rot: direction.y_rot(),
+      x_rot: direction.x_rot(),
       seq: 0,
     });
   }

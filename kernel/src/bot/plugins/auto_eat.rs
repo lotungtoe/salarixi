@@ -25,8 +25,8 @@ struct Food {
 struct EffectsData {
   has_regeneration: bool,
   has_saturation: bool,
-  regeneration_amplifier: u32,
-  saturation_amplifier: u32,
+  regeneration_amplifier: i32,
+  saturation_amplifier: i32,
 }
 
 impl Default for EffectsData {

@@ -275,9 +275,7 @@ pub async fn launch_bots_on_server(options: LaunchOptions) -> u8 {
     rt.block_on(async move {
       let local_set = tokio::task::LocalSet::new();
 
-      let swarm_plugins = azalea::DefaultPlugins
-        .build()
-        .disable::<azalea::auto_reconnect::AutoReconnectPlugin>();
+      let swarm_plugins = azalea::DefaultPlugins.build();
 
       let mut bot_plugins = azalea::bot::DefaultBotPlugins.build();
 

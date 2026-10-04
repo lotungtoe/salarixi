@@ -1,7 +1,7 @@
-use azalea::ecs::entity::Entity;
 use azalea::entity::metadata::Invisible;
 use azalea::registry::builtin::ItemKind;
-use azalea::{prelude::*, WalkDirection};
+use azalea::registry::data::EnchantmentKey;
+use azalea::{prelude::*, EntityRef, WalkDirection};
 use azalea::{BlockPos, SprintDirection, Vec3};
 use salarixi_extensions::buffer::BufferExt;
 use salarixi_extensions::index::IndexExt;
@@ -122,25 +122,25 @@ impl KillauraModule {
   }
 
   /// Метод вычисления приоретета предмета по чарам
-  fn calc_item_enchantments_priority(enchantments: &Vec<(String, i32)>) -> i32 {
+  fn calc_item_enchantments_priority(enchantments: &Vec<(EnchantmentKey, i32)>) -> i32 {
     let mut priority = 0;
 
-    for (id, level) in enchantments {
-      match id.as_str() {
-        "minecraft:fire_aspect" => priority += *level,
-        "minecraft:knockback" => priority += *level,
-        "minecraft:looting" => priority += *level,
-        "minecraft:smite" => priority += *level,
-        "minecraft:sweeping_edge" => priority += *level,
-        "minecraft:unbreaking" => priority += *level,
+    for (key, level) in enchantments {
+      match key {
+        EnchantmentKey::FireAspect => priority += *level,
+        EnchantmentKey::Knockback => priority += *level,
+        EnchantmentKey::Looting => priority += *level,
+        EnchantmentKey::Smite => priority += *level,
+        EnchantmentKey::SweepingEdge => priority += *level,
+        EnchantmentKey::Unbreaking => priority += *level,
 
         // Никогда не понимал что делает эта чара, хаха,
         // думаю, стоит занизить ей приоретет на единицу
-        "minecraft:bane_of_arthropods" => priority += if *level > 0 { *level - 1 } else { 0 },
+        EnchantmentKey::BaneOfArthropods => priority += if *level > 0 { *level - 1 } else { 0 },
 
         // Этим чарам явно требуется повышенный приоретет
-        "minecraft:mending" => priority += 2,
-        "minecraft:sharpness" => priority += *level + 1,
+        EnchantmentKey::Mending => priority += 2,
+        EnchantmentKey::Sharpness => priority += *level + 1,
 
         _ => {}
       }
@@ -299,7 +299,7 @@ impl KillauraModule {
 
         take_bot!(&index, async |bot| {
           if let Some(entity) = bot.find_nearest_entity(&entity_filter, distance) {
-            if only_visible && !Self::entity_is_visible(bot, entity) {
+            if only_visible && !Self::entity_is_visible(&entity) {
               return;
             }
 
@@ -307,12 +307,14 @@ impl KillauraModule {
               return;
             };
 
-            if eye_pos.distance_to(bot.get_entity_position(entity)) > min_distance_to_target {
+            let Some(entity_pos) = bot.get_entity_position(&entity) else {
+              return;
+            };
+
+            if eye_pos.distance_to(entity_pos) > min_distance_to_target {
               target_entity_exist = true;
 
-              if eye_pos.distance_to(bot.get_entity_position(entity)) - min_distance_to_target
-                > min_distance_to_target * 1.5
-              {
+              if eye_pos.distance_to(entity_pos) - min_distance_to_target > min_distance_to_target * 1.5 {
                 bot.jump();
               }
 
@@ -321,7 +323,7 @@ impl KillauraModule {
               if getst(&index, State::CanLooking).await {
                 setmst(&index, StateName::Looking, true).await;
                 sleep!(50);
-                bot.look_at_entity(entity, false);
+                bot.look_at_entity(&entity, false);
                 sleep!(50);
                 setmst(&index, StateName::Looking, false).await;
               }
@@ -361,7 +363,7 @@ impl KillauraModule {
 
         take_bot!(&index, async |bot| {
           if let Some(entity) = bot.find_nearest_entity(&entity_filter, distance) {
-            if only_visible && !Self::entity_is_visible(bot, entity) {
+            if only_visible && !Self::entity_is_visible(&entity) {
               return;
             }
 
@@ -369,7 +371,7 @@ impl KillauraModule {
 
             setmst(&index, StateName::Looking, true).await;
             sleep!(50);
-            bot.look_at_entity(entity, false);
+            bot.look_at_entity(&entity, false);
             sleep!(50);
             setmst(&index, StateName::Looking, false).await;
           }
@@ -507,8 +509,8 @@ impl KillauraModule {
   }
 
   /// Метод проверки видимости сущности
-  fn entity_is_visible(bot: &Client, entity: Entity) -> bool {
-    if let Some(invisible) = bot.get_entity_component::<Invisible>(entity) {
+  fn entity_is_visible(entity: &EntityRef) -> bool {
+    if let Some(invisible) = entity.get_component::<Invisible>() {
       if invisible.0 {
         return false;
       }
@@ -527,14 +529,20 @@ impl KillauraModule {
       return;
     };
 
-    if options.only_visible && !Self::entity_is_visible(bot, entity) {
+    if options.only_visible && !Self::entity_is_visible(&entity) {
       return;
     }
 
     if !options.ignore_blocks {
       if let Some(client_pos) = bot.eye_pos() {
-        let eye_height = bot.get_entity_eye_height(entity);
-        let mut entity_pos = bot.get_entity_position(entity);
+        let Some(eye_height) = bot.get_entity_eye_height(&entity) else {
+          return;
+        };
+
+        let Some(mut entity_pos) = bot.get_entity_position(&entity) else {
+          return;
+        };
+
         entity_pos.y += eye_height;
 
         if !Self::check_impact_path(bot, client_pos, entity_pos) {
@@ -547,6 +555,13 @@ impl KillauraModule {
     setst(index, State::CanInteracting, false).await;
     setst(index, State::CanEating, false).await;
     setmst(index, StateName::Attacking, true).await;
+
+    let unlock_states = async || {
+      setmst(index, StateName::Attacking, false).await;
+      setst(index, State::CanDrinking, true).await;
+      setst(index, State::CanInteracting, true).await;
+      setst(index, State::CanEating, true).await;
+    };
 
     if options.use_auto_weapon {
       Self::take_weapon(bot, index, &options.weapon).await;
@@ -564,28 +579,29 @@ impl KillauraModule {
       sleep!(randnum(400, 500));
 
       let Some(eye_pos) = bot.eye_pos() else {
+        unlock_states().await;
         return;
       };
 
-      let entity_pos = bot.get_entity_position(entity);
+      let Some(entity_pos) = bot.get_entity_position(&entity) else {
+        unlock_states().await;
+        return;
+      };
+
       let distance = eye_pos.distance_to(entity_pos);
 
       if distance <= config.attack_distance {
-        bot.attack(entity);
-        return;
+        bot.attack(entity.id());
       }
     } else {
-      bot.attack(entity);
+      bot.attack(entity.id());
     }
 
     if options.use_dodging {
       Self::dodge(bot, index).await;
     }
 
-    setmst(index, StateName::Attacking, false).await;
-    setst(index, State::CanDrinking, true).await;
-    setst(index, State::CanInteracting, true).await;
-    setst(index, State::CanEating, true).await;
+    unlock_states().await;
   }
 
   /// Метод запуска умеренной киллауры

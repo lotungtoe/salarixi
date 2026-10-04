@@ -41,7 +41,7 @@ impl Radar {
             continue;
           };
 
-          let Some(profile) = bot.get_entity_component::<GameProfileComponent>(entity) else {
+          let Some(profile) = entity.get_component::<GameProfileComponent>() else {
             continue;
           };
 
@@ -49,16 +49,19 @@ impl Radar {
             continue;
           }
 
-          let player_pos = bot.get_entity_position(entity);
+          let Some(target_pos) = bot.get_entity_position(&entity) else {
+            continue;
+          };
+
           let Some(client_pos) = bot.foot_pos() else {
             return;
           };
 
           info = Some(RadarInfo {
             uuid: uuid.to_string(),
-            tx: player_pos.x,
-            ty: player_pos.y,
-            tz: player_pos.z,
+            tx: target_pos.x,
+            ty: target_pos.y,
+            tz: target_pos.z,
             ox: client_pos.x,
             oz: client_pos.z,
           });

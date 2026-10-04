@@ -1,9 +1,8 @@
 use std::sync::Arc;
 
-use azalea::ecs::entity::Entity;
-use azalea::prelude::*;
 use azalea::protocol::packets::game::s_interact::InteractionHand;
 use azalea::registry::builtin::ItemKind;
+use azalea::{prelude::*, EntityRef};
 
 use crate::bot::extensions::{BotDefaultExt, BotInteractExt, BotInventoryExt, BotRotationExt};
 use crate::bot::plugin_manager::PluginName;
@@ -32,7 +31,7 @@ impl AutoShieldPlugin {
   }
 
   /// Метод получения ближайшей опасной сущности
-  fn get_nearest_dangerous_entity(&self, bot: &Client, options: &AutoShieldOptions) -> Option<Entity> {
+  fn get_nearest_dangerous_entity(&self, bot: &Client, options: &AutoShieldOptions) -> Option<EntityRef> {
     for entity_filter in &options.dangerous_entities {
       if let Some(entity) = bot.find_nearest_entity(entity_filter, options.distance) {
         return Some(entity);
@@ -107,8 +106,8 @@ impl AutoShieldPlugin {
       }
 
       take_bot!(index, async |bot| {
-        if let Some(e) = self.get_nearest_dangerous_entity(bot, options) {
-          bot.look_at_entity(e, true);
+        if let Some(entity) = self.get_nearest_dangerous_entity(bot, options) {
+          bot.look_at_entity(&entity, true);
         } else {
           danger_entity_exists = false;
         }

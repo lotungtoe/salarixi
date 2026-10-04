@@ -291,16 +291,16 @@ impl MinerModule {
       if randchance(0.5) {
         bot.set_direction(
           options.direction_x.unwrap_or(0.0) + randnum(-2.5, 2.5) as f32,
-          direction.1 + randnum(-2.5, 2.5) as f32,
+          direction.x_rot() + randnum(-2.5, 2.5) as f32,
         );
       } else {
         if randchance(0.3) {
           bot.set_direction(
             options.direction_x.unwrap_or(0.0) + randnum(-1.3, 1.3) as f32,
-            direction.1 + randnum(-1.3, 1.3) as f32,
+            direction.x_rot() + randnum(-1.3, 1.3) as f32,
           );
         } else {
-          bot.set_direction(options.direction_x.unwrap_or(0.0), direction.1);
+          bot.set_direction(options.direction_x.unwrap_or(0.0), direction.x_rot());
         }
       }
 

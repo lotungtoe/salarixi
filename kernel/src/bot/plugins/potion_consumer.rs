@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use azalea::entity::Physics;
+use azalea::entity::{LookDirection, Physics};
 use azalea::inventory::components::PotionContents;
 use azalea::inventory::ItemStack;
 use azalea::protocol::packets::game::s_interact::InteractionHand;
@@ -120,11 +120,14 @@ impl PotionConsumerPlugin {
         setmst(index, StateName::Drinking, false).await;
       }
       PotionClass::Splash => {
-        let mut direction = (0.0, 0.0);
+        let mut direction = LookDirection::default();
 
         take_bot!(index, async |bot| {
-          direction = bot.direction();
-          bot.set_direction(direction.0 + randnum(-5.5, 5.5) as f32, randnum(87.0, 90.0) as f32);
+          direction.update(bot.direction());
+          bot.set_direction(
+            direction.y_rot() + randnum(-5.5, 5.5) as f32,
+            randnum(87.0, 90.0) as f32,
+          );
         });
 
         sleep!(randnum(400, 600));
@@ -137,8 +140,8 @@ impl PotionConsumerPlugin {
 
         take_bot!(index, async |bot| {
           bot.set_direction(
-            direction.0 + randnum(-2.5, 2.5) as f32,
-            direction.1 + randnum(-2.5, 2.5) as f32,
+            direction.y_rot() + randnum(-2.5, 2.5) as f32,
+            direction.x_rot() + randnum(-2.5, 2.5) as f32,
           );
         });
       }

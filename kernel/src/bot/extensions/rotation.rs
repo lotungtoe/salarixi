@@ -1,24 +1,29 @@
-use azalea::prelude::*;
 use azalea::BlockPos;
 use azalea::Client;
+use azalea::EntityRef;
 use azalea::Vec3;
-use bevy_ecs::entity::Entity;
 
 use crate::bot::extensions::BotDefaultExt;
 use crate::sleep;
 use crate::tools::{randchance, randnum};
 
 pub trait BotRotationExt {
-  fn look_at_entity(&self, entity: Entity, with_eye_height: bool);
+  fn look_at_entity(&self, entity: &EntityRef, with_eye_height: bool);
   fn look_at_block(&self, block_pos: BlockPos, sloppy: bool) -> impl std::future::Future<Output = ()> + Send + Sync;
 }
 
 impl BotRotationExt for Client {
-  fn look_at_entity(&self, entity: Entity, with_eye_height: bool) {
-    let mut entity_pos = self.get_entity_position(entity);
+  fn look_at_entity(&self, entity: &EntityRef, with_eye_height: bool) {
+    let Some(mut entity_pos) = self.get_entity_position(entity) else {
+      return;
+    };
 
     if with_eye_height {
-      entity_pos.y += self.get_entity_eye_height(entity);
+      let Some(eye_height) = self.get_entity_eye_height(entity) else {
+        return;
+      };
+
+      entity_pos.y += eye_height;
     }
 
     self.look_at(Vec3 {

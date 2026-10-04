@@ -1,4 +1,5 @@
 use azalea::core::position::BlockPos;
+use azalea::entity::LookDirection;
 use azalea::prelude::*;
 use azalea::{Vec3, WalkDirection};
 use salarixi_extensions::buffer::BufferExt;
@@ -90,13 +91,13 @@ impl ScaffoldModule {
     false
   }
 
-  fn simulate_inaccuracy(bot: &Client, direction: (f32, f32)) {
-    let inaccurate_direction = (
-      direction.0 + randnum(-0.08, 0.08) as f32,
-      direction.1 + randnum(-0.08, 0.08) as f32,
-    );
+  fn simulate_inaccuracy(bot: &Client, mut direction: LookDirection) {
+    direction.update(LookDirection::new(
+      direction.y_rot() + randnum(-0.08, 0.08) as f32,
+      direction.x_rot() + randnum(-0.08, 0.08) as f32,
+    ));
 
-    bot.set_direction(inaccurate_direction.0, inaccurate_direction.1);
+    bot.set_direction(direction.y_rot(), direction.x_rot());
   }
 
   fn direct_gaze(bot: &Client, min_x_rot: Option<f32>, max_x_rot: Option<f32>) {
@@ -105,7 +106,7 @@ impl ScaffoldModule {
     let min_x = if let Some(rot) = min_x_rot { rot } else { 80.0 } as f64;
     let max_x = if let Some(rot) = max_x_rot { rot } else { 83.0 } as f64;
 
-    bot.set_direction(direction.0, randnum(min_x, max_x) as f32);
+    bot.set_direction(direction.y_rot(), randnum(min_x, max_x) as f32);
   }
 
   async fn go_back(index: u8) {

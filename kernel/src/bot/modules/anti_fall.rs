@@ -171,7 +171,7 @@ impl AntiFallModule {
 
       if velocity_y < options.fall_velocity.unwrap_or(-0.5) {
         if Self::exist_blocks_below(bot, distance_to_ground) {
-          let y_rot = bot.direction().0;
+          let y_rot = bot.direction().y_rot();
 
           bot.set_direction(y_rot, randnum(85.0, 89.0) as f32);
 
@@ -184,8 +184,8 @@ impl AntiFallModule {
               bot.write_packet(ServerboundUseItem {
                 hand: InteractionHand::MainHand,
                 seq: 0,
-                y_rot: direction.0,
-                x_rot: direction.1,
+                y_rot: direction.y_rot(),
+                x_rot: direction.x_rot(),
               });
             }
           }
@@ -198,8 +198,8 @@ impl AntiFallModule {
             bot.write_packet(ServerboundUseItem {
               hand: InteractionHand::MainHand,
               seq: 0,
-              y_rot: direction.0,
-              x_rot: direction.1,
+              y_rot: direction.y_rot(),
+              x_rot: direction.x_rot(),
             });
           }
         }

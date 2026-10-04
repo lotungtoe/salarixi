@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 use azalea::chat::ChatPacket;
 use azalea::entity::HumanoidArm;
+use azalea::player::GameProfileComponent;
 use azalea::prelude::*;
 use azalea::protocol::common::client_information::ParticleStatus;
 use azalea::protocol::packets::game::ClientboundGamePacket;
@@ -215,19 +216,17 @@ async fn process_chat_message(bot: Client, packet: ChatPacket) {
 }
 
 async fn process_tick(bot: Client) {
+  if !bot.workable() {
+    return;
+  }
+
   let username = bot.username();
   let Some(index) = INDEX_SYSTEM.index_by_username(&username).await else {
     return;
   };
 
-  drop(username);
-
   take_profile!(&index, async |profile| {
     if profile.status == BotStatus::Connected {
-      if !bot.workable() {
-        return;
-      }
-
       profile.ping = bot.ping();
       profile.health = bot.get_health() as u32;
     }
@@ -235,6 +234,10 @@ async fn process_tick(bot: Client) {
 }
 
 async fn process_packet(bot: Client, packet: Arc<ClientboundGamePacket>) {
+  if bot.get_component::<GameProfileComponent>().is_none() {
+    return;
+  }
+
   let username = bot.username();
   let Some(index) = INDEX_SYSTEM.index_by_username(&username).await else {
     return;

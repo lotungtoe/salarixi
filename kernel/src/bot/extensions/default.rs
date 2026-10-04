@@ -1,16 +1,15 @@
-use azalea::ecs::entity::Entity;
+use azalea::core::entity_id::MinecraftEntityId;
 use azalea::ecs::query::{With, Without};
 use azalea::entity::dimensions::EntityDimensions;
 use azalea::entity::metadata::Health;
 use azalea::entity::metadata::{AbstractAnimal, AbstractMonster, AbstractVehicle, Player};
-use azalea::entity::{Crouching, Jumping, LookDirection, Position};
+use azalea::entity::{Crouching, Jumping, LookDirection, Physics, Position};
 use azalea::entity::{Dead, LocalEntity};
 use azalea::local_player::{Hunger, TabList};
 use azalea::player::GameProfileComponent;
 use azalea::protocol::packets::game::s_interact::InteractionHand;
 use azalea::protocol::packets::game::ServerboundSwing;
-use azalea::world::MinecraftEntityId;
-use azalea::{Client, InGameState, Vec3};
+use azalea::{Client, EntityRef, InGameState, Vec3};
 use salarixi_extensions::buffer::BufferExt;
 
 #[derive(Clone)]
@@ -63,7 +62,7 @@ impl EntityFilter {
 
 pub trait BotDefaultExt {
   fn workable(&self) -> bool;
-  fn id(&self) -> MinecraftEntityId;
+  fn id(&self) -> Option<MinecraftEntityId>;
   fn ping(&self) -> u32;
   fn foot_pos(&self) -> Option<Vec3>;
   fn eye_pos(&self) -> Option<Vec3>;
@@ -75,13 +74,15 @@ pub trait BotDefaultExt {
   fn start_crouching(&self);
   fn stop_jumping(&self);
   fn stop_crouching(&self);
-  fn get_entity_eye_height(&self, entity: Entity) -> f64;
-  fn get_entity_position(&self, entity: Entity) -> Vec3;
-  fn find_nearest_entity(&self, filter: &EntityFilter, distance: f64) -> Option<Entity>;
+  fn get_entity_position(&self, entity: &EntityRef) -> Option<Vec3>;
+  fn get_entity_eye_height(&self, entity: &EntityRef) -> Option<f64>;
+  fn find_nearest_entity(&self, filter: &EntityFilter, distance: f64) -> Option<EntityRef>;
 }
 
 impl BotDefaultExt for Client {
   fn workable(&self) -> bool {
+    let physics_exists = self.get_component::<Physics>().is_some();
+    let id_exists = self.get_component::<MinecraftEntityId>().is_some();
     let position_exists = self.get_component::<Position>().is_some();
     let look_direction_exists = self.get_component::<LookDirection>().is_some();
     let dimensions_exists = self.get_component::<EntityDimensions>().is_some();
@@ -89,7 +90,9 @@ impl BotDefaultExt for Client {
     let in_game_state_exist = self.get_component::<InGameState>().is_some();
     let states_exist = self.get_component::<Crouching>().is_some() && self.get_component::<Jumping>().is_some();
 
-    position_exists
+    physics_exists
+      && id_exists
+      && position_exists
       && look_direction_exists
       && dimensions_exists
       && profile_exist
@@ -97,10 +100,9 @@ impl BotDefaultExt for Client {
       && states_exist
   }
 
-  fn id(&self) -> MinecraftEntityId {
-    self
-      .get_component::<MinecraftEntityId>()
-      .unwrap_or(MinecraftEntityId::default())
+  fn id(&self) -> Option<MinecraftEntityId> {
+    let id = self.get_component::<MinecraftEntityId>()?;
+    Some(*id)
   }
 
   fn ping(&self) -> u32 {
@@ -159,7 +161,8 @@ impl BotDefaultExt for Client {
   }
 
   fn get_players(&self) -> Option<TabList> {
-    self.get_component::<TabList>()
+    let tab_list = self.get_component::<TabList>()?;
+    Some(tab_list.clone())
   }
 
   fn swing_arm(&self) {
@@ -196,27 +199,17 @@ impl BotDefaultExt for Client {
     }
   }
 
-  fn get_entity_position(&self, entity: Entity) -> Vec3 {
-    let position = self.get_entity_component::<Position>(entity);
-
-    if let Some(pos) = position {
-      return Vec3::new(pos.x, pos.y, pos.z);
-    }
-
-    Vec3::new(0.0, 0.0, 0.0)
+  fn get_entity_position(&self, entity: &EntityRef) -> Option<Vec3> {
+    entity.get_component::<Position>().map(|p| Vec3::new(p.x, p.y, p.z))
   }
 
-  fn get_entity_eye_height(&self, entity: Entity) -> f64 {
-    if let Some(dimensions) = self.get_entity_component::<EntityDimensions>(entity) {
-      return dimensions.eye_height as f64;
-    }
-
-    0.0
+  fn get_entity_eye_height(&self, entity: &EntityRef) -> Option<f64> {
+    entity.get_component::<EntityDimensions>().map(|d| d.eye_height as f64)
   }
 
-  fn find_nearest_entity(&self, filter: &EntityFilter, distance: f64) -> Option<Entity> {
+  fn find_nearest_entity(&self, filter: &EntityFilter, distance: f64) -> Option<EntityRef> {
     let excluded_name = self.username();
-    let excluded_id = self.id();
+    let excluded_id = self.id()?;
     let Some(eye_pos) = self.eye_pos() else {
       return None;
     };

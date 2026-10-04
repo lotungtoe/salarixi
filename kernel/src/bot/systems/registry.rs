@@ -56,7 +56,7 @@ impl RegistrySystem {
     self.bots.shrink_to_fit();
 
     if let Some(swarm) = self.swarm.write().await.take() {
-      swarm.ecs_lock.lock().write_message(AppExit::Success);
+      swarm.exit();
     }
 
     emit_log("Реестр ботов очищен", LogClass::System);
@@ -66,9 +66,9 @@ impl RegistrySystem {
 /// Вспомогательный макрос захвата указанного бота
 #[macro_export]
 macro_rules! take_bot {
-  ($username:expr, $func:expr) => {
+  ($index:expr, $func:expr) => {
     crate::bot::systems::registry::REGISTRY_SYSTEM
-      .async_get_bot($username, $func)
+      .async_get_bot($index, $func)
       .await;
   };
 }
