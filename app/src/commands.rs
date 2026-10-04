@@ -97,8 +97,8 @@ pub async fn extract_item_icon(texture: String) -> Vec<u8> {
   let version_jar = home_dir
     .join(".minecraft")
     .join("versions")
-    .join("1.21.11")
-    .join("1.21.11.jar");
+    .join("26.1")
+    .join("26.1.jar");
 
   if !version_jar.exists() {
     return Vec::new();
