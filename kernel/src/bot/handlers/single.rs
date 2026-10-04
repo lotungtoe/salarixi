@@ -2,9 +2,9 @@ use std::sync::Arc;
 
 use azalea::chat::ChatPacket;
 use azalea::entity::HumanoidArm;
-use azalea::player::GameProfileComponent;
 use azalea::prelude::*;
 use azalea::protocol::common::client_information::ParticleStatus;
+use azalea::protocol::connect::ConnectionError;
 use azalea::protocol::packets::game::ClientboundGamePacket;
 use azalea::FormattedText;
 use azalea::{ClientInformation, NoState};
@@ -33,6 +33,7 @@ pub async fn single_handler(bot: Client, event: Event, _state: NoState) {
     Event::Init => process_init(bot).await,
     Event::Spawn => process_spawn(bot).await,
     Event::Disconnect(text) => process_disconnect(bot, text).await,
+    Event::ConnectionFailed(error) => process_connection_failed(bot, error).await,
     Event::Chat(packet) => process_chat_message(bot, packet).await,
     Event::Tick => process_tick(bot).await,
     Event::Packet(packet) => process_packet(bot, packet).await,
@@ -161,6 +162,25 @@ async fn process_disconnect(bot: Client, text: Option<FormattedText>) {
   }
 }
 
+async fn process_connection_failed(bot: Client, error: Arc<ConnectionError>) {
+  let account = bot.account();
+  let username = account.username();
+  let str_err = error.to_string();
+
+  if let Some(options) = current_options().await {
+    if options.basic.use_webhook {
+      send_webhook(
+        options.webhook.url,
+        format!("Бот {} не смог подключиться: {}", username, str_err),
+      );
+    }
+  }
+
+  let msg = format!("Ошибка подключения бота {}: {}", username, str_err);
+  emit_log(&msg, LogClass::Error);
+  emit_msg("Система", msg);
+}
+
 async fn process_chat_message(bot: Client, packet: ChatPacket) {
   let Some(opts) = current_options().await else {
     return;
@@ -170,7 +190,8 @@ async fn process_chat_message(bot: Client, packet: ChatPacket) {
     return;
   }
 
-  let username = bot.username();
+  let account = bot.account();
+  let username = account.username();
   let Some(index) = INDEX_SYSTEM.index_by_username(&username).await else {
     return;
   };
@@ -216,16 +237,19 @@ async fn process_chat_message(bot: Client, packet: ChatPacket) {
 }
 
 async fn process_tick(bot: Client) {
-  if !bot.workable() {
-    return;
-  }
-
-  let username = bot.username();
+  let account = bot.account();
+  let username = account.username();
   let Some(index) = INDEX_SYSTEM.index_by_username(&username).await else {
     return;
   };
 
   take_profile!(&index, async |profile| {
+    if !bot.workable() {
+      profile.ping = 0;
+      profile.health = 0;
+      return;
+    }
+
     if profile.status == BotStatus::Connected {
       profile.ping = bot.ping();
       profile.health = bot.get_health() as u32;
@@ -234,11 +258,8 @@ async fn process_tick(bot: Client) {
 }
 
 async fn process_packet(bot: Client, packet: Arc<ClientboundGamePacket>) {
-  if bot.get_component::<GameProfileComponent>().is_none() {
-    return;
-  }
-
-  let username = bot.username();
+  let account = bot.account();
+  let username = account.username();
   let Some(index) = INDEX_SYSTEM.index_by_username(&username).await else {
     return;
   };
@@ -248,7 +269,9 @@ async fn process_packet(bot: Client, packet: Arc<ClientboundGamePacket>) {
       MAP_CAPTCHA_BYPASS.process_frame(index, p).await;
     }
     ClientboundGamePacket::MapItemData(p) => {
-      MAP_CAPTCHA_BYPASS.process_map_data(&bot, username, index, p).await;
+      MAP_CAPTCHA_BYPASS
+        .process_map_data(&bot, username.to_string(), index, p)
+        .await;
     }
     _ => {}
   }
