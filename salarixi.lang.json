@@ -3432,6 +3432,7 @@
         "zh": "支援"
       }
     },
+
     {
       "versions": "1.2.0",
       "tag": "ignore-blocks",
@@ -3507,6 +3508,50 @@
         "tr": "Öğe önbellekleme eşiği",
         "ja": "アイテムキャッシュのしきい値",
         "zh": "項目緩存閾值"
+      }
+    },
+    {
+      "versions": "1.2.0",
+      "tag": "tool-slot",
+      "lang": {
+        "ru": "Слот с инструментом",
+        "en": "Tool slot",
+        "tr": "Alet yuvası",
+        "ja": "ツールスロット",
+        "zh": "工具槽"
+      }
+    },
+    {
+      "versions": "1.2.0",
+      "tag": "target-plants",
+      "lang": {
+        "ru": "Целевые растения",
+        "en": "Target plants",
+        "tr": "Hedef bitkiler",
+        "ja": "対象植物",
+        "zh": "目標植物"
+      }
+    },
+    {
+      "versions": "1.2.0",
+      "tag": "target-surfaces",
+      "lang": {
+        "ru": "Целевые поверхности",
+        "en": "Target surfaces",
+        "tr": "Hedef yüzeyler",
+        "ja": "対象物の表面",
+        "zh": "目標表面"
+      }
+    },
+    {
+      "versions": "1.2.0",
+      "tag": "auto-tool",
+      "lang": {
+        "ru": "Авто инструмент",
+        "en": "Auto tool",
+        "tr": "Otomotiv aleti",
+        "ja": "自動車工具",
+        "zh": "汽車工具"
       }
     }
   ]

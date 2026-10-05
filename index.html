@@ -2053,11 +2053,38 @@
               <label for="module_farmer_option_delay" class="text" tt="delay">Задержка</label>
               <input type="number" module-index="13" ordinal="1" num-type="u64" optional="true" id="module_farmer_option_delay" placeholder="100" keep>
             </div>
+
+            <div class="hidden-wrapper input" id="farmer-tool-slot-input-container">
+              <div class="form-input">
+                <label for="module_farmer_option_tool-slot" class="text" tt="tool-slot">Слот с инструментом</label>
+                <input type="number" module-index="13" ordinal="2" num-type="u8" optional="true" id="module_farmer_option_tool-slot" placeholder="1" keep>
+              </div>
+            </div>
+
+            <div class="form-input">
+              <label for="module_farmer_option_target-plants" class="text" tt="target-plants">Целевые растения</label>
+              <input type="text" module-index="13" ordinal="3" id="module_farmer_option_target-plants" placeholder="potato, carrot" value="potato, carrot" keep>
+            </div>
+
+            <div class="form-input">
+              <label for="module_farmer_option_target-surfaces" class="text" tt="target-surfaces">Целевые поверхности</label>
+              <input type="text" module-index="13" ordinal="4" id="module_farmer_option_target-surfaces" placeholder="grass_block, dirt" value="grass_block, dirt" keep>
+            </div>
           </div>
 
           <div class="btn-group-flex" style="margin-top: 25px;">
             <button class="toggler" module-toggler module-index="13" state="1" tt="control-start">Старт</button>
             <button class="toggler" module-toggler module-index="13" state="0" tt="control-stop">Стоп</button>
+          </div>
+        </div>
+
+        <div class="wrap right">
+          <div class="checkbox-group">
+            <label class="checkbox-container">
+              <input type="checkbox" module-index="13" ordinal="5" id="module_farmer_chbx_use-auto-tool" checked keep>
+              <span class="checkmark"></span>
+              <span tt="auto-tool">Авто инструмент</span>
+            </label>
           </div>
         </div>
       </div>

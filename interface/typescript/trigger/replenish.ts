@@ -389,6 +389,16 @@ export function replenishTriggerRegistry(): void {
 		}
 	});
 
+	triggerRegistry.register("module_farmer_chbx_use-auto-tool", "checkbox", (current: HTMLInputElement) => {
+		const toolSlotInputContainer = document.getElementById("farmer-tool-slot-input-container") as HTMLDivElement;
+
+		if (current.checked) {
+			toolSlotInputContainer.style.display = "none";
+		} else {
+			toolSlotInputContainer.style.display = "flex";
+		}
+	});
+
 	triggerRegistry.register("journal_chbx_show-system-logs", "checkbox", (current: HTMLInputElement) => logger.setVisibility("system", current.checked));
 	triggerRegistry.register("journal_chbx_show-extended-logs", "checkbox", (current: HTMLInputElement) => logger.setVisibility("extended", current.checked));
 
