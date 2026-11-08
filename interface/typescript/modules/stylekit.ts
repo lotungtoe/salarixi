@@ -128,7 +128,7 @@ class StylekitModule {
 			const name = path.split(/[\\/]/).pop();
 
 			if (!name) {
-				messages.message("Набор стилей", "Не удалось применить набор стилей");
+				messages.message("Bộ kiểu dáng", "Không thể áp dụng bộ kiểu dáng");
 				logger.log("Ошибка применения набора стилей: Failed to get file name", "error");
 				return;
 			}
@@ -136,7 +136,7 @@ class StylekitModule {
 			const kitBytes = await invoke<number[]>("read_text_file", { path: path });
 
 			if (kitBytes.length < 1) {
-				messages.message("Набор стилей", "Не удалось применить набор стилей");
+				messages.message("Bộ kiểu dáng", "Không thể áp dụng bộ kiểu dáng");
 				logger.log("Ошибка применения набора стилей: Incorrect kit size", "error");
 				return;
 			}
@@ -147,7 +147,7 @@ class StylekitModule {
 			const kitJson = JSON.parse(kit);
 
 			if (!kitJson) {
-				messages.message("Набор стилей", "Не удалось применить набор стилей");
+				messages.message("Bộ kiểu dáng", "Không thể áp dụng bộ kiểu dáng");
 				logger.log("Ошибка применения набора стилей: Failed to parse JSON", "error");
 				return;
 			}
@@ -155,7 +155,7 @@ class StylekitModule {
 			const result = this.apply(kitJson);
 
 			if (result.coincidences < 1) {
-				messages.message("Набор стилей", "Не удалось применить набор стилей");
+				messages.message("Bộ kiểu dáng", "Không thể áp dụng bộ kiểu dáng");
 				logger.log("Ошибка применения набора стилей: Number of matches is less than 1", "error");
 				return;
 			}
@@ -167,7 +167,7 @@ class StylekitModule {
 				kit: kitJson,
 			}));
 
-			messages.message("Набор стилей", `Набор стилей "${name}" применён`);
+			messages.message("Bộ kiểu dáng", `Đã áp dụng bộ kiểu dáng "${name}"`);
 			logger.log(`Набор стилей "${name}" применён (${result.coincidences} из ${result.total} совпадений)`, "system");
 		} catch (error) {
 			logger.log(`Ошибка применения набора стилей: ${error}`, "error");
@@ -250,7 +250,7 @@ class StylekitModule {
 
 		this.setStylekitName("DEFAULT");
 
-		messages.message("Набор стилей", "Набор стилей сброшен");
+		messages.message("Bộ kiểu dáng", "Đã đặt lại bộ kiểu dáng");
 	}
 }
 

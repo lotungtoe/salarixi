@@ -43,17 +43,17 @@ class ScannerModule {
 			});
 
 			if (result.error) {
-				messages.message("Сканер", `Ошибка сканирования ${range}`);
+				messages.message("Máy quét", `Lỗi quét ${range}`);
 				logger.log(`Ошибка сканирования серверов в диапазоне ${range}: ${result.error}`, "error");
 			} else {
-				messages.message("Сканер", `Сканирование ${range}...`);
+				messages.message("Máy quét", `Đang quét ${range}...`);
 				logger.log(`Запущено сканирование серверов в диапазоне ${range}`, "system");
 			}
 		});
 
 		document.getElementById("stop-network-scanning")?.addEventListener("click", async () => {
 			await invoke("stop_network_scanning");
-			messages.message("Сканер", "Сканирование серверов остановлено");
+			messages.message("Máy quét", "Đã dừng quét server");
 			logger.log("Сканирование серверов остановлено", "system");
 		});
 

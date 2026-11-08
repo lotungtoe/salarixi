@@ -19,6 +19,10 @@
     {
       "code": "zh",
       "name": "中文"
+    },
+    {
+      "code": "vi",
+      "name": "Tieng Viet"
     }
   ],
   "data": [
@@ -30,7 +34,8 @@
         "en": "Main",
         "tr": "Ana Sayfa",
         "ja": "メイン",
-        "zh": "主页"
+        "zh": "主页",
+        "vi": "Trang chính"
       }
     },
     {
@@ -41,7 +46,8 @@
         "en": "Settings",
         "tr": "Ayarlar",
         "ja": "設定",
-        "zh": "设置"
+        "zh": "设置",
+        "vi": "Cài đặt"
       }
     },
     {
@@ -52,7 +58,8 @@
         "en": "Accounts",
         "tr": "Hesaplar",
         "ja": "アカウント",
-        "zh": "账户"
+        "zh": "账户",
+        "vi": "Tài khoản"
       }
     },
     {
@@ -63,7 +70,8 @@
         "en": "Plugins",
         "tr": "Eklentiler",
         "ja": "プラグイン",
-        "zh": "插件"
+        "zh": "插件",
+        "vi": "Plugin"
       }
     },
     {
@@ -74,7 +82,8 @@
         "en": "Proxy",
         "tr": "Vekil",
         "ja": "プロキシ",
-        "zh": "代理"
+        "zh": "代理",
+        "vi": "Proxy"
       }
     },
     {
@@ -85,7 +94,8 @@
         "en": "Anti-Captcha",
         "tr": "Anti-Captcha",
         "ja": "アンチキャプチャ",
-        "zh": "反验证码"
+        "zh": "反验证码",
+        "vi": "Chống Captcha"
       }
     },
     {
@@ -96,7 +106,8 @@
         "en": "Webhook",
         "tr": "Webhook",
         "ja": "ウェブフック",
-        "zh": "Webhook"
+        "zh": "Webhook",
+        "vi": "Webhook"
       }
     },
     {
@@ -107,7 +118,8 @@
         "en": "Control",
         "tr": "Yönetim",
         "ja": "制御",
-        "zh": "控制"
+        "zh": "控制",
+        "vi": "Điều khiển"
       }
     },
     {
@@ -118,7 +130,8 @@
         "en": "Script",
         "tr": "Senaryo",
         "ja": "スクリプト",
-        "zh": "脚本"
+        "zh": "脚本",
+        "vi": "Kịch bản"
       }
     },
     {
@@ -129,7 +142,8 @@
         "en": "Graphic",
         "tr": "Grafik",
         "ja": "グラフ",
-        "zh": "图表"
+        "zh": "图表",
+        "vi": "Đồ thị"
       }
     },
     {
@@ -140,7 +154,8 @@
         "en": "Monitoring",
         "tr": "Izleme",
         "ja": "監視",
-        "zh": "监控"
+        "zh": "监控",
+        "vi": "Giám sát"
       }
     },
     {
@@ -151,18 +166,20 @@
         "en": "Analysis",
         "tr": "Analiz",
         "ja": "分析",
-        "zh": "分析"
+        "zh": "分析",
+        "vi": "Phân tích"
       }
     },
     {
       "versions": "1.2.0-rc1:1.2.0",
       "tag": "scanner",
       "lang": {
-      "ru": "Сканер",
-      "en": "Scanner",
-      "tr": "Tarayıcı",
-      "ja": "スキャナー",
-      "zh": "掃描器"
+        "ru": "Сканер",
+        "en": "Scanner",
+        "tr": "Tarayıcı",
+        "ja": "スキャナー",
+        "zh": "掃描器",
+        "vi": "Máy quét"
       }
     },
     {
@@ -173,7 +190,8 @@
         "en": "Radar",
         "tr": "Radar",
         "ja": "レーダー",
-        "zh": "雷达"
+        "zh": "雷达",
+        "vi": "Radar"
       }
     },
     {
@@ -184,7 +202,8 @@
         "en": "Ping",
         "tr": "Ping",
         "ja": "ピング",
-        "zh": "Ping"
+        "zh": "Ping",
+        "vi": "Ping"
       }
     },
     {
@@ -195,7 +214,8 @@
         "en": "Journal",
         "tr": "Dergi",
         "ja": "ジャーナル",
-        "zh": "日志"
+        "zh": "日志",
+        "vi": "Nhật ký"
       }
     },
     {
@@ -206,7 +226,8 @@
         "en": "Interface",
         "tr": "Arayüz",
         "ja": "インターフェース",
-        "zh": "界面"
+        "zh": "界面",
+        "vi": "Giao diện"
       }
     },
     {
@@ -217,7 +238,8 @@
         "en": "Config",
         "tr": "Config",
         "ja": "コンフィグ",
-        "zh": "配置"
+        "zh": "配置",
+        "vi": "Cấu hình"
       }
     },
     {
@@ -228,7 +250,8 @@
         "en": "Session",
         "tr": "Oturum",
         "ja": "セッション",
-        "zh": "會議"
+        "zh": "會議",
+        "vi": "Phiên"
       }
     },
     {
@@ -239,7 +262,8 @@
         "en": "About",
         "tr": "Hakkımızda",
         "ja": "概要",
-        "zh": "关于"
+        "zh": "关于",
+        "vi": "Giới thiệu"
       }
     },
     {
@@ -250,7 +274,8 @@
         "en": "Documentation",
         "tr": "Dokümantasyon",
         "ja": "ドキュメント",
-        "zh": "文档"
+        "zh": "文档",
+        "vi": "Tài liệu"
       }
     },
     {
@@ -261,7 +286,8 @@
         "en": "Server Address",
         "tr": "Sunucu Adresi",
         "ja": "サーバーアドレス",
-        "zh": "服务器地址"
+        "zh": "服务器地址",
+        "vi": "Địa chỉ server"
       }
     },
     {
@@ -272,7 +298,8 @@
         "en": "Bots Count",
         "tr": "Bot Sayısı",
         "ja": "ボット数",
-        "zh": "机器人数量"
+        "zh": "机器人数量",
+        "vi": "Số lượng bot"
       }
     },
     {
@@ -283,7 +310,8 @@
         "en": "Connection Delay",
         "tr": "Bağlantı Gecikmesi",
         "ja": "接続遅延",
-        "zh": "连接延迟"
+        "zh": "连接延迟",
+        "vi": "Trễ kết nối"
       }
     },
     {
@@ -294,7 +322,8 @@
         "en": "Launch",
         "tr": "Başlat",
         "ja": "起動",
-        "zh": "启动"
+        "zh": "启动",
+        "vi": "Khởi chạy"
       }
     },
     {
@@ -305,7 +334,8 @@
         "en": "Stop",
         "tr": "Durdur",
         "ja": "停止",
-        "zh": "停止"
+        "zh": "停止",
+        "vi": "Dừng"
       }
     },
     {
@@ -316,7 +346,8 @@
         "en": "Generate",
         "tr": "Oluştur",
         "ja": "生成",
-        "zh": "生成"
+        "zh": "生成",
+        "vi": "Tạo"
       }
     },
     {
@@ -327,7 +358,8 @@
         "en": "Clear",
         "tr": "Temizle",
         "ja": "クリア",
-        "zh": "清除"
+        "zh": "清除",
+        "vi": "Xoá"
       }
     },
     {
@@ -338,7 +370,8 @@
         "en": "Basic Settings",
         "tr": "Temel ayarlar",
         "ja": "基本設定",
-        "zh": "基本設定"
+        "zh": "基本設定",
+        "vi": "Cài đặt cơ bản"
       }
     },
     {
@@ -349,7 +382,8 @@
         "en": "Nickname",
         "tr": "Nickname",
         "ja": "ニックネーム",
-        "zh": "昵称"
+        "zh": "昵称",
+        "vi": "Nickname"
       }
     },
     {
@@ -360,7 +394,8 @@
         "en": "Legit",
         "tr": "Legit",
         "ja": "正規",
-        "zh": "正规"
+        "zh": "正规",
+        "vi": "Chuẩn"
       }
     },
     {
@@ -371,7 +406,8 @@
         "en": "Random",
         "tr": "Rastgele",
         "ja": "ランダム",
-        "zh": "随机"
+        "zh": "随机",
+        "vi": "Ngẫu nhiên"
       }
     },
     {
@@ -382,7 +418,8 @@
         "en": "Custom",
         "tr": "Özel",
         "ja": "カスタム",
-        "zh": "自定义"
+        "zh": "自定义",
+        "vi": "Tùy chỉnh"
       }
     },
     {
@@ -393,7 +430,8 @@
         "en": "Password",
         "tr": "Şifre",
         "ja": "パスワード",
-        "zh": "密码"
+        "zh": "密码",
+        "vi": "Mật khẩu"
       }
     },
     {
@@ -404,7 +442,8 @@
         "en": "Without password",
         "tr": "Şifresiz",
         "ja": "パスワードなし",
-        "zh": "无密码"
+        "zh": "无密码",
+        "vi": "Không mật khẩu"
       }
     },
     {
@@ -415,7 +454,8 @@
         "en": "Legit",
         "tr": "Legit",
         "ja": "正規",
-        "zh": "正规"
+        "zh": "正规",
+        "vi": "Chuẩn"
       }
     },
     {
@@ -426,7 +466,8 @@
         "en": "Random",
         "tr": "Rastgele",
         "ja": "ランダム",
-        "zh": "随机"
+        "zh": "随机",
+        "vi": "Ngẫu nhiên"
       }
     },
     {
@@ -437,7 +478,8 @@
         "en": "Custom",
         "tr": "Özel",
         "ja": "カスタム",
-        "zh": "自定义"
+        "zh": "自定义",
+        "vi": "Tùy chỉnh"
       }
     },
     {
@@ -448,7 +490,8 @@
         "en": "Email",
         "tr": "E-posta",
         "ja": "メール",
-        "zh": "邮箱"
+        "zh": "邮箱",
+        "vi": "Email"
       }
     },
     {
@@ -459,7 +502,8 @@
         "en": "Without email",
         "tr": "E-posta olmadan",
         "ja": "メールなし",
-        "zh": "无邮箱"
+        "zh": "无邮箱",
+        "vi": "Không email"
       }
     },
     {
@@ -470,7 +514,8 @@
         "en": "Random",
         "tr": "Rastgele",
         "ja": "ランダム",
-        "zh": "随机"
+        "zh": "随机",
+        "vi": "Ngẫu nhiên"
       }
     },
     {
@@ -481,7 +526,8 @@
         "en": "Nickname Template",
         "tr": "Nickname Şablonu",
         "ja": "ニックネームテンプレート",
-        "zh": "昵称模板"
+        "zh": "昵称模板",
+        "vi": "Mẫu nickname"
       }
     },
     {
@@ -492,7 +538,8 @@
         "en": "Password Template",
         "tr": "Şifre Şablonu",
         "ja": "パスワードテンプレート",
-        "zh": "密码模板"
+        "zh": "密码模板",
+        "vi": "Mẫu mật khẩu"
       }
     },
     {
@@ -503,7 +550,8 @@
         "en": "Registration Settings",
         "tr": "Kayıt ayarları",
         "ja": "登録設定",
-        "zh": "註冊設定"
+        "zh": "註冊設定",
+        "vi": "Cài đặt đăng ký"
       }
     },
     {
@@ -514,7 +562,8 @@
         "en": "Register Command",
         "tr": "Kayıt Komutu",
         "ja": "登録コマンド",
-        "zh": "注册命令"
+        "zh": "注册命令",
+        "vi": "Lệnh đăng ký"
       }
     },
     {
@@ -525,7 +574,8 @@
         "en": "Register Template",
         "tr": "Kayıt Şablonu",
         "ja": "登録テンプレート",
-        "zh": "注册模板"
+        "zh": "注册模板",
+        "vi": "Mẫu đăng ký"
       }
     },
     {
@@ -536,7 +586,8 @@
         "en": "Login Settings",
         "tr": "Giriş ayarları",
         "ja": "ログイン設定",
-        "zh": "登入設定"
+        "zh": "登入設定",
+        "vi": "Cài đặt đăng nhập"
       }
     },
     {
@@ -547,7 +598,8 @@
         "en": "Login Command",
         "tr": "Giriş Komutu",
         "ja": "ログインコマンド",
-        "zh": "登录命令"
+        "zh": "登录命令",
+        "vi": "Lệnh đăng nhập"
       }
     },
     {
@@ -558,7 +610,8 @@
         "en": "Login Template",
         "tr": "Giriş Şablonu",
         "ja": "ログインテンプレート",
-        "zh": "登录模板"
+        "zh": "登录模板",
+        "vi": "Mẫu đăng nhập"
       }
     },
     {
@@ -569,7 +622,8 @@
         "en": "Mode",
         "tr": "Mod",
         "ja": "モード",
-        "zh": "模式"
+        "zh": "模式",
+        "vi": "Chế độ"
       }
     },
     {
@@ -580,7 +634,8 @@
         "en": "Default",
         "tr": "Normal",
         "ja": "デフォルト",
-        "zh": "默认"
+        "zh": "默认",
+        "vi": "Mặc định"
       }
     },
     {
@@ -591,7 +646,8 @@
         "en": "Trigger",
         "tr": "Trigger",
         "ja": "トリガー",
-        "zh": "触发器"
+        "zh": "触发器",
+        "vi": "Trigger"
       }
     },
     {
@@ -602,7 +658,8 @@
         "en": "Delay (minimum)",
         "tr": "Gecikme (Min)",
         "ja": "遅延（最小）",
-        "zh": "延迟（最小）"
+        "zh": "延迟（最小）",
+        "vi": "Trễ tối thiểu"
       }
     },
     {
@@ -613,7 +670,8 @@
         "en": "Delay (maximum)",
         "tr": "Gecikme (Max)",
         "ja": "遅延（最大）",
-        "zh": "延迟（最大）"
+        "zh": "延迟（最大）",
+        "vi": "Trễ tối đa"
       }
     },
     {
@@ -624,7 +682,8 @@
         "en": "Trigger (message)",
         "tr": "Trigger (Mesaj)",
         "ja": "トリガー（メッセージ）",
-        "zh": "触发器（消息）"
+        "zh": "触发器（消息）",
+        "vi": "Trigger (tin nhắn)"
       }
     },
     {
@@ -635,7 +694,8 @@
         "en": "Reconnection Settings",
         "tr": "Yeniden bağlantı ayarları",
         "ja": "再接続設定",
-        "zh": "重新連接設定"
+        "zh": "重新連接設定",
+        "vi": "Cài đặt kết nối lại"
       }
     },
     {
@@ -646,7 +706,8 @@
         "en": "Reconnection Delay",
         "tr": "Yeniden Bağlanma Gecikmesi",
         "ja": "再接続遅延",
-        "zh": "重连延迟"
+        "zh": "重连延迟",
+        "vi": "Trễ vào lại"
       }
     },
     {
@@ -657,7 +718,8 @@
         "en": "Monitoring Settings",
         "tr": "İzleme ayarları",
         "ja": "監視",
-        "zh": "监控"
+        "zh": "监控",
+        "vi": "Cài đặt giám sát"
       }
     },
     {
@@ -668,7 +730,8 @@
         "en": "Chat History Length",
         "tr": "Sohbet Geçmişi",
         "ja": "チャット履歴の長さ",
-        "zh": "聊天历史长度"
+        "zh": "聊天历史长度",
+        "vi": "Độ dài lịch sử chat"
       }
     },
     {
@@ -679,7 +742,8 @@
         "en": "Update Frequency",
         "tr": "Güncelleme Sıklığı",
         "ja": "更新頻度",
-        "zh": "更新频率"
+        "zh": "更新频率",
+        "vi": "Tần suất cập nhật"
       }
     },
     {
@@ -690,7 +754,8 @@
         "en": "Additional Settings",
         "tr": "Ek ayarları",
         "ja": "追加設定",
-        "zh": "其他設定"
+        "zh": "其他設定",
+        "vi": "Cài đặt bổ sung"
       }
     },
     {
@@ -701,7 +766,8 @@
         "en": "View Distance",
         "tr": "Görüş Mesafesi",
         "ja": "描画距離",
-        "zh": "视距"
+        "zh": "视距",
+        "vi": "Tầm nhìn"
       }
     },
     {
@@ -712,7 +778,8 @@
         "en": "Enable Chat Colors",
         "tr": "Sohbet Renklerini Etkinleştir",
         "ja": "チャット色を有効化",
-        "zh": "启用聊天颜色"
+        "zh": "启用聊天颜色",
+        "vi": "Bật màu chat"
       }
     },
     {
@@ -723,7 +790,8 @@
         "en": "Dominant Hand",
         "tr": "Baskın El",
         "ja": "利き手",
-        "zh": "主手"
+        "zh": "主手",
+        "vi": "Tay thuận"
       }
     },
     {
@@ -734,7 +802,8 @@
         "en": "Use Auto-Register",
         "tr": "Otomatik Kayıt Kullan",
         "ja": "自動登録を使用",
-        "zh": "使用自动注册"
+        "zh": "使用自动注册",
+        "vi": "Dùng Auto-Register"
       }
     },
     {
@@ -745,7 +814,8 @@
         "en": "Use Auto-Login",
         "tr": "Otomatik Giriş Kullan",
         "ja": "自動ログインを使用",
-        "zh": "使用自动登录"
+        "zh": "使用自动登录",
+        "vi": "Dùng Auto-Login"
       }
     },
     {
@@ -756,7 +826,8 @@
         "en": "Use Double-Auth",
         "tr": "Çift Doğrulama Kullan",
         "ja": "二段階認証を使用",
-        "zh": "使用双重认证"
+        "zh": "使用双重认证",
+        "vi": "Dùng xác thực kép"
       }
     },
     {
@@ -767,7 +838,8 @@
         "en": "Use Auto-Rejoin",
         "tr": "Otomatik Yeniden Bağlanmayı Kullan",
         "ja": "自動再接続を使用",
-        "zh": "使用自动重连"
+        "zh": "使用自动重连",
+        "vi": "Dùng Auto-Rejoin"
       }
     },
     {
@@ -778,7 +850,8 @@
         "en": "Use Chat-Signing",
         "tr": "Sohbet İmzalama Kullan",
         "ja": "チャット署名を使用",
-        "zh": "使用聊天签名"
+        "zh": "使用聊天签名",
+        "vi": "Dùng ký chat"
       }
     },
     {
@@ -789,7 +862,8 @@
         "en": "Use Auto-Respawn",
         "tr": "Otomatik Yeniden Doğmayı Kullan",
         "ja": "自動リスポーンを使用",
-        "zh": "使用自动重生"
+        "zh": "使用自动重生",
+        "vi": "Dùng Auto-Respawn"
       }
     },
     {
@@ -800,7 +874,8 @@
         "en": "Use Accept-RP",
         "tr": "RP Kabul Et Kullan",
         "ja": "RP承認を使用",
-        "zh": "使用接受RP"
+        "zh": "使用接受RP",
+        "vi": "Dùng Accept-RP"
       }
     },
     {
@@ -811,7 +886,8 @@
         "en": "Use Pathfinder",
         "tr": "Yol Bulucu Kullan",
         "ja": "パスファインダーを使用",
-        "zh": "使用寻路"
+        "zh": "使用寻路",
+        "vi": "Dùng Pathfinder"
       }
     },
     {
@@ -822,7 +898,8 @@
         "en": "Use Auto-Script",
         "tr": "Otomatik Senaryo Kullan",
         "ja": "自動スクリプトを使用",
-        "zh": "使用自动脚本"
+        "zh": "使用自动脚本",
+        "vi": "Dùng Auto-Script"
       }
     },
     {
@@ -833,7 +910,8 @@
         "en": "Use Proxy",
         "tr": "Vekil Kullan",
         "ja": "プロキシを使用",
-        "zh": "使用代理"
+        "zh": "使用代理",
+        "vi": "Dùng proxy"
       }
     },
     {
@@ -844,7 +922,8 @@
         "en": "Use Anti-Captcha",
         "tr": "Anti-Captcha Kullan",
         "ja": "アンチキャプチャを使用",
-        "zh": "使用反验证码"
+        "zh": "使用反验证码",
+        "vi": "Dùng Chống Captcha"
       }
     },
     {
@@ -855,7 +934,8 @@
         "en": "Use Webhook",
         "tr": "Webhook Kullan",
         "ja": "ウェブフックを使用",
-        "zh": "使用Webhook"
+        "zh": "使用Webhook",
+        "vi": "Dùng webhook"
       }
     },
     {
@@ -866,7 +946,8 @@
         "en": "Use Accounts",
         "tr": "Hesapları Kullan",
         "ja": "アカウントを使用",
-        "zh": "使用账户"
+        "zh": "使用账户",
+        "vi": "Dùng tài khoản"
       }
     },
     {
@@ -877,7 +958,8 @@
         "en": "Monitoring Optimization",
         "tr": "İzlemenin optimize edilmesi",
         "ja": "監視の最適化",
-        "zh": "優化監測"
+        "zh": "優化監測",
+        "vi": "Tối ưu giám sát"
       }
     },
     {
@@ -888,7 +970,8 @@
         "en": "Import",
         "tr": "İçe aktarmak",
         "ja": "輸入",
-        "zh": "進口"
+        "zh": "進口",
+        "vi": "Nhập"
       }
     },
     {
@@ -899,7 +982,8 @@
         "en": "Export",
         "tr": "İhracat",
         "ja": "輸出",
-        "zh": "出口"
+        "zh": "出口",
+        "vi": "Xuất"
       }
     },
     {
@@ -910,7 +994,8 @@
         "en": "Total Accounts",
         "tr": "Toplam hesaplar",
         "ja": "合計アカウント数",
-        "zh": "總帳戶"
+        "zh": "總帳戶",
+        "vi": "Tổng tài khoản"
       }
     },
     {
@@ -921,7 +1006,8 @@
         "en": "Username",
         "tr": "Kullanıcı adı",
         "ja": "ユーザー名",
-        "zh": "使用者名稱"
+        "zh": "使用者名稱",
+        "vi": "Tên người dùng"
       }
     },
     {
@@ -932,7 +1018,8 @@
         "en": "Creation Date",
         "tr": "Oluşturulma tarihi",
         "ja": "作成日",
-        "zh": "建立日期"
+        "zh": "建立日期",
+        "vi": "Ngày tạo"
       }
     },
     {
@@ -943,7 +1030,8 @@
         "en": "Dominant Hand",
         "tr": "Baskın El",
         "ja": "利き手",
-        "zh": "主手"
+        "zh": "主手",
+        "vi": "Tay thuận"
       }
     },
     {
@@ -954,7 +1042,8 @@
         "en": "Script for bots",
         "tr": "Baskın El",
         "ja": "ボット用スクリプト",
-        "zh": "機器人腳本"
+        "zh": "機器人腳本",
+        "vi": "Kịch bản cho bot"
       }
     },
     {
@@ -965,7 +1054,8 @@
         "en": "Proxy List",
         "tr": "Vekil Listesi",
         "ja": "プロキシリスト",
-        "zh": "代理列表"
+        "zh": "代理列表",
+        "vi": "Danh sách proxy"
       }
     },
     {
@@ -976,7 +1066,8 @@
         "en": "Clear List",
         "tr": "Listeyi Temizle",
         "ja": "リストをクリア",
-        "zh": "清除列表"
+        "zh": "清除列表",
+        "vi": "Xoá danh sách"
       }
     },
     {
@@ -987,7 +1078,8 @@
         "en": "Check proxies",
         "tr": "Kontrol etmek",
         "ja": "プロキシを確認する",
-        "zh": "檢查代理"
+        "zh": "檢查代理",
+        "vi": "Kiểm tra proxy"
       }
     },
     {
@@ -998,7 +1090,8 @@
         "en": "Algorithm",
         "tr": "Algoritma",
         "ja": "アルゴリズム",
-        "zh": "算法"
+        "zh": "算法",
+        "vi": "Thuật toán"
       }
     },
     {
@@ -1009,7 +1102,8 @@
         "en": "Country",
         "tr": "Ülke",
         "ja": "国",
-        "zh": "国家"
+        "zh": "国家",
+        "vi": "Quốc gia"
       }
     },
     {
@@ -1020,7 +1114,8 @@
         "en": "Any",
         "tr": "Herhangi",
         "ja": "任意",
-        "zh": "任意"
+        "zh": "任意",
+        "vi": "Bất kỳ"
       }
     },
     {
@@ -1031,7 +1126,8 @@
         "en": "Russia",
         "tr": "Rusya",
         "ja": "ロシア",
-        "zh": "俄羅斯"
+        "zh": "俄羅斯",
+        "vi": "Nga"
       }
     },
     {
@@ -1042,7 +1138,8 @@
         "en": "United States",
         "tr": "Amerika Birleşik Devletleri",
         "ja": "アメリカ合衆国",
-        "zh": "美國"
+        "zh": "美國",
+        "vi": "Hoa Kỳ"
       }
     },
     {
@@ -1053,7 +1150,8 @@
         "en": "China",
         "tr": "Çin",
         "ja": "中国",
-        "zh": "中國"
+        "zh": "中國",
+        "vi": "Trung Quốc"
       }
     },
     {
@@ -1064,7 +1162,8 @@
         "en": "France",
         "tr": "Fransa",
         "ja": "フランス",
-        "zh": "法國"
+        "zh": "法國",
+        "vi": "Pháp"
       }
     },
     {
@@ -1075,7 +1174,8 @@
         "en": "Germany",
         "tr": "Almanya",
         "ja": "ドイツ",
-        "zh": "德國"
+        "zh": "德國",
+        "vi": "Đức"
       }
     },
     {
@@ -1086,7 +1186,8 @@
         "en": "Japan",
         "tr": "Japonya",
         "ja": "日本",
-        "zh": "日本"
+        "zh": "日本",
+        "vi": "Nhật Bản"
       }
     },
     {
@@ -1097,7 +1198,8 @@
         "en": "Brazil",
         "tr": "Brezilya",
         "ja": "ブラジル",
-        "zh": "巴西"
+        "zh": "巴西",
+        "vi": "Brazil"
       }
     },
     {
@@ -1108,7 +1210,8 @@
         "en": "Ukraine",
         "tr": "Ukrayna",
         "ja": "ウクライナ",
-        "zh": "烏克蘭"
+        "zh": "烏克蘭",
+        "vi": "Ukraine"
       }
     },
     {
@@ -1119,7 +1222,8 @@
         "en": "Netherlands",
         "tr": "Hollanda",
         "ja": "オランダ",
-        "zh": "荷蘭"
+        "zh": "荷蘭",
+        "vi": "Hà Lan"
       }
     },
     {
@@ -1130,7 +1234,8 @@
         "en": "Canada",
         "tr": "Kanada",
         "ja": "カナダ",
-        "zh": "加拿大"
+        "zh": "加拿大",
+        "vi": "Canada"
       }
     },
     {
@@ -1141,7 +1246,8 @@
         "en": "Indonesia",
         "tr": "Endonezya",
         "ja": "インドネシア",
-        "zh": "印尼"
+        "zh": "印尼",
+        "vi": "Indonesia"
       }
     },
     {
@@ -1152,7 +1258,8 @@
         "en": "Thailand",
         "tr": "Tayland",
         "ja": "タイ",
-        "zh": "泰國"
+        "zh": "泰國",
+        "vi": "Thái Lan"
       }
     },
     {
@@ -1163,7 +1270,8 @@
         "en": "Port",
         "tr": "Port",
         "ja": "ポート",
-        "zh": "端口"
+        "zh": "端口",
+        "vi": "Cổng"
       }
     },
     {
@@ -1174,7 +1282,8 @@
         "en": "Any",
         "tr": "Herhangi",
         "ja": "任意",
-        "zh": "任意"
+        "zh": "任意",
+        "vi": "Bất kỳ"
       }
     },
     {
@@ -1185,7 +1294,8 @@
         "en": "Count",
         "tr": "Sayı",
         "ja": "数",
-        "zh": "数量"
+        "zh": "数量",
+        "vi": "Số lượng"
       }
     },
     {
@@ -1196,7 +1306,8 @@
         "en": "Maximum",
         "tr": "Maksimum",
         "ja": "最大",
-        "zh": "最大"
+        "zh": "最大",
+        "vi": "Tối đa"
       }
     },
     {
@@ -1207,7 +1318,8 @@
         "en": "Find Proxies",
         "tr": "Vekil Bul",
         "ja": "プロキシを探す",
-        "zh": "查找代理"
+        "zh": "查找代理",
+        "vi": "Tìm proxy"
       }
     },
     {
@@ -1218,7 +1330,8 @@
         "en": "Proxy Count",
         "tr": "Vekil Sayısı",
         "ja": "プロキシ数",
-        "zh": "代理数量"
+        "zh": "代理数量",
+        "vi": "Số lượng proxy"
       }
     },
     {
@@ -1229,7 +1342,8 @@
         "en": "Captcha Type",
         "tr": "Captcha Türü",
         "ja": "キャプチャタイプ",
-        "zh": "验证码类型"
+        "zh": "验证码类型",
+        "vi": "Loại captcha"
       }
     },
     {
@@ -1240,7 +1354,8 @@
         "en": "Captcha Subtype",
         "tr": "Captcha Alt Türü",
         "ja": "キャプチャサブタイプ",
-        "zh": "验证码子类型"
+        "zh": "验证码子类型",
+        "vi": "Loại phụ captcha"
       }
     },
     {
@@ -1251,7 +1366,8 @@
         "en": "API Service",
         "tr": "API Servisi",
         "ja": "APIサービス",
-        "zh": "API服务"
+        "zh": "API服务",
+        "vi": "Dịch vụ API"
       }
     },
     {
@@ -1262,7 +1378,8 @@
         "en": "Mode",
         "tr": "Mod",
         "ja": "モード",
-        "zh": "模式"
+        "zh": "模式",
+        "vi": "Chế độ"
       }
     },
     {
@@ -1273,7 +1390,8 @@
         "en": "Regular Expression",
         "tr": "Düzenli İfade",
         "ja": "正規表現",
-        "zh": "正则表达式"
+        "zh": "正则表达式",
+        "vi": "Biểu thức chính quy"
       }
     },
     {
@@ -1284,7 +1402,8 @@
         "en": "Required URL Part",
         "tr": "Gerekli URL Parçası",
         "ja": "必須URL部分",
-        "zh": "必填URL部分"
+        "zh": "必填URL部分",
+        "vi": "Phần URL bắt buộc"
       }
     },
     {
@@ -1295,7 +1414,8 @@
         "en": "Number of Columns",
         "tr": "Sütun Sayısı",
         "ja": "列数",
-        "zh": "列数"
+        "zh": "列数",
+        "vi": "Số cột"
       }
     },
     {
@@ -1306,7 +1426,8 @@
         "en": "Number of Rows",
         "tr": "Satır Sayısı",
         "ja": "行数",
-        "zh": "行数"
+        "zh": "行数",
+        "vi": "Số hàng"
       }
     },
     {
@@ -1317,7 +1438,8 @@
         "en": "API Key",
         "tr": "API Anahtarı",
         "ja": "APIキー",
-        "zh": "API密钥"
+        "zh": "API密钥",
+        "vi": "Khoá API"
       }
     },
     {
@@ -1328,7 +1450,8 @@
         "en": "Link",
         "tr": "Bağlantı",
         "ja": "リンク",
-        "zh": "链接"
+        "zh": "链接",
+        "vi": "Đường link"
       }
     },
     {
@@ -1339,7 +1462,8 @@
         "en": "Information",
         "tr": "Bilgi",
         "ja": "情報",
-        "zh": "信息"
+        "zh": "信息",
+        "vi": "Thông tin"
       }
     },
     {
@@ -1350,7 +1474,8 @@
         "en": "Data",
         "tr": "Veri",
         "ja": "データ",
-        "zh": "数据"
+        "zh": "数据",
+        "vi": "Dữ liệu"
       }
     },
     {
@@ -1361,7 +1486,8 @@
         "en": "Actions",
         "tr": "Eylemler",
         "ja": "アクション",
-        "zh": "操作"
+        "zh": "操作",
+        "vi": "Hành động"
       }
     },
     {
@@ -1372,7 +1498,8 @@
         "en": "Chat",
         "tr": "Chat",
         "ja": "チャット",
-        "zh": "聊天"
+        "zh": "聊天",
+        "vi": "Chat"
       }
     },
     {
@@ -1383,7 +1510,8 @@
         "en": "Actions",
         "tr": "Eylemler",
         "ja": "アクション",
-        "zh": "操作"
+        "zh": "操作",
+        "vi": "Hành động"
       }
     },
     {
@@ -1394,7 +1522,8 @@
         "en": "Inventory",
         "tr": "Envanter",
         "ja": "インベントリ",
-        "zh": "物品栏"
+        "zh": "物品栏",
+        "vi": "Túi đồ"
       }
     },
     {
@@ -1405,7 +1534,8 @@
         "en": "Movement",
         "tr": "Hareket",
         "ja": "移動",
-        "zh": "移动"
+        "zh": "移动",
+        "vi": "Di chuyển"
       }
     },
     {
@@ -1416,7 +1546,8 @@
         "en": "Imitation",
         "tr": "Taklit",
         "ja": "模倣",
-        "zh": "模拟"
+        "zh": "模拟",
+        "vi": "Mô phỏng"
       }
     },
     {
@@ -1427,7 +1558,8 @@
         "en": "Anti-AFK",
         "tr": "Anti-AFK",
         "ja": "Anti-AFK",
-        "zh": "防挂机"
+        "zh": "防挂机",
+        "vi": "Chống AFK"
       }
     },
     {
@@ -1438,7 +1570,8 @@
         "en": "Stalker",
         "tr": "Takip",
         "ja": "ストーカー",
-        "zh": "追踪"
+        "zh": "追踪",
+        "vi": "Bám theo"
       }
     },
     {
@@ -1449,7 +1582,8 @@
         "en": "Flight",
         "tr": "Uçuş",
         "ja": "飛行",
-        "zh": "飞行"
+        "zh": "飞行",
+        "vi": "Bay lượn"
       }
     },
     {
@@ -1460,7 +1594,8 @@
         "en": "Killaura",
         "tr": "Killaura",
         "ja": "キルオーラ",
-        "zh": "杀戮光环"
+        "zh": "杀戮光环",
+        "vi": "Killaura"
       }
     },
     {
@@ -1471,7 +1606,8 @@
         "en": "Scaffold",
         "tr": "Scaffold",
         "ja": "スカフォールド",
-        "zh": "脚手架"
+        "zh": "脚手架",
+        "vi": "Scaffold"
       }
     },
     {
@@ -1482,7 +1618,8 @@
         "en": "Anti-Fall",
         "tr": "Anti-Fall",
         "ja": "落下防止",
-        "zh": "防跌落"
+        "zh": "防跌落",
+        "vi": "Chống rơi"
       }
     },
     {
@@ -1493,7 +1630,8 @@
         "en": "Bow Aim",
         "tr": "Yay Nişanı",
         "ja": "弓エイム",
-        "zh": "弓瞄准"
+        "zh": "弓瞄准",
+        "vi": "Nhắm cung"
       }
     },
     {
@@ -1504,7 +1642,8 @@
         "en": "Stealer",
         "tr": "Stealer",
         "ja": "スティーラー",
-        "zh": "窃取者"
+        "zh": "窃取者",
+        "vi": "Trộm đồ"
       }
     },
     {
@@ -1515,7 +1654,8 @@
         "en": "Miner",
         "tr": "Miner",
         "ja": "マイナー",
-        "zh": "矿工"
+        "zh": "矿工",
+        "vi": "Thợ mỏ"
       }
     },
     {
@@ -1526,7 +1666,8 @@
         "en": "Farmer",
         "tr": "Farmer",
         "ja": "ファーマー",
-        "zh": "农民"
+        "zh": "农民",
+        "vi": "Nông dân"
       }
     },
     {
@@ -1537,7 +1678,8 @@
         "en": "This section does not work",
         "tr": "Bu bölüm aktif değil",
         "ja": "このセクションは機能しません",
-        "zh": "此部分不可用"
+        "zh": "此部分不可用",
+        "vi": "Phần này không hoạt động"
       }
     },
     {
@@ -1548,7 +1690,8 @@
         "en": "Refresh Rate",
         "tr": "Güncelleme Hızı",
         "ja": "更新レート",
-        "zh": "刷新率"
+        "zh": "刷新率",
+        "vi": "Tần suất cập nhật"
       }
     },
     {
@@ -1559,7 +1702,8 @@
         "en": "Full Path",
         "tr": "Tam Yol",
         "ja": "フルパス",
-        "zh": "完整路径"
+        "zh": "完整路径",
+        "vi": "Đường dẫn đầy đủ"
       }
     },
     {
@@ -1570,7 +1714,8 @@
         "en": "File Name",
         "tr": "Dosya Adı",
         "ja": "ファイル名",
-        "zh": "文件名"
+        "zh": "文件名",
+        "vi": "Tên file"
       }
     },
     {
@@ -1581,7 +1726,8 @@
         "en": "Auto Save",
         "tr": "Otomatik Kaydet",
         "ja": "自動保存",
-        "zh": "自动保存"
+        "zh": "自动保存",
+        "vi": "Tự động lưu"
       }
     },
     {
@@ -1592,7 +1738,8 @@
         "en": "System Logs",
         "tr": "Sistem Log",
         "ja": "システムログ",
-        "zh": "系统日志"
+        "zh": "系统日志",
+        "vi": "Log hệ thống"
       }
     },
     {
@@ -1603,7 +1750,8 @@
         "en": "Extended Logs",
         "tr": "Genişletilmiş Log",
         "ja": "拡張ログ",
-        "zh": "扩展日志"
+        "zh": "扩展日志",
+        "vi": "Log mở rộng"
       }
     },
     {
@@ -1614,7 +1762,8 @@
         "en": "Auto Scroll",
         "tr": "Otomatik Kaydır",
         "ja": "自動スクロール",
-        "zh": "自动滚动"
+        "zh": "自动滚动",
+        "vi": "Tự động cuộn"
       }
     },
     {
@@ -1625,7 +1774,8 @@
         "en": "Execute",
         "tr": "Yerine getirmek",
         "ja": "実行する",
-        "zh": "執行"
+        "zh": "執行",
+        "vi": "Thực thi"
       }
     },
     {
@@ -1636,7 +1786,8 @@
         "en": "Execute Separately",
         "tr": "Ayrı olarak yürütün",
         "ja": "別々に実行する",
-        "zh": "分別執行"
+        "zh": "分別執行",
+        "vi": "Thực thi riêng"
       }
     },
     {
@@ -1647,7 +1798,8 @@
         "en": "Global",
         "tr": "Global",
         "ja": "グローバル",
-        "zh": "全局"
+        "zh": "全局",
+        "vi": "Toàn cục"
       }
     },
     {
@@ -1658,7 +1810,8 @@
         "en": "Particles",
         "tr": "Partiküller",
         "ja": "パーティクル",
-        "zh": "粒子"
+        "zh": "粒子",
+        "vi": "Hiệu ứng hạt"
       }
     },
     {
@@ -1669,7 +1822,8 @@
         "en": "Theme",
         "tr": "Tema",
         "ja": "テーマ",
-        "zh": "主题"
+        "zh": "主题",
+        "vi": "Chủ đề"
       }
     },
     {
@@ -1680,7 +1834,8 @@
         "en": "Font",
         "tr": "Font",
         "ja": "フォント",
-        "zh": "字体"
+        "zh": "字体",
+        "vi": "Phông chữ"
       }
     },
     {
@@ -1691,7 +1846,8 @@
         "en": "Messages",
         "tr": "Mesajlar",
         "ja": "メッセージ",
-        "zh": "消息"
+        "zh": "消息",
+        "vi": "Tin nhắn"
       }
     },
     {
@@ -1702,7 +1858,8 @@
         "en": "Panel",
         "tr": "Panel",
         "ja": "パネル",
-        "zh": "面板"
+        "zh": "面板",
+        "vi": "Bảng điều khiển"
       }
     },
     {
@@ -1713,7 +1870,8 @@
         "en": "Icons",
         "tr": "İkonlar",
         "ja": "アイコン",
-        "zh": "图标"
+        "zh": "图标",
+        "vi": "Biểu tượng"
       }
     },
     {
@@ -1724,7 +1882,8 @@
         "en": "Show",
         "tr": "Göster",
         "ja": "表示",
-        "zh": "显示"
+        "zh": "显示",
+        "vi": "Hiện"
       }
     },
     {
@@ -1735,7 +1894,8 @@
         "en": "Hide",
         "tr": "Gizle",
         "ja": "非表示",
-        "zh": "隐藏"
+        "zh": "隐藏",
+        "vi": "Ẩn"
       }
     },
     {
@@ -1746,7 +1906,8 @@
         "en": "Font Size",
         "tr": "Font Boyutu",
         "ja": "フォントサイズ",
-        "zh": "字体大小"
+        "zh": "字体大小",
+        "vi": "Cỡ chữ"
       }
     },
     {
@@ -1757,7 +1918,8 @@
         "en": "Internal Gap",
         "tr": "Padding",
         "ja": "内部余白",
-        "zh": "内边距"
+        "zh": "内边距",
+        "vi": "Khoảng đệm trong"
       }
     },
     {
@@ -1768,7 +1930,8 @@
         "en": "Separators",
         "tr": "Ayırıcılar",
         "ja": "分離器",
-        "zh": "分離器"
+        "zh": "分離器",
+        "vi": "Vạch phân cách"
       }
     },
     {
@@ -1779,7 +1942,8 @@
         "en": "Language",
         "tr": "Dil",
         "ja": "言語",
-        "zh": "语言"
+        "zh": "语言",
+        "vi": "Ngôn ngữ"
       }
     },
     {
@@ -1790,7 +1954,8 @@
         "en": "Style Kit",
         "tr": "Bir dizi stil",
         "ja": "スタイルセット",
-        "zh": "樣式集"
+        "zh": "樣式集",
+        "vi": "Bộ kiểu dáng"
       }
     },
     {
@@ -1801,7 +1966,8 @@
         "en": "Enable",
         "tr": "Etkinleştir",
         "ja": "有効",
-        "zh": "启用"
+        "zh": "启用",
+        "vi": "Bật"
       }
     },
     {
@@ -1812,7 +1978,8 @@
         "en": "Disable",
         "tr": "Devre Dışı",
         "ja": "無効",
-        "zh": "禁用"
+        "zh": "禁用",
+        "vi": "Tắt"
       }
     },
     {
@@ -1823,7 +1990,8 @@
         "en": "Upload Config",
         "tr": "Config Yükle",
         "ja": "コンフィグをアップロード",
-        "zh": "上传配置"
+        "zh": "上传配置",
+        "vi": "Nạp cấu hình"
       }
     },
     {
@@ -1834,7 +2002,8 @@
         "en": "Share Config",
         "tr": "Config Paylaş",
         "ja": "コンフィグを共有",
-        "zh": "分享配置"
+        "zh": "分享配置",
+        "vi": "Chia sẻ cấu hình"
       }
     },
     {
@@ -1845,7 +2014,8 @@
         "en": "Mode",
         "tr": "Mod",
         "ja": "モード",
-        "zh": "模式"
+        "zh": "模式",
+        "vi": "Chế độ"
       }
     },
     {
@@ -1856,7 +2026,8 @@
         "en": "Message",
         "tr": "Mesaj",
         "ja": "メッセージ",
-        "zh": "消息"
+        "zh": "消息",
+        "vi": "Tin nhắn"
       }
     },
     {
@@ -1867,7 +2038,8 @@
         "en": "Spamming",
         "tr": "Spam",
         "ja": "スパム",
-        "zh": "刷屏"
+        "zh": "刷屏",
+        "vi": "Spam tin"
       }
     },
     {
@@ -1878,7 +2050,8 @@
         "en": "Send",
         "tr": "Gönder",
         "ja": "送信",
-        "zh": "发送"
+        "zh": "发送",
+        "vi": "Gửi"
       }
     },
     {
@@ -1889,7 +2062,8 @@
         "en": "Start",
         "tr": "Başlat",
         "ja": "開始",
-        "zh": "开始"
+        "zh": "开始",
+        "vi": "Bắt đầu"
       }
     },
     {
@@ -1900,7 +2074,8 @@
         "en": "Stop",
         "tr": "Durdur",
         "ja": "停止",
-        "zh": "停止"
+        "zh": "停止",
+        "vi": "Dừng"
       }
     },
     {
@@ -1911,7 +2086,8 @@
         "en": "Synchronization",
         "tr": "Senkronizasyon",
         "ja": "同期",
-        "zh": "同步"
+        "zh": "同步",
+        "vi": "Đồng bộ"
       }
     },
     {
@@ -1922,7 +2098,8 @@
         "en": "Global chat",
         "tr": "Global sohbet",
         "ja": "グローバルチャット",
-        "zh": "全局聊天"
+        "zh": "全局聊天",
+        "vi": "Chat toàn cục"
       }
     },
     {
@@ -1933,7 +2110,8 @@
         "en": "Text mutation",
         "tr": "Metin mutasyonu",
         "ja": "テキスト変異",
-        "zh": "文本变异"
+        "zh": "文本变异",
+        "vi": "Biến đổi văn bản"
       }
     },
     {
@@ -1944,7 +2122,8 @@
         "en": "Magic text",
         "tr": "Sihirli metin",
         "ja": "魔法テキスト",
-        "zh": "魔法文本"
+        "zh": "魔法文本",
+        "vi": "Văn bản ma thuật"
       }
     },
     {
@@ -1955,7 +2134,8 @@
         "en": "Anti-Repetition",
         "tr": "Anti-Tekrar",
         "ja": "アンチリピート",
-        "zh": "防重复"
+        "zh": "防重复",
+        "vi": "Chống lặp"
       }
     },
     {
@@ -1966,7 +2146,8 @@
         "en": "Bypass",
         "tr": "Atlatma",
         "ja": "バイパス",
-        "zh": "绕过"
+        "zh": "绕过",
+        "vi": "Vượt qua"
       }
     },
     {
@@ -1977,7 +2158,8 @@
         "en": "Action",
         "tr": "Eylem",
         "ja": "アクション",
-        "zh": "操作"
+        "zh": "操作",
+        "vi": "Hành động"
       }
     },
     {
@@ -1988,7 +2170,8 @@
         "en": "Jumping",
         "tr": "Zıplama",
         "ja": "ジャンプ",
-        "zh": "跳跃"
+        "zh": "跳跃",
+        "vi": "Nhảy"
       }
     },
     {
@@ -1999,7 +2182,8 @@
         "en": "Shifting",
         "tr": "Eğilme",
         "ja": "シフト",
-        "zh": "潜行"
+        "zh": "潜行",
+        "vi": "Đi kẹp Shift"
       }
     },
     {
@@ -2010,7 +2194,8 @@
         "en": "Waving",
         "tr": "El sallama",
         "ja": "手を振る",
-        "zh": "挥手"
+        "zh": "挥手",
+        "vi": "Vẫy tay"
       }
     },
     {
@@ -2021,7 +2206,8 @@
         "en": "Impulsiveness",
         "tr": "Dürtüsellik",
         "ja": "衝動性",
-        "zh": "冲动性"
+        "zh": "冲动性",
+        "vi": "Bốc đồng"
       }
     },
     {
@@ -2032,7 +2218,8 @@
         "en": "Basic",
         "tr": "Temel",
         "ja": "基本",
-        "zh": "基础"
+        "zh": "基础",
+        "vi": "Cơ bản"
       }
     },
     {
@@ -2043,7 +2230,8 @@
         "en": "Swap",
         "tr": "Değiştirme",
         "ja": "入れ替え",
-        "zh": "交换"
+        "zh": "交换",
+        "vi": "Hoán đổi"
       }
     },
     {
@@ -2054,7 +2242,8 @@
         "en": "Interaction",
         "tr": "Etkileşim",
         "ja": "相互作用",
-        "zh": "交互"
+        "zh": "交互",
+        "vi": "Tương tác"
       }
     },
     {
@@ -2065,7 +2254,8 @@
         "en": "Slot index",
         "tr": "Slot indeksi",
         "ja": "スロットインデックス",
-        "zh": "槽位索引"
+        "zh": "槽位索引",
+        "vi": "Số slot"
       }
     },
     {
@@ -2076,7 +2266,8 @@
         "en": "Replace with",
         "tr": "Şununla değiştir",
         "ja": "置き換え",
-        "zh": "替换为"
+        "zh": "替换为",
+        "vi": "Thay bằng"
       }
     },
     {
@@ -2087,7 +2278,8 @@
         "en": "Select",
         "tr": "Seç",
         "ja": "選択",
-        "zh": "选择"
+        "zh": "选择",
+        "vi": "Chọn"
       }
     },
     {
@@ -2098,7 +2290,8 @@
         "en": "Drop",
         "tr": "Bırak",
         "ja": "ドロップ",
-        "zh": "丢弃"
+        "zh": "丢弃",
+        "vi": "Vứt bỏ"
       }
     },
     {
@@ -2109,7 +2302,8 @@
         "en": "Left Click",
         "tr": "Sol Tık",
         "ja": "左クリック",
-        "zh": "左键点击"
+        "zh": "左键点击",
+        "vi": "Chuột trái"
       }
     },
     {
@@ -2120,7 +2314,8 @@
         "en": "Right Click",
         "tr": "Sağ Tık",
         "ja": "右クリック",
-        "zh": "右键点击"
+        "zh": "右键点击",
+        "vi": "Chuột phải"
       }
     },
     {
@@ -2131,7 +2326,8 @@
         "en": "Move",
         "tr": "Taşı",
         "ja": "移動",
-        "zh": "移动"
+        "zh": "移动",
+        "vi": "Chuyển đi"
       }
     },
     {
@@ -2142,7 +2338,8 @@
         "en": "Start Use",
         "tr": "Kullanmak",
         "ja": "使用を開始する",
-        "zh": "開始使用"
+        "zh": "開始使用",
+        "vi": "Bắt đầu dùng"
       }
     },
     {
@@ -2153,7 +2350,8 @@
         "en": "Release Use",
         "tr": "Sona ermek",
         "ja": "使用を中止する",
-        "zh": "停止使用"
+        "zh": "停止使用",
+        "vi": "Ngưng dùng"
       }
     },
     {
@@ -2164,7 +2362,8 @@
         "en": "Default",
         "tr": "Normal",
         "ja": "デフォルト",
-        "zh": "默认"
+        "zh": "默认",
+        "vi": "Mặc định"
       }
     },
     {
@@ -2175,7 +2374,8 @@
         "en": "Pathfinder",
         "tr": "Yol Bulucu",
         "ja": "パスファインダー",
-        "zh": "寻路"
+        "zh": "寻路",
+        "vi": "Pathfinder"
       }
     },
     {
@@ -2186,7 +2386,8 @@
         "en": "Direction",
         "tr": "Yön",
         "ja": "方向",
-        "zh": "方向"
+        "zh": "方向",
+        "vi": "Hướng"
       }
     },
     {
@@ -2197,7 +2398,8 @@
         "en": "Forward",
         "tr": "İleri",
         "ja": "前",
-        "zh": "向前"
+        "zh": "向前",
+        "vi": "Tiến"
       }
     },
     {
@@ -2208,7 +2410,8 @@
         "en": "Backward",
         "tr": "Geri",
         "ja": "後",
-        "zh": "向后"
+        "zh": "向后",
+        "vi": "Lùi"
       }
     },
     {
@@ -2219,7 +2422,8 @@
         "en": "Left",
         "tr": "Sol",
         "ja": "左",
-        "zh": "向左"
+        "zh": "向左",
+        "vi": "Trái"
       }
     },
     {
@@ -2230,7 +2434,8 @@
         "en": "Right",
         "tr": "Sağ",
         "ja": "右",
-        "zh": "向右"
+        "zh": "向右",
+        "vi": "Phải"
       }
     },
     {
@@ -2241,7 +2446,8 @@
         "en": "Forward Left",
         "tr": "İleri Sol",
         "ja": "前左",
-        "zh": "左前"
+        "zh": "左前",
+        "vi": "Tiến trái"
       }
     },
     {
@@ -2252,7 +2458,8 @@
         "en": "Forward Right",
         "tr": "İleri Sağ",
         "ja": "前右",
-        "zh": "右前"
+        "zh": "右前",
+        "vi": "Tiến phải"
       }
     },
     {
@@ -2263,7 +2470,8 @@
         "en": "Backward Left",
         "tr": "Geri Sol",
         "ja": "後左",
-        "zh": "左后"
+        "zh": "左后",
+        "vi": "Lùi trái"
       }
     },
     {
@@ -2274,7 +2482,8 @@
         "en": "Backward Right",
         "tr": "Geri Sağ",
         "ja": "後右",
-        "zh": "右后"
+        "zh": "右后",
+        "vi": "Lùi phải"
       }
     },
     {
@@ -2285,7 +2494,8 @@
         "en": "X Coordinate",
         "tr": "X Koordinatı",
         "ja": "X座標",
-        "zh": "X坐标"
+        "zh": "X坐标",
+        "vi": "Tọa độ X"
       }
     },
     {
@@ -2296,7 +2506,8 @@
         "en": "Z Coordinate",
         "tr": "Z Koordinatı",
         "ja": "Z座標",
-        "zh": "Z坐标"
+        "zh": "Z坐标",
+        "vi": "Tọa độ Z"
       }
     },
     {
@@ -2307,7 +2518,8 @@
         "en": "Minimal",
         "tr": "Minimal",
         "ja": "最小限",
-        "zh": "最小"
+        "zh": "最小",
+        "vi": "Tối thiểu"
       }
     },
     {
@@ -2318,7 +2530,8 @@
         "en": "Normal",
         "tr": "Normal",
         "ja": "通常",
-        "zh": "正常"
+        "zh": "正常",
+        "vi": "Thường"
       }
     },
     {
@@ -2329,7 +2542,8 @@
         "en": "Advanced",
         "tr": "Gelişmiş",
         "ja": "高度",
-        "zh": "高级"
+        "zh": "高级",
+        "vi": "Nâng cao"
       }
     },
     {
@@ -2340,7 +2554,8 @@
         "en": "Target Nickname",
         "tr": "Hedef Nickname",
         "ja": "ターゲットのニックネーム",
-        "zh": "目标昵称"
+        "zh": "目标昵称",
+        "vi": "Nickname mục tiêu"
       }
     },
     {
@@ -2351,7 +2566,8 @@
         "en": "Min Distance",
         "tr": "Min Mesafe",
         "ja": "最小距離",
-        "zh": "最小距离"
+        "zh": "最小距离",
+        "vi": "Khoảng cách tối thiểu"
       }
     },
     {
@@ -2362,7 +2578,8 @@
         "en": "Max Distance",
         "tr": "Max Mesafe",
         "ja": "最大距離",
-        "zh": "最大距离"
+        "zh": "最大距离",
+        "vi": "Khoảng cách tối đa"
       }
     },
     {
@@ -2373,7 +2590,8 @@
         "en": "Prediction",
         "tr": "Tahmin",
         "ja": "予測",
-        "zh": "預言"
+        "zh": "預言",
+        "vi": "Dự đoán"
       }
     },
     {
@@ -2384,7 +2602,8 @@
         "en": "Vanilla",
         "tr": "Vanilla",
         "ja": "バニラ",
-        "zh": "原版"
+        "zh": "原版",
+        "vi": "Vanilla"
       }
     },
     {
@@ -2395,7 +2614,8 @@
         "en": "Jump-Fly",
         "tr": "Jump-Fly",
         "ja": "ジャンプフライ",
-        "zh": "跳跃飞行"
+        "zh": "跳跃飞行",
+        "vi": "Jump-Fly"
       }
     },
     {
@@ -2406,7 +2626,8 @@
         "en": "Teleport-Fly",
         "tr": "Teleport-Fly",
         "ja": "テレポートフライ",
-        "zh": "传送飞行"
+        "zh": "传送飞行",
+        "vi": "Teleport-Fly"
       }
     },
     {
@@ -2417,7 +2638,8 @@
         "en": "Bug-Fly",
         "tr": "Bug-Fly",
         "ja": "バグフライ",
-        "zh": "漏洞飞行"
+        "zh": "漏洞飞行",
+        "vi": "Bug-Fly"
       }
     },
     {
@@ -2428,7 +2650,8 @@
         "en": "Settings",
         "tr": "Ayarlar",
         "ja": "設定",
-        "zh": "设置"
+        "zh": "设置",
+        "vi": "Cài đặt"
       }
     },
     {
@@ -2439,7 +2662,8 @@
         "en": "Adaptive",
         "tr": "Uyarlanabilir",
         "ja": "適応的",
-        "zh": "自适应"
+        "zh": "自适应",
+        "vi": "Thích nghi"
       }
     },
     {
@@ -2450,7 +2674,8 @@
         "en": "Manual",
         "tr": "Manuel",
         "ja": "手動",
-        "zh": "手动"
+        "zh": "手动",
+        "vi": "Thủ công"
       }
     },
     {
@@ -2461,7 +2686,8 @@
         "en": "Auto",
         "tr": "Otomatik",
         "ja": "自動",
-        "zh": "汽車"
+        "zh": "汽車",
+        "vi": "Tự động"
       }
     },
     {
@@ -2472,7 +2698,8 @@
         "en": "Manual",
         "tr": "Manuel",
         "ja": "マニュアル",
-        "zh": "手動的"
+        "zh": "手動的",
+        "vi": "Thủ công"
       }
     },
     {
@@ -2483,7 +2710,8 @@
         "en": "Anti-cheat",
         "tr": "Anti-hile",
         "ja": "アンチチート",
-        "zh": "反作弊"
+        "zh": "反作弊",
+        "vi": "Chống cheat"
       }
     },
     {
@@ -2494,7 +2722,8 @@
         "en": "Y Change (min)",
         "tr": "Y Değişimi (Min)",
         "ja": "Y変化（最小）",
-        "zh": "Y轴变化（最小）"
+        "zh": "Y轴变化（最小）",
+        "vi": "Đổi Y (min)"
       }
     },
     {
@@ -2505,7 +2734,8 @@
         "en": "Y Change (max)",
         "tr": "Y Değişimi (Max)",
         "ja": "Y変化（最大）",
-        "zh": "Y轴变化（最大）"
+        "zh": "Y轴变化（最大）",
+        "vi": "Đổi Y (max)"
       }
     },
     {
@@ -2516,7 +2746,8 @@
         "en": "Use Ground-Spoof",
         "tr": "Ground-Spoof Kullan",
         "ja": "Ground-Spoofを使用",
-        "zh": "使用地面欺骗"
+        "zh": "使用地面欺骗",
+        "vi": "Dùng Ground-Spoof"
       }
     },
     {
@@ -2527,7 +2758,8 @@
         "en": "Behavior",
         "tr": "Davranış",
         "ja": "動作",
-        "zh": "行为"
+        "zh": "行为",
+        "vi": "Hành vi"
       }
     },
     {
@@ -2538,7 +2770,8 @@
         "en": "Moderate",
         "tr": "Orta",
         "ja": "中程度",
-        "zh": "中等"
+        "zh": "中等",
+        "vi": "Vừa phải"
       }
     },
     {
@@ -2549,7 +2782,8 @@
         "en": "Aggressive",
         "tr": "Agresif",
         "ja": "攻撃的",
-        "zh": "激进"
+        "zh": "激进",
+        "vi": "Hung hãn"
       }
     },
     {
@@ -2560,7 +2794,8 @@
         "en": "Target",
         "tr": "Hedef",
         "ja": "ターゲット",
-        "zh": "目标"
+        "zh": "目标",
+        "vi": "Mục tiêu"
       }
     },
     {
@@ -2571,7 +2806,8 @@
         "en": "Player",
         "tr": "Oyuncu",
         "ja": "プレイヤー",
-        "zh": "玩家"
+        "zh": "玩家",
+        "vi": "Người chơi"
       }
     },
     {
@@ -2582,7 +2818,8 @@
         "en": "Monster",
         "tr": "Canavar",
         "ja": "モンスター",
-        "zh": "怪物"
+        "zh": "怪物",
+        "vi": "Quái vật"
       }
     },
     {
@@ -2593,7 +2830,8 @@
         "en": "Animal",
         "tr": "Hayvan",
         "ja": "動物",
-        "zh": "动物"
+        "zh": "动物",
+        "vi": "Động vật"
       }
     },
     {
@@ -2604,7 +2842,8 @@
         "en": "Vehicle",
         "tr": "Araç",
         "ja": "乗り物",
-        "zh": "载具"
+        "zh": "载具",
+        "vi": "Phương tiện"
       }
     },
     {
@@ -2615,7 +2854,8 @@
         "en": "Any",
         "tr": "Herhangi",
         "ja": "任意",
-        "zh": "任意"
+        "zh": "任意",
+        "vi": "Bất kỳ"
       }
     },
     {
@@ -2626,7 +2866,8 @@
         "en": "Custom",
         "tr": "Özel",
         "ja": "カスタム",
-        "zh": "自定义"
+        "zh": "自定义",
+        "vi": "Tùy chọn mục tiêu"
       }
     },
     {
@@ -2637,7 +2878,8 @@
         "en": "Weapon",
         "tr": "Silah",
         "ja": "武器",
-        "zh": "武器"
+        "zh": "武器",
+        "vi": "Vũ khí"
       }
     },
     {
@@ -2648,7 +2890,8 @@
         "en": "Sword",
         "tr": "Kılıç",
         "ja": "剣",
-        "zh": "剑"
+        "zh": "剑",
+        "vi": "Kiếm"
       }
     },
     {
@@ -2659,7 +2902,8 @@
         "en": "Axe",
         "tr": "Balta",
         "ja": "斧",
-        "zh": "斧"
+        "zh": "斧",
+        "vi": "Rìu"
       }
     },
     {
@@ -2670,7 +2914,8 @@
         "en": "Weapon Slot",
         "tr": "Silah Slotu",
         "ja": "武器スロット",
-        "zh": "武器槽位"
+        "zh": "武器槽位",
+        "vi": "Slot vũ khí"
       }
     },
     {
@@ -2681,7 +2926,8 @@
         "en": "Attack Distance",
         "tr": "Saldırı Mesafesi",
         "ja": "攻撃距離",
-        "zh": "攻击距离"
+        "zh": "攻击距离",
+        "vi": "Khoảng cách đánh"
       }
     },
     {
@@ -2692,7 +2938,8 @@
         "en": "Delay",
         "tr": "Gecikme",
         "ja": "遅延",
-        "zh": "延迟"
+        "zh": "延迟",
+        "vi": "Độ trễ"
       }
     },
     {
@@ -2703,7 +2950,8 @@
         "en": "Max Chase Distance",
         "tr": "Max Takip Mesafesi",
         "ja": "最大追跡距離",
-        "zh": "最大追击距离"
+        "zh": "最大追击距离",
+        "vi": "Khoảng cách đuổi tối đa"
       }
     },
     {
@@ -2714,7 +2962,8 @@
         "en": "Min Chase Distance",
         "tr": "Min Takip Mesafesi",
         "ja": "最小追跡距離",
-        "zh": "最小追击距离"
+        "zh": "最小追击距离",
+        "vi": "Khoảng cách đuổi tối thiểu"
       }
     },
     {
@@ -2725,7 +2974,8 @@
         "en": "Auto Weapon",
         "tr": "Otomatik Silah",
         "ja": "自動武器",
-        "zh": "自动武器"
+        "zh": "自动武器",
+        "vi": "Tự chọn vũ khí"
       }
     },
     {
@@ -2736,7 +2986,8 @@
         "en": "Dodging",
         "tr": "Kaçınma",
         "ja": "ドッジ",
-        "zh": "闪避"
+        "zh": "闪避",
+        "vi": "Né đòn"
       }
     },
     {
@@ -2747,7 +2998,8 @@
         "en": "Chase",
         "tr": "Takip",
         "ja": "追跡",
-        "zh": "追击"
+        "zh": "追击",
+        "vi": "Truy đuổi"
       }
     },
     {
@@ -2758,7 +3010,8 @@
         "en": "Critical Hits",
         "tr": "Kritik Vuruşlar",
         "ja": "クリティカルヒット",
-        "zh": "暴击"
+        "zh": "暴击",
+        "vi": "Đòn chí mạng"
       }
     },
     {
@@ -2769,7 +3022,8 @@
         "en": "Noob Bridge",
         "tr": "Noob Bridge",
         "ja": "ヌーブブリッジ",
-        "zh": "新手桥"
+        "zh": "新手桥",
+        "vi": "Noob Bridge"
       }
     },
     {
@@ -2780,7 +3034,8 @@
         "en": "Ninja Bridge",
         "tr": "Ninja Bridge",
         "ja": "ニンジャブリッジ",
-        "zh": "忍者桥"
+        "zh": "忍者桥",
+        "vi": "Ninja Bridge"
       }
     },
     {
@@ -2791,7 +3046,8 @@
         "en": "God Bridge",
         "tr": "God Bridge",
         "ja": "ゴッドブリッジ",
-        "zh": "神仙桥"
+        "zh": "神仙桥",
+        "vi": "God Bridge"
       }
     },
     {
@@ -2802,7 +3058,8 @@
         "en": "Jump Bridge",
         "tr": "Jump Bridge",
         "ja": "ジャンプブリッジ",
-        "zh": "跳跃桥"
+        "zh": "跳跃桥",
+        "vi": "Jump Bridge"
       }
     },
     {
@@ -2813,7 +3070,8 @@
         "en": "Gaze X (min)",
         "tr": "Bakış X (Min)",
         "ja": "X視点（最小）",
-        "zh": "X轴视角（最小）"
+        "zh": "X轴视角（最小）",
+        "vi": "Nhìn trục X (min)"
       }
     },
     {
@@ -2824,7 +3082,8 @@
         "en": "Gaze X (max)",
         "tr": "Bakış X (Max)",
         "ja": "X視点（最大）",
-        "zh": "X轴视角（最大）"
+        "zh": "X轴视角（最大）",
+        "vi": "Nhìn trục X (max)"
       }
     },
     {
@@ -2835,7 +3094,8 @@
         "en": "Hovering",
         "tr": "Hovering",
         "ja": "ホバリング",
-        "zh": "悬停"
+        "zh": "悬停",
+        "vi": "Lơ lửng"
       }
     },
     {
@@ -2846,7 +3106,8 @@
         "en": "Teleport",
         "tr": "Teleport",
         "ja": "テレポート",
-        "zh": "传送"
+        "zh": "传送",
+        "vi": "Teleport"
       }
     },
     {
@@ -2857,7 +3118,8 @@
         "en": "Water-Drop",
         "tr": "Water-Drop",
         "ja": "ウォータードロップ",
-        "zh": "水滴"
+        "zh": "水滴",
+        "vi": "Water-Drop"
       }
     },
     {
@@ -2868,7 +3130,8 @@
         "en": "Fall-Spoof",
         "tr": "Fall-Spoof",
         "ja": "フォールスプーフ",
-        "zh": "坠落欺骗"
+        "zh": "坠落欺骗",
+        "vi": "Fall-Spoof"
       }
     },
     {
@@ -2879,7 +3142,8 @@
         "en": "Trigger (distance to ground)",
         "tr": "Tetikleyici (Yere mesafe)",
         "ja": "トリガー（地面までの距離）",
-        "zh": "触发器（距地面距离）"
+        "zh": "触发器（距地面距离）",
+        "vi": "Trigger (khoảng cách tới đất)"
       }
     },
     {
@@ -2890,7 +3154,8 @@
         "en": "Trigger (fall velocity)",
         "tr": "Tetikleyici (Düşüş hızı)",
         "ja": "トリガー（落下速度）",
-        "zh": "触发器（下落速度）"
+        "zh": "触发器（下落速度）",
+        "vi": "Trigger (tốc độ rơi)"
       }
     },
     {
@@ -2901,7 +3166,8 @@
         "en": "Chest",
         "tr": "Sandık",
         "ja": "チェスト",
-        "zh": "箱子"
+        "zh": "箱子",
+        "vi": "Rương"
       }
     },
     {
@@ -2912,7 +3178,8 @@
         "en": "Barrel",
         "tr": "Varil",
         "ja": "バレル",
-        "zh": "木桶"
+        "zh": "木桶",
+        "vi": "Thùng gỗ"
       }
     },
     {
@@ -2923,7 +3190,8 @@
         "en": "Shulker",
         "tr": "Shulker",
         "ja": "シュルカー",
-        "zh": "潜影贝"
+        "zh": "潜影贝",
+        "vi": "Shulker"
       }
     },
     {
@@ -2934,7 +3202,8 @@
         "en": "Interaction Radius",
         "tr": "Etkileşim Yarıçapı",
         "ja": "相互作用半径",
-        "zh": "交互半径"
+        "zh": "交互半径",
+        "vi": "Bán kính tương tác"
       }
     },
     {
@@ -2945,7 +3214,8 @@
         "en": "Tunnel",
         "tr": "Tünel",
         "ja": "トンネル",
-        "zh": "隧道"
+        "zh": "隧道",
+        "vi": "Đường hầm"
       }
     },
     {
@@ -2956,7 +3226,8 @@
         "en": "Extended",
         "tr": "Uzatılmış",
         "ja": "拡張版",
-        "zh": "擴充"
+        "zh": "擴充",
+        "vi": "Mở rộng"
       }
     },
     {
@@ -2967,7 +3238,8 @@
         "en": "Look",
         "tr": "Bakış",
         "ja": "向き",
-        "zh": "朝向"
+        "zh": "朝向",
+        "vi": "Hướng nhìn"
       }
     },
     {
@@ -2978,7 +3250,8 @@
         "en": "Smooth",
         "tr": "Pürüzsüz",
         "ja": "スムーズ",
-        "zh": "平滑"
+        "zh": "平滑",
+        "vi": "Mượt"
       }
     },
     {
@@ -2989,7 +3262,8 @@
         "en": "Cutting",
         "tr": "Keskin",
         "ja": "カッティング",
-        "zh": "锐利"
+        "zh": "锐利",
+        "vi": "Giật cục"
       }
     },
     {
@@ -3000,7 +3274,8 @@
         "en": "Look Direction Y",
         "tr": "Bakış Yönü Y",
         "ja": "Y方向の向き",
-        "zh": "Y轴朝向"
+        "zh": "Y轴朝向",
+        "vi": "Hướng nhìn trục Y"
       }
     },
     {
@@ -3011,7 +3286,8 @@
         "en": "Tool Slot",
         "tr": "Alet Slotu",
         "ja": "ツールスロット",
-        "zh": "工具槽位"
+        "zh": "工具槽位",
+        "vi": "Slot công cụ"
       }
     },
     {
@@ -3022,7 +3298,8 @@
         "en": "Quick",
         "tr": "Hızlı",
         "ja": "クイック",
-        "zh": "快速"
+        "zh": "快速",
+        "vi": "Nhanh"
       }
     },
     {
@@ -3033,7 +3310,8 @@
         "en": "Ultra",
         "tr": "Ultra",
         "ja": "ウルトラ",
-        "zh": "极限"
+        "zh": "极限",
+        "vi": "Ultra"
       }
     },
     {
@@ -3044,7 +3322,8 @@
         "en": "a modern, functional, and optimized client that allows running bots on Minecraft servers and managing them in real time.",
         "tr": "Minecraft sunucularında bot çalıştırmanıza ve gerçek zamanlı olarak yönetmenize olanak tanıyan modern, işlevsel ve optimize edilmiş bir istemci.",
         "ja": "Minecraftサーバーでボットを実行し、リアルタイムで管理できる、現代的で機能的かつ最適化されたクライアント。",
-        "zh": "现代、功能丰富且经过优化的客户端，允许您在Minecraft服务器上运行机器人并实时管理它们。"
+        "zh": "现代、功能丰富且经过优化的客户端，允许您在Minecraft服务器上运行机器人并实时管理它们。",
+        "vi": "client hiện đại, đa tính năng và được tối ưu, cho phép chạy bot trên server Minecraft và điều khiển theo thời gian thực."
       }
     },
     {
@@ -3055,7 +3334,8 @@
         "en": "Why choose us?",
         "tr": "Neden bizi seçmelisiniz?",
         "ja": "なぜ私たちを選ぶべきなのか？",
-        "zh": "为什么选择我们？"
+        "zh": "为什么选择我们？",
+        "vi": "Vì sao chọn chúng tôi?"
       }
     },
     {
@@ -3066,7 +3346,8 @@
         "en": "Optimization",
         "tr": "Optimizasyon",
         "ja": "最適化",
-        "zh": "优化"
+        "zh": "优化",
+        "vi": "Tối ưu"
       }
     },
     {
@@ -3077,7 +3358,8 @@
         "en": "Flexibility",
         "tr": "Esneklik",
         "ja": "柔軟性",
-        "zh": "灵活性"
+        "zh": "灵活性",
+        "vi": "Linh hoạt"
       }
     },
     {
@@ -3088,7 +3370,8 @@
         "en": "Speed",
         "tr": "Hız",
         "ja": "速度",
-        "zh": "速度"
+        "zh": "速度",
+        "vi": "Tốc độ"
       }
     },
     {
@@ -3099,7 +3382,8 @@
         "en": "Total downloads",
         "tr": "Toplam indirme",
         "ja": "総ダウンロード数",
-        "zh": "总下载量"
+        "zh": "总下载量",
+        "vi": "Tổng lượt tải"
       }
     },
     {
@@ -3110,7 +3394,8 @@
         "en": "Total releases",
         "tr": "Toplam sürüm",
         "ja": "総リリース数",
-        "zh": "总发布数"
+        "zh": "总发布数",
+        "vi": "Tổng bản phát hành"
       }
     },
     {
@@ -3121,7 +3406,8 @@
         "en": "Stars count",
         "tr": "Yıldız sayısı",
         "ja": "星の数",
-        "zh": "星級"
+        "zh": "星級",
+        "vi": "Số sao"
       }
     },
     {
@@ -3132,7 +3418,8 @@
         "en": "Forks count",
         "tr": "Çatal sayısı",
         "ja": "フォークの数",
-        "zh": "分叉數量"
+        "zh": "分叉數量",
+        "vi": "Số fork"
       }
     },
     {
@@ -3143,7 +3430,8 @@
         "en": "Update available",
         "tr": "Güncelleme mevcut",
         "ja": "アップデートが利用可能です",
-        "zh": "有更新版本可用"
+        "zh": "有更新版本可用",
+        "vi": "Có bản cập nhật"
       }
     },
     {
@@ -3154,7 +3442,8 @@
         "en": "Version",
         "tr": "Sürüm",
         "ja": "バージョン",
-        "zh": "版本"
+        "zh": "版本",
+        "vi": "Phiên bản"
       }
     },
     {
@@ -3165,7 +3454,8 @@
         "en": "Published",
         "tr": "Yayınlandı",
         "ja": "公開済み",
-        "zh": "已發布"
+        "zh": "已發布",
+        "vi": "Đã phát hành"
       }
     },
     {
@@ -3176,7 +3466,8 @@
         "en": "Tag",
         "tr": "Etiket",
         "ja": "タグ",
-        "zh": "標籤"
+        "zh": "標籤",
+        "vi": "Nhãn"
       }
     },
     {
@@ -3187,7 +3478,8 @@
         "en": "Download new version",
         "tr": "Yeni sürümü indirin",
         "ja": "新しいバージョンをダウンロード",
-        "zh": "下載新版本"
+        "zh": "下載新版本",
+        "vi": "Tải bản mới"
       }
     },
     {
@@ -3198,18 +3490,20 @@
         "en": "WARNING: We don't force you to update this client immediately; we're simply offering a more optimized and versatile version! Your choice of the most convenient version is completely unlimited.",
         "tr": "YASAL UYARI: Bu istemciyi hemen güncellemenizi zorunlu tutmuyoruz; sadece daha optimize edilmiş ve çok yönlü bir sürüm sunuyoruz! En uygun sürümü seçme özgürlüğünüz tamamen sınırsızdır.",
         "ja": "免責事項：このクライアントをすぐにアップデートする必要はありません。より最適化され、多機能なバージョンを提供しているだけです。最も便利なバージョンを選択する権利は完全に無制限です。",
-        "zh": "免責聲明：我們不會強制您立即更新此客戶端；我們只是提供一個更優化、更全面的版本！您可以完全自由地選擇最方便的版本。"
+        "zh": "免責聲明：我們不會強制您立即更新此客戶端；我們只是提供一個更優化、更全面的版本！您可以完全自由地選擇最方便的版本。",
+        "vi": "LƯU Ý: Chúng tôi không ép bạn phải cập nhật client này, chỉ cung cấp bản tối ưu và phổ quát hơn! Bạn hoàn toàn tự do chọn bản dùng thoải mái."
       }
     },
     {
       "versions": "1.2.0-rc1:1.2.0",
       "tag": "cidr",
       "lang": {
-      "ru": "Диапазон (CIDR)",
-      "en": "CIDR range",
-      "tr": "CIDR aralığı",
-      "ja": "CIDR範囲",
-      "zh": "CIDR 范围"
+        "ru": "Диапазон (CIDR)",
+        "en": "CIDR range",
+        "tr": "CIDR aralığı",
+        "ja": "CIDR範囲",
+        "zh": "CIDR 范围",
+        "vi": "Dải IP (CIDR)"
       }
     },
     {
@@ -3220,7 +3514,8 @@
         "en": "Task count",
         "tr": "Görev sayısı",
         "ja": "タスク数",
-        "zh": "任务数量"
+        "zh": "任务数量",
+        "vi": "Số nhiệm vụ"
       }
     },
     {
@@ -3231,7 +3526,8 @@
         "en": "Target port",
         "tr": "Hedef bağlantı noktası",
         "ja": "ターゲットポート",
-        "zh": "目标端口"
+        "zh": "目标端口",
+        "vi": "Cổng đích"
       }
     },
     {
@@ -3242,7 +3538,8 @@
         "en": "Timeout (ms)",
         "tr": "Zaman aşımı (ms)",
         "ja": "タイムアウト (ms)",
-        "zh": "超时时间（毫秒）"
+        "zh": "超时时间（毫秒）",
+        "vi": "Thời gian chờ (ms)"
       }
     },
     {
@@ -3253,7 +3550,8 @@
         "en": "Scan",
         "tr": "Tara",
         "ja": "スキャン",
-        "zh": "扫描"
+        "zh": "扫描",
+        "vi": "Quét"
       }
     },
     {
@@ -3264,7 +3562,8 @@
         "en": "Status",
         "tr": "Durum",
         "ja": "ステータス",
-        "zh": "状态"
+        "zh": "状态",
+        "vi": "Trạng thái"
       }
     },
     {
@@ -3275,18 +3574,20 @@
         "en": "Hosts scanned",
         "tr": "Taranan ana bilgisayarlar",
         "ja": "スキャンしたホスト数",
-        "zh": "已扫描的主机数"
+        "zh": "已扫描的主机数",
+        "vi": "Số host đã quét"
       }
     },
     {
-    "versions": "1.2.0-rc1:1.2.0",
+      "versions": "1.2.0-rc1:1.2.0",
       "tag": "servers-found",
       "lang": {
         "ru": "Найдено серверов",
         "en": "Servers found",
         "tr": "Bulunan sunucular",
         "ja": "見つかったサーバー数",
-        "zh": "找到的服务器数"
+        "zh": "找到的服务器数",
+        "vi": "Số server tìm thấy"
       }
     },
     {
@@ -3297,7 +3598,8 @@
         "en": "Password",
         "tr": "Parola",
         "ja": "パスワード",
-        "zh": "密码"
+        "zh": "密码",
+        "vi": "Mật khẩu"
       }
     },
     {
@@ -3308,7 +3610,8 @@
         "en": "Connect",
         "tr": "Bağlan",
         "ja": "接続",
-        "zh": "连接"
+        "zh": "连接",
+        "vi": "Kết nối"
       }
     },
     {
@@ -3319,7 +3622,8 @@
         "en": "Reset",
         "tr": "Sıfırla",
         "ja": "リセット",
-        "zh": "重置"
+        "zh": "重置",
+        "vi": "Đặt lại"
       }
     },
     {
@@ -3330,7 +3634,8 @@
         "en": "Current address",
         "tr": "Geçerli adres",
         "ja": "現在のアドレス",
-        "zh": "当前地址"
+        "zh": "当前地址",
+        "vi": "Địa chỉ hiện tại"
       }
     },
     {
@@ -3341,7 +3646,8 @@
         "en": "Current password",
         "tr": "Geçerli parola",
         "ja": "現在のパスワード",
-        "zh": "当前密码"
+        "zh": "当前密码",
+        "vi": "Mật khẩu hiện tại"
       }
     },
     {
@@ -3352,7 +3658,8 @@
         "en": "There are no bot objects",
         "tr": "Bot nesnesi yok",
         "ja": "ボットオブジェクトはありません",
-        "zh": "沒有機器人"
+        "zh": "沒有機器人",
+        "vi": "Chưa có bot nào"
       }
     },
     {
@@ -3363,7 +3670,8 @@
         "en": "Size",
         "tr": "Boyut",
         "ja": "サイズ",
-        "zh": "尺寸"
+        "zh": "尺寸",
+        "vi": "Kích cỡ"
       }
     },
     {
@@ -3374,7 +3682,8 @@
         "en": "Fixed",
         "tr": "Sabit",
         "ja": "修理済み",
-        "zh": "固定的"
+        "zh": "固定的",
+        "vi": "Cố định"
       }
     },
     {
@@ -3385,7 +3694,8 @@
         "en": "Dynamic",
         "tr": "Dinamik",
         "ja": "動的",
-        "zh": "動態的"
+        "zh": "動態的",
+        "vi": "Động"
       }
     },
     {
@@ -3396,7 +3706,8 @@
         "en": "Maximum pause",
         "tr": "Maksimum duraklama",
         "ja": "最大一時停止",
-        "zh": "最大暫停"
+        "zh": "最大暫停",
+        "vi": "Tạm ngưng tối đa"
       }
     },
     {
@@ -3407,7 +3718,8 @@
         "en": "Support the project",
         "tr": "Projeyi destekleyin",
         "ja": "プロジェクトを支援する",
-        "zh": "支持該項目"
+        "zh": "支持該項目",
+        "vi": "Ủng hộ dự án"
       }
     },
     {
@@ -3418,7 +3730,8 @@
         "en": "salarixi is a non-profit, open-source project. Donating can improve my motivation and, consequently, the quality of the project!",
         "tr": "salarixi, kar amacı gütmeyen, açık kaynaklı bir projedir. Bağış yapmak motivasyonumu ve dolayısıyla projenin kalitesini artırabilir!",
         "ja": "salarixiは非営利のオープンソースプロジェクトです。ご寄付いただくことで、私のモチベーションが高まり、結果としてプロジェクトの品質向上につながります！",
-        "zh": "salarixi 是一個非營利的開源專案。您的捐贈可以提升我的工作動力，從而提升專案品質！"
+        "zh": "salarixi 是一個非營利的開源專案。您的捐贈可以提升我的工作動力，從而提升專案品質！",
+        "vi": "salarixi là dự án mã nguồn mở phi lợi nhuận. Quản góp có thể tăng động lực, và nhờ vậy chất lượng dự án cũng lên!"
       }
     },
     {
@@ -3429,10 +3742,10 @@
         "en": "Support",
         "tr": "Destek",
         "ja": "サポート",
-        "zh": "支援"
+        "zh": "支援",
+        "vi": "Quyên góp"
       }
     },
-
     {
       "versions": "1.2.0",
       "tag": "ignore-blocks",
@@ -3441,7 +3754,8 @@
         "en": "Ignore blocks",
         "tr": "Blokları görmezden gel",
         "ja": "ブロックを無視する",
-        "zh": "忽略塊"
+        "zh": "忽略塊",
+        "vi": "Bỏ qua khối chắn"
       }
     },
     {
@@ -3452,7 +3766,8 @@
         "en": "Only visible",
         "tr": "Sadece görünen",
         "ja": "目に見えるものだけ",
-        "zh": "只有可見的"
+        "zh": "只有可見的",
+        "vi": "Chỉ mục tiêu nhìn thấy"
       }
     },
     {
@@ -3463,7 +3778,8 @@
         "en": "Enable monitoring",
         "tr": "İzlemeyi etkinleştirin",
         "ja": "監視を有効にする",
-        "zh": "啟用監控"
+        "zh": "啟用監控",
+        "vi": "Bật giám sát"
       }
     },
     {
@@ -3474,7 +3790,8 @@
         "en": "Chat monitoring",
         "tr": "Sohbet izleme",
         "ja": "チャット監視",
-        "zh": "聊天監控"
+        "zh": "聊天監控",
+        "vi": "Giám sát chat"
       }
     },
     {
@@ -3485,7 +3802,8 @@
         "en": "Inventory monitoring",
         "tr": "Envanter izleme",
         "ja": "在庫監視",
-        "zh": "庫存監控"
+        "zh": "庫存監控",
+        "vi": "Giám sát túi đồ"
       }
     },
     {
@@ -3496,7 +3814,8 @@
         "en": "Inventory update frequency",
         "tr": "Envanter güncelleme sıklığı",
         "ja": "在庫更新頻度",
-        "zh": "庫存更新頻率"
+        "zh": "庫存更新頻率",
+        "vi": "Tần suất cập nhật túi đồ"
       }
     },
     {
@@ -3507,7 +3826,8 @@
         "en": "Item cache threshold",
         "tr": "Öğe önbellekleme eşiği",
         "ja": "アイテムキャッシュのしきい値",
-        "zh": "項目緩存閾值"
+        "zh": "項目緩存閾值",
+        "vi": "Ngưỡng cache vật phẩm"
       }
     },
     {
@@ -3518,7 +3838,8 @@
         "en": "Tool slot",
         "tr": "Alet yuvası",
         "ja": "ツールスロット",
-        "zh": "工具槽"
+        "zh": "工具槽",
+        "vi": "Slot công cụ"
       }
     },
     {
@@ -3529,7 +3850,8 @@
         "en": "Target plants",
         "tr": "Hedef bitkiler",
         "ja": "対象植物",
-        "zh": "目標植物"
+        "zh": "目標植物",
+        "vi": "Cây trồng mục tiêu"
       }
     },
     {
@@ -3540,7 +3862,8 @@
         "en": "Target surfaces",
         "tr": "Hedef yüzeyler",
         "ja": "対象物の表面",
-        "zh": "目標表面"
+        "zh": "目標表面",
+        "vi": "Bề mặt mục tiêu"
       }
     },
     {
@@ -3551,7 +3874,8 @@
         "en": "Auto tool",
         "tr": "Otomotiv aleti",
         "ja": "自動車工具",
-        "zh": "汽車工具"
+        "zh": "汽車工具",
+        "vi": "Tự chọn công cụ"
       }
     }
   ]

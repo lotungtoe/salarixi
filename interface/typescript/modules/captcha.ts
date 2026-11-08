@@ -132,8 +132,8 @@ class CaptchaModule {
       </div>
 
       <div class="buttons">
-        <button class="min" id="solve-captcha-${index}">Решить</button>
-        <button class="min" id="remove-captcha-${index}">Удалить</button>
+        <button class="min" id="solve-captcha-${index}">Giải</button>
+        <button class="min" id="remove-captcha-${index}">Xoá</button>
       </div>
     `;
 
@@ -158,7 +158,7 @@ class CaptchaModule {
 			wrapper.innerHTML = `
         <div class="panel with-header" style="margin-bottom: 20px;">
           <div class="left">
-            <div class="header">Капча бота ${username}</div>
+            <div class="header">Captcha của bot ${username}</div>
           </div>
 
           <div class="right">
@@ -178,7 +178,7 @@ class CaptchaModule {
 
         <div class="pretty-input-wrapper" style="margin-top: 20px;">
           <p class="signature">${username}</p>
-          <input type="text" id="captcha-code-${index}" placeholder="Введите и отправьте код с капчи, нажав «Enter»">
+          <input type="text" id="captcha-code-${index}" placeholder="Nhập mã captcha rồi nhấn 'Enter'">
         </div>
       `;
 

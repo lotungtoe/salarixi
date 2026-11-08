@@ -354,15 +354,15 @@ class MonitoringModule {
         </div>
 
         <div class="bottom">
-          <input type="text" class="bot-group" id="bot-group-${index}" placeholder="Группа">
+          <input type="text" class="bot-group" id="bot-group-${index}" placeholder="Nhóm">
         </div>
       </div>
 
       <div class="info">
-        <p class="line">Пинг: <span id="monitoring-ping-${index}">${profile.ping}</span>ms</p>
-        <p class="line">Здоровье: <span id="monitoring-health-${index}">${profile.health}</span> / 20</p>
-        <p class="line">Прокси: <span id="monitoring-proxy-${index}">${profile.proxy.ipAddress ?? "?"}</span></p>
-        <p class="line">Пароль: <span>${profile.password ?? "No password"}</span></p>
+        <p class="line">Ping: <span id="monitoring-ping-${index}">${profile.ping}</span>ms</p>
+        <p class="line">Mạng: <span id="monitoring-health-${index}">${profile.health}</span> / 20</p>
+        <p class="line">Proxy: <span id="monitoring-proxy-${index}">${profile.proxy.ipAddress ?? "?"}</span></p>
+        <p class="line">Mật khẩu: <span>${profile.password ?? "No password"}</span></p>
       </div>
 
       <div class="buttons">
@@ -429,11 +429,11 @@ class MonitoringModule {
         <div class="left">
           <div class="custom-select">
             <select id="select-chat-filter-${index}">
-              <option value="all">Все сообщения</option>
-              <option value="bans">Блокировки</option>
-              <option value="mentions">Упоминания</option>
-              <option value="warnings">Предупреждения</option>
-              <option value="links">Ссылки</option>
+              <option value="all">Tất cả tin nhắn</option>
+              <option value="bans">Lệnh cấm</option>
+              <option value="mentions">Lời nhắc</option>
+              <option value="warnings">Cảnh báo</option>
+              <option value="links">Liên kết</option>
             </select>
           </div>
 
@@ -471,7 +471,7 @@ class MonitoringModule {
 
       <div class="pretty-input-wrapper">
         <p class="signature">${username}</p>
-        <input type="text" id="chat-message-${index}" placeholder="Введи и отправь сообщение, нажав 'Enter'">
+        <input type="text" id="chat-message-${index}" placeholder="Nhập tin nhắn rồi nhấn 'Enter'">
       </div>
     `;
 
@@ -525,7 +525,7 @@ class MonitoringModule {
 		wrapper.innerHTML = `
       <div class="panel with-header">
         <div class="left">
-          <div class="header">Инвентарь бота ${username}</div>
+          <div class="header">Túi đồ của bot ${username}</div>
         </div>
 
         <div class="right">

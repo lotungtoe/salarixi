@@ -302,7 +302,7 @@ class AccountModule {
 		}
 
 		if (status !== 0) {
-			messages.message("Аккаунты", `Не удалось создать аккаунт "${username}"`);
+			messages.message("Tài khoản", `Không thể tạo tài khoản "${username}"`);
 		}
 	}
 
@@ -332,7 +332,7 @@ class AccountModule {
 		this.updateSelectedAccountCounter();
 		this.changeSelectorsState();
 
-		messages.message("Аккаунты", `Удалено ${removedCount} аккаунтов`);
+		messages.message("Tài khoản", `Đã xoá ${removedCount} tài khoản`);
 		logger.log(`Удалено ${removedCount} аккаунтов`, "system");
 	}
 
@@ -378,7 +378,7 @@ class AccountModule {
 
 			this.updateAccountCounter();
 
-			messages.message("Импорт аккаунтов", `Аккаунты успешно импортированы`);
+			messages.message("Nhập tài khoản", `Đã nhập tài khoản thành công`);
 		} catch (error) {
 			logger.log(`Ошибка импорта аккаунтов: ${error}`, "error");
 		}
@@ -422,7 +422,7 @@ class AccountModule {
 				return;
 			}
 
-			messages.message("Экспорт аккаунтов", `Аккаунты успешно экспортированы`);
+			messages.message("Xuất tài khoản", `Đã xuất tài khoản thành công`);
 		} catch (error) {
 			logger.log(`Ошибка экспорта аккаунтов: ${error}`, "error");
 		}
@@ -436,7 +436,7 @@ class AccountModule {
 		if (template === "") return;
 
 		if (count > 255 || count < 1) {
-			messages.message("Аккаунты", "Не удалось сгенерировать аккаунты");
+			messages.message("Tài khoản", "Không thể tạo tài khoản hàng loạt");
 			logger.log(`Не удалось сгенерировать аккаунты: number of generated accounts is out of range 1-255`, "warning");
 			return;
 		}
@@ -469,7 +469,7 @@ class AccountModule {
 
 		this.updateAccountCounter();
 
-		messages.message("Аккаунты", `Сгенерировано ${generated} аккаунтов`);
+		messages.message("Tài khoản", `Đã tạo ${generated} tài khoản`);
 		logger.log(`Сгенерировано ${generated} аккаунтов по шаблону "${template}"`, "system");
 	}
 
@@ -631,7 +631,7 @@ class AccountModule {
 
 		const coverPanelLeft = document.createElement("div");
 		coverPanelLeft.className = "left";
-		coverPanelLeft.innerHTML = `<div class="header">Редактирование аккаунта "${username}"</div>`;
+		coverPanelLeft.innerHTML = `<div class="header">Chỉnh sửa tài khoản "${username}"</div>`;
 
 		const coverPanelRight = document.createElement("div");
 		coverPanelRight.className = "right";
@@ -657,32 +657,32 @@ class AccountModule {
 
 		const options = [
 			{
-				name: "Первоначальная группа",
+				name: "Nhóm ban đầu",
 				tag: "initial-group",
 				placeholder: "my_group",
 			},
 			{
-				name: "Пароль",
+				name: "Mật khẩu",
 				tag: "password",
 				placeholder: "qwerty12345",
 			},
 			{
-				name: "Эл. почта",
+				name: "Email",
 				tag: "email",
 				placeholder: "qwerty@gmail.com",
 			},
 			{
-				name: "Прокси SOCKS5",
+				name: "Proxy SOCKS5",
 				tag: "proxy",
 				placeholder: "socks5://35.91.83.91:1111",
 			},
 			{
-				name: "Значение 'registered'",
+				name: "Giá trị 'registered'",
 				tag: "registered",
 				placeholder: "true | false",
 			},
 			{
-				name: "Значение 'logined'",
+				name: "Giá trị 'logined'",
 				tag: "logined",
 				placeholder: "true | false",
 			},

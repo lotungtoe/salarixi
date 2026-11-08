@@ -68,7 +68,7 @@ class ProxyModule {
 			const port = (document.getElementById("proxy-finder_select_port") as HTMLSelectElement).value;
 			const count = (document.getElementById("proxy-finder_select_count") as HTMLInputElement).value;
 
-			this.setStatus("Поиск прокси...");
+			this.setStatus("Đang tìm proxy...");
 
 			const bytes = await invoke<number[]>("collect_proxies", {
 				options: {
@@ -84,7 +84,7 @@ class ProxyModule {
 			const str = decoder.decode(uint8arr);
 
 			if (str === "") {
-				this.setStatus("Ошибка поиска", "#cc1d1dff");
+				this.setStatus("Lỗi tìm kiếm", "#cc1d1dff");
 				logger.log("Ошибка сборщика прокси: Could not find a proxies", "error");
 				return;
 			}
@@ -93,12 +93,12 @@ class ProxyModule {
 
 			this.proxyList!.value = str;
 			this.updateCounter(proxyCount.toString());
-			this.setStatus("Поиск окончен", "#0cd212ff");
+			this.setStatus("Tìm hoàn tất", "#0cd212ff");
 		} catch (error) {
-			this.setStatus("Ошибка поиска", "#cc1d1dff");
+			this.setStatus("Lỗi tìm kiếm", "#cc1d1dff");
 			logger.log(`Ошибка сборщика прокси: ${error}`, "error");
 		} finally {
-			setTimeout(() => this.setStatus("Поиск неактивен"), 2000);
+			setTimeout(() => this.setStatus("Không hoạt động"), 2000);
 		}
 	}
 

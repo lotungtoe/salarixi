@@ -3,7 +3,7 @@ import { logger } from "../utils/logger";
 
 import { CLIENT_VERSION } from "../version";
 import { isVersionNewer } from "../utils/semver";
-import { loadCacheOrNew, LcfResult, LnfResult, loadCache, saveCache, TimeType } from "../utils/cache";
+import TRANSLATION_FILE from "../../../salarixi.lang.json";
 
 /** Модуль переподчика */
 class TranslatorModule {
@@ -14,11 +14,7 @@ class TranslatorModule {
 
 			const langSelect = document.getElementById("interface_select_language") as HTMLSelectElement;
 
-			const onerr = (err: string) => logger.log(`Ошибка загрузки перевода: ${err}`, "error");
-			const result = await loadCacheOrNew<any>(this.lcf, this.lnf, this.scf, onerr);
-			if (!result.data) return;
-
-			const data = result.data;
+			const data: any = TRANSLATION_FILE;
 			const langs = data["languages"] ?? data["langs"] ?? data["translations"];
 
 			if (!langs) {
@@ -40,11 +36,12 @@ class TranslatorModule {
 
 			const selectedLang = localStorage.getItem("language");
 			if (selectedLang) langSelect.selectedIndex = parseInt(selectedLang);
+			else langSelect.value = "vi";
 
 			langSelect.addEventListener("change", async () => await this.translate(langSelect.value, langSelect.selectedIndex));
 			if (langSelect.value !== "ru") await this.translate(langSelect.value, langSelect.selectedIndex);
 
-			logger.log(`Перевод загружен (размер ${result.size})`, "system");
+			logger.log("Перевод загружен", "system");
 		} catch (error) {
 			logger.log(`Ошибка загрузки перевода: ${error}`, "error");
 		}
@@ -53,20 +50,8 @@ class TranslatorModule {
 	/** Метод перевода текста на другой язык */
 	private async translate(targetLanguage: string, selectedIndex: number): Promise<void> {
 		try {
-			// Здесь лучше принудительно читать файл с кэшем перевода, ведь если у пользователя не будет
-			// интернета и при этом кэш будет устаревшим, он не сможет воспользоваться переводом
-			const result = await invoke<CommandResult<number[]>>("s_read_file", { path: "cache/translation.json" });
-
-			if (result.error || !result.data) {
-				logger.log(`Ошибка перевода: ${result.error}`, "error");
-				return;
-			}
-
-			const decoder = new TextDecoder("utf-8");
-			const uint8arr = Uint8Array.from(result.data);
-			const decoded = decoder.decode(uint8arr);
-			const parsed = JSON.parse(decoded);
-			const translation = parsed["data"] ?? parsed["translation"] ?? parsed["list"] ?? parsed["map"] ?? parsed["array"];
+			const source: any = TRANSLATION_FILE;
+			const translation = source["data"] ?? source["translation"] ?? source["list"] ?? source["map"] ?? source["array"];
 
 			if (!translation) {
 				logger.log("Ошибка перевода: information is corrupted or missing", "error");
@@ -146,42 +131,8 @@ class TranslatorModule {
 			logger.log(`Ошибка перевода: ${error}`, "error");
 		}
 	}
-
-	/** Метод загрузки актуального перевода */
-	private async lnf(): Promise<LnfResult> {
-		try {
-			const translation = await invoke<any>("download_json", {
-				url: "https://codeberg.org/nullclyze/salarixi/raw/branch/main/salarixi.lang.json"
-			});
-
-			return { data: translation, error: translation ? null : "resource moved or unavailable" };
-		} catch (err) {
-			return { data: null, error: String(err) };
-		}
-	}
-
-	/** Метод загрузки кэшированного перевода */
-	public async lcf(): Promise<LcfResult> {
-		const result = await loadCache("translation", "translation.json", 3, TimeType.Day);
-		if (!result.data) return { data: null, incompatible: false, expired: false };
-
-		return {
-			data: JSON.parse(result.data),
-			incompatible: result.error === "incompatible",
-			expired: result.error === "expired",
-		};
-	}
-
-	/** Метод кэширования перевода */
-	private async scf(translation: any): Promise<void> {
-		const result = await saveCache(JSON.stringify(translation, null, 2), "translation.json");
-
-		if (!result.data && result.error) {
-			logger.log(`Ошибка кэширования перевода: ${result.error}`, "error");
-		}
-	}
 }
 
 const translatorModule = new TranslatorModule();
 
-export { translatorModule }
+export { translatorModule };

@@ -99,7 +99,7 @@ async function startBots(): Promise<void> {
 	try {
 		if (!initSuccess) {
 			logger.log("Не удалось запустить ботов: initialization failed, please restart the client", "warning");
-			messages.message("Система", "Упс... Кажется, что-то сломалось!");
+			messages.message("Hệ thống", "Ôi... Có vẻ có gì đó hỏng rồi!");
 			return;
 		}
 
@@ -602,7 +602,7 @@ async function listenSystemEvents(): Promise<void> {
 
 				processActivity = false;
 
-				messages.message("Система", "Остановка ботов завершена");
+				messages.message("Hệ thống", "Đã dừng toàn bộ bot");
 				logger.log("Остановка ботов завершена", "info");
 			} else {
 				switch (status) {

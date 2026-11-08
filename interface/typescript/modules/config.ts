@@ -42,7 +42,7 @@ class ConfigModule {
 	}
 
 	/** Метод запуска цикла сохранения пользовательского конфига */
-	private watch = (): number => setInterval(async () => await this.saveCurrentConfig(), 5000);
+	private watch = (): void => { setInterval(async () => await this.saveCurrentConfig(), 5000); };
 
 	/** Метод сбора текущего конфига */
 	private collectCurrentConfig(pub: boolean): string {
@@ -318,7 +318,7 @@ class ConfigModule {
 
 			await this.refreshConfigs();
 
-			messages.message("Конфиг", `Импортировано ${imported} конфигов`);
+			messages.message("Cấu hình", `Đã nhập ${imported} cấu hình`);
 		} catch (err) {
 			logger.log(`Не удалось импортировать указанный конфиг(и): ${err}`, "error");
 		}
@@ -346,13 +346,13 @@ class ConfigModule {
 
 			if (result.error) {
 				logger.log(`Ошибка экспорта текущего конфига в ${directory}: ${result.error}`, "error");
-				messages.message("Конфиг", `Ошибка экспорта конфига в ${directory}`);
+				messages.message("Cấu hình", `Lỗi xuất cấu hình vào ${directory}`);
 				return;
 			}
 
 			if (result.data) {
 				logger.log(`Публичный конфиг "${result.data}" успешно сохранён в директорию ${directory}`, "system");
-				messages.message("Конфиг", `Публичный конфиг успешно сохранён в файл ${result.data}`);
+				messages.message("Cấu hình", `Cấu hình công khai đã được lưu vào file ${result.data}`);
 			}
 		} catch (err) {
 			logger.log(`Ошибка экспорта публичного конфига: ${err}`, "error");

@@ -49,8 +49,8 @@ class RadarModule {
         <div class="sep"></div>
 
         <div class="info" style="min-width: 180px;">
-          <p>Никнейм: <span>${username.length <= 16 ? username : username.substring(0, 16) + "..."}</span></p>
-          <p>Статус: <span id="radar-target-status-${username}">Not found</span></p>
+          <p>Nickname: <span>${username.length <= 16 ? username : username.substring(0, 16) + "..."}</span></p>
+          <p>Trạng thái: <span id="radar-target-status-${username}">Not found</span></p>
           <p>UUID: <span id="radar-target-uuid-${username}">?</span></p>
         </div>
 
@@ -217,17 +217,17 @@ class RadarModule {
 					const z = (document.getElementById(`radar-target-z-${username}`) as HTMLElement).textContent;
 
 					const text = `
-Никнейм: ${username}
-Статус: ${status}
+Nickname: ${username}
+Trạng thái: ${status}
 UUID: ${uuid}
-Координата X: ${x}
-Координата Y: ${y}
-Координата Z: ${z}
+Tọa độ X: ${x}
+Tọa độ Y: ${y}
+Tọa độ Z: ${z}
           `.trim();
 
 					await navigator.clipboard.writeText(text);
 
-					messages.message("Радар", `Данные игрока ${username} успешно скопированы в буфер обмена`);
+					messages.message("Radar", `Đã sao chép dữ liệu người chơi ${username} vào clipboard`);
 				} catch (error) {
 					logger.log(`Ошибка копирования данных радара: ${error}`, "error");
 				}

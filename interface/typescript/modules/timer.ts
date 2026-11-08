@@ -27,13 +27,13 @@ class TimerModule {
 
 			switch (time) {
 				case "30:00":
-					messages.message("salarixi", `Ого, ты активен уже 30 минут! Не хочешь передохнуть?`);
+					messages.message("salarixi", `Ồ, bạn đã hoạt động 30 phút rồi! Nghỉ một chút nhé?`);
 					break;
 				case "01:00:00":
-					messages.message("salarixi", `Надо же, ты активен уже 1 час! Не хочешь передохнуть?`);
+					messages.message("salarixi", `Ồ, bạn đã hoạt động 1 tiếng rồi! Nghỉ một chút nhé?`);
 					break;
 				case "02:00:00":
-					messages.message("salarixi", `Ничего себе! Ты активен уже 2 часа, не хочешь передохнуть?`);
+					messages.message("salarixi", `Ghê vậy! Bạn đã hoạt động 2 tiếng rồi, nghỉ một chút nhé?`);
 					break;
 			}
 		}, 1000);

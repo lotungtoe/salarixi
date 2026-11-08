@@ -91,7 +91,7 @@ class SessionModule {
 
 		if (address === "") return;
 
-		messages.message("Сессия", `Установка сессии с ${address}...`);
+		messages.message("Phiên", `Đang thiết lập phiên với ${address}...`);
 		logger.log(`Установка сессии с ${address}...`, "system");
 
 		if (this.chatContent) this.chatContent.innerHTML = "";
@@ -103,12 +103,12 @@ class SessionModule {
 		});
 
 		if (result.error) {
-			messages.message("Сессия", "Ошибка установки сессии");
+			messages.message("Phiên", "Lỗi thiết lập phiên");
 			logger.log(`Ошибка установки сессии с ${address}: ${result.error}`, "error");
 			return;
 		}
 
-		messages.message("Сессия", "Сессия успешно установлена");
+		messages.message("Phiên", "Đã thiết lập phiên thành công");
 		logger.log(`Сессия с ${address} успешно установлена`, "system");
 
 		this.setInfo(address, password);

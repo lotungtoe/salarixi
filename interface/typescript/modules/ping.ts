@@ -46,10 +46,10 @@ class PingModule {
         <div class="text">
           <label>${result.description}</label>
           <div>
-            <p>Игроки: ${result.players_online} / ${result.players_max}</p>
-            <p>Версия сервера: ${result.server_version}</p>
-            <p>IP-адрес: ${result.ip_address}</p>
-            <p>Версия протокола: ${result.protocol_version}</p>
+            <p>Người chơi: ${result.players_online} / ${result.players_max}</p>
+            <p>Phiên bản server: ${result.server_version}</p>
+            <p>Địa chỉ IP: ${result.ip_address}</p>
+            <p>Phiên bản giao thức: ${result.protocol_version}</p>
           </div>
         </div>
 
@@ -75,7 +75,7 @@ class PingModule {
 				element.className = "element";
 
 				element.innerHTML = `
-          <p class="username">Никнейм</p>
+          <p class="username">Nickname</p>
           <div class="splitter"></div>
           <p class="uuid">UUID</p>
         `;
@@ -99,7 +99,7 @@ class PingModule {
 			} else {
 				const header = document.createElement("div");
 				header.className = "header";
-				header.innerText = "Не удалось получить список игроков";
+				header.innerText = "Không lấy được danh sách người chơi";
 				pingInfo.appendChild(header);
 			}
 

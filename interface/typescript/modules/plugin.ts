@@ -212,7 +212,7 @@ class PluginModule {
 		description.innerHTML = `
       <div class="panel with-header">
         <div class="left">
-          <div class="header">Описание плагина "${name}"</div>
+          <div class="header">Mô tả plugin "${name}"</div>
         </div>
 
         <div class="right">
@@ -227,7 +227,7 @@ class PluginModule {
       </div>
 
       <div class="plugin-description" id="${id}-description"></div>
-      <p class="plugin-latest-update">Последнее обновление плагина: <span id="${id}-latest-update">?</span></p>
+      <p class="plugin-latest-update">Cập nhật plugin gần nhất: <span id="${id}-latest-update">?</span></p>
     `;
 
 		document.getElementById("plugins-container")?.appendChild(description);
@@ -242,7 +242,7 @@ class PluginModule {
 		container.innerHTML = `
       <div class="panel with-header">
         <div class="left">
-          <div class="header">Настройки плагина "${name}"</div>
+          <div class="header">Cài đặt plugin "${name}"</div>
         </div>
 
         <div class="right">
