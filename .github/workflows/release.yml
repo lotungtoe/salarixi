@@ -24,6 +24,8 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
 
+      - run: curl -L --retry 5 -o wix314.zip "https://github.com/wixtoolset/wix3/releases/download/wix3141rtm/wix314-binaries.zip" && mkdir -p wix && powershell -Command "Expand-Archive -Path wix314.zip -DestinationPath wix"
+
       - run: npm ci
 
       - uses: tauri-apps/tauri-action@v0
@@ -32,6 +34,6 @@ jobs:
         with:
           tagName: v__VERSION__
           releaseName: "salarixi-vi v__VERSION__"
-          releaseBody: "salarixi 1.2.0 với giao diện tiếng Việt. Cài bằng NSIS installer hoặc chạy exe."
+          releaseBody: "salarixi 1.3.0 với giao diện tiếng Việt. Cài bằng NSIS installer hoặc chạy exe."
           releaseDraft: false
           prerelease: false
