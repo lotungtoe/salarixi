@@ -1,0 +1,5 @@
+[toolchain]
+# pinned: latest nightly breaks azalea-core with E0284 (FixedBitSet const inference)
+# https://github.com/azalea-rs/azalea — known-good toolchain for azalea 0.16
+channel = "nightly-2026-03-27"
+profile = "minimal"

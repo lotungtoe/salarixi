@@ -22,6 +22,8 @@ jobs:
       # kernel uses #![feature(ip_as_octets)] -> nightly required
       - uses: dtolnay/rust-toolchain@nightly
 
+      - uses: Swatinem/rust-cache@v2
+
       - run: npm ci
 
       - uses: tauri-apps/tauri-action@v0
