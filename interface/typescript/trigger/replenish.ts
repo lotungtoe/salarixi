@@ -402,16 +402,6 @@ export function replenishTriggerRegistry(): void {
 	triggerRegistry.register("journal_chbx_show-system-logs", "checkbox", (current: HTMLInputElement) => logger.setVisibility("system", current.checked));
 	triggerRegistry.register("journal_chbx_show-extended-logs", "checkbox", (current: HTMLInputElement) => logger.setVisibility("extended", current.checked));
 
-	triggerRegistry.register("proxy-finder_select_algorithm", "select", (current: HTMLSelectElement) => {
-		const selectProxyFinderCountry = document.getElementById("proxy-finder_select_country") as HTMLSelectElement;
-
-		if (current.value === "trusted") {
-			selectProxyFinderCountry.disabled = false;
-		} else {
-			selectProxyFinderCountry.disabled = true;
-		}
-	});
-
 	triggerRegistry.register("interface_select_particles", "select", (current: HTMLSelectElement) => {
 		try {
 			if (current.value === "enable") {

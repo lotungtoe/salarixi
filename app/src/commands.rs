@@ -18,11 +18,6 @@ pub async fn setup_default_session() -> CommandResult<(String, String)> {
 }
 
 #[tauri::command]
-pub async fn change_session(address: String, password: Option<String>) -> CommandResult<()> {
-  SESSION.connect_to_remote_server(address, password, true).await
-}
-
-#[tauri::command]
 pub async fn send_command(data: Vec<u8>) -> CommandResult<()> {
   SESSION.send_command(data).await
 }

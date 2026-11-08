@@ -1,6 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
 import { logger } from "../utils/logger";
-import { messages } from "../utils/message";
 import { listen } from "@tauri-apps/api/event";
 import { Buffer } from "../utils/buffer";
 
@@ -21,7 +20,6 @@ class SessionModule {
 
 		await this.setupDefaultSession();
 
-		document.getElementById("change-session")?.addEventListener("click", async () => await this.changeSession());
 		document.getElementById("setup-default-session")?.addEventListener("click", async () => await this.setupDefaultSession());
 
 		this.chatContent = document.getElementById("session-chat-content") as HTMLDivElement;
@@ -80,38 +78,6 @@ class SessionModule {
 		logger.log(`Локальная сессия с ${result.data[0]} успешно установлена`, "system");
 
 		this.setInfo(result.data[0], result.data[1]);
-
-		await this.synchronize();
-	}
-
-	/** Метод изменения сессии */
-	private async changeSession(): Promise<void> {
-		const address = (document.getElementById("session-address") as HTMLInputElement).value;
-		const password = (document.getElementById("session-password") as HTMLInputElement).value;
-
-		if (address === "") return;
-
-		messages.message("Phiên", `Đang thiết lập phiên với ${address}...`);
-		logger.log(`Установка сессии с ${address}...`, "system");
-
-		if (this.chatContent) this.chatContent.innerHTML = "";
-		this.setInfo("?", "");
-
-		const result = await invoke<CommandResult<null>>("change_session", {
-			address: address,
-			password: password,
-		});
-
-		if (result.error) {
-			messages.message("Phiên", "Lỗi thiết lập phiên");
-			logger.log(`Ошибка установки сессии с ${address}: ${result.error}`, "error");
-			return;
-		}
-
-		messages.message("Phiên", "Đã thiết lập phiên thành công");
-		logger.log(`Сессия с ${address} успешно установлена`, "system");
-
-		this.setInfo(address, password);
 
 		await this.synchronize();
 	}

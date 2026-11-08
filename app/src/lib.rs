@@ -9,10 +9,8 @@ mod session;
 use commands::*;
 use modules::cache::{extract_cache_meta, load_cache, save_cache};
 use modules::config::{archive_config, export_config, initialize_configs_dir, load_configs};
-use modules::discord_rpc::set_discord_rpc;
 use modules::ping::get_server_info;
 use modules::plugins::initialize_plugins_dir;
-use modules::proxy::{check_proxies, collect_proxies};
 use modules::scanner::{start_network_scanning, stop_network_scanning};
 use modules::storage::{s_open_directory, s_read_file, s_remove_file, s_save_file};
 
@@ -34,7 +32,6 @@ pub fn run() {
     })
     .invoke_handler(tauri::generate_handler![
       setup_default_session,
-      change_session,
       send_command,
       exit,
       is_dev_mode,
@@ -47,9 +44,6 @@ pub fn run() {
       extract_item_icon,
       read_file,
       write_file,
-      set_discord_rpc,
-      collect_proxies,
-      check_proxies,
       extract_cache_meta,
       save_cache,
       load_cache,

@@ -130,13 +130,6 @@
               <select id="interface_select_language" style="width: 150px;" keep></select>
             </div>
 
-            <div class="custom-select between">
-              <label>Discord RPC:</label>
-              <select id="interface_select_discord-rpc" style="width: 150px;" keep trigger>
-                <option value="enable" tt="enable">Включить</option>
-                <option value="disable" tt="disable" selected>Выключить</option>
-              </select>
-            </div>
           </div>
         </div>
       </div>
@@ -264,35 +257,6 @@
       <span class="text" tt="plugins">Плагины</span>
     </button>
 
-    <button class="pretty-btn" id="proxy" path="proxy-container">
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-world-cog">
-        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-        <path d="M21 12a9 9 0 1 0 -8.979 9" />
-        <path d="M3.6 9h16.8" />
-        <path d="M3.6 15h8.9" />
-        <path d="M11.5 3a17 17 0 0 0 0 18" />
-        <path d="M12.5 3a16.992 16.992 0 0 1 2.522 10.376" />
-        <path d="M17.001 19a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
-        <path d="M19.001 15.5v1.5" />
-        <path d="M19.001 21v1.5" />
-        <path d="M22.032 17.25l-1.299 .75" />
-        <path d="M17.27 20l-1.3 .75" />
-        <path d="M15.97 17.25l1.3 .75" />
-        <path d="M20.733 20l1.3 .75" />
-      </svg>
-      <span class="text" tt="proxy">Прокси</span>
-    </button>
-
-    <button class="pretty-btn" id="webhook" path="webhook-container">
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-webhook">
-        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-        <path d="M4.876 13.61a4 4 0 1 0 6.124 3.39h6" />
-        <path d="M15.066 20.502a4 4 0 1 0 1.934 -7.502c-.706 0 -1.424 .179 -2 .5l-3 -5.5" />
-        <path d="M16 8a4 4 0 1 0 -8 0c0 1.506 .77 2.818 2 3.5l-3 5.5" />
-      </svg>
-      <span class="text" tt="webhook">Вебхук</span>
-    </button>
-
     <div class="splitter"></div>
 
     <button class="pretty-btn" id="control" path="control-container">
@@ -342,22 +306,6 @@
     </button>
 
     <div class="splitter"></div>
-
-    <button class="pretty-btn" id="anti-captcha" path="anti-captcha-container">
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-bug">
-        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-        <path d="M9 9v-1a3 3 0 0 1 6 0v1" />
-        <path d="M8 9h8a6 6 0 0 1 1 3v3a5 5 0 0 1 -10 0v-3a6 6 0 0 1 1 -3" />
-        <path d="M3 13l4 0" />
-        <path d="M17 13l4 0" />
-        <path d="M12 20l0 -6" />
-        <path d="M4 19l3.35 -2" />
-        <path d="M20 19l-3.35 -2" />
-        <path d="M4 7l3.75 2.4" />
-        <path d="M20 7l-3.75 2.4" />
-      </svg>
-      <span class="text" tt="anti-captcha">Анти-Капча</span>
-    </button>
 
     <button class="pretty-btn" id="scanner" path="scanner-container">
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-world-search">
@@ -968,247 +916,6 @@
 
   <div class="main-wrapper" id="plugins-container" style="display: none;" global="true">
     <div class="plugin-list" id="plugin-list"></div>
-  </div>
-
-  <div class="main-wrapper centered" id="proxy-container" style="display: none;" global="true">
-    <div class="between-wrapper">
-      <div class="left">
-        <div class="pretty-textarea" aria-labelledby="ta-label">
-          <div class="frame">
-            <label id="ta-label" class="label" tt="proxy-list">Список прокси</label>
-            <textarea id="proxy-list" placeholder="Nhập danh sách proxy..." keep key="proxy_list" private launch-option></textarea>
-          </div>
-        </div>
-      </div>
-
-      <div class="right">
-        <div class="btn-group-column">
-          <button id="clear-proxy-list" style="width: 190px;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-trash">
-              <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-              <path d="M4 7l16 0" />
-              <path d="M10 11l0 6" />
-              <path d="M14 11l0 6" />
-              <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" />
-              <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" />
-            </svg>
-            <span tt="clear-list">Очистить список</span>
-          </button>
-
-          <button id="check-proxies" style="width: 190px;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-brand-speedtest">
-              <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-              <path d="M5.636 19.364a9 9 0 1 1 12.728 0" />
-              <path d="M16 9l-4 4" />
-            </svg>
-            <span tt="check-proxies">Проверить прокси</span>
-          </button>
-        </div>
-        
-        <div class="sep"></div>
-
-        <div class="proxy-finder">
-          <div class="column-wrap" style="gap: 6px;">
-            <div class="custom-select between">
-              <label tt="algorithm:">Алгоритм:</label>
-              <select id="proxy-finder_select_algorithm" keep trigger>
-                <option value="trusted" selected>Trusted</option>
-                <option value="untrusted">Untrusted</option>
-                <option value="mixed">Mixed</option>
-              </select>
-            </div>
-
-            <div class="custom-select between">
-              <label tt="country:">Страна:</label>
-              <select id="proxy-finder_select_country" keep>
-                <option value="any" tt="country-any">Любая</option>
-                <option value="ru" tt="country-ru">Россия</option>
-                <option value="us" tt="country-us">США</option>
-                <option value="cn" tt="country-cn">Китай</option>
-                <option value="fr" tt="country-fr">Франция</option>
-                <option value="de" tt="country-de">Германия</option>
-                <option value="jp" tt="country-jp">Япония</option>
-                <option value="br" tt="country-br">Бразилия</option>
-                <option value="ua" tt="country-ua">Украина</option>
-                <option value="nl" tt="country-nl">Нидерланды</option>
-                <option value="ca" tt="country-ca">Канада</option>
-                <option value="id" tt="country-id">Индонезия</option>
-                <option value="th" tt="country-th">Таиланд</option>
-              </select>
-            </div>
-
-            <div class="custom-select between">
-              <label tt="port:">Порт:</label>
-              <select id="proxy-finder_select_port" keep>
-                <option value="any" tt="port-any">Любой</option>
-                <option value="4145">4145</option>
-                <option value="1080">1080</option>
-                <option value="5566">5566</option>
-                <option value="9090">9090</option>
-                <option value="7302">7302</option>
-                <option value="9064">9064</option>
-                <option value="5555">5555</option>
-              </select>
-            </div>
-
-            <div class="custom-select between">
-              <label tt="count:">Кол-во:</label>
-              <select id="proxy-finder_select_count" keep>
-                <option value="20">20</option>
-                <option value="50">50</option>
-                <option value="100">100</option>
-                <option value="200">200</option>
-                <option value="500">500</option>
-                <option value="1500">1500</option>
-                <option value="3000">3000</option>
-                <option value="20000">20000</option>
-                <option value="max" tt="count-max" selected>Максимум</option>
-              </select>
-            </div>
-          </div>
-
-          <button class="green" id="find-proxies" style="width: 170px; margin-top: 20px;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-world-search">
-              <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-              <path d="M21 12a9 9 0 1 0 -9 9" />
-              <path d="M3.6 9h16.8" />
-              <path d="M3.6 15h7.9" />
-              <path d="M11.5 3a17 17 0 0 0 0 18" />
-              <path d="M12.5 3a16.984 16.984 0 0 1 2.574 8.62" />
-              <path d="M15 18a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" />
-              <path d="M20.2 20.2l1.8 1.8" />
-            </svg>
-            <span tt="find-proxies">Найти прокси</span>
-          </button>
-
-          <p class="status" id="proxy-finder-status">Không hoạt động</p>
-        </div>
-
-        <div class="sep"></div>
-
-        <div class="meta">
-          <p class="proxy-counter" style="margin-top: 10px;"><span tt="proxy-counter:">Кол-во прокси:</span> <span id="proxy-counter">0</span></p>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="main-wrapper centered" id="anti-captcha-container" style="display: none;" global="true">
-    <div class="anti-captcha-wrapper" id="anti-captcha-settings">
-      <div class="column-wrap" style="gap: 6px; width: max-content;">
-        <div class="custom-select between">
-          <label tt="captcha-type:">Тип капчи:</label>
-          <select id="captcha-bypass_select_captcha-type" section="captcha_bypass" key="captcha_type" keep trigger launch-option>
-            <option value="web">Web</option>
-            <option value="map">Map</option>
-          </select>
-        </div>
-
-        <div id="anti-map-captha-selects-container" style="display: none; flex-direction: column; gap: 6px;">
-          <div class="custom-select between">
-            <label tt="captcha-solve-mode:">Режим:</label>
-            <select id="captcha-bypass_select_solve-mode" section="captcha_bypass" key="solve_mode" keep trigger launch-option>
-              <option value="manual" tt="manual-mode">Ручной</option>
-              <option value="auto" tt="auto-mode">Авто</option>
-            </select>
-          </div>
-
-          <div class="custom-select between" id="anti-map-captcha-select-api-service-container" style="display: none;">
-            <label tt="api-service:">API сервис:</label>
-            <select id="captcha-bypass_select_captcha-service" section="captcha_bypass" key="api_service" keep launch-option>
-              <option value="2captcha">2captcha.com</option>
-              <option value="truecaptcha">truecaptcha.org</option>
-            </select>
-          </div>
-          
-          <div class="custom-select between">
-            <label tt="captcha-subtype:">Подтип капчи:</label>
-            <select id="captcha-bypass_select_captcha-subtype" section="captcha_bypass" key="captcha_subtype" keep trigger launch-option>
-              <option value="inventory">Inventory</option>
-              <option value="frame">Frame</option>
-            </select>
-          </div>
-
-          <div class="custom-select between" id="anti-map-captcha-select-size-container" style="display: none;">
-            <label tt="size:">Размер:</label>
-            <select id="captcha-bypass_select_captcha-size" section="captcha_bypass" key="captcha_size" keep trigger launch-option>
-              <option value="fixed" tt="size-fixed">Фиксированный</option>
-              <option value="dynamic" tt="size-dynamic">Динамический</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      <div class="options" id="anti-web-captcha-options">
-        <div class="form-input">
-          <label for="captcha-bypass_web_regex" class="text" tt="captcha-regex">Регулярное выражение</label>
-          <input type="text" id="captcha-bypass_web_regex" placeholder="https?://[^\s]+" value="https?://[^\s]+" keep section="captcha_bypass" key="regex" default="https?://[^\s]+" launch-option>
-        </div>
-
-        <div class="form-input">
-          <label for="captcha-bypass_web_required-url-part" class="text" tt="captcha-url-part">Обязательная часть ссылки</label>
-          <input type="text" id="captcha-bypass_web_required-url-part" placeholder="anti-bot" keep section="captcha_bypass" key="required_url_part" launch-option>
-        </div>
-      </div>
-
-      <div class="options" id="anti-map-captcha-options" style="display: none;">
-        <div class="form-input" id="anti-map-captcha-number-of-columns-container" style="display: none;">
-          <label for="captcha-bypass_map_number-of-columns" class="text" tt="number-of-columns">Количество коллон</label>
-          <input type="number" id="captcha-bypass_map_number-of-columns" placeholder="4" value="4" keep section="captcha_bypass" key="number_of_columns" default="4" launch-option>
-        </div>
-
-        <div class="form-input" id="anti-map-captcha-number-of-rows-container" style="display: none;">
-          <label for="captcha-bypass_map_number-of-rows" class="text" tt="number-of-rows">Количество рядов</label>
-          <input type="number" id="captcha-bypass_map_number-of-rows" placeholder="3" value="3" keep section="captcha_bypass" key="number_of_rows" default="3" launch-option>
-        </div>
-
-        <div class="form-input" id="anti-map-captcha-max-pause" style="display: none;">
-          <label for="captcha-bypass_map_max-pause" class="text" tt="max-pause">Максимальная пауза</label>
-          <input type="number" id="captcha-bypass_map_max-pause" placeholder="1400" value="1400" keep section="captcha_bypass" key="max_pause" default="1400" launch-option>
-        </div>
-
-        <div class="form-input" id="anti-map-captcha-user-id-container" style="display: none;">
-          <label for="captcha-bypass_web_map-captcha-user-id" class="text" tt="username">Имя пользователя</label>
-          <input type="text" id="captcha-bypass_map-captcha-user-id" placeholder="john_doe" section="captcha_bypass" key="user_id" launch-option keep private>
-        </div>
-
-        <div class="form-input" id="anti-map-captcha-api-key-container" style="display: none;">
-          <label for="captcha-bypass_web_map-captcha-api-key" class="text" tt="api-key">API ключ</label>
-          <input type="text" id="captcha-bypass_map-captcha-api-key" placeholder="xxxx-xxxx-xxxxxxxx-xx" section="captcha_bypass" key="api_key" launch-option keep private>
-        </div>
-      </div>
-    </div>
-
-    <div class="anti-captcha-wrapper" id="anti-captcha-cards" style="display: none;"></div>
-
-    <div id="anti-captcha-wrappers"></div>
-  </div>
-
-  <div class="main-wrapper" id="webhook-container" style="display: none;" global="true">
-    <div class="form-input">
-      <label for="webhook_url" class="text" tt="webhook-link">Ссылка</label>
-      <input type="text" id="webhook_url" placeholder="https://discord.com/api/webhooks/..." keep section="webhook" key="url" private launch-option>
-    </div>
-
-    <div class="checkbox-group webhook-options">
-      <label class="checkbox-container">
-        <input type="checkbox" id="webhook_send-information" keep section="webhook" key="send_information" private launch-option>
-        <span class="checkmark"></span>
-        <span tt="webhook-information">Информация</span>
-      </label>
-
-      <label class="checkbox-container">
-        <input type="checkbox" id="webhook_send-data" keep section="webhook" private key="send_data" launch-option>
-        <span class="checkmark"></span>
-        <span tt="webhook-data">Данные</span>
-      </label>
-
-      <label class="checkbox-container">
-        <input type="checkbox" id="webhook_send-actions" keep section="webhook" private key="send_actions" launch-option>
-        <span class="checkmark"></span>
-        <span tt="webhook-actions">Действия</span>
-      </label>
-    </div>
   </div>
 
   <div class="main-wrapper" id="control-container" style="display: none;" global="true">
@@ -2129,7 +1836,6 @@
       </div>
     </div>
   </div>
-
   <div class="main-wrapper centered" id="monitoring-container" style="display: none;" global="true">
     <img src="interface/assets/steve.png" id="steve-img" draggable="false" style="display: none;">
 
@@ -2423,29 +2129,8 @@
   <div class="main-wrapper" id="session-container" style="display: none;" global="true">
     <div class="session-wrapper">
       <div class="panel">
-        <div class="inputs">
-          <div class="form-input">
-            <label class="text" tt="server-address">Адрес сервера</label>
-            <input type="text" id="session-address" placeholder="127.0.0.1:48736" keep private>
-          </div>
-
-          <div class="form-input">
-            <label class="text" tt="password">Пароль</label>
-            <input type="text" id="session-password" placeholder="qwe123" keep private>
-          </div>
-        </div>
 
         <div class="buttons">
-          <button id="change-session">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-broadcast">
-              <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-              <path d="M18.364 19.364a9 9 0 1 0 -12.728 0" />
-              <path d="M15.536 16.536a5 5 0 1 0 -7.072 0" />
-              <path d="M11 13a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
-            </svg>
-            <span tt="connect">Подключиться</span>
-          </button>
-
           <button class="min" id="setup-default-session">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-restore">
               <path stroke="none" d="M0 0h24v24H0z" fill="none" />

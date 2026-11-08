@@ -12,11 +12,9 @@ import { Buffer } from "./utils/buffer";
 
 import { configModule } from "./modules/config";
 import { accountModule } from "./modules/account";
-import { proxyModule } from "./modules/proxy";
 import { chartModule } from "./modules/chart";
 import { scriptModule } from "./modules/script";
 import { monitoringModule } from "./modules/monitoring";
-import { captchaModule } from "./modules/captcha";
 import { radarModule } from "./modules/radar";
 import { pingModule } from "./modules/ping";
 import { translatorModule } from "./modules/translator";
@@ -566,7 +564,6 @@ async function listenSystemEvents(): Promise<void> {
 			if (status !== 0x01) {
 				processActivity = false;
 				monitoringModule.disable();
-				captchaModule.disable();
 				radarModule.disable();
 
 				switch (status) {
@@ -596,7 +593,6 @@ async function listenSystemEvents(): Promise<void> {
 
 			if (status === 0x01) {
 				monitoringModule.disable();
-				captchaModule.disable();
 				radarModule.disable();
 				indexSystem.clear();
 
@@ -641,9 +637,7 @@ async function listenSystemEvents(): Promise<void> {
 			const statusId = buf.readU8();
 			const connectedBots = buf.readU8();
 			const totalBots = buf.readU8();
-			const antiCaptchaEnabled = buf.readU8() === 0x01;
-			const captchaType = buf.readU8();
-			const captchaSolveMode = buf.readU8();
+			buf.readU8(); buf.readU8(); buf.readU8(); // captcha fields (UI cut) — keep buffer alignment
 			const enableMonitoring = buf.readBoolean();
 			const chatMonitoring = buf.readBoolean();
 			const inventoryMonitoring = buf.readBoolean();
@@ -665,13 +659,10 @@ async function listenSystemEvents(): Promise<void> {
 					);
 				}
 
-				if (antiCaptchaEnabled) captchaModule.enable(captchaType, captchaSolveMode);
-
 				radarModule.enable();
 				indexSystem.synchronize(buf);
 			} else {
 				monitoringModule.disable();
-				captchaModule.disable();
 				radarModule.disable();
 				indexSystem.clear();
 			}
@@ -681,19 +672,6 @@ async function listenSystemEvents(): Promise<void> {
 			logger.log(`Ошибка обработки события "process:synchronize": ${error}`, "error");
 		}
 	});
-}
-
-/** Функция инициализации Discord RPC */
-async function initDiscordRpc(): Promise<void> {
-	const selectDiscordRpcMode = document.getElementById("interface_select_discord-rpc") as HTMLSelectElement;
-
-	selectDiscordRpcMode.addEventListener("change", async () => {
-		const result = await invoke<CommandResult<null>>("set_discord_rpc", { state: selectDiscordRpcMode.value === "enable" });
-		if (result.error) logger.log(`Ошибка изменения состояния Discord RPC: ${result.error}`, "error");
-	});
-
-	const result = await invoke<CommandResult<null>>("set_discord_rpc", { state: selectDiscordRpcMode.value === "enable" });
-	if (result.error) logger.log(`Ошибка изменения состояния Discord RPC: ${result.error}`, "error");
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -737,8 +715,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 		await accountModule.init();
 		await monitoringModule.init();
-		await captchaModule.init();
-		await proxyModule.init();
 		await scannerModule.init();
 
 		await sessionModule.init();
@@ -747,8 +723,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 		await pluginModule.init();
 		await docsModule.init();
 		await infoModule.init();
-
-		await initDiscordRpc();
 
 		updaterModule.init();
 	} catch (error) {

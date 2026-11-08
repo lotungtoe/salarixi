@@ -32,7 +32,6 @@ memory-stats.workspace = true
 open.workspace = true
 tauri-plugin-dialog.workspace = true
 dns-lookup.workspace = true
-discord-presence.workspace = true
 hashbrown.workspace = true
 systemstat.workspace = true
 bytes.workspace = true
