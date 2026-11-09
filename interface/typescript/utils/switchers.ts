@@ -7,9 +7,18 @@ import { controlWrappers, globalWrappers, latestControlWrapper } from "../main";
  * Если `latestControlWrapper` не инициализирован, показывается "control-chat-container".
  */
 const switchGlobalWrapper = (id: string): void => {
-	globalWrappers.forEach(w => w && w.id === id ? w.el.style.display = "flex" : w.el.style.display = "none");
-	controlWrappers.forEach(w => w.el.style.display = "none");
-	id === "control-container" ? latestControlWrapper ? latestControlWrapper.style.display = "flex" : (document.getElementById("control-chat-container") as HTMLElement).style.display = "flex" : null;
+	// Hide all global wrappers first
+	globalWrappers.forEach(w => w && w.el.style.display = "none");
+
+	// Show the requested container if it exists in the DOM
+	const targetEl = document.getElementById(id);
+	if (targetEl) {
+		targetEl.style.display = "flex";
+	} else if (id === "control-container") {
+		// Fallback: show latestControlWrapper or control-chat-container
+		if (latestControlWrapper && latestControlWrapper.parentElement) latestControlWrapper.style.display = "flex";
+		else (document.getElementById("control-chat-container") as HTMLElement).style.display = "flex";
+	}
 }
 
 /** Функция переключения видимости обёрток управления */

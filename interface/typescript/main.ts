@@ -361,26 +361,29 @@ function initGlobalElements(): void {
 	const clearInputValuesBtn = document.getElementById("clear") as HTMLButtonElement;
 
 	const dashboardBtns = document.querySelectorAll<HTMLButtonElement>(".dashboard button");
-	const controlBtns = document.querySelectorAll<HTMLButtonElement>(".control-dashboard .button-list button");
+	const dashboardBtnsArray = Array.from(dashboardBtns);
 
-	dashboardBtns.forEach(btn => {
+	dashboardBtnsArray.forEach(btn => {
 		if (btn.id === "main") btn.classList.add("selected");
 		btn.addEventListener("click", () => {
 			const path = btn.getAttribute("path");
 			if (!path) return;
 			switchGlobalWrapper(path);
-			dashboardBtns.forEach(b => b.classList.remove("selected"));
+			dashboardBtnsArray.forEach(b => b.classList.remove("selected"));
 			btn.classList.add("selected");
 		});
 	});
 
-	controlBtns.forEach(btn => {
+	const controlBtns = document.querySelectorAll<HTMLButtonElement>(".control-dashboard .button-list button");
+	const controlBtnsArray = Array.from(controlBtns);
+
+	controlBtnsArray.forEach(btn => {
 		if (btn.id === "control-chat") btn.classList.add("selected");
 		btn.addEventListener("click", () => {
 			const path = btn.getAttribute("path");
 			if (!path) return;
 			switchControlWrapper(path);
-			controlBtns.forEach(b => b.classList.remove("selected"));
+			controlBtnsArray.forEach(b => b.classList.remove("selected"));
 			btn.classList.add("selected");
 			latestControlWrapper = document.getElementById(path);
 		});
@@ -473,9 +476,13 @@ function initGlobalElements(): void {
 	});
 
 	clearInputValuesBtn.addEventListener("click", () => {
-		(document.getElementById("settings_option_address") as HTMLInputElement).value = "";
-		(document.getElementById("settings_option_bots-count") as HTMLInputElement).value = "";
-		(document.getElementById("settings_option_join-delay") as HTMLInputElement).value = "";
+		const addrInput = document.getElementById("settings_option_address") as HTMLInputElement;
+		const botsInput = document.getElementById("settings_option_bots-count") as HTMLInputElement;
+		const delayInput = document.getElementById("settings_option_join-delay") as HTMLInputElement;
+
+		if (addrInput) addrInput.value = "";
+		if (botsInput) botsInput.value = "";
+		if (delayInput) delayInput.value = "";
 	});
 
 	const clientSettingsContainer = document.querySelector<HTMLDivElement>(".client-settings-wrapper");

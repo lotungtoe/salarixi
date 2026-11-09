@@ -4,8 +4,8 @@ class TriggerRegistry {
 
 	/** Метод регистрации триггер-функции на определёный элемент и его событие */
 	public register(id: string, type: "checkbox" | "select", fn: Function): void {
-		const doc = document.getElementById(id);
-		const el = type === "select" ? doc as HTMLSelectElement : doc as HTMLInputElement;
+		const el = document.getElementById(id);
+		if (!el) return; // ponytail: element removed by UI cut — trigger is dead, skip
 		const event = type === "select" ? "change" : "input";
 		el.addEventListener(event, () => fn(el));
 		this.triggers[id] = fn;

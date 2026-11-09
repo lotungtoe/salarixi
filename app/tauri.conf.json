@@ -19,7 +19,7 @@
       "resizable": false,
       "center": true,
       "fullscreen": false,
-      "devtools": false,
+      "devtools": true,
       "theme": "Dark"
     }],
     "security": {
