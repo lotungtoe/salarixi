@@ -34,6 +34,6 @@ jobs:
         with:
           tagName: v__VERSION__
           releaseName: "salarixi-vi v__VERSION__"
-          releaseBody: "salarixi 1.3.1 với giao diện tiếng Việt. Cài bằng NSIS installer hoặc chạy exe."
+          releaseBody: "salarixi 1.3.2 với giao diện tiếng Việt. Cài bằng NSIS installer hoặc chạy exe."
           releaseDraft: false
           prerelease: false
