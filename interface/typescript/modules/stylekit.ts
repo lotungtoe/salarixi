@@ -129,7 +129,7 @@ class StylekitModule {
 
 			if (!name) {
 				messages.message("Bộ kiểu dáng", "Không thể áp dụng bộ kiểu dáng");
-				logger.log("Ошибка применения набора стилей: Failed to get file name", "error");
+				logger.log("Lỗi áp dụng bộ kiểu: không lấy được tên tệp", "error");
 				return;
 			}
 
@@ -137,7 +137,7 @@ class StylekitModule {
 
 			if (kitBytes.length < 1) {
 				messages.message("Bộ kiểu dáng", "Không thể áp dụng bộ kiểu dáng");
-				logger.log("Ошибка применения набора стилей: Incorrect kit size", "error");
+				logger.log("Lỗi áp dụng bộ kiểu: kích thước bộ kiểu không đúng", "error");
 				return;
 			}
 
@@ -148,7 +148,7 @@ class StylekitModule {
 
 			if (!kitJson) {
 				messages.message("Bộ kiểu dáng", "Không thể áp dụng bộ kiểu dáng");
-				logger.log("Ошибка применения набора стилей: Failed to parse JSON", "error");
+				logger.log("Lỗi áp dụng bộ kiểu: phân tích JSON thất bại", "error");
 				return;
 			}
 
@@ -156,7 +156,7 @@ class StylekitModule {
 
 			if (result.coincidences < 1) {
 				messages.message("Bộ kiểu dáng", "Không thể áp dụng bộ kiểu dáng");
-				logger.log("Ошибка применения набора стилей: Number of matches is less than 1", "error");
+				logger.log("Lỗi áp dụng bộ kiểu: số mục khớp nhỏ hơn 1", "error");
 				return;
 			}
 
@@ -168,9 +168,9 @@ class StylekitModule {
 			}));
 
 			messages.message("Bộ kiểu dáng", `Đã áp dụng bộ kiểu dáng "${name}"`);
-			logger.log(`Набор стилей "${name}" применён (${result.coincidences} из ${result.total} совпадений)`, "system");
+			logger.log(`Đã áp dụng bộ kiểu "${name}" (${result.coincidences}/${result.total} mục khớp)`, "system");
 		} catch (error) {
-			logger.log(`Ошибка применения набора стилей: ${error}`, "error");
+			logger.log(`Lỗi áp dụng bộ kiểu: ${error}`, "error");
 		}
 	}
 
@@ -189,9 +189,9 @@ class StylekitModule {
 
 			this.setStylekitName(name);
 
-			logger.log(`Сохранённый набор стилей "${name}" загружен (${result.coincidences} из ${result.total} совпадений)`, "system");
+			logger.log(`Đã tải bộ kiểu đã lưu "${name}" (${result.coincidences}/${result.total} mục khớp)`, "system");
 		} catch (err) {
-			logger.log(`Ошибка загрузки сохранённого набора стилей: ${err}`, "error");
+			logger.log(`Lỗi tải bộ kiểu đã lưu: ${err}`, "error");
 		}
 	}
 

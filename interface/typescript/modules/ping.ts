@@ -109,7 +109,7 @@ class PingModule {
 				pingInfo.innerHTML = "";
 			});
 		} catch (error) {
-			logger.log(`Ошибка пингования сервера: ${error}`, "error");
+			logger.log(`Lỗi ping máy chủ: ${error}`, "error");
 		}
 	}
 }

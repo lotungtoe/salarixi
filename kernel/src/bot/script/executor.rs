@@ -751,9 +751,9 @@ impl ScriptExecutor {
   pub fn execute(&self, su: String, si: u8, script: String) {
     if su.is_empty() {
       if PARALLEL_EXECUTORS_COUNT.load(Ordering::SeqCst) > 0 || EXECUTOR_GLOBAL_STATE.load(Ordering::SeqCst) {
-        emit_msg("Сценарий", "Не удалось выполнить сценарий");
+        emit_msg("Kịch bản", "Không thể thực thi kịch bản");
         emit_log(
-          "Не выполнить запустить сценарий: Script is already running",
+          "Không thể chạy kịch bản: kịch bản đang chạy",
           LogClass::Warning,
         );
         return;
@@ -1171,26 +1171,26 @@ impl ScriptExecutor {
     match engine.eval::<()>(&script) {
       Ok(_) => {
         if !su.is_empty() {
-          emit_log(format!("Сценарий автоматически выполнен для {}", su), LogClass::Info);
+          emit_log(format!("Kịch bản đã tự động thực thi cho {}", su), LogClass::Info);
         } else {
-          emit_log("Сценарий выполнен", LogClass::Info);
-          emit_msg("Сценарий", "Сценарий выполнен");
+          emit_log("Kịch bản đã thực thi", LogClass::Info);
+          emit_msg("Kịch bản", "Kịch bản đã thực thi");
         }
       }
       Err(err) => match err.as_ref() {
         &EvalAltResult::ErrorTerminated(_, _) => {
-          emit_log("Сценарий принудительно остановлен", LogClass::Info);
-          emit_msg("Сценарий", "Сценарий принудительно остановлен");
+          emit_log("Kịch bản đã bị dừng cưỡng bức", LogClass::Info);
+          emit_msg("Kịch bản", "Kịch bản đã bị dừng cưỡng bức");
         }
         _ => {
           if !su.is_empty() {
             emit_log(
-              format!("Ошибка выполнения сценария для {}: {}", su, err),
+              format!("Lỗi thực thi kịch bản cho {}: {}", su, err),
               LogClass::Info,
             );
           } else {
-            emit_log(format!("Ошибка выполнения сценария: {}", err), LogClass::Error);
-            emit_msg("Сценарий", "Не удалось выполнить сценарий");
+            emit_log(format!("Lỗi thực thi kịch bản: {}", err), LogClass::Error);
+            emit_msg("Kịch bản", "Không thể thực thi kịch bản");
           }
         }
       },

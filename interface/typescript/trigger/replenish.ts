@@ -300,7 +300,7 @@ export function replenishTriggerRegistry(): void {
 				disableParticles();
 			}
 		} catch (error) {
-			logger.log(`Ошибка изменения состояния партиклов: ${error}`, "error");
+			logger.log(`Lỗi thay đổi trạng thái hạt hiệu ứng: ${error}`, "error");
 		}
 	});
 
@@ -320,7 +320,7 @@ export function replenishTriggerRegistry(): void {
 					break;
 			}
 		} catch (error) {
-			logger.log(`Ошибка изменения шрифта: ${error}`, "error");
+			logger.log(`Lỗi thay đổi phông chữ: ${error}`, "error");
 		}
 	});
 
@@ -336,7 +336,7 @@ export function replenishTriggerRegistry(): void {
 				}
 			});
 		} catch (error) {
-			logger.log(`Ошибка изменения состояния сообщений: ${error}`, "error");
+			logger.log(`Lỗi thay đổi trạng thái thông báo: ${error}`, "error");
 		}
 	});
 
@@ -345,7 +345,7 @@ export function replenishTriggerRegistry(): void {
 			const display = current.value === "hide" ? "none" : "flex";
 			document.querySelectorAll<SVGElement>(".dashboard button svg").forEach(i => i.style.display = display);
 		} catch (error) {
-			logger.log(`Ошибка изменения состояния иконок на панели: ${error}`, "error");
+			logger.log(`Lỗi thay đổi trạng thái biểu tượng trên thanh bên: ${error}`, "error");
 		}
 	});
 
@@ -376,7 +376,7 @@ export function replenishTriggerRegistry(): void {
 					break;
 			}
 		} catch (error) {
-			logger.log(`Ошибка изменения шрифта панели: ${error}`, "error");
+			logger.log(`Lỗi thay đổi phông chữ thanh bên: ${error}`, "error");
 		}
 	});
 
@@ -385,7 +385,7 @@ export function replenishTriggerRegistry(): void {
 			const root = document.documentElement;
 			root.style.setProperty("--panel-font-size", current.value);
 		} catch (error) {
-			logger.log(`Ошибка изменения размера шрифта панели: ${error}`, "error");
+			logger.log(`Lỗi thay đổi cỡ chữ thanh bên: ${error}`, "error");
 		}
 	});
 
@@ -394,7 +394,7 @@ export function replenishTriggerRegistry(): void {
 			const root = document.documentElement;
 			root.style.setProperty("--panel-btn-gap", current.value);
 		} catch (error) {
-			logger.log(`Ошибка изменения внутреннего отступа кнопок панели: ${error}`, "error");
+			logger.log(`Lỗi thay đổi khoảng đệm trong của nút thanh bên: ${error}`, "error");
 		}
 	});
 
@@ -403,7 +403,7 @@ export function replenishTriggerRegistry(): void {
 			const display = current.value === "hide" ? "none" : "flex";
 			document.querySelectorAll<HTMLElement>(".dashboard .splitter").forEach(s => s.style.display = display);
 		} catch (error) {
-			logger.log(`Ошибка изменения видимости разделителей панели: ${error}`, "error");
+			logger.log(`Lỗi thay đổi hiển thị dấu phân cách thanh bên: ${error}`, "error");
 		}
 	});
 }

@@ -14,7 +14,7 @@ class PluginModule {
 		const initres = await invoke<CommandResult<null>>("initialize_plugins_dir");
 
 		if (initres.error) {
-			logger.log(`Ошибка инициализации плагинов: ${initres.error}`, "error");
+			logger.log(`Lỗi khởi tạo plugin: ${initres.error}`, "error");
 			return;
 		}
 
@@ -29,7 +29,7 @@ class PluginModule {
 	/** Метод обновления сохранения состояния плагина */
 	private async updatePluginState(id: string, enabled: boolean): Promise<void> {
 		if (processActivity) {
-			logger.log(`Не удалось изменить состояние плагина ${id}: plugin states can only be changed before startup`, "warning");
+			logger.log(`Không thể thay đổi trạng thái plugin ${id}: chỉ có thể thay đổi trước khi khởi chạy`, "warning");
 			return;
 		}
 
@@ -79,10 +79,10 @@ class PluginModule {
 					data: ecd,
 				});
 
-				if (result.error) logger.log(`Ошибка сохранения состояния плагина ${id}: ${result.error}`, "error");
+				if (result.error) logger.log(`Lỗi lưu trạng thái plugin ${id}: ${result.error}`, "error");
 			}
 		} catch (error) {
-			logger.log(`Ошибка сохранения состояния плагина ${id}: ${error}`, "error");
+			logger.log(`Lỗi lưu trạng thái plugin ${id}: ${error}`, "error");
 		}
 	}
 
@@ -92,7 +92,7 @@ class PluginModule {
 			const result = await invoke<CommandResult<number[]>>("s_read_file", { path: "plugins/enabled.json" });
 
 			if (result.error) {
-				logger.log(`Ошибка загрузки контента из файла "plugins/enabled.json": ${result.error}`, "error");
+				logger.log(`Lỗi tải nội dung từ tệp "plugins/enabled.json": ${result.error}`, "error");
 				return;
 			}
 
@@ -122,9 +122,9 @@ class PluginModule {
         `;
 			}
 
-			logger.log("Состояния плагинов успешно загружены и применены", "system");
+			logger.log("Đã tải và áp dụng thành công trạng thái plugin", "system");
 		} catch (error) {
-			logger.log(`Ошибка загрузки сохранённых состояний плагинов: ${error}`, "error");
+			logger.log(`Lỗi tải trạng thái plugin đã lưu: ${error}`, "error");
 		}
 	}
 
@@ -159,7 +159,7 @@ class PluginModule {
 			this.createPluginDescription(id, obj.name);
 			this.createPluginSettings(id, obj.name, obj.settings);
 		} catch (error) {
-			logger.log(`Ошибка инициализации плагина ${id}: ${error}`, "error");
+			logger.log(`Lỗi khởi tạo plugin ${id}: ${error}`, "error");
 		}
 	}
 
@@ -326,7 +326,7 @@ class PluginModule {
 			const result = await invoke<CommandResult<number[]>>("s_read_file", { path: "plugins/settings.json" });
 
 			if (result.error) {
-				logger.log(`Ошибка загрузки контента из файла "plugins/settings.json": ${result.error}`, "error");
+				logger.log(`Lỗi tải nội dung từ tệp "plugins/settings.json": ${result.error}`, "error");
 				return;
 			}
 
@@ -344,9 +344,9 @@ class PluginModule {
 				for (const key in settings) for (const opt of plugin["settings"]) if (opt["key"] === key) opt.value = settings[key];
 			}
 
-			logger.log("Настройки плагинов успешно загружены и применены", "system");
+			logger.log("Đã tải và áp dụng thành công cài đặt plugin", "system");
 		} catch (error) {
-			logger.log(`Ошибка сохранения настроек плагинов: ${error}`, "error");
+			logger.log(`Lỗi lưu cài đặt plugin: ${error}`, "error");
 		}
 	}
 
@@ -377,20 +377,20 @@ class PluginModule {
 			});
 
 			if (result.error) {
-				logger.log(`Ошибка сохранения настроек плагинов: ${result.error}`, "error");
+				logger.log(`Lỗi lưu cài đặt plugin: ${result.error}`, "error");
 				return;
 			}
 		} catch (error) {
-			logger.log(`Ошибка сохранения настроек плагинов: ${error}`, "error");
+			logger.log(`Lỗi lưu cài đặt plugin: ${error}`, "error");
 		}
 	}
 
 	/** Метод инициализации информации о плагинах */
 	private async initPluginsInfo(): Promise<void> {
 		try {
-			logger.log("Загрузка информации о плагинах...", "system");
+			logger.log("Đang tải thông tin plugin...", "system");
 
-			const onerr = (err: string) => logger.log(`Ошибка загрузки информации о плагинах (не критично): ${err}`, "nc-error");
+			const onerr = (err: string) => logger.log(`Lỗi tải thông tin plugin (không nghiêm trọng): ${err}`, "nc-error");
 			const result = await loadCacheOrNew<any>(this.lcf, this.lnf, this.scf, onerr);
 			if (!result.data) return;
 
@@ -400,15 +400,15 @@ class PluginModule {
 			// Может быть такое что названия полей изменились, или вовсе вся структура
 			// данных обновлена, поэтому здесь стоит делать ещё одну проверку
 			if (!pluginList) {
-				logger.log("Ошибка загрузки информации о плагинах (не критично): information is corrupted or missing", "nc-error");
+				logger.log("Lỗi tải thông tin plugin (không nghiêm trọng): dữ liệu bị hỏng hoặc thiếu", "nc-error");
 				return;
 			}
 
 			await this.extractPluginsInfo(pluginList);
 
-			logger.log(`Информация о плагинах загружена (размер ${result.size})`, "system");
+			logger.log(`Đã tải thông tin plugin (kích thước ${result.size})`, "system");
 		} catch (error) {
-			logger.log(`Ошибка загрузки информации о плагинах (не критично): ${error}`, "nc-error");
+			logger.log(`Lỗi tải thông tin plugin (không nghiêm trọng): ${error}`, "nc-error");
 		}
 	}
 
@@ -476,7 +476,7 @@ class PluginModule {
 		const result = await saveCache(JSON.stringify(info, null, 2), "plugins-info.json");
 
 		if (!result.data && result.error) {
-			logger.log(`Ошибка кэширования информации о плагинах (не критично): ${result.error}`, "nc-error");
+			logger.log(`Lỗi lưu bộ nhớ đệm thông tin plugin (không nghiêm trọng): ${result.error}`, "nc-error");
 		}
 	}
 }

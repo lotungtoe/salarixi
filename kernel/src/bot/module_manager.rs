@@ -143,7 +143,7 @@ impl ModuleManager {
         send_webhook(
           opts.webhook.url,
           format!(
-            "Группа ботов \"{}\" получила команду \"{}\". Выполнили {} из {} ботов.",
+            "Nhóm bot \"{}\" đã nhận lệnh \"{}\". Đã thực hiện {} trên {} bot.",
             message.group, module_name, success_count, total_count,
           ),
         );
@@ -152,16 +152,16 @@ impl ModuleManager {
 
     emit_log(
       format!(
-        "Группа ботов \"{}\" получила команду \"{}\". Выполнили {} из {} ботов",
+        "Nhóm bot \"{}\" đã nhận lệnh \"{}\". Đã thực hiện {} trên {} bot",
         message.group, module_name, success_count, total_count,
       ),
       LogClass::Info,
     );
 
     emit_msg(
-      "Управление",
+      "Quản lý",
       format!(
-        "Группа ботов \"{}\" получила команду \"{}\". Выполнили {} из {} ботов.",
+        "Nhóm bot \"{}\" đã nhận lệnh \"{}\". Đã thực hiện {} trên {} bot.",
         message.group, module_name, success_count, total_count
       ),
     );

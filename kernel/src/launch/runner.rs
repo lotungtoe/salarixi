@@ -167,8 +167,8 @@ async fn parse_addr(source: &str) -> Option<SocketAddr> {
 
 /// Функция запуска ботов на сервер
 pub async fn launch_bots_on_server(options: LaunchOptions) -> u8 {
-  emit_msg("Система", "Запуск ботов...");
-  emit_log(format!("Запуск ботов на {}...", options.basic.address), LogClass::Info);
+  emit_msg("Hệ thống", "Đang khởi chạy bot...");
+  emit_log(format!("Đang khởi chạy bot trên {}...", options.basic.address), LogClass::Info);
 
   // При ошибке логи и сообщения выше придут на фронт позже, чем
   // само сообщение об ошибке, пока пусть будет такая задержка
@@ -194,7 +194,7 @@ pub async fn launch_bots_on_server(options: LaunchOptions) -> u8 {
     return 0x04;
   };
 
-  emit_log("Подготовка к запуску...", LogClass::System);
+  emit_log("Đang chuẩn bị khởi chạy...", LogClass::System);
 
   set_options(options.clone()).await;
   set_process_activity(true);
@@ -203,7 +203,7 @@ pub async fn launch_bots_on_server(options: LaunchOptions) -> u8 {
   if options.basic.use_webhook {
     send_webhook(
       options.webhook.url.clone(),
-      format!("Запуск ботов на сервер {}...", options.basic.address),
+      format!("Đang khởi chạy bot trên máy chủ {}...", options.basic.address),
     );
   }
 
@@ -267,7 +267,7 @@ pub async fn launch_bots_on_server(options: LaunchOptions) -> u8 {
     let rt = match tokio::runtime::Runtime::new() {
       Ok(rt) => rt,
       Err(e) => {
-        emit_log(format!("Ошибка запуска ботов: {}", e), LogClass::Error);
+        emit_log(format!("Lỗi khởi chạy bot: {}", e), LogClass::Error);
         return;
       }
     };
@@ -355,7 +355,7 @@ pub async fn launch_bots_on_server(options: LaunchOptions) -> u8 {
             .await;
         }
 
-        emit_log("Подготовка окончена", LogClass::System);
+        emit_log("Đã chuẩn bị xong", LogClass::System);
 
         let swarm_opts = JoinOpts::new().custom_socket_addr(addr);
         let _ = swarm.start_with_opts(options.basic.address, swarm_opts).await;
@@ -373,8 +373,8 @@ pub async fn stop_bots_and_destroy_data(logging: bool) -> u8 {
   let total_bots = PROFILE_SYSTEM.len().await;
 
   if logging {
-    emit_msg("Система", "Остановка ботов...");
-    emit_log(format!("Остановка {} ботов...", total_bots), LogClass::Info);
+    emit_msg("Hệ thống", "Đang dừng bot...");
+    emit_log(format!("Đang dừng {} bot...", total_bots), LogClass::Info);
   }
 
   sleep!(500);
@@ -416,7 +416,7 @@ pub async fn stop_bots_and_destroy_data(logging: bool) -> u8 {
       if options.basic.use_webhook {
         send_webhook(
           options.webhook.url.clone(),
-          format!("{} ботов было остановлено", total_bots),
+          format!("Đã dừng {} bot", total_bots),
         );
       }
     }

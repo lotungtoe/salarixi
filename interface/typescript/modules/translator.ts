@@ -10,7 +10,7 @@ class TranslatorModule {
 	/** Метод инициализации переводчика */
 	public async init(): Promise<void> {
 		try {
-			logger.log("Загрузка перевода...", "system");
+			logger.log("Đang tải bản dịch...", "system");
 
 			const langSelect = document.getElementById("interface_select_language") as HTMLSelectElement;
 
@@ -18,7 +18,7 @@ class TranslatorModule {
 			const langs = data["languages"] ?? data["langs"] ?? data["translations"];
 
 			if (!langs) {
-				logger.log("Ошибка загрузки перевода: information is corrupted or missing", "error");
+				logger.log("Lỗi tải bản dịch: dữ liệu bị hỏng hoặc thiếu", "error");
 				return;
 			}
 
@@ -41,9 +41,9 @@ class TranslatorModule {
 			langSelect.addEventListener("change", async () => await this.translate(langSelect.value, langSelect.selectedIndex));
 			if (langSelect.value !== "ru") await this.translate(langSelect.value, langSelect.selectedIndex);
 
-			logger.log("Перевод загружен", "system");
+			logger.log("Đã tải bản dịch", "system");
 		} catch (error) {
-			logger.log(`Ошибка загрузки перевода: ${error}`, "error");
+			logger.log(`Lỗi tải bản dịch: ${error}`, "error");
 		}
 	}
 
@@ -54,7 +54,7 @@ class TranslatorModule {
 			const translation = source["data"] ?? source["translation"] ?? source["list"] ?? source["map"] ?? source["array"];
 
 			if (!translation) {
-				logger.log("Ошибка перевода: information is corrupted or missing", "error");
+				logger.log("Lỗi dịch: dữ liệu bị hỏng hoặc thiếu", "error");
 				return;
 			}
 
@@ -122,13 +122,13 @@ class TranslatorModule {
 						break;
 					}
 				} catch (err) {
-					logger.log(`Ошибка перевода элемента "${tag}": ${err}`, "error");
+					logger.log(`Lỗi dịch phần tử "${tag}": ${err}`, "error");
 				}
 			});
 
 			localStorage.setItem("language", selectedIndex.toString());
 		} catch (error) {
-			logger.log(`Ошибка перевода: ${error}`, "error");
+			logger.log(`Lỗi dịch: ${error}`, "error");
 		}
 	}
 }

@@ -127,7 +127,7 @@ impl TaskSystem {
     guard.shrink_to_fit();
     drop(guard);
 
-    emit_log("Активные задачи ботов остановлены", LogClass::System);
+    emit_log("Đã dừng các tác vụ đang hoạt động của bot", LogClass::System);
   }
 }
 

@@ -175,11 +175,11 @@ class RadarModule {
 							data: buf.toUint8Array(),
 						});
 
-						if (result.error) logger.log(`Ошибка сохранения данных радара об игроке ${username}: ${result.error}`, "error");
+						if (result.error) logger.log(`Lỗi lưu dữ liệu radar về người chơi ${username}: ${result.error}`, "error");
 					}
 				}
 			} catch (error) {
-				logger.log(`Ошибка обработки события "radar:target-info": ${error}`, "error");
+				logger.log(`Lỗi xử lý sự kiện "radar:target-info": ${error}`, "error");
 			}
 		});
 	}
@@ -229,7 +229,7 @@ Tọa độ Z: ${z}
 
 					messages.message("Radar", `Đã sao chép dữ liệu người chơi ${username} vào clipboard`);
 				} catch (error) {
-					logger.log(`Ошибка копирования данных радара: ${error}`, "error");
+					logger.log(`Lỗi sao chép dữ liệu radar: ${error}`, "error");
 				}
 			});
 
@@ -253,9 +253,9 @@ Tọa độ Z: ${z}
 						data: buf.toUint8Array(),
 					});
 
-					if (result.error) logger.log(`Ошибка преследования ${username}: ${result.error}`, "error");
+					if (result.error) logger.log(`Lỗi theo dõi ${username}: ${result.error}`, "error");
 				} catch (error) {
-					logger.log(`Ошибка преследования ${username}: ${error}`, "error");
+					logger.log(`Lỗi theo dõi ${username}: ${error}`, "error");
 				}
 			});
 
@@ -263,7 +263,7 @@ Tọa độ Z: ${z}
 
 			this.setTargetUpdateInterval(username, this.updateFrequency);
 		} catch (error) {
-			logger.log(`Ошибка инициализации цели радара: ${error}`, "error");
+			logger.log(`Lỗi khởi tạo mục tiêu radar: ${error}`, "error");
 		}
 	}
 
@@ -290,12 +290,12 @@ Tọa độ Z: ${z}
 				});
 
 				if (result.error) {
-					logger.log(`Ошибка обновления цели радара ${username}: ${result.error}`, "error");
+					logger.log(`Lỗi cập nhật mục tiêu radar ${username}: ${result.error}`, "error");
 					clearInterval(target.interval);
 					return;
 				}
 			} catch (error) {
-				logger.log(`Ошибка обновления цели радара ${username}: ${error}`, "error");
+				logger.log(`Lỗi cập nhật mục tiêu radar ${username}: ${error}`, "error");
 			}
 		}, frequency);
 	}

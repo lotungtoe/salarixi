@@ -44,7 +44,7 @@ impl InventoryModule {
         } else {
           if let Some(username) = INDEX_SYSTEM.username_by_index(index).await {
             emit_log(
-              format!("Бот {} не смог взять слот {} (неверный индекс слота)", username, slot),
+              format!("Bot {} không thể lấy ô {} (chỉ số ô không hợp lệ)", username, slot),
               LogClass::Error,
             );
           }

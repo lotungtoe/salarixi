@@ -17,7 +17,7 @@ class UpdaterModule {
 
 				const onerr = (err: string) => {
 					updateNotice.remove();
-					logger.log(`Ошибка проверки обновлений (не критично): ${err}`, "nc-error");
+					logger.log(`Lỗi kiểm tra cập nhật (không nghiêm trọng): ${err}`, "nc-error");
 				};
 
 				const result = await loadCacheOrNew<any>(this.lcf, this.lnf, this.scf, onerr);
@@ -45,7 +45,7 @@ class UpdaterModule {
 				if (supportNotice && supportNotice.style.display === "flex") supportNotice.remove();
 				updateNotice.style.display = "flex";
 			} catch (error) {
-				logger.log(`Ошибка проверки обновлений (не критично): ${error}`, "nc-error");
+				logger.log(`Lỗi kiểm tra cập nhật (không nghiêm trọng): ${error}`, "nc-error");
 			}
 		}, 4000);
 	}
@@ -80,7 +80,7 @@ class UpdaterModule {
 		const result = await saveCache(JSON.stringify(info, null, 2), "latest-version.json");
 
 		if (!result.data && result.error) {
-			logger.log(`Ошибка кэширования информации о последней версии клиента (не критично): ${result.error}`, "nc-error");
+			logger.log(`Lỗi lưu bộ nhớ đệm thông tin phiên bản client mới nhất (không nghiêm trọng): ${result.error}`, "nc-error");
 		}
 	}
 }

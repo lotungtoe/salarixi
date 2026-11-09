@@ -63,9 +63,9 @@ class ScriptModule {
 				data: buf.toUint8Array(),
 			});
 
-			if (result.error) logger.log(`Ошибка выполнения сценария: ${result.error}`, "error");
+			if (result.error) logger.log(`Lỗi thực thi kịch bản: ${result.error}`, "error");
 		} catch (error) {
-			logger.log(`Ошибка выполнения сценария: ${error}`, "error");
+			logger.log(`Lỗi thực thi kịch bản: ${error}`, "error");
 		}
 	}
 
@@ -80,9 +80,9 @@ class ScriptModule {
 				data: buf.toUint8Array(),
 			});
 
-			if (result.error) logger.log(`Ошибка остановки сценария: ${result.error}`, "error");
+			if (result.error) logger.log(`Lỗi dừng kịch bản: ${result.error}`, "error");
 		} catch (error) {
-			logger.log(`Ошибка остановки сценария: ${error}`, "error");
+			logger.log(`Lỗi dừng kịch bản: ${error}`, "error");
 		}
 	}
 }

@@ -179,7 +179,7 @@ impl ProfileSystem {
     guard.shrink_to_fit();
     drop(guard);
 
-    emit_log("Профили ботов очищены", LogClass::System);
+    emit_log("Đã xóa hồ sơ bot", LogClass::System);
   }
 
   /// Метод регистрации бота

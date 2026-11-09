@@ -32,7 +32,7 @@ pub async fn default_authorize(index: &u8) {
       template = opts.basic.register_template.trim();
       min_delay = opts.basic.register_min_delay;
       max_delay = opts.basic.register_max_delay;
-      action = "зарегистрировался";
+      action = "đã đăng ký";
       registered = true;
 
       if !opts.basic.use_double_auth {
@@ -45,7 +45,7 @@ pub async fn default_authorize(index: &u8) {
       template = opts.basic.login_template.trim();
       min_delay = opts.basic.login_min_delay;
       max_delay = opts.basic.login_max_delay;
-      action = "залогинился";
+      action = "đã đăng nhập";
       logined = true;
     }
   }
@@ -86,7 +86,7 @@ pub async fn default_authorize(index: &u8) {
   }
 
   if let Some(username) = INDEX_SYSTEM.username_by_index(index).await {
-    emit_log(format!("Бот {} {}: {}", &username, action, &msg), LogClass::Info);
+    emit_log(format!("Bot {} {}: {}", &username, action, &msg), LogClass::Info);
   }
 }
 
@@ -120,7 +120,7 @@ pub async fn trigger_authorize(index: &u8, message: String) {
     if opts.basic.use_auto_register && opts.basic.register_mode == AuthMode::Trigger {
       cmd = opts.basic.register_command.trim();
       template = opts.basic.register_template.trim();
-      action = "зарегистрировался";
+      action = "đã đăng ký";
       registered = true;
 
       if !opts.basic.use_double_auth {
@@ -131,7 +131,7 @@ pub async fn trigger_authorize(index: &u8, message: String) {
     if opts.basic.use_auto_login {
       cmd = opts.basic.login_command.trim();
       template = opts.basic.login_template.trim();
-      action = "залогинился";
+      action = "đã đăng nhập";
       logined = true;
     }
   }
@@ -167,6 +167,6 @@ pub async fn trigger_authorize(index: &u8, message: String) {
   }
 
   if let Some(username) = INDEX_SYSTEM.username_by_index(index).await {
-    emit_log(format!("Бот {} {}: {}", &username, action, &msg), LogClass::Info);
+    emit_log(format!("Bot {} {}: {}", &username, action, &msg), LogClass::Info);
   }
 }

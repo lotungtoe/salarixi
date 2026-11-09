@@ -67,6 +67,6 @@ impl IndexSystem {
     guard.shrink_to_fit();
     drop(guard);
 
-    emit_log("Реестр индексов ботов очищен", LogClass::System);
+    emit_log("Đã xóa danh bạ chỉ mục bot", LogClass::System);
   }
 }

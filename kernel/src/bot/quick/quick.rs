@@ -41,12 +41,12 @@ pub async fn run_quick_task(id: u8) {
     if opts.basic.use_webhook && opts.webhook.send_actions {
       send_webhook(
         opts.webhook.url,
-        format!("{} ботов получили быструю задачу \"{}\"", connected_bots, str_task_name),
+        format!("{} bot đã nhận tác vụ nhanh \"{}\"", connected_bots, str_task_name),
       );
     }
   }
 
-  emit_msg("Быстрая задача", format!("Быстрая задача \"{}\"", str_task_name));
+  emit_msg("Tác vụ nhanh", format!("Tác vụ nhanh \"{}\"", str_task_name));
 
   let mut tasks = Vec::new();
 
@@ -75,7 +75,7 @@ pub async fn run_quick_task(id: u8) {
 
   emit_log(
     format!(
-      "Быструю задачу \"{}\" выполнили {} из {} ботов",
+      "Tác vụ nhanh \"{}\" đã được {} trên {} bot thực hiện",
       str_task_name, success_count, connected_bots
     ),
     LogClass::Info,

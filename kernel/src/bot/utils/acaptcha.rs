@@ -318,7 +318,7 @@ impl MapCaptchaBypass {
         Some(key) => key,
         None => {
           emit_log(
-            format!("Бот {} не смог решить капчу: API key not specified", username),
+            format!("Bot {} không thể giải captcha: chưa chỉ định API key", username),
             LogClass::Error,
           );
           return;
@@ -332,7 +332,7 @@ impl MapCaptchaBypass {
             Some(key) => key,
             None => {
               emit_log(
-                format!("Бот {} не смог решить капчу: user ID not specified", username),
+                format!("Bot {} không thể giải captcha: chưa chỉ định user ID", username),
                 LogClass::Error,
               );
               return;
@@ -371,7 +371,7 @@ impl MapCaptchaBypass {
     let resp = match client.post(create_url).json(&req_body).send().await {
       Ok(r) => r,
       Err(e) => {
-        emit_log(format!("Бот {} не смог решить капчу: {}", username, e), LogClass::Error);
+        emit_log(format!("Bot {} không thể giải captcha: {}", username, e), LogClass::Error);
         return;
       }
     };
@@ -379,7 +379,7 @@ impl MapCaptchaBypass {
     let create_resp: serde_json::Value = match resp.json().await {
       Ok(v) => v,
       Err(e) => {
-        emit_log(format!("Бот {} не смог решить капчу: {}", username, e), LogClass::Error);
+        emit_log(format!("Bot {} không thể giải captcha: {}", username, e), LogClass::Error);
         return;
       }
     };
@@ -388,14 +388,14 @@ impl MapCaptchaBypass {
       if err_id != 0 {
         let err_desc = create_resp["errorDescription"].as_str().unwrap_or("unknown error");
         emit_log(
-          format!("Бот {} не смог решить капчу: {}", username, err_desc),
+          format!("Bot {} không thể giải captcha: {}", username, err_desc),
           LogClass::Error,
         );
         return;
       }
     } else {
       emit_log(
-        format!("Бот {} не смог решить капчу: incorrect response format", username),
+        format!("Bot {} không thể giải captcha: định dạng phản hồi không đúng", username),
         LogClass::Error,
       );
       return;
@@ -405,7 +405,7 @@ impl MapCaptchaBypass {
       Some(id) => id.to_string(),
       None => {
         emit_log(
-          format!("Бот {} не смог решить капчу: task ID is missing in response", username),
+          format!("Bot {} không thể giải captcha: thiếu task ID trong phản hồi", username),
           LogClass::Error,
         );
         return;
@@ -413,7 +413,7 @@ impl MapCaptchaBypass {
     };
 
     emit_log(
-      format!("Задача решения капчи бота {} создана, ожидание завершения...", username),
+      format!("Đã tạo tác vụ giải captcha cho bot {}, đang chờ hoàn tất...", username),
       LogClass::Extended,
     );
 
@@ -423,7 +423,7 @@ impl MapCaptchaBypass {
     loop {
       if attempts >= max_attempts {
         emit_log(
-          format!("Бот {} не смог решить капчу: timeout exceeded", username),
+          format!("Bot {} không thể giải captcha: quá thời gian chờ", username),
           LogClass::Error,
         );
         return;
@@ -440,7 +440,7 @@ impl MapCaptchaBypass {
       let res_resp = match client.post(result_url).json(&result_req_body).send().await {
         Ok(r) => r,
         Err(e) => {
-          emit_log(format!("Бот {} не смог решить капчу: {}", username, e), LogClass::Error);
+          emit_log(format!("Bot {} không thể giải captcha: {}", username, e), LogClass::Error);
           return;
         }
       };
@@ -448,7 +448,7 @@ impl MapCaptchaBypass {
       let res_data: serde_json::Value = match res_resp.json().await {
         Ok(v) => v,
         Err(e) => {
-          emit_log(format!("Бот {} не смог решить капчу: {}", username, e), LogClass::Error);
+          emit_log(format!("Bot {} không thể giải captcha: {}", username, e), LogClass::Error);
           return;
         }
       };
@@ -457,7 +457,7 @@ impl MapCaptchaBypass {
         if err_id != 0 {
           let err_desc = res_data["errorDescription"].as_str().unwrap_or("unknown error");
           emit_log(
-            format!("Бот {} не смог решить капчу: {}", username, err_desc),
+            format!("Bot {} không thể giải captcha: {}", username, err_desc),
             LogClass::Error,
           );
           return;
@@ -470,14 +470,14 @@ impl MapCaptchaBypass {
             take_bot!(index, async |bot| {
               bot.chat(result);
               emit_log(
-                format!("Бот {} решил капчу (текст: {})", username, result),
+                format!("Bot {} đã giải captcha (văn bản: {})", username, result),
                 LogClass::Info,
               );
             });
             return;
           } else {
             emit_log(
-              format!("Бот {} не смог решить капчу: incorrect response format", username),
+              format!("Bot {} không thể giải captcha: định dạng phản hồi không đúng", username),
               LogClass::Error,
             );
             return;
@@ -486,14 +486,14 @@ impl MapCaptchaBypass {
           continue;
         } else {
           emit_log(
-            format!("Бот {} не смог решить капчу: unknown status \"{}\"", username, status),
+            format!("Bot {} không thể giải captcha: trạng thái không xác định \"{}\"", username, status),
             LogClass::Error,
           );
           return;
         }
       } else {
         emit_log(
-          format!("Бот {} не смог решить капчу: status field is missing", username),
+          format!("Bot {} không thể giải captcha: thiếu trường trạng thái", username),
           LogClass::Error,
         );
         return;
@@ -515,14 +515,14 @@ impl MapCaptchaBypass {
     let resp = match client.post(target_url).json(&req_body).send().await {
       Ok(resp) => resp,
       Err(e) => {
-        emit_log(format!("Бот {} не смог решить капчу: {}", username, e), LogClass::Error);
+        emit_log(format!("Bot {} không thể giải captcha: {}", username, e), LogClass::Error);
         return;
       }
     };
 
     if !resp.status().is_success() {
       emit_log(
-        format!("Бот {} не смог решить капчу: status code {}", username, resp.status()),
+        format!("Bot {} không thể giải captcha: mã trạng thái {}", username, resp.status()),
         LogClass::Error,
       );
       return;
@@ -532,7 +532,7 @@ impl MapCaptchaBypass {
       Ok(v) => v,
       Err(e) => {
         emit_log(
-          format!("Бот {} не смог решить капчу: status code {}", username, e),
+          format!("Bot {} không thể giải captcha: mã trạng thái {}", username, e),
           LogClass::Error,
         );
         return;
@@ -541,7 +541,7 @@ impl MapCaptchaBypass {
 
     let Some(result) = json["result"].as_str() else {
       emit_log(
-        format!("Бот {} не смог решить капчу: result missing", username),
+        format!("Bot {} không thể giải captcha: thiếu kết quả", username),
         LogClass::Error,
       );
       return;
@@ -550,7 +550,7 @@ impl MapCaptchaBypass {
     take_bot!(index, async |bot| {
       bot.chat(result);
       emit_log(
-        format!("Бот {} решил капчу (текст: {})", username, result),
+        format!("Bot {} đã giải captcha (văn bản: {})", username, result),
         LogClass::Info,
       );
     });
@@ -621,10 +621,10 @@ impl MapCaptchaBypass {
         });
 
         if options.basic.use_webhook && options.webhook.send_information {
-          send_webhook(options.webhook.url, format!("Бот {} получил капчу с рамок", username));
+          send_webhook(options.webhook.url, format!("Bot {} đã nhận captcha từ khung", username));
         }
 
-        emit_log(format!("Бот {} получил капчу с рамок", username), LogClass::Info);
+        emit_log(format!("Bot {} đã nhận captcha từ khung", username), LogClass::Info);
 
         if options.captcha_bypass.solve_mode == CaptchaSolveMode::Auto {
           self
@@ -644,10 +644,10 @@ impl MapCaptchaBypass {
       });
 
       if options.basic.use_webhook && options.webhook.send_information {
-        send_webhook(options.webhook.url, format!("Бот {} получил капчу с карты", username));
+        send_webhook(options.webhook.url, format!("Bot {} đã nhận captcha từ bản đồ", username));
       }
 
-      emit_log(format!("Бот {} получил капчу с карты", username), LogClass::Info);
+      emit_log(format!("Bot {} đã nhận captcha từ bản đồ", username), LogClass::Info);
 
       if options.captcha_bypass.solve_mode == CaptchaSolveMode::Auto {
         self.solve_captcha(index, username, b64, options.captcha_bypass).await;

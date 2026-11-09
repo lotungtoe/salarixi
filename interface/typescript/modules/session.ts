@@ -53,7 +53,7 @@ class SessionModule {
 			});
 
 			if (result.error) {
-				logger.log(`Ошибка отправки сообщения в чат сессии: ${result.error}`, "error");
+				logger.log(`Lỗi gửi tin nhắn vào chat phiên: ${result.error}`, "error");
 				return;
 			}
 
@@ -63,7 +63,7 @@ class SessionModule {
 
 	/** Метод установки сессии по умолчанию */
 	private async setupDefaultSession(): Promise<void> {
-		logger.log("Установка локальной сессии...", "system");
+		logger.log("Đang thiết lập phiên cục bộ...", "system");
 
 		if (this.chatContent) this.chatContent.innerHTML = "";
 		this.setInfo("?", "");
@@ -71,11 +71,11 @@ class SessionModule {
 		const result = await invoke<CommandResult<Array<string>>>("setup_default_session");
 
 		if (!result.data || result.error) {
-			logger.log(`Ошибка установки локальной сессии: ${result.error}`, "error");
+			logger.log(`Lỗi thiết lập phiên cục bộ: ${result.error}`, "error");
 			return;
 		}
 
-		logger.log(`Локальная сессия с ${result.data[0]} успешно установлена`, "system");
+		logger.log(`Đã thiết lập thành công phiên cục bộ với ${result.data[0]}`, "system");
 
 		this.setInfo(result.data[0], result.data[1]);
 
@@ -97,7 +97,7 @@ class SessionModule {
 			data: buf.toUint8Array()
 		});
 
-		if (result.error) logger.log(`Ошибка синхронизации данных: ${result.error}`, "error");
+		if (result.error) logger.log(`Lỗi đồng bộ dữ liệu: ${result.error}`, "error");
 	}
 }
 

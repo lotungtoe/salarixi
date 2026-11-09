@@ -64,7 +64,7 @@ impl RegistrySystem {
       swarm.exit();
     }
 
-    emit_log("Реестр ботов очищен", LogClass::System);
+    emit_log("Đã xóa danh bạ bot", LogClass::System);
   }
 }
 

@@ -25,12 +25,12 @@ class DocsModule {
 	/** Метод инициализации модуля */
 	public async init(): Promise<void> {
 		try {
-			logger.log("Загрузка документации...", "system");
+			logger.log("Đang tải tài liệu...", "system");
 
 			const docsText = document.querySelector(".documentation-wrapper .text") as HTMLDivElement;
 			const docsNavigation = document.querySelector(".documentation-wrapper .navigation") as HTMLDivElement;
 
-			const onerr = (err: string) => logger.log(`Ошибка загрузки документации (не критично): ${err}`, "nc-error");
+			const onerr = (err: string) => logger.log(`Lỗi tải tài liệu (không nghiêm trọng): ${err}`, "nc-error");
 			const result = await loadCacheOrNew<string>(this.lcf, this.lnf, this.scf, onerr);
 			if (!result.data) return;
 
@@ -85,9 +85,9 @@ class DocsModule {
 				docsNavigation.style.width = "18px";
 			});
 
-			logger.log(`Документация загружена (размер ${result.size})`, "system");
+			logger.log(`Đã tải tài liệu (kích thước ${result.size})`, "system");
 		} catch (error) {
-			logger.log(`Ошибка загрузки документации (не критично): ${error}`, "nc-error");
+			logger.log(`Lỗi tải tài liệu (không nghiêm trọng): ${error}`, "nc-error");
 		}
 	}
 
@@ -121,7 +121,7 @@ class DocsModule {
 		const result = await saveCache(docs, "user-docs.md");
 
 		if (!result.data && result.error) {
-			logger.log(`Ошибка кэширования документации (не критично): ${result.error}`, "nc-error");
+			logger.log(`Lỗi lưu bộ nhớ đệm tài liệu (không nghiêm trọng): ${result.error}`, "nc-error");
 		}
 	}
 }

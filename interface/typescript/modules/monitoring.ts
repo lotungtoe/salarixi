@@ -96,7 +96,7 @@ class MonitoringModule {
 					}
 				}
 			} catch (error) {
-				logger.log(`Ошибка обработки события "monitoring:chat": ${error}`, "error");
+				logger.log(`Lỗi xử lý sự kiện "monitoring:chat": ${error}`, "error");
 			}
 		});
 
@@ -139,7 +139,7 @@ class MonitoringModule {
 
 				this.indexTable.includes(index) ? this.updateBotCard(index, profile) : this.createBotCard(index, username, profile);
 			} catch (error) {
-				logger.log(`Ошибка обработки события "monitoring:update-profile": ${error}`, "error");
+				logger.log(`Lỗi xử lý sự kiện "monitoring:update-profile": ${error}`, "error");
 			}
 		});
 
@@ -154,7 +154,7 @@ class MonitoringModule {
 
 				groupInput.value = group;
 			} catch (error) {
-				logger.log(`Ошибка обработки события "monitoring:set-group": ${error}`, "error");
+				logger.log(`Lỗi xử lý sự kiện "monitoring:set-group": ${error}`, "error");
 			}
 		});
 
@@ -185,7 +185,7 @@ class MonitoringModule {
 				promises.forEach(async p => await p);
 				promises = [];
 			} catch (error) {
-				logger.log(`Ошибка обработки события "monitoring:update-inventory": ${error}`, "error");
+				logger.log(`Lỗi xử lý sự kiện "monitoring:update-inventory": ${error}`, "error");
 			} finally {
 				this.inventoryUpdating = false;
 			}
@@ -636,9 +636,9 @@ class MonitoringModule {
 						data: buf.toUint8Array(),
 					})).error;
 
-					if (error) logger.log(`Ошибка выполнения операции "${operation}" с инвентарём бота ${username}: ${error}`, "error");
+					if (error) logger.log(`Lỗi thực hiện thao tác "${operation}" với kho đồ của bot ${username}: ${error}`, "error");
 				} catch (error) {
-					logger.log(`Ошибка взаимодействия с инвентарём ${username}: ${error}`, "error");
+					logger.log(`Lỗi tương tác với kho đồ ${username}: ${error}`, "error");
 				}
 			});
 		}
@@ -698,9 +698,9 @@ class MonitoringModule {
 				data: buf.toUint8Array(),
 			})).error;
 
-			if (error) logger.log(`Ошибка обновления инвентаря бота ${username}: ${error}`, "error");
+			if (error) logger.log(`Lỗi cập nhật kho đồ của bot ${username}: ${error}`, "error");
 		} catch (error) {
-			logger.log(`Ошибка обновления инвентаря бота ${username}: ${error}`, "error");
+			logger.log(`Lỗi cập nhật kho đồ của bot ${username}: ${error}`, "error");
 		}
 	}
 
@@ -731,7 +731,7 @@ class MonitoringModule {
 					});
 
 					if (result.error) {
-						logger.log(`Ошибка отправки сообщения от бота ${username}: ${result.error}`, "error");
+						logger.log(`Lỗi gửi tin nhắn từ bot ${username}: ${result.error}`, "error");
 						return;
 					}
 
@@ -760,7 +760,7 @@ class MonitoringModule {
 					data: buf.toUint8Array(),
 				})).error;
 
-				if (error) logger.log(`Ошибка очистки инвентаря бота ${username}: ${error}`, "error");
+				if (error) logger.log(`Lỗi xóa kho đồ của bot ${username}: ${error}`, "error");
 			});
 
 			document.getElementById(`close-inv-${index}`)?.addEventListener("click", () => {
@@ -783,9 +783,9 @@ class MonitoringModule {
 					data: buf.toUint8Array(),
 				});
 
-				if (result.error) logger.log(`Ошибка сбрасывания задач и состояний бота ${username}: ${result.error}`, "error");
+				if (result.error) logger.log(`Lỗi đặt lại tác vụ và trạng thái của bot ${username}: ${result.error}`, "error");
 			} catch (error) {
-				logger.log(`Ошибка сбрасывания задач и состояний бота ${username}: ${error}`, "error");
+				logger.log(`Lỗi đặt lại tác vụ và trạng thái của bot ${username}: ${error}`, "error");
 			}
 		});
 
@@ -800,9 +800,9 @@ class MonitoringModule {
 					data: buf.toUint8Array(),
 				});
 
-				if (result.error) logger.log(`Ошибка отключения бота ${username}: ${result.error}`, "error");
+				if (result.error) logger.log(`Lỗi ngắt kết nối bot ${username}: ${result.error}`, "error");
 			} catch (error) {
-				logger.log(`Ошибка отключения бота ${username}: ${error}`, "error");
+				logger.log(`Lỗi ngắt kết nối bot ${username}: ${error}`, "error");
 			}
 		});
 
@@ -820,10 +820,10 @@ class MonitoringModule {
 
 				if (result.error) {
 					groupInput.value = "";
-					logger.log(`Ошибка изменения группы бота ${username}: ${result.error}`, "error");
+					logger.log(`Lỗi thay đổi nhóm của bot ${username}: ${result.error}`, "error");
 				}
 			} catch (error) {
-				logger.log(`Ошибка изменения группы бота ${username}: ${error}`, "error");
+				logger.log(`Lỗi thay đổi nhóm của bot ${username}: ${error}`, "error");
 			}
 		});
 
@@ -838,7 +838,7 @@ class MonitoringModule {
 
 				history.forEach(m => this.filterMessage(type.value, m.textContent || "") ? content?.appendChild(m) : null);
 			} catch (error) {
-				logger.log(`Ошибка фильтровки чата у бота ${username}: ${error}`, "error");
+				logger.log(`Lỗi lọc chat của bot ${username}: ${error}`, "error");
 			}
 		});
 

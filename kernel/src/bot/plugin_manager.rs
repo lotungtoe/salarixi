@@ -138,6 +138,6 @@ impl PluginManager {
     tasks.shrink_to_fit();
     drop(tasks);
 
-    emit_log("Активные задачи плагинов остановлены", LogClass::System);
+    emit_log("Đã dừng các tác vụ đang hoạt động của plugin", LogClass::System);
   }
 }

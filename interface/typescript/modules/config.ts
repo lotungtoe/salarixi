@@ -17,7 +17,7 @@ class ConfigModule {
 		const initres = await invoke<CommandResult<null>>("initialize_configs_dir");
 
 		if (initres.error) {
-			logger.log(`Ошибка инициализации конфигуратора: ${initres.error}`, "error");
+			logger.log(`Lỗi khởi tạo trình cấu hình: ${initres.error}`, "error");
 			return;
 		}
 
@@ -32,7 +32,7 @@ class ConfigModule {
 		document.getElementById("refresh-configs")?.addEventListener("click", async () => await this.refreshConfigs());
 		document.getElementById("open-configs-directory")?.addEventListener("click", async () => {
 			const result = await invoke<CommandResult<null>>("open_directory", { dir: "configs" });
-			if (result.error) logger.log(`Ошибка открытия директории конфигов: ${result.error}`, "error");
+			if (result.error) logger.log(`Lỗi mở thư mục cấu hình: ${result.error}`, "error");
 		});
 
 		const configLoaded = await this.refreshConfigs();
@@ -106,7 +106,7 @@ class ConfigModule {
 			data: arr,
 		});
 
-		if (result.error) logger.log(`Ошибка сохранения конфига: ${result.error}`, "error");
+		if (result.error) logger.log(`Lỗi lưu cấu hình: ${result.error}`, "error");
 
 		return false;
 	}
@@ -130,7 +130,7 @@ class ConfigModule {
 				if (typeof value === "number") select.selectedIndex = value;
 			}
 		} catch (error) {
-			logger.log(`Ошибка установки значения для ${id}: ${error}`, "error");
+			logger.log(`Lỗi đặt giá trị cho ${id}: ${error}`, "error");
 		}
 	}
 
@@ -139,12 +139,12 @@ class ConfigModule {
 		try {
 			if (this.configList) this.configList.innerHTML = "";
 
-			logger.log("Загрузка сохранённых конфигов...", "system");
+			logger.log("Đang tải các cấu hình đã lưu...", "system");
 
 			const result = await invoke<CommandResult<Record<string, number[]>>>("load_configs");
 
 			if (result.error) {
-				logger.log(`Ошибка загрузки сохранённых конфигов: ${result.error}`, "error");
+				logger.log(`Lỗi tải cấu hình đã lưu: ${result.error}`, "error");
 				return false;
 			}
 
@@ -179,20 +179,20 @@ class ConfigModule {
 			}
 
 			if (loadedCount > 0) {
-				logger.log(`Сохранённые конфиги успешно загружены (${loadedCount} штук)`, "system");
+				logger.log(`Đã tải thành công cấu hình đã lưu (${loadedCount} tệp)`, "system");
 				this.searchConfigs((document.getElementById("config-search-query") as HTMLInputElement).value);
 			} else {
-				logger.log("Сохранённые конфиги отсутствуют", "system");
+				logger.log("Không có cấu hình đã lưu", "system");
 			}
 
 			if (currentConfig && currentConfigFilename) {
 				for (const [id, value] of Object.entries<ConfigValue>(currentConfig)) this.setValue(id, value);
 				triggerRegistry.triggerAll();
-				logger.log(`Конфиг "${currentConfigFilename}" применён`, "system");
+				logger.log(`Đã áp dụng cấu hình "${currentConfigFilename}"`, "system");
 				return true;
 			}
 		} catch (err) {
-			logger.log(`Ошибка загрузки сохранённых конфигов: ${err}`, "error");
+			logger.log(`Lỗi tải cấu hình đã lưu: ${err}`, "error");
 		}
 
 		return false;
@@ -204,13 +204,13 @@ class ConfigModule {
 			const result = await invoke<CommandResult<number[]>>("s_read_file", { path: "current_config.json" });
 
 			if (result.error) {
-				logger.log(`Ошибка загрузки текущего конфига: ${result.error}`, "error");
+				logger.log(`Lỗi tải cấu hình hiện tại: ${result.error}`, "error");
 				return;
 			}
 
 			if (!result.data || result.data.length < 1) return;
 
-			logger.log("Загрузка текущего конфига...", "system");
+			logger.log("Đang tải cấu hình hiện tại...", "system");
 
 			const dec = new TextDecoder("utf-8");
 			const u8a = new Uint8Array(result.data);
@@ -220,12 +220,12 @@ class ConfigModule {
 			if (cfg) {
 				for (const [id, value] of Object.entries<ConfigValue>(cfg)) this.setValue(id, value);
 				triggerRegistry.triggerAll();
-				logger.log("Текущий конфиг успешно загружен и применён", "system");
+				logger.log("Đã tải và áp dụng thành công cấu hình hiện tại", "system");
 			} else {
-				logger.log("Не удалось загрузить текущий конфиг", "error");
+				logger.log("Không thể tải cấu hình hiện tại", "error");
 			}
 		} catch (err) {
-			logger.log(`Ошибка загрузки текущего конфига: ${err}`, "error");
+			logger.log(`Lỗi tải cấu hình hiện tại: ${err}`, "error");
 		}
 	}
 
@@ -248,7 +248,7 @@ class ConfigModule {
 			const result = await invoke<CommandResult<number[]>>("s_read_file", { path: `configs/${filename}` });
 
 			if (result.error) {
-				logger.log(`Ошибка применения конфига "${filename}": ${result.error}`, "error");
+				logger.log(`Lỗi áp dụng cấu hình "${filename}": ${result.error}`, "error");
 				return;
 			}
 
@@ -275,7 +275,7 @@ class ConfigModule {
 			localStorage.setItem("selected-config-filename", filename);
 			localStorage.removeItem("selected-config-changed");
 
-			logger.log(`Конфиг "${filename}" успешно применён`, "system");
+			logger.log(`Đã áp dụng thành công cấu hình "${filename}"`, "system");
 		});
 
 		this.configList.appendChild(configCard);
@@ -310,7 +310,7 @@ class ConfigModule {
 				});
 
 				if (result.error) {
-					logger.log(`Ошибка сохранения конфига "${filename}": ${result.error}`, "error");
+					logger.log(`Lỗi lưu cấu hình "${filename}": ${result.error}`, "error");
 				} else {
 					imported++;
 				}
@@ -320,7 +320,7 @@ class ConfigModule {
 
 			messages.message("Cấu hình", `Đã nhập ${imported} cấu hình`);
 		} catch (err) {
-			logger.log(`Не удалось импортировать указанный конфиг(и): ${err}`, "error");
+			logger.log(`Không thể nhập cấu hình đã chỉ định: ${err}`, "error");
 		}
 	}
 
@@ -345,17 +345,17 @@ class ConfigModule {
 			});
 
 			if (result.error) {
-				logger.log(`Ошибка экспорта текущего конфига в ${directory}: ${result.error}`, "error");
+				logger.log(`Lỗi xuất cấu hình hiện tại vào ${directory}: ${result.error}`, "error");
 				messages.message("Cấu hình", `Lỗi xuất cấu hình vào ${directory}`);
 				return;
 			}
 
 			if (result.data) {
-				logger.log(`Публичный конфиг "${result.data}" успешно сохранён в директорию ${directory}`, "system");
+				logger.log(`Đã lưu thành công cấu hình công khai "${result.data}" vào thư mục ${directory}`, "system");
 				messages.message("Cấu hình", `Cấu hình công khai đã được lưu vào file ${result.data}`);
 			}
 		} catch (err) {
-			logger.log(`Ошибка экспорта публичного конфига: ${err}`, "error");
+			logger.log(`Lỗi xuất cấu hình công khai: ${err}`, "error");
 		}
 	}
 
@@ -370,16 +370,16 @@ class ConfigModule {
 			const result = await invoke<CommandResult<string>>("archive_config", { content: arr });
 
 			if (result.error) {
-				logger.log(`Ошибка архивации текущего конфига: ${result.error}`, "error");
+				logger.log(`Lỗi nén cấu hình hiện tại: ${result.error}`, "error");
 				return;
 			}
 
 			if (result.data) {
-				logger.log(`Текущий конфиг успешно архивирован в файл "${result.data}"`, "system");
+				logger.log(`Đã nén thành công cấu hình hiện tại vào tệp "${result.data}"`, "system");
 				await this.refreshConfigs();
 			}
 		} catch (err) {
-			logger.log(`Ошибка архивации текущего конфига: ${err}`, "error");
+			logger.log(`Lỗi nén cấu hình hiện tại: ${err}`, "error");
 		}
 	}
 

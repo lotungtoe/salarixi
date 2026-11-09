@@ -19,7 +19,7 @@ class InfoModule {
 	/** Метод инициализации модуля */
 	public async init(): Promise<void> {
 		try {
-			logger.log("Загрузка информации о клиенте...", "system");
+			logger.log("Đang tải thông tin client...", "system");
 
 			// Думаю нету смысла хранить актуальную ссылку на репозиторий, так как 
 			// если он будет перенесён - загрузить актуальную ссылку не получится
@@ -32,7 +32,7 @@ class InfoModule {
 			const onerr = (err: string) => {
 				["telegram", "discord", "youtube"].forEach(id => document.getElementById(id)?.remove());
 				document.getElementById("support-notice")?.remove();
-				logger.log(`Ошибка загрузки информации о клиенте (не критично): ${err}`, "nc-error");
+				logger.log(`Lỗi tải thông tin client (không nghiêm trọng): ${err}`, "nc-error");
 			};
 
 			const result = await loadCacheOrNew<ClientInfo>(this.lcf, this.lnf, this.scf, onerr);
@@ -56,9 +56,9 @@ class InfoModule {
 				}
 			}
 
-			logger.log(`Информация о клиенте загружена (размер ${result.size})`, "system");
+			logger.log(`Đã tải thông tin client (kích thước ${result.size})`, "system");
 		} catch (error) {
-			logger.log(`Ошибка инициализации информации о клиенте (не критично): ${error}`, "nc-error");
+			logger.log(`Lỗi khởi tạo thông tin client (không nghiêm trọng): ${error}`, "nc-error");
 		}
 	}
 
@@ -110,7 +110,7 @@ class InfoModule {
 		const result = await saveCache(JSON.stringify(info, null, 2), "client-info.json");
 
 		if (!result.data && result.error) {
-			logger.log(`Ошибка кэширования информации о клиенте (не критично): ${result.error}`, "nc-error");
+			logger.log(`Lỗi lưu bộ nhớ đệm thông tin client (không nghiêm trọng): ${result.error}`, "nc-error");
 		}
 	}
 }

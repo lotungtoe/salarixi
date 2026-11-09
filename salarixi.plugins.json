@@ -3,63 +3,63 @@
     {
       "id": "instant-armor-equip",
       "description": [
-        "Плагин \"Instant Armor Equip\" позволяет боту моментально экипировывать броню, если та находится в его инвентаре.",
-        "Перед тем как надеть броню бот сравнивает все доступные варианты по материалу, например, бот экипирует алмазные поножи вместо железных."
+        "Plugin \"Instant Armor Equip\" cho phép bot mặc áo giáp ngay lập tức nếu áo giáp có trong kho đồ.",
+        "Trước khi mặc giáp, bot so sánh tất cả các lựa chọn có sẵn theo chất liệu, ví dụ bot sẽ mặc xà cạp kim cương thay vì xà cạp sắt."
       ],
       "modified": "28.07.2026"
     },
     {
       "id": "auto-totem",
       "description": [
-        "Плагин \"Auto Totem\" позволяет боту автоматически брать тотем бессмертия в off-hand, если тот есть у него в инвентаре.",
-        "Данный плагин будет полезен в случаях, если бот используется для PvP/PvE и в дальнейшем ему будут предоставлены тотемы бессмертия."
+        "Plugin \"Auto Totem\" cho phép bot tự động lấy totem bất tử vào tay phụ nếu có trong kho đồ.",
+        "Plugin này hữu ích khi bot được dùng cho PvP/PvE và sau này được cung cấp totem bất tử."
       ],
       "modified": "29.07.2026"
     },
     {
       "id": "auto-eat",
       "description": [
-        "Плагин \"Auto Eat\" позволяет боту потреблять пищу из инвентаря при надобности.",
-        "Этот плагин выбирает еду по приоретету, например, бот будет есть золотое яблоко только тогда, когда у него мало здоровья."
+        "Plugin \"Auto Eat\" cho phép bot tiêu thụ thức ăn từ kho đồ khi cần.",
+        "Plugin này chọn thức ăn theo ưu tiên, ví dụ bot chỉ ăn táo vàng khi máu thấp."
       ],
       "modified": "14.08.2026"
     },
     {
       "id": "potion-consumer",
       "description": [
-        "Плагин \"Potion Consumer\" позволяет боту выпить или бросить зелье в зависимости от ситуации.",
-        "Например, если у бота будет мало здоровья, и при этом в его инвентаре будет зелье регенерации, он его использует."
+        "Plugin \"Potion Consumer\" cho phép bot uống hoặc ném thuốc tùy tình huống.",
+        "Ví dụ, nếu bot ít máu và trong kho có thuốc hồi phục, bot sẽ dùng nó."
       ],
       "modified": "14.08.2026"
     },
     {
       "id": "auto-look",
       "description": [
-        "Плагин \"Auto Look\" позволяет боту поворачивать голову на ближайшую сущность (предмет, моб, игрок) в радиусе 14 блоков."
+        "Plugin \"Auto Look\" cho phép bot quay đầu về thực thể gần nhất (vật phẩm, mob, người chơi) trong bán kính 14 khối."
       ],
       "modified": "29.07.2026"
     },
     {
       "id": "auto-shield",
       "description": [
-        "Плагин \"Auto Shield\" позволяет боту прикрываться щитом от опасных сущностей (враждебные мобы, игроки) в радиусе 8 блоков.",
-        "Для функционирования данного плагина боту следует дать щит."
+        "Plugin \"Auto Shield\" cho phép bot che chắn bằng khiên khỏi các thực thể nguy hiểm (mob thù địch, người chơi) trong bán kính 8 khối.",
+        "Để plugin hoạt động, cần đưa cho bot một chiếc khiên."
       ],
       "modified": "29.07.2026"
     },
     {
       "id": "auto-mending",
       "description": [
-        "Плагин \"Auto Mending\" позволяет боту чинить поломанные предметы, на которых есть чара \"Mending\", при помощи пузырьков опыта.",
-        "Бот будет чинить только те предметы, прочность которых менее 50% от их максимальной прочности."
+        "Plugin \"Auto Mending\" cho phép bot sửa chữa các vật phẩm bị hỏng có phù phép \"Mending\" bằng bình kinh nghiệm.",
+        "Bot chỉ sửa những vật phẩm có độ bền dưới 50% độ bền tối đa."
       ],
       "modified": "04.07.2026"
     },
     {
       "id": "pearl-leave",
       "description": [
-        "Плагин \"Pearl Leave\" заставляет бота бросать эндер жемчуг в случайную сторону при низком здоровье, тем самым избегая врага.",
-        "Этот плагин будет активен только тогда, когда у бота будет 6.0-10.0 едениц здоровья, и в инвентаре будут эндер жемчуги."
+        "Plugin \"Pearl Leave\" khiến bot ném ngọc ender về hướng ngẫu nhiên khi máu thấp, nhờ đó tránh kẻ địch.",
+        "Plugin này chỉ hoạt động khi bot có 6.0-10.0 đơn vị máu và trong kho có ngọc ender."
       ],
       "modified": "14.08.2026"
     }

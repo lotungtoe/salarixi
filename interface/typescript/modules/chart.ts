@@ -39,7 +39,7 @@ class ChartModule {
 				ramUsageSpan.innerText = `${usage}MB`;
 				this.updateChart("ram", usage > 1024.0 ? 1024.0 : usage);
 			} catch (error) {
-				logger.log(`Ошибка графика RAM: ${error}`, "error");
+				logger.log(`Lỗi biểu đồ RAM: ${error}`, "error");
 			}
 		}, 500);
 
@@ -50,7 +50,7 @@ class ChartModule {
 				cpuUsageSpan.innerText = `${usage}%`;
 				this.updateChart("cpu", usage);
 			} catch (error) {
-				logger.log(`Ошибка графика CPU: ${error}`, "error");
+				logger.log(`Lỗi biểu đồ CPU: ${error}`, "error");
 			}
 		}, 1000);
 	}

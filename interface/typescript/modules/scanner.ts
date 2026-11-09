@@ -44,17 +44,17 @@ class ScannerModule {
 
 			if (result.error) {
 				messages.message("Máy quét", `Lỗi quét ${range}`);
-				logger.log(`Ошибка сканирования серверов в диапазоне ${range}: ${result.error}`, "error");
+				logger.log(`Lỗi quét máy chủ trong dải ${range}: ${result.error}`, "error");
 			} else {
 				messages.message("Máy quét", `Đang quét ${range}...`);
-				logger.log(`Запущено сканирование серверов в диапазоне ${range}`, "system");
+				logger.log(`Đã bắt đầu quét máy chủ trong dải ${range}`, "system");
 			}
 		});
 
 		document.getElementById("stop-network-scanning")?.addEventListener("click", async () => {
 			await invoke("stop_network_scanning");
 			messages.message("Máy quét", "Đã dừng quét server");
-			logger.log("Сканирование серверов остановлено", "system");
+			logger.log("Đã dừng quét máy chủ", "system");
 		});
 
 		await listen<number[]>("scanner:push-server", (e) => {
@@ -69,7 +69,7 @@ class ScannerModule {
 					version: buf.readString(),
 				});
 			} catch (error) {
-				logger.log(`Ошибка обработки события "scanner:push-server": ${error}`, "error");
+				logger.log(`Lỗi xử lý sự kiện "scanner:push-server": ${error}`, "error");
 			}
 		});
 
@@ -79,7 +79,7 @@ class ScannerModule {
 				const buf = new Buffer(new Uint8Array(e.payload));
 				scannerStatus.innerText = buf.readU8() === 0x00 ? "inactive" : "active";
 			} catch (error) {
-				logger.log(`Ошибка обработки события "scanner:status": ${error}`, "error");
+				logger.log(`Lỗi xử lý sự kiện "scanner:status": ${error}`, "error");
 			}
 		});
 
@@ -91,7 +91,7 @@ class ScannerModule {
 				const total = buf.readU16();
 				hostsScanned.innerText = `${scanned}/${total}`;
 			} catch (error) {
-				logger.log(`Ошибка обработки события "scanner:hosts-scanned": ${error}`, "error");
+				logger.log(`Lỗi xử lý sự kiện "scanner:hosts-scanned": ${error}`, "error");
 			}
 		});
 
@@ -101,7 +101,7 @@ class ScannerModule {
 				const buf = new Buffer(new Uint8Array(e.payload));
 				serversFound.innerText = buf.readU16().toString();
 			} catch (error) {
-				logger.log(`Ошибка обработки события "scanner:servers-found": ${error}`, "error");
+				logger.log(`Lỗi xử lý sự kiện "scanner:servers-found": ${error}`, "error");
 			}
 		});
 	}

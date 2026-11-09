@@ -33,13 +33,13 @@ pub async fn reset_bot(index: &u8, silent: bool) {
     };
 
     emit_log(
-      format!("Все задачи и состояния бота {} сброшены", username),
+      format!("Đã đặt lại mọi tác vụ và trạng thái của bot {}", username),
       LogClass::Info,
     );
 
     emit_msg(
-      "Управление",
-      format!("Все задачи и состояния бота {} сброшены", username),
+      "Quản lý",
+      format!("Đã đặt lại mọi tác vụ và trạng thái của bot {}", username),
     );
   }
 }
@@ -67,7 +67,7 @@ pub async fn disconnect_bot(index: &u8, silent: bool) {
       return;
     };
 
-    emit_log(format!("Бот {} отключился", username), LogClass::Info);
-    emit_msg("Управление", format!("Бот {} отключился", username));
+    emit_log(format!("Bot {} đã ngắt kết nối", username), LogClass::Info);
+    emit_msg("Quản lý", format!("Bot {} đã ngắt kết nối", username));
   }
 }

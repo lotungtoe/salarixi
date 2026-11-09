@@ -95,11 +95,11 @@ async fn process_spawn(bot: Client) {
   update_process_status().await;
 
   if opts.basic.use_webhook {
-    send_webhook(opts.webhook.url, format!("Бот {} заспавнился", username));
+    send_webhook(opts.webhook.url, format!("Bot {} đã xuất hiện", username));
   }
 
-  emit_log(format!("Бот {} заспавнился", username), LogClass::Info);
-  emit_msg("Система", format!("Бот {} заспавнился", username));
+  emit_log(format!("Bot {} đã xuất hiện", username), LogClass::Info);
+  emit_msg("Hệ thống", format!("Bot {} đã xuất hiện", username));
 
   // Я без понятия что ставить в приоретет - сценарий пользователя или авторизацию.
   // Если я оберну авторизацию и сценарий в отдельные асинхронные задачи, то в таком
@@ -151,16 +151,16 @@ async fn process_disconnect(bot: Client, text: Option<FormattedText>) {
       if options.basic.use_webhook {
         send_webhook(
           options.webhook.url,
-          format!("Бот {} отключился: {}", username, t.to_html()),
+          format!("Bot {} đã ngắt kết nối: {}", username, t.to_html()),
         );
       }
     }
 
     emit_log(
-      format!("Бот {} отключился: {}", username, t.to_string()),
+      format!("Bot {} đã ngắt kết nối: {}", username, t.to_string()),
       LogClass::Info,
     );
-    emit_msg("Система", format!("Бот {} отключился: {}", username, t.to_string()));
+    emit_msg("Hệ thống", format!("Bot {} đã ngắt kết nối: {}", username, t.to_string()));
   }
 }
 
@@ -173,14 +173,14 @@ async fn process_connection_failed(bot: Client, error: Arc<ConnectionError>) {
     if options.basic.use_webhook {
       send_webhook(
         options.webhook.url,
-        format!("Бот {} не смог подключиться: {}", username, str_err),
+        format!("Bot {} không thể kết nối: {}", username, str_err),
       );
     }
   }
 
-  let msg = format!("Ошибка подключения бота {}: {}", username, str_err);
+  let msg = format!("Lỗi kết nối bot {}: {}", username, str_err);
   emit_log(&msg, LogClass::Error);
-  emit_msg("Система", msg);
+  emit_msg("Hệ thống", msg);
 }
 
 async fn process_chat_message(bot: Client, packet: ChatPacket) {
@@ -221,11 +221,11 @@ async fn process_chat_message(bot: Client, packet: ChatPacket) {
         if opts.basic.use_webhook && opts.webhook.send_information {
           send_webhook(
             opts.webhook.url,
-            format!("Бот {} получил ссылку на капчу: {}", username, url),
+            format!("Bot {} đã nhận liên kết captcha: {}", username, url),
           );
         }
 
-        emit_log(format!("Бот {} получил ссылку на капчу", username), LogClass::Info);
+        emit_log(format!("Bot {} đã nhận liên kết captcha", username), LogClass::Info);
 
         TRANSFER.emit(TransferEvent::AntiWebCaptcha(AntiWebCaptchaPayload {
           index,

@@ -163,7 +163,7 @@ class AccountModule {
 			});
 
 			if (result.error) {
-				logger.log(`Ошибка сохранения аккаунтов: ${result.error}`, "error");
+				logger.log(`Lỗi lưu tài khoản: ${result.error}`, "error");
 				return;
 			}
 
@@ -228,7 +228,7 @@ class AccountModule {
 		const result = await invoke<CommandResult<null>>("s_remove_file", { path: "accounts.json" });
 
 		if (result.error) {
-			logger.log(`Ошибка удаления файла "accounts.json": ${result.error}`, "error");
+			logger.log(`Lỗi xóa tệp "accounts.json": ${result.error}`, "error");
 			return;
 		}
 
@@ -244,7 +244,7 @@ class AccountModule {
 			const result = await invoke<CommandResult<number[]>>("s_read_file", { path: "accounts.json" });
 
 			if (result.error) {
-				logger.log(`Ошибка загрузки контента из файла "accounts.json": ${result.error}`, "error");
+				logger.log(`Lỗi tải nội dung từ tệp "accounts.json": ${result.error}`, "error");
 				return;
 			}
 
@@ -261,9 +261,9 @@ class AccountModule {
 
 			this.updateAccountCounter();
 
-			logger.log(`Сохранённые аккаунты загружены (${accounts.length > 255 ? 255 : accounts.length} штук)`, "system");
+			logger.log(`Đã tải tài khoản đã lưu (${accounts.length > 255 ? 255 : accounts.length} tài khoản)`, "system");
 		} catch (err) {
-			logger.log(`Ошибка загрузки сохранённых аккаунтов: ${err}`, "error");
+			logger.log(`Lỗi tải tài khoản đã lưu: ${err}`, "error");
 			await invoke<CommandResult<null>>("s_remove_file", { path: "accounts.json" });
 		}
 	}
@@ -288,16 +288,16 @@ class AccountModule {
 			case 0:
 				this.updateAccountCounter();
 				usernameInput.value = "";
-				logger.log(`Создан новый аккаунт "${username}"`, "system");
+				logger.log(`Đã tạo tài khoản mới "${username}"`, "system");
 				break;
 			case 1:
-				logger.log(`Не удалось создать аккаунт "${username}": accounts with empty usernames are prohibited`, "warning");
+				logger.log(`Không thể tạo tài khoản "${username}": không được để trống tên đăng nhập`, "warning");
 				break;
 			case 2:
-				logger.log(`Не удалось создать аккаунт "${username}": account with this username already exists`, "warning");
+				logger.log(`Không thể tạo tài khoản "${username}": tên đăng nhập này đã tồn tại`, "warning");
 				break;
 			case 3:
-				logger.log(`Не удалось создать аккаунт "${username}": number of created accounts is outside the range of 1-255`, "warning");
+				logger.log(`Không thể tạo tài khoản "${username}": số lượng tài khoản phải trong khoảng 1-255`, "warning");
 				break;
 		}
 
@@ -333,7 +333,7 @@ class AccountModule {
 		this.changeSelectorsState();
 
 		messages.message("Tài khoản", `Đã xoá ${removedCount} tài khoản`);
-		logger.log(`Удалено ${removedCount} аккаунтов`, "system");
+		logger.log(`Đã xóa ${removedCount} tài khoản`, "system");
 	}
 
 	/** Метод импортировки аккаунтов */
@@ -380,7 +380,7 @@ class AccountModule {
 
 			messages.message("Nhập tài khoản", `Đã nhập tài khoản thành công`);
 		} catch (error) {
-			logger.log(`Ошибка импорта аккаунтов: ${error}`, "error");
+			logger.log(`Lỗi nhập tài khoản: ${error}`, "error");
 		}
 	}
 
@@ -418,13 +418,13 @@ class AccountModule {
 			});
 
 			if (result.error) {
-				logger.log(`Ошибка экспорта аккаунтов: ${result.error}`, "error");
+				logger.log(`Lỗi xuất tài khoản: ${result.error}`, "error");
 				return;
 			}
 
 			messages.message("Xuất tài khoản", `Đã xuất tài khoản thành công`);
 		} catch (error) {
-			logger.log(`Ошибка экспорта аккаунтов: ${error}`, "error");
+			logger.log(`Lỗi xuất tài khoản: ${error}`, "error");
 		}
 	}
 
@@ -437,7 +437,7 @@ class AccountModule {
 
 		if (count > 255 || count < 1) {
 			messages.message("Tài khoản", "Không thể tạo tài khoản hàng loạt");
-			logger.log(`Не удалось сгенерировать аккаунты: number of generated accounts is out of range 1-255`, "warning");
+			logger.log(`Không thể tạo tài khoản: số lượng tài khoản tạo phải trong khoảng 1-255`, "warning");
 			return;
 		}
 
@@ -470,7 +470,7 @@ class AccountModule {
 		this.updateAccountCounter();
 
 		messages.message("Tài khoản", `Đã tạo ${generated} tài khoản`);
-		logger.log(`Сгенерировано ${generated} аккаунтов по шаблону "${template}"`, "system");
+		logger.log(`Đã tạo ${generated} tài khoản theo mẫu "${template}"`, "system");
 	}
 
 	/** Метод генерации юзернейма */

@@ -96,7 +96,7 @@ export function setQuickTasksAllowed(value: boolean): void {
 async function startBots(): Promise<void> {
 	try {
 		if (!initSuccess) {
-			logger.log("Не удалось запустить ботов: initialization failed, please restart the client", "warning");
+			logger.log("Không thể khởi chạy bot: khởi tạo thất bại, vui lòng khởi động lại client", "warning");
 			messages.message("Hệ thống", "Ôi... Có vẻ có gì đó hỏng rồi!");
 			return;
 		}
@@ -228,9 +228,9 @@ async function startBots(): Promise<void> {
 			data: buf.toUint8Array(),
 		});
 
-		if (result.error) logger.log(`Ошибка запуска ботов: ${result.error}`, "error");
+		if (result.error) logger.log(`Lỗi khởi chạy bot: ${result.error}`, "error");
 	} catch (error) {
-		logger.log(`Ошибка запуска ботов: ${error}`, "error");
+		logger.log(`Lỗi khởi chạy bot: ${error}`, "error");
 	}
 }
 
@@ -244,9 +244,9 @@ async function stopBots(): Promise<void> {
 			data: buf.toUint8Array(),
 		});
 
-		if (result.error) logger.log(`Ошибка остановки ботов: ${result.error}`, "error");
+		if (result.error) logger.log(`Lỗi dừng bot: ${result.error}`, "error");
 	} catch (error) {
-		logger.log(`Ошибка остановки ботов: ${error}`, "error");
+		logger.log(`Lỗi dừng bot: ${error}`, "error");
 	}
 }
 
@@ -347,9 +347,9 @@ async function updateModuleState(index: number, state: number): Promise<void> {
 			data: buf.toUint8Array(),
 		});
 
-		if (result.error) logger.log(`Ошибка изменения состояния модуля (index=${index}): ${result.error}`, "error");
+		if (result.error) logger.log(`Lỗi thay đổi trạng thái module (index=${index}): ${result.error}`, "error");
 	} catch (error) {
-		logger.log(`Ошибка изменения состояния модуля (index=${index}): ${error}`, "error");
+		logger.log(`Lỗi thay đổi trạng thái module (index=${index}): ${error}`, "error");
 	}
 }
 
@@ -445,7 +445,7 @@ function initGlobalElements(): void {
 				data: buf.toUint8Array(),
 			});
 
-			if (result.error) logger.log(`Ошибка выполнения быстрой задачи (id=${taskId}): ${result.error}`, "info");
+			if (result.error) logger.log(`Lỗi thực hiện tác vụ nhanh (id=${taskId}): ${result.error}`, "info");
 		}
 	});
 
@@ -500,7 +500,7 @@ export function addOpeningUrlTo(id: string, event: string, url: string): void {
 		try {
 			await invoke("open_url", { url: url });
 		} catch (error) {
-			logger.log(`Ошибка открытия URL: ${error}`, "error");
+			logger.log(`Lỗi mở URL: ${error}`, "error");
 		}
 	});
 }
@@ -548,7 +548,7 @@ async function listenSystemEvents(): Promise<void> {
 
 			logger.log(text, type);
 		} catch (error) {
-			logger.log(`Ошибка обработки события "system:log": ${error}`, "error");
+			logger.log(`Lỗi xử lý sự kiện "system:log": ${error}`, "error");
 		}
 	});
 
@@ -559,7 +559,7 @@ async function listenSystemEvents(): Promise<void> {
 			const content = buf.readString();
 			messages.message(name, content);
 		} catch (error) {
-			logger.log(`Ошибка обработки события "system:message": ${error}`, "error");
+			logger.log(`Lỗi xử lý sự kiện "system:message": ${error}`, "error");
 		}
 	});
 
@@ -575,21 +575,21 @@ async function listenSystemEvents(): Promise<void> {
 
 				switch (status) {
 					case 0x00:
-						logger.log("Ошибка запуска ботов: protocol or kernel error", "error");
+						logger.log("Lỗi khởi chạy bot: lỗi giao thức hoặc kernel", "error");
 						break;
 					case 0x02:
-						logger.log("Запуск ботов невозможен: process is already active", "warning");
+						logger.log("Không thể khởi chạy bot: tiến trình đang hoạt động", "warning");
 						break;
 					case 0x03:
-						logger.log("Ошибка запуска ботов: number of launching bots must be in range 1-255", "error");
+						logger.log("Lỗi khởi chạy bot: số lượng bot phải trong khoảng 1-255", "error");
 						break;
 					case 0x04:
-						logger.log("Ошибка запуска ботов: incorrect server address", "error");
+						logger.log("Lỗi khởi chạy bot: địa chỉ máy chủ không hợp lệ", "error");
 						break;
 				}
 			}
 		} catch (error) {
-			logger.log(`Ошибка обработки события "status:launch": ${error}`, "error");
+			logger.log(`Lỗi xử lý sự kiện "status:launch": ${error}`, "error");
 		}
 	});
 
@@ -606,22 +606,22 @@ async function listenSystemEvents(): Promise<void> {
 				processActivity = false;
 
 				messages.message("Hệ thống", "Đã dừng toàn bộ bot");
-				logger.log("Остановка ботов завершена", "info");
+				logger.log("Đã dừng xong bot", "info");
 			} else {
 				switch (status) {
 					case 0x00:
-						logger.log("Ошибка остановки ботов: protocol or kernel error", "error");
+						logger.log("Lỗi dừng bot: lỗi giao thức hoặc kernel", "error");
 						break;
 					case 0x02:
-						logger.log("Остановка ботов невозможна: process is already inactive", "warning");
+						logger.log("Không thể dừng bot: tiến trình không hoạt động", "warning");
 						break;
 					case 0x03:
-						logger.log("Остановка ботов невозможна: stop is already in progress", "warning");
+						logger.log("Không thể dừng bot: quá trình dừng đang diễn ra", "warning");
 						break;
 				}
 			}
 		} catch (error) {
-			logger.log(`Ошибка обработки события "status:stop": ${error}`, "error");
+			logger.log(`Lỗi xử lý sự kiện "status:stop": ${error}`, "error");
 		}
 	});
 
@@ -633,7 +633,7 @@ async function listenSystemEvents(): Promise<void> {
 			const totalBots = buf.readU8();
 			updateProcessStatus(statusId, connectedBots, totalBots);
 		} catch (error) {
-			logger.log(`Ошибка обработки события "process:display-status": ${error}`, "error");
+			logger.log(`Lỗi xử lý sự kiện "process:display-status": ${error}`, "error");
 		}
 	});
 
@@ -676,7 +676,7 @@ async function listenSystemEvents(): Promise<void> {
 
 			updateProcessStatus(statusId, connectedBots, totalBots);
 		} catch (error) {
-			logger.log(`Ошибка обработки события "process:synchronize": ${error}`, "error");
+			logger.log(`Lỗi xử lý sự kiện "process:synchronize": ${error}`, "error");
 		}
 	});
 }
@@ -689,7 +689,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	logger.init();
 	messages.init();
 
-	logger.log(`Клиент запущен, версия ${CLIENT_VERSION}`, "info");
+	logger.log(`Client đã khởi chạy, phiên bản ${CLIENT_VERSION}`, "info");
 
 	try {
 		timerModule.init();
@@ -709,7 +709,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		stylekitModule.init();
 	} catch (error) {
 		initSuccess = false;
-		logger.log(`Ошибка инициализации (sync): ${error}`, "error");
+		logger.log(`Lỗi khởi tạo (sync): ${error}`, "error");
 	}
 });
 
@@ -734,6 +734,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 		updaterModule.init();
 	} catch (error) {
 		initSuccess = false;
-		logger.log(`Ошибка инициализации (async): ${error}`, "error");
+		logger.log(`Lỗi khởi tạo (async): ${error}`, "error");
 	}
 });

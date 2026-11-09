@@ -123,7 +123,7 @@ impl StateSystem {
     guard.shrink_to_fit();
     drop(guard);
 
-    emit_log("Состояния ботов очищены", LogClass::System);
+    emit_log("Đã xóa trạng thái bot", LogClass::System);
   }
 
   /// Метод сброса состояний указанного бота
