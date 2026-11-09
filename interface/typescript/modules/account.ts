@@ -44,7 +44,6 @@ class AccountModule {
 		const selectedAccountsInitialGroup = document.getElementById("selected-accounts-initial-group") as HTMLInputElement;
 		const selectedAccountsPassword = document.getElementById("selected-accounts-password") as HTMLInputElement;
 		const selectedAccountsEmail = document.getElementById("selected-accounts-email") as HTMLInputElement;
-		const selectedAccountsProxy = document.getElementById("selected-accounts-proxy") as HTMLInputElement;
 		const selectedAccountsRegistered = document.getElementById("selected-accounts-registered") as HTMLInputElement;
 		const selectedAccountsLogined = document.getElementById("selected-accounts-logined") as HTMLInputElement;
 
@@ -96,7 +95,6 @@ class AccountModule {
 		selectedAccountsInitialGroup.addEventListener("input", () => this.setValueForAllSelected("initial_group", selectedAccountsInitialGroup.value));
 		selectedAccountsPassword.addEventListener("input", () => this.setValueForAllSelected("password", selectedAccountsPassword.value));
 		selectedAccountsEmail.addEventListener("input", () => this.setValueForAllSelected("email", selectedAccountsEmail.value));
-		selectedAccountsProxy.addEventListener("input", () => this.setValueForAllSelected("proxy", selectedAccountsProxy.value));
 		selectedAccountsRegistered.addEventListener("input", () => this.setValueForAllSelected("registered", selectedAccountsRegistered.value));
 		selectedAccountsLogined.addEventListener("input", () => this.setValueForAllSelected("logined", selectedAccountsLogined.value));
 

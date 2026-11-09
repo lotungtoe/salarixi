@@ -82,21 +82,17 @@ export function replenishTriggerRegistry(): void {
 	triggerRegistry.register("settings_chbx_use-accounts", "checkbox", (current: HTMLInputElement) => {
 		const openAccountsSectionBtn = document.getElementById("accounts") as HTMLButtonElement;
 
-		const useProxyChbx = document.getElementById("settings_chbx_use-proxy") as HTMLInputElement;
 		const botsCountInput = document.getElementById("settings-option-bots-count-container") as HTMLDivElement;
 		const basicInputContainer = document.getElementById("basic-input-container") as HTMLDivElement;
 
 		if (current.checked) {
 			openAccountsSectionBtn.style.display = "flex";
 
-			useProxyChbx.checked = false;
-			useProxyChbx.disabled = true;
 			basicInputContainer.style.display = "none";
 			botsCountInput.style.display = "none";
 		} else {
 			openAccountsSectionBtn.style.display = "none";
 
-			useProxyChbx.disabled = false;
 			basicInputContainer.style.display = "flex";
 			botsCountInput.style.display = "flex";
 		}
